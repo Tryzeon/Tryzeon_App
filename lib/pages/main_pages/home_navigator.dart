@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'ChatPage.dart';
-import 'AdPage.dart';
-import 'HomePage.dart';
-import 'package:tryzeon/pages/customer/ShopPage.dart';
-import 'package:tryzeon/pages/customer/SelfPage.dart';
+import 'chat_page.dart';
+import 'community_page.dart';
+import 'home_page.dart';
+import 'shop_page.dart';
+import 'profile_page.dart';
 
 
 class HomeNavigator extends StatefulWidget {
@@ -16,12 +16,12 @@ class HomeNavigator extends StatefulWidget {
 class _HomeNavigatorState extends State<HomeNavigator> {
   int _selectedIndex = 2;
 
-  final List<Widget> _pages =  [
-    AdPage(),
+  final List<Widget> _pages = const [
+    CommunityPage(),
     ChatPage(),
     HomePage(),
     ShopPage(),
-    SelfPage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {

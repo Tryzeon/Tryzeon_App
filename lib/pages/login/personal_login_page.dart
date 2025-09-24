@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
-import '../customer/HomeNavigator.dart';
+import '../main_pages/home_navigator.dart';
 
 class PersonalLoginPage extends StatefulWidget {
   const PersonalLoginPage({super.key});

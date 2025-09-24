@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 
-import 'package:tryzeon/pages/customer/ClosetPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,15 +25,31 @@ class _HomePageState extends State<HomePage> {
 
   //拍照
   Future<void> _initCamera() async {
-    _cameras = await availableCameras();
-    _controller = CameraController(
-      _cameras.firstWhere((cam) => cam.lensDirection == CameraLensDirection.front),
-      ResolutionPreset.high,
-    );
-    await _controller.initialize();
-    setState(() {
-      _isCameraReady = true;
-    });
+    try {
+      _cameras = await availableCameras();
+      
+      // 尋找前置鏡頭，如果沒有則使用第一個可用的鏡頭
+      final frontCamera = _cameras.firstWhere(
+        (cam) => cam.lensDirection == CameraLensDirection.front,
+        orElse: () => _cameras.first,
+      );
+      
+      _controller = CameraController(
+        frontCamera,
+        ResolutionPreset.high,
+      );
+      
+      await _controller.initialize();
+      
+      if (mounted) {
+        setState(() {
+          _isCameraReady = true;
+        });
+      }
+    } catch (e) {
+      print('相機初始化失敗: $e');
+      // 處理錯誤，例如顯示錯誤訊息
+    }
   }
 
   //錄影
@@ -59,7 +74,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -76,7 +91,8 @@ class _HomePageState extends State<HomePage> {
   }) async {
     final cameras = await availableCameras();
     final selectedCamera = cameras.firstWhere(
-          (cam) => cam.lensDirection == direction,
+      (cam) => cam.lensDirection == direction,
+      orElse: () => cameras.first,
     );
 
     final controller = CameraController(
@@ -114,12 +130,7 @@ class _HomePageState extends State<HomePage> {
               filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
               child: IconButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    // 這裡的username要再改
-                    MaterialPageRoute(builder: (context) => const ClosetPage(username:'Ingrid')),
-                  );
-
+                  // TODO: Navigate to closet page
                 },
                 icon: Icon(
                   Icons.checkroom,

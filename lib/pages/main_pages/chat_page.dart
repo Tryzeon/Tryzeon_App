@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'ChatHistorySidebar.dart';
-import 'ChatMessage.dart';
-import 'ChatSession.dart';
-import 'ChatSinglePage.dart';
+import '../customer/ChatHistorySidebar.dart';
+import '../customer/ChatMessage.dart';
+import '../customer/ChatSession.dart';
+import '../customer/ChatSinglePage.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});

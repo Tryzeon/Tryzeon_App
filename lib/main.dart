@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/pages/login/login_page.dart';
-import 'pages/customer/SelfPage.dart';
-import 'pages/customer/SelfPage_info.dart';
-import 'pages/customer/SelfPage_link.dart';
 
 
 Future<void> main() async {
@@ -39,10 +36,7 @@ class Tryzeon extends StatelessWidget {
       ),
       home: const LoginPage(),
       routes: {
-        '/self': (context) => const SelfPage(),
-        '/self_info': (context) => const SelfPageInfo(),
-        '/self_link': (context) => const SelfPageLink(),
-
+        // Add your routes here if needed
       },
     );
   }

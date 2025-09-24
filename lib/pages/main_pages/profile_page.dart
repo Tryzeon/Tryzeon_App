@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../login/login_page.dart';
 
-class SelfPage extends StatefulWidget {
-  const SelfPage({super.key});
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
 
   @override
-  State<SelfPage> createState() => _SelfPageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _SelfPageState extends State<SelfPage> {
+class _ProfilePageState extends State<ProfilePage> {
   String username = 'Ingrid';
 
   void _handleLogout() {
@@ -90,7 +90,7 @@ class _SelfPageState extends State<SelfPage> {
                 title: const Text('基本資料'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
-                  Navigator.pushNamed(context, '/self_info');
+                  // TODO: Navigate to profile info page
                 },
               ),
             ),
@@ -105,7 +105,7 @@ class _SelfPageState extends State<SelfPage> {
                 title: const Text('帳號連結'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
-                  Navigator.pushNamed(context, '/self_link');
+                  // TODO: Navigate to account link page
                 },
               ),
             ),
