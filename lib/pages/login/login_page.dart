@@ -70,7 +70,7 @@ class LoginPage extends StatelessWidget {
                             Text(
                               '我想虛擬試穿',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSecondary.withOpacity(0.9),
+                                    color: Theme.of(context).colorScheme.onSecondary.withValues(alpha: 0.9),
                                   ),
                             ),
                           ],
@@ -123,7 +123,7 @@ class LoginPage extends StatelessWidget {
                             Text(
                               '我想上架服飾',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
+                                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
                                   ),
                             ),
                           ],

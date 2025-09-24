@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'dart:io';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -172,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withValues(alpha: 0.3),
                           spreadRadius: 2,
                           blurRadius: 8,
                           offset: const Offset(0, 3),
