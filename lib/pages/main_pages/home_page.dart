@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
-      print('相機初始化失敗: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('相機初始化失敗: $e')),
@@ -80,7 +79,6 @@ class _HomePageState extends State<HomePage> {
         _closeCamera();
       }
     } catch (e) {
-      print('拍照失敗: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('拍照失敗: $e')),
@@ -178,7 +176,6 @@ class _HomePageState extends State<HomePage> {
         }
       }
     } catch (e) {
-      print('選擇圖片失敗: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('選擇圖片失敗: $e')),

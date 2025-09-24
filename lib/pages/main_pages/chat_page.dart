@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 // Question data structure
 class Question {
@@ -48,13 +50,55 @@ class ChatBubble extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              message.text,
-              style: TextStyle(
-                color: isUser ? Colors.white : Colors.black87,
-                fontSize: 16,
+            MarkdownBody(
+              data: message.text,
+              styleSheet: MarkdownStyleSheet(
+                p: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
+                strong: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                em: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                ),
+                h1: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                h2: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                h3: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                listBullet: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
+                code: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  backgroundColor: isUser ? Colors.blue.shade700 : Colors.grey.shade300,
+                  fontFamily: 'monospace',
+                ),
+                codeblockDecoration: BoxDecoration(
+                  color: isUser ? Colors.blue.shade700 : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
+              shrinkWrap: true,
             ),
             if (child != null) child!,
           ],
@@ -71,33 +115,33 @@ class QAConfig {
   static const List<Question> questions = [
     Question(
       id: 'when',
-      text: 'When?',
+      text: '什麼時候要穿？',
       quickReplies: ['早上', '下午', '晚上', '週末', '上班日'],
     ),
     Question(
       id: 'where',
-      text: 'Where?',
+      text: '在哪穿？',
       quickReplies: ['辦公室', '咖啡廳', '戶外', '約會', '派對'],
     ),
     Question(
       id: 'who',
-      text: 'Who?',
+      text: '和誰？',
       quickReplies: ['自己', '朋友', '同事', '情人', '家人'],
     ),
     Question(
       id: 'what',
-      text: 'What?',
+      text: '要做什麼？',
       quickReplies: ['工作', '休閒', '運動', '聚會', '拍照'],
     ),
     Question(
-      id: 'why',
-      text: 'Why?',
-      quickReplies: ['嘗試新風格', '吸引目光', '舒適自在', '展現專業'],
+      id: 'how',
+      text: '想要什麼風格？',
+      quickReplies: ['簡約風', '時尚風', '復古風', '運動風', '混搭風'],
     ),
     Question(
-      id: 'how',
-      text: 'How?',
-      quickReplies: ['簡約風', '時尚風', '復古風', '運動風', '混搭風'],
+      id: 'why',
+      text: '為什麼想這樣穿？',
+      quickReplies: ['嘗試新風格', '吸引目光', '舒適自在', '展現專業'],
     ),
   ];
 }
@@ -146,6 +190,7 @@ class _ChatPageState extends State<ChatPage> {
   int currentQuestionIndex = 0;
   Map<String, String> answers = {};
   bool isWaitingForAnswer = true;
+  bool isLoadingRecommendation = false;
 
   @override
   void initState() {
@@ -189,23 +234,87 @@ class _ChatPageState extends State<ChatPage> {
     });
     scrollToBottom();
 
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       _askNextQuestion();
     });
   }
 
   void _showSummary() {
-    final summary = answers.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join('\n');
-    
     setState(() {
-      messages.add(ChatMessage(
-        text: '太好了！讓我根據您的需求為您推薦穿搭。\n\n您的選擇：\n$summary',
-        isUser: false,
-      ));
       isWaitingForAnswer = false;
     });
+    
+    // Call LLM API directly without showing summary
+    _getLLMRecommendation();
+  }
+  
+  Future<void> _getLLMRecommendation() async {
+    setState(() {
+      isLoadingRecommendation = true;
+      messages.add(ChatMessage(
+        text: '正在尋求穿搭大神...',
+        isUser: false,
+      ));
+    });
+    scrollToBottom();
+    
+    try {
+      final supabase = Supabase.instance.client;
+      
+      // Prepare the prompt with user's answers
+      final prompt = '''
+根據以下穿搭需求，請提供具體的穿搭建議：
+- 時間：${answers['when'] ?? ''}
+- 地點：${answers['where'] ?? ''}
+- 對象：${answers['who'] ?? ''}
+- 活動：${answers['what'] ?? ''}
+- 原因：${answers['why'] ?? ''}
+- 風格：${answers['how'] ?? ''}
+
+請提供具體的服裝搭配建議，包括上衣、下身、鞋子和配件的推薦。
+''';
+      
+      final res = await supabase.functions.invoke(
+        'chat',
+        body: {
+          'prompt': prompt
+        },
+      );
+      // Remove loading message
+      setState(() {
+        messages.removeLast();
+        isLoadingRecommendation = false;
+      });
+      
+      if (res.data != null) {
+        // Add LLM response
+        setState(() {
+          messages.add(ChatMessage(
+            text: res.data['text'] ?? '以下是為您推薦的穿搭建議...',
+            isUser: false,
+          ));
+        });
+      } else {
+        // Handle error
+        setState(() {
+          messages.add(ChatMessage(
+            text: '抱歉，無法獲取穿搭建議。請稍後再試。',
+            isUser: false,
+          ));
+        });
+      }
+    } catch (e) {
+      // Remove loading message and show error
+      setState(() {
+        messages.removeLast();
+        isLoadingRecommendation = false;
+        messages.add(ChatMessage(
+          text: '抱歉，發生錯誤：${e.toString()}',
+          isUser: false,
+        ));
+      });
+    }
+    
     scrollToBottom();
   }
 
@@ -261,6 +370,7 @@ class _ChatPageState extends State<ChatPage> {
       currentQuestionIndex = 0;
       answers.clear();
       isWaitingForAnswer = true;
+      isLoadingRecommendation = false;
       
       // Add greeting message
       messages.add(ChatMessage(
@@ -334,6 +444,7 @@ class _ChatPageState extends State<ChatPage> {
                     controller: controller,
                     decoration: InputDecoration(
                       hintText: isWaitingForAnswer ? '請輸入您的回答...' : '',
+                      enabled: !isLoadingRecommendation,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -343,12 +454,13 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
                     onSubmitted: (text) => sendMessage(text),
+                    enabled: !isLoadingRecommendation,
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: () => sendMessage(controller.text),
+                  onPressed: isLoadingRecommendation ? null : () => sendMessage(controller.text),
                 )
               ],
             ),
