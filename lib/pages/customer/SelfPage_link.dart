@@ -37,7 +37,7 @@ class _SelfPageLinkState extends State<SelfPageLink> {
             children: [
               const Text('慣用支付方式', style: TextStyle(fontWeight: FontWeight.bold)),
               DropdownButtonFormField<String>(
-                value: _selectedPayment,
+                initialValue: _selectedPayment,
                 items: _paymentOptions.map((method) {
                   return DropdownMenuItem(
                     value: method,

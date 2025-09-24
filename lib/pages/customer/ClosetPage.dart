@@ -34,14 +34,14 @@ class _ClosetPageState extends State<ClosetPage> {
   ];
 
   void _addCategory() {
-    final TextEditingController _controller = TextEditingController();
+    final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('新增分類'),
           content: TextField(
-            controller: _controller,
+            controller: controller,
             decoration: const InputDecoration(hintText: '輸入分類名稱'),
             textInputAction: TextInputAction.done,
             keyboardType: TextInputType.text, // 支援中英文
@@ -49,7 +49,7 @@ class _ClosetPageState extends State<ClosetPage> {
           actions: [
             TextButton(
               onPressed: () {
-                final newCategory = _controller.text.trim();
+                final newCategory = controller.text.trim();
                 if (newCategory.isNotEmpty) {
                   setState(() => categories.add(newCategory));
                 }
@@ -65,7 +65,7 @@ class _ClosetPageState extends State<ClosetPage> {
 
 
   void _showAddClothingDialog() {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     final TextEditingController colorController = TextEditingController();
     final TextEditingController sizeController = TextEditingController();
     String? selectedCategory;
@@ -78,7 +78,7 @@ class _ClosetPageState extends State<ClosetPage> {
           title: const Text('新增衣物'),
           content: SingleChildScrollView(
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -152,7 +152,7 @@ class _ClosetPageState extends State<ClosetPage> {
           actions: [
             TextButton(
               onPressed: () {
-                if (_formKey.currentState!.validate() && selectedImage != null) {
+                if (formKey.currentState!.validate() && selectedImage != null) {
                   setState(() {
                     clothes.add({
                       'image': selectedImage!.path,

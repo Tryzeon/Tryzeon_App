@@ -94,7 +94,7 @@ class _SelfPageInfoState extends State<SelfPageInfo> {
 
               const Text('偏好穿搭風格', style: TextStyle(fontWeight: FontWeight.bold)),
               DropdownButtonFormField<String>(
-                value: _selectedStyle,
+                initialValue: _selectedStyle,
                 items: _styleOptions.map((style) {
                   return DropdownMenuItem(
                     value: style,

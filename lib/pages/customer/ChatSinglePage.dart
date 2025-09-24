@@ -104,7 +104,7 @@ class _ChatPageState extends State<ChatSinglePage> {
                   ),
 
                 ),
-                ...messages.map((msg) => ChatBubble(message: msg)).toList(),
+                ...messages.map((msg) => ChatBubble(message: msg)),
               ],
             ),
           ),
