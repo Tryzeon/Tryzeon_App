@@ -48,37 +48,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-
-            // 訂單狀態按鈕列
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _OrderStatusButton(
-                  icon: Icons.payment,
-                  label: '待付款',
-                  onTap: () {
-                    // TODO: 導向待付款頁面
-                  },
-                ),
-                _OrderStatusButton(
-                  icon: Icons.local_shipping,
-                  label: '待出貨',
-                  onTap: () {
-                    // TODO: 導向待出貨頁面
-                  },
-                ),
-                _OrderStatusButton(
-                  icon: Icons.inventory_2,
-                  label: '待收貨',
-                  onTap: () {
-                    // TODO: 導向待收貨頁面
-                  },
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
 
 
             // 基本資料卡片
@@ -192,33 +161,3 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-
-class _OrderStatusButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _OrderStatusButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  //for 待收款 待付款 待出貨 icons
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: Colors.brown),
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 14)),
-          ],
-        ),
-      ),
-    );
-  }
-}

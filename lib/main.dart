@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/pages/login/login_page.dart';
+import 'package:tryzeon/pages/main_pages/home_navigator.dart';
 
 
 Future<void> main() async {
@@ -34,7 +35,8 @@ class Tryzeon extends StatelessWidget {
           displayColor: Colors.brown[700],
         ),
       ),
-      home: const LoginPage(),
+      // home: const LoginPage(),
+      home: const HomeNavigator(),
       routes: {
         // Add your routes here if needed
       },

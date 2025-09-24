@@ -1,8 +1,6 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-
+import 'dart:io';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,34 +10,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late CameraController _controller;
-  late List<CameraDescription> _cameras;
+  CameraController? _controller;
   bool _isCameraReady = false;
-  bool _isRecording = false;
+  bool _isCapturing = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _initCamera();
-  }
-
-  //拍照
-  Future<void> _initCamera() async {
+  Future<void> _openCamera() async {
     try {
-      _cameras = await availableCameras();
+      final cameras = await availableCameras();
       
-      // 尋找前置鏡頭，如果沒有則使用第一個可用的鏡頭
-      final frontCamera = _cameras.firstWhere(
-        (cam) => cam.lensDirection == CameraLensDirection.front,
-        orElse: () => _cameras.first,
+      if (cameras.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('沒有可用的相機')),
+          );
+        }
+        return;
+      }
+      
+      final camera = cameras.firstWhere(
+        (cam) => cam.lensDirection == CameraLensDirection.back,
+        orElse: () => cameras.first,
       );
       
       _controller = CameraController(
-        frontCamera,
+        camera,
         ResolutionPreset.high,
       );
       
-      await _controller.initialize();
+      await _controller!.initialize();
       
       if (mounted) {
         setState(() {
@@ -48,29 +46,56 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       print('相機初始化失敗: $e');
-      // 處理錯誤，例如顯示錯誤訊息
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('相機初始化失敗: $e')),
+        );
+      }
     }
   }
 
-  //錄影
-  Future<void> _toggleRecording() async {
-    if (!_controller.value.isInitialized) {
-      print("Camera not initialized");
+  Future<void> _takePicture() async {
+    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) {
       return;
     }
 
-    if (_isRecording) {
-      final videoFile = await _controller.stopVideoRecording();
-      setState(() => _isRecording = false);
-      print('錄影結束，儲存於：${videoFile.path}');
-    } else {
-      await _controller.startVideoRecording(); // 不回傳 XFile
-      setState(() => _isRecording = true);
-      print('開始錄影');
-    }
+    setState(() {
+      _isCapturing = true;
+    });
 
+    try {
+      final image = await _controller!.takePicture();
+      
+      if (mounted) {
+        // TODO: 處理拍攝的照片
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('照片已儲存: ${image.path}')),
+        );
+        
+        // 關閉相機
+        _closeCamera();
+      }
+    } catch (e) {
+      print('拍照失敗: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('拍照失敗: $e')),
+        );
+      }
+    } finally {
+      setState(() {
+        _isCapturing = false;
+      });
+    }
   }
 
+  void _closeCamera() {
+    _controller?.dispose();
+    setState(() {
+      _controller = null;
+      _isCameraReady = false;
+    });
+  }
 
   @override
   void dispose() {
@@ -78,95 +103,151 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _takePicture() async {
-    if (!_controller.value.isInitialized || _controller.value.isTakingPicture) return;
-    final image = await _controller.takePicture();
-    // 你可以在這裡儲存或預覽照片
-    print('照片儲存於：${image.path}');
-  }
-
-  Future<CameraController> createCameraController({
-    required CameraLensDirection direction,
-    ResolutionPreset preset = ResolutionPreset.high,
-  }) async {
-    final cameras = await availableCameras();
-    final selectedCamera = cameras.firstWhere(
-      (cam) => cam.lensDirection == direction,
-      orElse: () => cameras.first,
-    );
-
-    final controller = CameraController(
-      selectedCamera,
-      preset,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
-
-    await controller.initialize();
-    return controller;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return _isCameraReady
-        ? Stack(
-      children: [
-        //相機預覽畫面
-        Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: AspectRatio(
-              aspectRatio: 9/16,  //鎖死比例
-              child: CameraPreview(_controller),
+    if (_isCameraReady && _controller != null) {
+      // 相機視圖
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            Center(
+              child: AspectRatio(
+                aspectRatio: _controller!.value.aspectRatio,
+                child: CameraPreview(_controller!),
+              ),
             ),
-          ),
-        ),
-        // 虛擬衣櫃按鈕
-        Positioned(
-          top: MediaQuery.of(context).size.height * 0.125,
-          right: 16,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            Positioned(
+              top: 40,
+              left: 20,
               child: IconButton(
-                onPressed: () {
-                  // TODO: Navigate to closet page
-                },
-                icon: Icon(
-                  Icons.checkroom,
-                  size: 32,
-                  color: Colors.brown.withOpacity(0.6),
-                ),
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: _closeCamera,
               ),
             ),
-          ),
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: FloatingActionButton(
+                  onPressed: _isCapturing ? null : _takePicture,
+                  backgroundColor: Colors.white,
+                  child: _isCapturing
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : const Icon(Icons.camera_alt, color: Colors.black),
+                ),
+              ),
+            ),
+          ],
         ),
+      );
+    }
 
-        //錄影與照相按鈕
-        Positioned(
-          bottom: 30, // 調整高低
-          left: 32,
-          right: 32,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // 主頁面視圖
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
             children: [
-              FloatingActionButton(
-                onPressed: _toggleRecording,
-                backgroundColor: _isRecording ? Colors.redAccent : Colors.blueAccent,
-                child: Icon(_isRecording ? Icons.stop : Icons.videocam),
+              // 標題
+              const Text(
+                '虛擬試衣間',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown,
+                ),
               ),
-              FloatingActionButton(
-                onPressed: _takePicture,
-                backgroundColor: Colors.pinkAccent,
-                child: const Icon(Icons.camera_alt),
+              const SizedBox(height: 40),
+              
+              // 虛擬人偶
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 250,
+                    height: 400,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'assets/images/profile/default.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: const Icon(
+                              Icons.person,
+                              size: 100,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ),
+              
+              const SizedBox(height: 40),
+              
+              // 按鈕區域
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // 衣櫃按鈕
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: 導航到衣櫃頁面
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('衣櫃功能開發中')),
+                      );
+                    },
+                    icon: const Icon(Icons.checkroom),
+                    label: const Text('我的衣櫃'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                  ),
+                  
+                  // 上傳衣服按鈕
+                  ElevatedButton.icon(
+                    onPressed: _openCamera,
+                    icon: const Icon(Icons.add_a_photo),
+                    label: const Text('上傳衣服'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown[700],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
             ],
           ),
         ),
-      ],
-    )
-        : const Center(child: CircularProgressIndicator());
+      ),
+    );
   }
 }
