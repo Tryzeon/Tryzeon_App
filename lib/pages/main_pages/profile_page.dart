@@ -65,19 +65,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 12),
 
-            // 帳號連結卡片
-            Card(
-              elevation: 2,
-              color: const Color(0xFFF5EBDD),
-              child: ListTile(
-                leading: const Icon(Icons.link),
-                title: const Text('帳號連結'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // TODO: Navigate to account link page
-                },
-              ),
-            ),
             // 登出
             Align(
               alignment: Alignment.centerRight,

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../../components/wardrobe/wardrobe_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,6 +15,8 @@ class _HomePageState extends State<HomePage> {
   CameraController? _controller;
   bool _isCameraReady = false;
   bool _isCapturing = false;
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> _openCamera() async {
     try {
@@ -96,6 +101,92 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '選擇圖片來源',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Colors.brown),
+                  title: const Text('從相簿選擇'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.brown),
+                  title: const Text('拍攝新照片'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                if (_selectedImage != null)
+                  ListTile(
+                    leading: const Icon(Icons.delete, color: Colors.red),
+                    title: const Text('移除圖片'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        _selectedImage = null;
+                      });
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1080,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('圖片已更新')),
+          );
+        }
+      }
+    } catch (e) {
+      print('選擇圖片失敗: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('選擇圖片失敗: $e')),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -163,10 +254,10 @@ class _HomePageState extends State<HomePage> {
               
               // 虛擬人偶
               Expanded(
-                child: Center(
+                child: GestureDetector(
+                  onTap: _showImageSourceDialog,
                   child: Container(
-                    width: 250,
-                    height: 400,
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
@@ -180,20 +271,29 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        'assets/images/profile/default.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(
-                              Icons.person,
-                              size: 100,
-                              color: Colors.grey,
+                      child: _selectedImage != null
+                          ? Image.file(
+                              _selectedImage!,
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              'assets/images/profile/default.png',
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(
+                                    Icons.person,
+                                    size: 100,
+                                    color: Colors.grey,
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                     ),
                   ),
                 ),
@@ -208,9 +308,11 @@ class _HomePageState extends State<HomePage> {
                   // 衣櫃按鈕
                   ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: 導航到衣櫃頁面
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('衣櫃功能開發中')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WardrobePage(),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.checkroom),
@@ -225,11 +327,11 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   
-                  // 上傳衣服按鈕
+                  // 虛擬試穿按鈕
                   ElevatedButton.icon(
                     onPressed: _openCamera,
                     icon: const Icon(Icons.add_a_photo),
-                    label: const Text('上傳衣服'),
+                    label: const Text('虛擬試穿'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.brown[700],
                       foregroundColor: Colors.white,

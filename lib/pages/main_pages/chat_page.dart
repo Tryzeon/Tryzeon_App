@@ -255,9 +255,62 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  void _resetChat() {
+    setState(() {
+      messages.clear();
+      currentQuestionIndex = 0;
+      answers.clear();
+      isWaitingForAnswer = true;
+      
+      // Add greeting message
+      messages.add(ChatMessage(
+        text: '你好，今天想怎麼穿呢？',
+        isUser: false,
+      ));
+    });
+    
+    // Start Q&A after a short delay
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      _askNextQuestion();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('重設對話'),
+                    content: const Text('確定要重設整個對話嗎？'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('取消'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _resetChat();
+                        },
+                        child: const Text('確定'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -300,8 +353,8 @@ class _ChatPageState extends State<ChatPage> {
               ],
             ),
           )
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
