@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../ImagePickerHelper.dart';
@@ -39,7 +38,6 @@ class _ClosetPageState extends State<ClosetPage> {
     showDialog(
       context: context,
       builder: (context) {
-        String newCategory = '';
         return AlertDialog(
           title: const Text('新增分類'),
           content: TextField(

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/pages/LoginPage.dart';
-import 'pages/customer/ChatSinglePage.dart';
-import 'pages/customer/AdPage.dart';
-import 'pages/customer/HomePage.dart';
-import 'pages/customer/ShopPage.dart';
 import 'pages/customer/SelfPage.dart';
 import 'pages/customer/SelfPage_info.dart';
 import 'pages/customer/SelfPage_link.dart';

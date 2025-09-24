@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'ChatPage.dart';
-import 'ChatSinglePage.dart';
 import 'AdPage.dart';
 import 'HomePage.dart';
 import 'package:tryzeon/pages/customer/ShopPage.dart';
 import 'package:tryzeon/pages/customer/SelfPage.dart';
-import 'SelfPage_info.dart';
-import 'package:tryzeon/pages/customer/SelfPage_link.dart';
 
 
 class HomeNavigator extends StatefulWidget {

@@ -4,7 +4,6 @@ import 'ChatBubbles.dart';
 import 'ChatMessage.dart';
 
 import 'ChatSession.dart';
-import 'QuestionDropdown.dart';
 import 'SixQuestionBlock.dart';
 
 class ChatSinglePage extends StatefulWidget {

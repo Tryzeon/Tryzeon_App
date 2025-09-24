@@ -17,7 +17,6 @@ class ChatHistorySidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: sessions.map((session) {
-        final isSelected = session.id == selectedId;
         return ListTile(
           title: Text(session.title),
           onTap: () => onSelect(session.id),
