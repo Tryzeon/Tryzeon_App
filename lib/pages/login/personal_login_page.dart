@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../main_pages/home_navigator.dart';
 
@@ -12,6 +13,8 @@ class PersonalLoginPage extends StatefulWidget {
 class _PersonalLoginPageState extends State<PersonalLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _nameController = TextEditingController();
   bool _isLoading = false;
   bool _isLogin = true;
   
@@ -19,16 +22,37 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
   Future<void> _handleAuth() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final name = _nameController.text.trim();
     
     if (email.isEmpty || password.isEmpty) {
       _showError('請輸入帳號和密碼');
       return;
+    }
+    
+    if (!_isLogin) {
+      if (name.isEmpty) {
+        _showError('請輸入您的名稱');
+        return;
+      }
+      
+      final confirmPassword = _confirmPasswordController.text.trim();
+      if (password != confirmPassword) {
+        _showError('密碼與確認密碼不相符');
+        return;
+      }
+      
+      if (password.length < 6) {
+        _showError('密碼至少需要 6 個字元');
+        return;
+      }
     }
     
     setState(() {
@@ -58,6 +82,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
           email: email,
           password: password,
           userType: UserType.personal,
+          name: name,
         );
         
         if (result.success && mounted) {
@@ -67,6 +92,8 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
           });
           _emailController.clear();
           _passwordController.clear();
+          _confirmPasswordController.clear();
+          _nameController.clear();
         } else if (!result.success) {
           _showError(result.errorMessage ?? '註冊失敗');
         }
@@ -98,6 +125,33 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
         backgroundColor: Colors.green,
       ),
     );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final result = await AuthService.signInWithGoogle(
+        userType: UserType.personal,
+      );
+      
+      if (result.success && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeNavigator()),
+        );
+      } else if (!result.success) {
+        _showError(result.errorMessage ?? 'Google 登入失敗');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -145,6 +199,33 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            
+            // 確認密碼欄位（僅在註冊時顯示）
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: '確認密碼',
+                  hintText: '請再次輸入您的密碼',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+            
+            // 名稱輸入欄位（僅在註冊時顯示）
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: '名稱',
+                  hintText: '請輸入您的名稱',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             
             ElevatedButton(
@@ -162,18 +243,67 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
             ),
             const SizedBox(height: 16),
             
+            // 註冊/登入切換按鈕
             TextButton(
               onPressed: _isLoading
                   ? null
                   : () {
                       setState(() {
                         _isLogin = !_isLogin;
+                        // 切換時清空註冊相關欄位
+                        _nameController.clear();
+                        _confirmPasswordController.clear();
                       });
                     },
               child: Text(
                 _isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入',
               ),
             ),
+            
+            // 在登入頁面才顯示分隔線和Google登入
+            if (_isLogin) ...[
+              const SizedBox(height: 16),
+              // 分隔線
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '或',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Google 登入按鈕
+              OutlinedButton.icon(
+                onPressed: _isLoading ? null : _handleGoogleSignIn,
+                icon: SvgPicture.asset(
+                  'assets/images/logo/google.svg',
+                  height: 18,
+                  width: 18,
+                ),
+                label: const Text('使用 Google 登入'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                ),
+              ),
+            ],
           ],
         ),
       ),

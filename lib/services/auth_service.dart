@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum UserType { personal, store }
@@ -30,12 +31,19 @@ class AuthService {
     required String email,
     required String password,
     required UserType userType,
+    String? name,
   }) async {
     try {
+      final metadata = {
+        'user_type': userType.name,
+        'name': name
+      };
+
+      
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
-        data: {'user_type': userType.name},
+        data: metadata,
       );
 
       if (response.user != null) {
@@ -118,4 +126,65 @@ class AuthService {
 
   /// 檢查是否為店家用戶
   static bool get isStoreUser => currentUserType == UserType.store;
+
+  /// 獲取當前用戶的顯示名稱
+  static String? get displayName {
+    final user = currentUser;
+    if (user == null) return null;
+    
+    // 優先使用 user_metadata 中的 display_name
+    final displayName = user.userMetadata?['name'] as String?;
+    if (displayName != null && displayName.isNotEmpty) {
+      return displayName;
+    }
+    
+    return "無名氏";
+  }
+
+  /// Google 登入
+  static Future<AuthResult> signInWithGoogle({
+    required UserType userType,
+  }) async {
+    try {
+      const iosClientId = '186632123893-jbfo2s7ubp3r14luahjiuu3fvi21fler.apps.googleusercontent.com';
+
+      final googleSignIn = GoogleSignIn(
+        clientId: iosClientId,
+      );
+      
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return AuthResult.failure('登入失敗');
+      }
+      
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      
+      if (idToken == null) {
+        throw AuthException('無法取得 Google ID Token');
+      }
+      
+      final response = await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      if (response.user == null) {
+        return AuthResult.failure('Google 登入失敗: user not found');
+      }
+
+      await _supabase.auth.updateUser(
+        UserAttributes(
+          data: {'user_type': userType.name},
+        ),
+      );
+
+      return AuthResult.success(response.user!);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Google 登入失敗：${e.toString()}');
+    }
+  }
 }

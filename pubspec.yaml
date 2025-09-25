@@ -41,6 +41,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.0.0
   flutter_markdown: ^0.7.4
+  flutter_svg: ^2.0.10
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
@@ -103,6 +105,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo/logo.png"
+  image_path: "assets/images/logo/tryzeon.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo/logo.png"
+  adaptive_icon_foreground: "assets/images/logo/tryzeon.png"

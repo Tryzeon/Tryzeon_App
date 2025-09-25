@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../services/auth_service.dart';
 import '../login/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -10,14 +10,32 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String username = 'Ingrid';
+  String username = '';
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+  
+  void _loadUsername() {
+    final displayName = AuthService.displayName;
+    if (displayName != null && mounted) {
+      setState(() {
+        username = displayName;
+      });
+    }
+  }
 
-  void _handleLogout() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-    );
+  void _handleLogout() async {
+    await AuthService.signOut();
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -33,20 +51,9 @@ class _ProfilePageState extends State<ProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 使用者名稱區塊
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '您好, $username',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.grey),
-                  onPressed: () {
-                    _showEditUsernameDialog(context);
-                  },
-                ),
-              ],
+            Text(
+              '您好, $username',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
 
@@ -106,44 +113,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
-    );
-  }
-  void _showEditUsernameDialog(BuildContext context) {
-    final TextEditingController controller = TextEditingController(text: username);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('編輯使用者名稱'),
-          content: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: '輸入新名稱',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final newName = controller.text.trim();
-                if (newName.isNotEmpty) {
-                  setState(() {
-                    username = newName;
-                  });
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('儲存'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

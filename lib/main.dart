@@ -10,6 +10,9 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://pxcjggvvcipyzftsdexc.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4Y2pnZ3Z2Y2lweXpmdHNkZXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MTM4ODUsImV4cCI6MjA3NDI4OTg4NX0.UC6pqxavhjiDwDuoYson3ikojOnWXeSreW8Sv8uFjMg',
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
   );
   
   runApp(const Tryzeon());
