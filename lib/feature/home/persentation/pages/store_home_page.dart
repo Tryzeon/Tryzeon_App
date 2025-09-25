@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'ProductPage.dart';
-import 'StoreAccountPage.dart';
+import '../../../store/persentation/pages/ProductPage.dart';
+import '../../../profile/persentation/pages/store_profile_page.dart';
 
 
 class StoreHomePage extends StatelessWidget {

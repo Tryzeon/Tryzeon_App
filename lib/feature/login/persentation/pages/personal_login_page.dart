@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../services/auth_service.dart';
-import '../store/StoreHomePage.dart';
+import '../../data/auth_service.dart';
+import '../../../home/persentation/pages/home_navigator.dart';
 
-class StoreLoginPage extends StatefulWidget {
-  const StoreLoginPage({super.key});
+class PersonalLoginPage extends StatefulWidget {
+  const PersonalLoginPage({super.key});
 
   @override
-  State<StoreLoginPage> createState() => _StoreLoginPageState();
+  State<PersonalLoginPage> createState() => _PersonalLoginPageState();
 }
 
-class _StoreLoginPageState extends State<StoreLoginPage> {
+class _PersonalLoginPageState extends State<PersonalLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _storeNameController = TextEditingController();
+  final _nameController = TextEditingController();
   bool _isLoading = false;
   bool _isLogin = true;
   
@@ -23,15 +23,14 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _storeNameController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
   Future<void> _handleAuth() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
-    final storeName = _storeNameController.text.trim();
+    final name = _nameController.text.trim();
     
     if (email.isEmpty || password.isEmpty) {
       _showError('請輸入帳號和密碼');
@@ -39,13 +38,19 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     }
     
     if (!_isLogin) {
-      if (storeName.isEmpty) {
-        _showError('請輸入店家名稱');
+      if (name.isEmpty) {
+        _showError('請輸入您的名稱');
         return;
       }
       
+      final confirmPassword = _confirmPasswordController.text.trim();
       if (password != confirmPassword) {
         _showError('密碼與確認密碼不相符');
+        return;
+      }
+      
+      if (password.length < 6) {
+        _showError('密碼至少需要 6 個字元');
         return;
       }
     }
@@ -61,13 +66,13 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
         result = await AuthService.signIn(
           email: email,
           password: password,
-          expectedUserType: UserType.store,
+          expectedUserType: UserType.personal,
         );
         
         if (result.success && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const StoreHomePage()),
+            MaterialPageRoute(builder: (context) => const HomeNavigator()),
           );
         } else if (!result.success) {
           _showError(result.errorMessage ?? '登入失敗');
@@ -76,8 +81,8 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
         result = await AuthService.signUp(
           email: email,
           password: password,
-          userType: UserType.store,
-          name: storeName,
+          userType: UserType.personal,
+          name: name,
         );
         
         if (result.success && mounted) {
@@ -88,7 +93,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
           _emailController.clear();
           _passwordController.clear();
           _confirmPasswordController.clear();
-          _storeNameController.clear();
+          _nameController.clear();
         } else if (!result.success) {
           _showError(result.errorMessage ?? '註冊失敗');
         }
@@ -129,13 +134,13 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     
     try {
       final result = await AuthService.signInWithGoogle(
-        userType: UserType.store,
+        userType: UserType.personal,
       );
       
       if (result.success && mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const StoreHomePage()),
+          MaterialPageRoute(builder: (context) => const HomeNavigator()),
         );
       } else if (!result.success) {
         _showError(result.errorMessage ?? 'Google 登入失敗');
@@ -153,7 +158,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isLogin ? '店家登入' : '店家註冊'),
+        title: Text(_isLogin ? '個人登入' : '個人註冊'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -168,7 +173,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '開始上架您的服飾商品',
+              '開始體驗虛擬試穿服務',
               style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
@@ -195,6 +200,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
               ),
             ),
             
+            // 確認密碼欄位（僅在註冊時顯示）
             if (!_isLogin) ...[
               const SizedBox(height: 16),
               TextField(
@@ -208,19 +214,20 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
               ),
             ],
             
+            // 名稱輸入欄位（僅在註冊時顯示）
             if (!_isLogin) ...[
               const SizedBox(height: 16),
               TextField(
-                controller: _storeNameController,
+                controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: '店家名稱',
-                  hintText: '請輸入您的店家名稱',
+                  labelText: '名稱',
+                  hintText: '請輸入您的名稱',
                   border: OutlineInputBorder(),
                 ),
               ),
             ],
             const SizedBox(height: 24),
-
+            
             ElevatedButton(
               onPressed: _isLoading ? null : _handleAuth,
               style: ElevatedButton.styleFrom(
@@ -236,12 +243,16 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
             ),
             const SizedBox(height: 16),
             
+            // 註冊/登入切換按鈕
             TextButton(
               onPressed: _isLoading
                   ? null
                   : () {
                       setState(() {
                         _isLogin = !_isLogin;
+                        // 切換時清空註冊相關欄位
+                        _nameController.clear();
+                        _confirmPasswordController.clear();
                       });
                     },
               child: Text(

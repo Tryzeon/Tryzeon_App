@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'chat_page.dart';
-import 'community_page.dart';
-import 'home_page.dart';
-import 'shop_page.dart';
-import 'profile_page.dart';
+import '../../../chat/persentation/page/chat_page.dart';
+import '../../../community/persentation/pages/community_page.dart';
+import 'personal_home_page.dart';
+import '../../../shop/persentation/page/shop_page.dart';
+import '../../../profile/persentation/pages/personal_profile_page.dart';
 
 
 class HomeNavigator extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/pages/login/login_page.dart';
-import 'package:tryzeon/pages/main_pages/home_navigator.dart';
+import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
+import 'package:tryzeon/feature/home/persentation/pages/home_navigator.dart';
 
 
 Future<void> main() async {

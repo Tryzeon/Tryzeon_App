@@ -138,24 +138,6 @@ class AuthService {
     await _supabase.auth.signOut();
   }
 
-  /// 獲取當前用戶
-  static User? get currentUser => _supabase.auth.currentUser;
-
-
-  /// 獲取當前用戶的顯示名稱
-  static String? get displayName {
-    final user = currentUser;
-    if (user == null) return null;
-    
-    // 優先使用 user_metadata 中的 display_name
-    final displayName = user.userMetadata?['name'] as String?;
-    if (displayName != null && displayName.isNotEmpty) {
-      return displayName;
-    }
-    
-    return "無名氏";
-  }
-
   /// Google 登入
   static Future<AuthResult> signInWithGoogle({
     required UserType userType,
