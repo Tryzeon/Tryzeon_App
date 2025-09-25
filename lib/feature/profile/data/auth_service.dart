@@ -25,13 +25,11 @@ class AuthResult {
 class AuthService {
   static final _supabase = Supabase.instance.client;
 
-  /// 獲取當前用戶的顯示名稱
-  static String? get displayName {
+  static String get displayName {
     final user = _supabase.auth.currentUser;
-    if (user == null) return null;
-    
-    // 優先使用 user_metadata 中的 display_name
-    final displayName = user.userMetadata?['name'] as String?;
+    if (user == null) return "無名氏";
+
+    final displayName = user.userMetadata?['username'] as String?;
     if (displayName != null && displayName.isNotEmpty) {
       return displayName;
     }
@@ -49,7 +47,7 @@ class AuthService {
     try {
       final response = await _supabase.auth.updateUser(
         UserAttributes(
-          data: {'name': name.trim()},
+          data: {'username': name.trim()},
         ),
       );
 

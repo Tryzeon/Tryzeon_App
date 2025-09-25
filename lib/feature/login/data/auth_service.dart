@@ -74,7 +74,7 @@ class AuthService {
       // 註冊新用戶
       final metadata = {
         userType.name: true,
-        'name': name
+        'username': name
       };
 
       final response = await _supabase.auth.signUp(
@@ -180,12 +180,15 @@ class AuthService {
         return AuthResult.success(response.user!);
       }
       
+      final displayName = existingMetadata['name'];
+
       // 添加新的用戶類型
       await _supabase.auth.updateUser(
         UserAttributes(
           data: {
             ...existingMetadata,
             userType.name: true,
+            "username": displayName,
           },
         ),
       );

@@ -21,11 +21,9 @@ class _ProfilePageState extends State<ProfilePage> {
   
   void _loadUsername() {
     final displayName = AuthService.displayName;
-    if (displayName != null && mounted) {
-      setState(() {
-        username = displayName;
-      });
-    }
+    setState(() {
+      username = displayName;
+    });
   }
 
   void _handleLogout() async {

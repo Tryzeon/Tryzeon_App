@@ -22,11 +22,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   void _loadUserData() {
     final displayName = AuthService.displayName;
-    if (displayName != null && displayName != '無名氏') {
-      setState(() {
-        _nameController.text = displayName;
-      });
-    }
+    setState(() {
+      _nameController.text = displayName;
+    });
   }
 
   Future<void> _saveProfile() async {
