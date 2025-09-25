@@ -1,46 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io'; // 若你要使用 File 顯示圖片
+import 'dart:io';
 
 class ImagePickerHelper {
-  static Future<File?> pickImage(BuildContext context) async {
+  static final ImagePicker _picker = ImagePicker();
+
+  static Future<File?> pickImage(
+    BuildContext context, {
+    File? currentImage,
+    double maxWidth = 1080,
+    double maxHeight = 1920,
+    int imageQuality = 85,
+    String title = '選擇圖片來源',
+    String galleryText = '從相簿選擇',
+    String cameraText = '拍攝新照片',
+    String removeText = '移除圖片',
+    Color iconColor = Colors.brown,
+  }) async {
     File? selectedImage;
+    bool shouldRemove = false;
 
     await showModalBottomSheet(
       context: context,
-      builder: (context) {
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
         return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('使用相機拍照'),
-                onTap: () async {
-                  final picker = ImagePicker();
-                  final pickedFile = await picker.pickImage(source: ImageSource.camera);
-                  if (pickedFile != null) {
-                    selectedImage = File(pickedFile.path);
-                  }
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('從相簿選擇'),
-                onTap: () async {
-                  final picker = ImagePicker();
-                  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-                  if (pickedFile != null) {
-                    selectedImage = File(pickedFile.path);
-                  }
-                  Navigator.pop(context);
-                },
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Icon(Icons.photo_library, color: iconColor),
+                  title: Text(galleryText),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      final XFile? pickedFile = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                        maxWidth: maxWidth,
+                        maxHeight: maxHeight,
+                        imageQuality: imageQuality,
+                      );
+                      if (pickedFile != null) {
+                        selectedImage = File(pickedFile.path);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('選擇圖片失敗: $e')),
+                        );
+                      }
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: iconColor),
+                  title: Text(cameraText),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    try {
+                      final XFile? pickedFile = await _picker.pickImage(
+                        source: ImageSource.camera,
+                        maxWidth: maxWidth,
+                        maxHeight: maxHeight,
+                        imageQuality: imageQuality,
+                      );
+                      if (pickedFile != null) {
+                        selectedImage = File(pickedFile.path);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('選擇圖片失敗: $e')),
+                        );
+                      }
+                    }
+                  },
+                ),
+                if (currentImage != null)
+                  ListTile(
+                    leading: const Icon(Icons.delete, color: Colors.red),
+                    title: Text(removeText),
+                    onTap: () {
+                      shouldRemove = true;
+                      Navigator.pop(context);
+                    },
+                  ),
+              ],
+            ),
           ),
         );
       },
     );
+
+    if (shouldRemove) {
+      return null;
+    }
 
     return selectedImage;
   }

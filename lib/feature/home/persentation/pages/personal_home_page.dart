@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../widget/wardrobe_page.dart';
+import '../../../../shared/image_picker_helper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,88 +12,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   File? _selectedImage;
-  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> _showImageSourceDialog() async {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '選擇圖片來源',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ListTile(
-                  leading: const Icon(Icons.photo_library, color: Colors.brown),
-                  title: const Text('從相簿選擇'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.camera_alt, color: Colors.brown),
-                  title: const Text('拍攝新照片'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                if (_selectedImage != null)
-                  ListTile(
-                    leading: const Icon(Icons.delete, color: Colors.red),
-                    title: const Text('移除圖片'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _selectedImage = null;
-                      });
-                    },
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
+    final File? pickedImage = await ImagePickerHelper.pickImage(
+      context,
+      currentImage: _selectedImage,
     );
-  }
 
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final XFile? pickedFile = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 1080,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
-
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('圖片已更新')),
-          );
-        }
-      }
-    } catch (e) {
+    if (pickedImage != null || (pickedImage == null && _selectedImage != null)) {
+      setState(() {
+        _selectedImage = pickedImage;
+      });
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('選擇圖片失敗: $e')),
+          SnackBar(content: Text(pickedImage != null ? '圖片已更新' : '圖片已移除')),
         );
       }
     }
