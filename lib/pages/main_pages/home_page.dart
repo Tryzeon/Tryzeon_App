@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../components/wardrobe/wardrobe_page.dart';
@@ -12,92 +11,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  CameraController? _controller;
-  bool _isCameraReady = false;
-  bool _isCapturing = false;
   File? _selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
-
-  Future<void> _openCamera() async {
-    try {
-      final cameras = await availableCameras();
-      
-      if (cameras.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('沒有可用的相機')),
-          );
-        }
-        return;
-      }
-      
-      final camera = cameras.firstWhere(
-        (cam) => cam.lensDirection == CameraLensDirection.back,
-        orElse: () => cameras.first,
-      );
-      
-      _controller = CameraController(
-        camera,
-        ResolutionPreset.high,
-      );
-      
-      await _controller!.initialize();
-      
-      if (mounted) {
-        setState(() {
-          _isCameraReady = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('相機初始化失敗: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _takePicture() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) {
-      return;
-    }
-
-    setState(() {
-      _isCapturing = true;
-    });
-
-    try {
-      final image = await _controller!.takePicture();
-      
-      if (mounted) {
-        // TODO: 處理拍攝的照片
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('照片已儲存: ${image.path}')),
-        );
-        
-        // 關閉相機
-        _closeCamera();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('拍照失敗: $e')),
-        );
-      }
-    } finally {
-      setState(() {
-        _isCapturing = false;
-      });
-    }
-  }
-
-  void _closeCamera() {
-    _controller?.dispose();
-    setState(() {
-      _controller = null;
-      _isCameraReady = false;
-    });
-  }
 
   Future<void> _showImageSourceDialog() async {
     showModalBottomSheet(
@@ -186,52 +101,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isCameraReady && _controller != null) {
-      // 相機視圖
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            Center(
-              child: AspectRatio(
-                aspectRatio: _controller!.value.aspectRatio,
-                child: CameraPreview(_controller!),
-              ),
-            ),
-            Positioned(
-              top: 40,
-              left: 20,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                onPressed: _closeCamera,
-              ),
-            ),
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: FloatingActionButton(
-                  onPressed: _isCapturing ? null : _takePicture,
-                  backgroundColor: Colors.white,
-                  child: _isCapturing
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Icon(Icons.camera_alt, color: Colors.black),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // 主頁面視圖
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -326,7 +200,7 @@ class _HomePageState extends State<HomePage> {
                   
                   // 虛擬試穿按鈕
                   ElevatedButton.icon(
-                    onPressed: _openCamera,
+                    onPressed: _showImageSourceDialog,
                     icon: const Icon(Icons.add_a_photo),
                     label: const Text('虛擬試穿'),
                     style: ElevatedButton.styleFrom(

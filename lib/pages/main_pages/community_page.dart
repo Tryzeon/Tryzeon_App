@@ -7,8 +7,8 @@ class CommunityPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        '社群',
-        style: TextStyle(fontSize: 40),
+        '稍後推出，敬請期待',
+        style: TextStyle(fontSize: 20),
       ),
     );
   }
