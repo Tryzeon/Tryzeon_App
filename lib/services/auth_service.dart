@@ -34,12 +34,49 @@ class AuthService {
     String? name,
   }) async {
     try {
+      // 先檢查用戶是否已存在
+      final existingUser = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      
+      if (existingUser.user != null) {
+        // 用戶已存在，添加新的用戶類型
+        final existingMetadata = existingUser.user!.userMetadata ?? {};
+        
+        // 檢查是否已有此類型
+        if (existingMetadata[userType.name] == true) {
+          return AuthResult.failure(
+            userType == UserType.personal 
+              ? '此帳號已經是個人用戶' 
+              : '此帳號已經是店家用戶'
+          );
+        }
+        
+        // 添加新的用戶類型
+        await _supabase.auth.updateUser(
+          UserAttributes(
+            data: {
+              ...existingMetadata,
+              userType.name: true,
+              if (name != null && existingMetadata['name'] == null) 'name': name,
+            },
+          ),
+        );
+        
+        return AuthResult.success(existingUser.user!);
+      }
+    } catch (e) {
+      // 登入失敗，表示用戶不存在，繼續註冊新用戶
+    }
+
+    try {
+      // 註冊新用戶
       final metadata = {
-        'user_type': userType.name,
+        userType.name: true,
         'name': name
       };
 
-      
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
@@ -76,9 +113,9 @@ class AuthService {
 
       // 檢查用戶類型
       final userMetadata = response.user!.userMetadata;
-      final actualUserType = userMetadata?['user_type'];
+      final hasExpectedUserType = userMetadata?[expectedUserType.name] == true;
       
-      if (actualUserType != expectedUserType.name) {
+      if (!hasExpectedUserType) {
         // 用戶類型不符，登出
         await _supabase.auth.signOut();
         return AuthResult.failure(
@@ -104,28 +141,6 @@ class AuthService {
   /// 獲取當前用戶
   static User? get currentUser => _supabase.auth.currentUser;
 
-  /// 獲取當前用戶類型
-  static UserType? get currentUserType {
-    final user = currentUser;
-    if (user == null) return null;
-    
-    final userTypeString = user.userMetadata?['user_type'];
-    if (userTypeString == null) return null;
-    
-    return UserType.values.firstWhere(
-      (type) => type.name == userTypeString,
-      orElse: () => UserType.personal,
-    );
-  }
-
-  /// 檢查用戶是否已登入
-  static bool get isAuthenticated => currentUser != null;
-
-  /// 檢查是否為個人用戶
-  static bool get isPersonalUser => currentUserType == UserType.personal;
-
-  /// 檢查是否為店家用戶
-  static bool get isStoreUser => currentUserType == UserType.store;
 
   /// 獲取當前用戶的顯示名稱
   static String? get displayName {
@@ -174,9 +189,22 @@ class AuthService {
         return AuthResult.failure('Google 登入失敗: user not found');
       }
 
+      // 獲取現有的 metadata
+      final existingMetadata = response.user!.userMetadata ?? {};
+      
+      // 檢查是否已有此類型
+      if (existingMetadata[userType.name] == true) {
+        // 已經有此類型，直接返回成功
+        return AuthResult.success(response.user!);
+      }
+      
+      // 添加新的用戶類型
       await _supabase.auth.updateUser(
         UserAttributes(
-          data: {'user_type': userType.name},
+          data: {
+            ...existingMetadata,
+            userType.name: true,
+          },
         ),
       );
 

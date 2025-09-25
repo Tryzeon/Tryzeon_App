@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../store/StoreHomePage.dart';
 
@@ -100,6 +101,33 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     );
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final result = await AuthService.signInWithGoogle(
+        userType: UserType.store,
+      );
+      
+      if (result.success && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const StoreHomePage()),
+        );
+      } else if (!result.success) {
+        _showError(result.errorMessage ?? 'Google 登入失敗');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,6 +202,51 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
                 _isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入',
               ),
             ),
+            
+            // 在登入頁面才顯示分隔線和Google登入
+            if (_isLogin) ...[
+              const SizedBox(height: 16),
+              // 分隔線
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '或',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Google 登入按鈕
+              OutlinedButton.icon(
+                onPressed: _isLoading ? null : _handleGoogleSignIn,
+                icon: SvgPicture.asset(
+                  'assets/images/logo/google.svg',
+                  height: 18,
+                  width: 18,
+                ),
+                label: const Text('使用 Google 登入'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                ),
+              ),
+            ],
           ],
         ),
       ),
