@@ -13,6 +13,8 @@ class StoreLoginPage extends StatefulWidget {
 class _StoreLoginPageState extends State<StoreLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _storeNameController = TextEditingController();
   bool _isLoading = false;
   bool _isLogin = true;
   
@@ -20,16 +22,32 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _storeNameController.dispose();
     super.dispose();
   }
 
   Future<void> _handleAuth() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+    final storeName = _storeNameController.text.trim();
     
     if (email.isEmpty || password.isEmpty) {
       _showError('請輸入帳號和密碼');
       return;
+    }
+    
+    if (!_isLogin) {
+      if (storeName.isEmpty) {
+        _showError('請輸入店家名稱');
+        return;
+      }
+      
+      if (password != confirmPassword) {
+        _showError('密碼與確認密碼不相符');
+        return;
+      }
     }
     
     setState(() {
@@ -59,6 +77,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
           email: email,
           password: password,
           userType: UserType.store,
+          name: storeName,
         );
         
         if (result.success && mounted) {
@@ -68,6 +87,8 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
           });
           _emailController.clear();
           _passwordController.clear();
+          _confirmPasswordController.clear();
+          _storeNameController.clear();
         } else if (!result.success) {
           _showError(result.errorMessage ?? '註冊失敗');
         }
@@ -173,8 +194,33 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 24),
             
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: '確認密碼',
+                  hintText: '請再次輸入您的密碼',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+            
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _storeNameController,
+                decoration: const InputDecoration(
+                  labelText: '店家名稱',
+                  hintText: '請輸入您的店家名稱',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
+
             ElevatedButton(
               onPressed: _isLoading ? null : _handleAuth,
               style: ElevatedButton.styleFrom(
