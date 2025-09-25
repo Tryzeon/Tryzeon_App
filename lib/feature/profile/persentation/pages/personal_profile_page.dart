@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/auth_service.dart';
 import '../../../login/persentation/pages/login_page.dart';
+import '../widget/profile_edit_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -65,8 +66,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 leading: const Icon(Icons.person_outline),
                 title: const Text('基本資料'),
                 trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // TODO: Navigate to profile info page
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileEditPage(),
+                    ),
+                  );
+                  
+                  // 果從編輯頁面返回且有更新，重新載入使用者名稱如
+                  if (result == true) {
+                    _loadUsername();
+                  }
                 },
               ),
             ),

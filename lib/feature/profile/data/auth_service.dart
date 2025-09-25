@@ -43,4 +43,23 @@ class AuthService {
   static Future<void> signOut() async {
     await _supabase.auth.signOut();
   }
+
+  /// 更新使用者名稱
+  static Future<AuthResult> updateUserName(String name) async {
+    try {
+      final response = await _supabase.auth.updateUser(
+        UserAttributes(
+          data: {'name': name.trim()},
+        ),
+      );
+
+      if (response.user != null) {
+        return AuthResult.success(response.user!);
+      } else {
+        return AuthResult.failure('更新失敗');
+      }
+    } catch (e) {
+      return AuthResult.failure('更新失敗: $e');
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../wedget/wardrobe_page.dart';
+import '../widget/wardrobe_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
