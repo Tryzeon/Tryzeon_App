@@ -14,7 +14,6 @@ class ImagePickerHelper {
     String title = '選擇圖片來源',
     String galleryText = '從相簿選擇',
     String cameraText = '拍攝新照片',
-    String removeText = '移除圖片',
     Color iconColor = Colors.brown,
   }) async {
     final ImageSource? source = await showModalBottomSheet<ImageSource?>(
@@ -47,12 +46,6 @@ class ImagePickerHelper {
                   title: Text(cameraText),
                   onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),
-                if (currentImage != null)
-                  ListTile(
-                    leading: Icon(Icons.delete, color: iconColor),
-                    title: Text(removeText),
-                    onTap: () => Navigator.pop(context, null),
-                  ),
               ],
             ),
           ),
@@ -60,10 +53,7 @@ class ImagePickerHelper {
       },
     );
 
-    if (source == null && currentImage != null) {
-      // User selected remove
-      return null;
-    } else if (source != null) {
+    if (source != null) {
       // User selected gallery or camera
       try {
         final XFile? pickedFile = await _picker.pickImage(

@@ -34,32 +34,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _showImageSourceDialog() async {
-    // Show remove option if either we have a selected image or an avatar URL
-    final bool hasImage = _selectedImage != null || _avatarUrl != null;
-    
     final File? result = await ImagePickerHelper.pickImage(
       context,
-      currentImage: hasImage ? (_selectedImage ?? File('')) : null,
     );
 
-    // Only process if user actually selected a new image or explicitly removed it
-    if (result != null && result.path.isNotEmpty) {
+    if (result != null) {
       // User selected a new image
       setState(() {
         _selectedImage = result;
       });
       await _uploadAvatar(result);
-    } else if (result == null && hasImage) {
-      // User explicitly removed the image
-      if (_avatarUrl != null) {
-        await AvatarService.deleteAvatar(_avatarUrl!);
-      }
-      setState(() {
-        _selectedImage = null;
-        _avatarUrl = null;
-      });
     }
-    // If result is null and no image exists, user just cancelled - do nothing
   }
 
   Future<void> _uploadAvatar(File imageFile) async {

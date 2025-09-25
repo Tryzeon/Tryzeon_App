@@ -45,8 +45,4 @@ class AvatarService {
     return signedUrl;
   }
 
-  static Future<void> deleteAvatar(String url) async {
-    final path = Uri.parse(url).pathSegments.last;
-    await _supabase.storage.from(_bucket).remove([path]);
-  }
 }
