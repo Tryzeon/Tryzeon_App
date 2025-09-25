@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tryzeon/feature/personal/home/persentation/pages/home_navigator.dart';
 import '../../data/auth_service.dart';
-import '../../../home/persentation/pages/home_navigator.dart';
+
 
 class PersonalLoginPage extends StatefulWidget {
   const PersonalLoginPage({super.key});

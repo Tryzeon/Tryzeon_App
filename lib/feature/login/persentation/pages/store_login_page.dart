@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../data/auth_service.dart';
-import '../../../home/persentation/pages/store_home_page.dart';
+import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
 
 class StoreLoginPage extends StatefulWidget {
   const StoreLoginPage({super.key});

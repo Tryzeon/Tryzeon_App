@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../widget/wardrobe_page.dart';
-import '../../../../shared/image_picker_helper.dart';
+import 'package:tryzeon/shared/image_picker_helper.dart';
 import '../../data/avatar_service.dart';
 
 class HomePage extends StatefulWidget {

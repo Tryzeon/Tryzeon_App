@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
-import 'package:tryzeon/feature/home/persentation/pages/home_navigator.dart';
-
+import 'package:tryzeon/feature/personal/home/persentation/pages/home_navigator.dart';
+import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +40,8 @@ class Tryzeon extends StatelessWidget {
       ),
       // home: const LoginPage(),
       home: const HomeNavigator(),
+      // home: const StoreHomePage(),
+      
       routes: {
         // Add your routes here if needed
       },

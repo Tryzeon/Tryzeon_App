@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../store/persentation/pages/ProductPage.dart';
-import '../../../profile/persentation/pages/store_profile_page.dart';
+import '../widget/product_page.dart';
+import '../widget/profile_edit_page.dart';
 
 
 class StoreHomePage extends StatelessWidget {
@@ -39,18 +39,6 @@ class StoreHomePage extends StatelessWidget {
               },
               icon: const Icon(Icons.inventory),
               label: const Text('商品管理'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D4037),
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: 導向訂單管理頁
-              },
-              icon: const Icon(Icons.receipt_long),
-              label: const Text('訂單管理'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF5D4037),
                 foregroundColor: Colors.white,

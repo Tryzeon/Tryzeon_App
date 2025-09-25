@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/auth_service.dart';
-import '../../../login/persentation/pages/login_page.dart';
+import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import '../widget/profile_edit_page.dart';
 
 class ProfilePage extends StatefulWidget {

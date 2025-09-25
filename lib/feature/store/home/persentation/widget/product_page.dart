@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import '../../../../shared/image_picker_helper.dart';
+import 'package:tryzeon/shared/image_picker_helper.dart';
 
 
 class ProductSPage extends StatefulWidget {
