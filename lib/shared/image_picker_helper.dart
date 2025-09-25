@@ -17,10 +17,7 @@ class ImagePickerHelper {
     String removeText = '移除圖片',
     Color iconColor = Colors.brown,
   }) async {
-    File? selectedImage;
-    bool shouldRemove = false;
-
-    await showModalBottomSheet(
+    final ImageSource? source = await showModalBottomSheet<ImageSource?>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -43,59 +40,18 @@ class ImagePickerHelper {
                 ListTile(
                   leading: Icon(Icons.photo_library, color: iconColor),
                   title: Text(galleryText),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    try {
-                      final XFile? pickedFile = await _picker.pickImage(
-                        source: ImageSource.gallery,
-                        maxWidth: maxWidth,
-                        maxHeight: maxHeight,
-                        imageQuality: imageQuality,
-                      );
-                      if (pickedFile != null) {
-                        selectedImage = File(pickedFile.path);
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('選擇圖片失敗: $e')),
-                        );
-                      }
-                    }
-                  },
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
                 ListTile(
                   leading: Icon(Icons.camera_alt, color: iconColor),
                   title: Text(cameraText),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    try {
-                      final XFile? pickedFile = await _picker.pickImage(
-                        source: ImageSource.camera,
-                        maxWidth: maxWidth,
-                        maxHeight: maxHeight,
-                        imageQuality: imageQuality,
-                      );
-                      if (pickedFile != null) {
-                        selectedImage = File(pickedFile.path);
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('選擇圖片失敗: $e')),
-                        );
-                      }
-                    }
-                  },
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),
                 if (currentImage != null)
                   ListTile(
-                    leading: const Icon(Icons.delete, color: Colors.red),
+                    leading: Icon(Icons.delete, color: iconColor),
                     title: Text(removeText),
-                    onTap: () {
-                      shouldRemove = true;
-                      Navigator.pop(context);
-                    },
+                    onTap: () => Navigator.pop(context, null),
                   ),
               ],
             ),
@@ -104,10 +60,32 @@ class ImagePickerHelper {
       },
     );
 
-    if (shouldRemove) {
+    if (source == null && currentImage != null) {
+      // User selected remove
       return null;
+    } else if (source != null) {
+      // User selected gallery or camera
+      try {
+        final XFile? pickedFile = await _picker.pickImage(
+          source: source,
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+          imageQuality: imageQuality,
+        );
+        
+        if (pickedFile != null) {
+          return File(pickedFile.path);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('選擇圖片失敗: $e')),
+          );
+        }
+      }
     }
-
-    return selectedImage;
+    
+    // User cancelled or no image selected
+    return currentImage;
   }
 }

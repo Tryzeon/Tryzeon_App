@@ -14,20 +14,29 @@ class _HomePageState extends State<HomePage> {
   File? _selectedImage;
 
   Future<void> _showImageSourceDialog() async {
-    final File? pickedImage = await ImagePickerHelper.pickImage(
+    final File? result = await ImagePickerHelper.pickImage(
       context,
       currentImage: _selectedImage,
     );
 
-    if (pickedImage != null || (pickedImage == null && _selectedImage != null)) {
+    // Check if the result is different from current image
+    if (result != _selectedImage) {
       setState(() {
-        _selectedImage = pickedImage;
+        _selectedImage = result;
       });
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(pickedImage != null ? '圖片已更新' : '圖片已移除')),
-        );
+        if (result == null && _selectedImage == null) {
+          // User removed the image
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('圖片已移除')),
+          );
+        } else if (result != null) {
+          // User selected a new image
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('圖片已更新')),
+          );
+        }
       }
     }
   }
