@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../data/wardrobe_service.dart';
+import 'package:tryzeon/shared/image_picker_helper.dart';
 
 class WardrobePage extends StatefulWidget {
   const WardrobePage({super.key});
@@ -10,16 +11,32 @@ class WardrobePage extends StatefulWidget {
 }
 
 class _WardrobePageState extends State<WardrobePage> {
-  final List<String> defaultCategories = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件'];
+  final List<String> defaultCategories = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
   List<String> categories = [];
   String selectedCategory = '全部';
   List<ClothingItem> clothingItems = [];
   final ScrollController _categoryScrollController = ScrollController();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     categories = ['全部', ...defaultCategories];
+    _loadWardrobeItems();
+  }
+
+  Future<void> _loadWardrobeItems() async {
+    final items = await WardrobeService.getWardrobeItems();
+    if (mounted) {
+      setState(() {
+        clothingItems = items.map((item) => ClothingItem(
+          id: item.id,
+          imageUrl: item.url,
+          category: item.category,
+        )).toList();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -81,11 +98,8 @@ class _WardrobePageState extends State<WardrobePage> {
         controller: _categoryScrollController,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length + 1,
+        itemCount: categories.length,
         itemBuilder: (context, index) {
-          if (index == categories.length) {
-            return _buildAddCategoryButton();
-          }
           final category = categories[index];
           final isSelected = selectedCategory == category;
           return _buildCategoryChip(category, isSelected);
@@ -118,24 +132,13 @@ class _WardrobePageState extends State<WardrobePage> {
     );
   }
 
-  Widget _buildAddCategoryButton() {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        onTap: _showAddCategoryDialog,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(Icons.add, size: 20),
-        ),
-      ),
-    );
-  }
-
   Widget _buildClothingGrid() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     final filteredItems = selectedCategory == '全部'
         ? clothingItems
         : clothingItems.where((item) => item.category == selectedCategory).toList();
@@ -172,120 +175,138 @@ class _WardrobePageState extends State<WardrobePage> {
   }
 
   Widget _buildClothingCard(ClothingItem item) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.file(
-                File(item.imagePath),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.error, color: Colors.grey),
-                  );
-                },
+    return GestureDetector(
+      onLongPress: () => _showDeleteDialog(item),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: item.imageUrl != null
+                    ? Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.error, color: Colors.grey),
+                          );
+                        },
+                      )
+                    : Image.file(
+                        File(item.imagePath!),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.error, color: Colors.grey),
+                          );
+                        },
+                      ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              item.category,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                item.category,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  void _showUploadDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => UploadClothingDialog(
-        categories: categories.where((c) => c != '全部').toList(),
-        onUpload: (imagePath, category) {
-          setState(() {
-            clothingItems.add(ClothingItem(
-              imagePath: imagePath,
-              category: category,
-            ));
-          });
-        },
-      ),
-    );
-  }
-
-  void _showAddCategoryDialog() {
-    final controller = TextEditingController();
+  void _showDeleteDialog(ClothingItem item) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('新增類別'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: '輸入類別名稱',
-          ),
-        ),
+        title: const Text('刪除衣物'),
+        content: const Text('確定要刪除這件衣物嗎？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('取消'),
           ),
           TextButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                setState(() {
-                  categories.add(controller.text);
-                });
-                Navigator.pop(context);
+            onPressed: () async {
+              Navigator.pop(context);
+              if (item.id != null) {
+                await WardrobeService.deleteWardrobeItem(item.id!);
+                await _loadWardrobeItems();
               }
             },
-            child: const Text('確定'),
+            child: const Text('刪除'),
           ),
         ],
       ),
     );
   }
+
+  void _showUploadDialog() async {
+    final File? image = await ImagePickerHelper.pickImage(context);
+    
+    if (image != null && mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => UploadClothingDialog(
+          image: image,
+          categories: categories.where((c) => c != '全部').toList(),
+          onUpload: (imageId, category) async {
+            setState(() {
+              _isLoading = true;
+            });
+            await _loadWardrobeItems();
+          },
+        ),
+      );
+    }
+  }
+
 }
 
 class ClothingItem {
-  final String imagePath;
+  final String? id;
+  final String? imagePath;
+  final String? imageUrl;
   final String category;
 
   ClothingItem({
-    required this.imagePath,
+    this.id,
+    this.imagePath,
+    this.imageUrl,
     required this.category,
   });
 }
 
 class UploadClothingDialog extends StatefulWidget {
+  final File image;
   final List<String> categories;
   final Function(String imagePath, String category) onUpload;
 
   const UploadClothingDialog({
     super.key,
+    required this.image,
     required this.categories,
     required this.onUpload,
   });
@@ -295,9 +316,8 @@ class UploadClothingDialog extends StatefulWidget {
 }
 
 class _UploadClothingDialogState extends State<UploadClothingDialog> {
-  File? _image;
   String? _selectedCategory;
-  final ImagePicker _picker = ImagePicker();
+  bool _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -318,11 +338,9 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildImagePicker(),
-            if (_image != null) ...[
-              const SizedBox(height: 16),
-              _buildCategorySelector(),
-            ],
+            _buildImagePreview(),
+            const SizedBox(height: 16),
+            _buildCategorySelector(),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -333,16 +351,47 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _image != null && _selectedCategory != null
-                      ? () {
-                          widget.onUpload(_image!.path, _selectedCategory!);
-                          Navigator.pop(context);
+                  onPressed: _selectedCategory != null && !_isUploading
+                      ? () async {
+                          setState(() {
+                            _isUploading = true;
+                          });
+                          
+                          final result = await WardrobeService.uploadWardrobeItem(
+                            widget.image,
+                            _selectedCategory!,
+                          );
+                          
+                          if (result != null && mounted) {
+                            widget.onUpload(result['id']!, _selectedCategory!);
+                            if (mounted) {
+                              Navigator.pop(context);
+                            }
+                          } else if (mounted) {
+                            setState(() {
+                              _isUploading = false;
+                            });
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('上傳失敗')),
+                              );
+                            }
+                          }
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                   ),
-                  child: const Text('上傳'),
+                  child: _isUploading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('上傳'),
                 ),
               ],
             ),
@@ -352,32 +401,17 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
     );
   }
 
-  Widget _buildImagePicker() {
-    return InkWell(
-      onTap: _pickImage,
-      child: Container(
-        width: 200,
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: _image == null
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_a_photo, size: 50, color: Colors.grey[600]),
-                  const SizedBox(height: 8),
-                  Text(
-                    '點擊選擇照片',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              )
-            : ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(_image!, fit: BoxFit.cover),
-              ),
+  Widget _buildImagePreview() {
+    return Container(
+      width: 200,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.file(widget.image, fit: BoxFit.cover),
       ),
     );
   }
@@ -416,46 +450,4 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
     );
   }
 
-  Future<void> _pickImage() async {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('從相簿選擇'),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? image = await _picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                if (image != null) {
-                  setState(() {
-                    _image = File(image.path);
-                  });
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('拍照'),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? image = await _picker.pickImage(
-                  source: ImageSource.camera,
-                );
-                if (image != null) {
-                  setState(() {
-                    _image = File(image.path);
-                  });
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
