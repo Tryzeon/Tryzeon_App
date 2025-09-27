@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import '../../data/chat_service.dart';
 
 // Question data structure
 class Question {
@@ -259,50 +259,23 @@ class _ChatPageState extends State<ChatPage> {
     scrollToBottom();
     
     try {
-      final supabase = Supabase.instance.client;
+      // 使用 ChatService 獲取 LLM 建議
+      final recommendationText = await ChatService.getLLMRecommendation(answers);
       
-      // Prepare the prompt with user's answers
-      final prompt = '''
-根據以下穿搭需求，請提供具體的穿搭建議：
-- 時間：${answers['when'] ?? ''}
-- 地點：${answers['where'] ?? ''}
-- 對象：${answers['who'] ?? ''}
-- 活動：${answers['what'] ?? ''}
-- 原因：${answers['why'] ?? ''}
-- 風格：${answers['how'] ?? ''}
-
-請提供具體的服裝搭配建議，包括上衣、下身、鞋子和配件的推薦。
-''';
-      
-      final res = await supabase.functions.invoke(
-        'chat',
-        body: {
-          'prompt': prompt
-        },
-      );
       // Remove loading message
       setState(() {
         messages.removeLast();
         isLoadingRecommendation = false;
       });
       
-      if (res.data != null) {
-        // Add LLM response
-        setState(() {
-          messages.add(ChatMessage(
-            text: res.data['text'] ?? '以下是為您推薦的穿搭建議...',
-            isUser: false,
-          ));
-        });
-      } else {
-        // Handle error
-        setState(() {
-          messages.add(ChatMessage(
-            text: '抱歉，無法獲取穿搭建議。請稍後再試。',
-            isUser: false,
-          ));
-        });
-      }
+      // Add LLM response
+      setState(() {
+        messages.add(ChatMessage(
+          text: recommendationText,
+          isUser: false,
+        ));
+      });
+      
     } catch (e) {
       // Remove loading message and show error
       setState(() {
