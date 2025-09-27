@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'dart:convert';
 import '../widget/wardrobe_page.dart';
 import 'package:tryzeon/shared/image_picker_helper.dart';
 import '../../data/avatar_service.dart';
+import '../../data/tryon_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   String? _avatarUrl;
   bool _isUploading = false;
   bool _isLoading = true;
+  bool _isTryingOn = false;
 
   @override
   void initState() {
@@ -59,6 +62,74 @@ class _HomePageState extends State<HomePage> {
         _avatarUrl = url;
         _isUploading = false;
       });
+    }
+  }
+
+  Future<void> _showClothingPicker() async {
+    // Check if avatar is available
+    if (_avatarUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('請先上傳您的照片')),
+      );
+      return;
+    }
+
+    final File? clothingImage = await ImagePickerHelper.pickImage(
+      context,
+    );
+
+    if (clothingImage != null) {
+      setState(() {
+        _isTryingOn = true;
+      });
+
+      final tryonResult = await TryonService.uploadClothingForTryon(clothingImage, _avatarUrl);
+      
+      if (mounted) {
+        setState(() {
+          _isTryingOn = false;
+          if (tryonResult != null) {
+            // Update avatar to show tryon result
+            _avatarUrl = tryonResult;
+          } else {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('虛擬試穿失敗，請稍後再試')),
+            );
+          }
+        });
+      }
+    }
+  }
+
+  Widget _buildAvatarImage(String url) {
+    // Check if it's a base64 data URL
+    if (url.startsWith('data:image')) {
+      // Extract base64 string from data URL
+      final base64String = url.split(',')[1];
+      final bytes = base64Decode(base64String);
+      return Image.memory(
+        bytes,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover
+      );
+    } else {
+      // Regular URL
+      return Image.network(
+        url,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/profile/default.png',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          );
+        },
+      );
     }
   }
 
@@ -115,20 +186,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             )
                           else if (_avatarUrl != null)
-                            Image.network(
-                              _avatarUrl!,
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'assets/images/profile/default.png',
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            )
+                            _buildAvatarImage(_avatarUrl!)
                           else if (_selectedImage != null)
                             Image.file(
                               _selectedImage!,
@@ -199,9 +257,18 @@ class _HomePageState extends State<HomePage> {
                   
                   // 虛擬試穿按鈕
                   ElevatedButton.icon(
-                    onPressed: _showImageSourceDialog,
-                    icon: const Icon(Icons.add_a_photo),
-                    label: const Text('虛擬試穿'),
+                    onPressed: _isTryingOn ? null : _showClothingPicker,
+                    icon: _isTryingOn 
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.add_a_photo),
+                    label: Text(_isTryingOn ? '處理中...' : '虛擬試穿'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.brown[700],
                       foregroundColor: Colors.white,

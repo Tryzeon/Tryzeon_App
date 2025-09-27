@@ -282,7 +282,6 @@ class _WardrobePageState extends State<WardrobePage> {
       );
     }
   }
-
 }
 
 class ClothingItem {
