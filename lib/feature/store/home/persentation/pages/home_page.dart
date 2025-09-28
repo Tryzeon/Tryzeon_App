@@ -34,7 +34,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$storeName 後台'),
+        title: Text('店家後台'),
         centerTitle: true,
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,

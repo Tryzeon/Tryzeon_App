@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/store_service.dart';
+import '../../../../login/data/auth_service.dart';
+import '../../../../login/persentation/pages/login_page.dart';
 
 class StoreAccountPage extends StatefulWidget {
   const StoreAccountPage({super.key});
@@ -176,6 +178,39 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
     setState(() => isLoading = false);
   }
 
+  Future<void> _signOut() async {
+    // 顯示確認對話框
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('確認登出'),
+          content: const Text('你確定要登出齁?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('確定，但我會記得回來'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSignOut == true) {
+      await AuthService.signOut();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -187,12 +222,14 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
       ),
       body: isLoading
         ? const Center(child: CircularProgressIndicator())
-        : Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        : Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               // 店家Logo
               Center(
                 child: Column(
@@ -320,9 +357,33 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
                   ),
                 ],
               ),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+          // 登出按鈕 - 貼齊底部
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _signOut,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5D4037),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  '登出',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
