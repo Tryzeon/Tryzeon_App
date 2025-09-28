@@ -24,6 +24,12 @@ class StoreService {
       return null;
     }
   }
+
+  /// 獲取店家名稱
+  static Future<String> getStoreName() async {
+    final storeData = await getStore();
+    return storeData?.storeName ?? '店家';
+  }
   
   /// 更新店家資料
   static Future<bool> upsertStore({

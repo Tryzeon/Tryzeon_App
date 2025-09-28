@@ -2,12 +2,33 @@ import 'package:flutter/material.dart';
 
 import '../widget/product_page.dart';
 import '../widget/profile_edit_page.dart';
+import '../../data/store_service.dart';
 
 
-class StoreHomePage extends StatelessWidget {
-  final String storeName;
+class StoreHomePage extends StatefulWidget {
+  const StoreHomePage({super.key});
 
-  const StoreHomePage({super.key, this.storeName = '店家'});
+  @override
+  State<StoreHomePage> createState() => _StoreHomePageState();
+}
+
+class _StoreHomePageState extends State<StoreHomePage> {
+  String storeName = '店家';
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStoreData();
+  }
+
+  Future<void> _loadStoreData() async {
+    final name = await StoreService.getStoreName();
+    setState(() {
+      storeName = name;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,40 +47,45 @@ class StoreHomePage extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => const StoreAccountPage(),
                 ),
-              );
+              ).then((_) {
+                // 當從設定頁面返回時，重新載入店家資料
+                _loadStoreData();
+              });
             },
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('歡迎回來，$storeName！',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 24),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('歡迎回來，$storeName !',
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 24),
 
-            // 功能按鈕區塊
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductSPage(storeName: storeName),
+                  // 功能按鈕區塊
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductSPage(storeName: storeName),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.inventory),
+                    label: const Text('商品管理'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5D4037),
+                      foregroundColor: Colors.white,
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.inventory),
-              label: const Text('商品管理'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D4037),
-                foregroundColor: Colors.white,
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }
