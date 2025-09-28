@@ -17,6 +17,19 @@ class StoreHomePage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StoreAccountPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -39,23 +52,6 @@ class StoreHomePage extends StatelessWidget {
               },
               icon: const Icon(Icons.inventory),
               label: const Text('商品管理'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D4037),
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const StoreAccountPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.settings),
-              label: const Text('帳號設定'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF5D4037),
                 foregroundColor: Colors.white,
