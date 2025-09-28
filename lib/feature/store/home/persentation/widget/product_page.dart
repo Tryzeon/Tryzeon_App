@@ -5,9 +5,7 @@ import 'package:tryzeon/shared/image_picker_helper.dart';
 
 
 class ProductSPage extends StatefulWidget {
-  final String storeName;
-
-  const ProductSPage({super.key, required this.storeName});
+  const ProductSPage({super.key});
 
   @override
   State<ProductSPage> createState() => _ProductSPageState();
@@ -15,6 +13,8 @@ class ProductSPage extends StatefulWidget {
 
 class _ProductSPageState extends State<ProductSPage> {
   final TextEditingController typeController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
   File? selectedImage;
 
   @override
@@ -39,15 +39,29 @@ class _ProductSPageState extends State<ProductSPage> {
                 }
               },
               child: Container(
-                height: 120,
+                height: 200,
+                width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFD7CCC8),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: selectedImage == null
                     ? const Center(child: Text('點擊選擇圖片'))
-                    : Image.file(selectedImage!, fit: BoxFit.cover),
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          selectedImage!,
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
               ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: '商品名稱'),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -55,11 +69,15 @@ class _ProductSPageState extends State<ProductSPage> {
               decoration: const InputDecoration(labelText: '衣服種類'),
             ),
             const SizedBox(height: 12),
-            Text('店家名稱：${widget.storeName}'),
+            TextField(
+              controller: priceController,
+              decoration: const InputDecoration(labelText: '價格'),
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                if (selectedImage != null && typeController.text.isNotEmpty) {
+                if (selectedImage != null && nameController.text.isNotEmpty && typeController.text.isNotEmpty && priceController.text.isNotEmpty) {
                   // TODO: 儲存商品邏輯
                   Navigator.pop(context);
                 } else {

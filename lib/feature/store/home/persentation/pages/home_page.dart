@@ -65,27 +65,21 @@ class _StoreHomePageState extends State<StoreHomePage> {
                   Text('歡迎回來，$storeName !',
                       style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 24),
-
-                  // 功能按鈕區塊
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductSPage(storeName: storeName),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.inventory),
-                    label: const Text('商品管理'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5D4037),
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
                 ],
               ),
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProductSPage(),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF5D4037),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }
