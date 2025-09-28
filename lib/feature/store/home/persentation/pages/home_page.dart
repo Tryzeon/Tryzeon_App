@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widget/product_page.dart';
 import '../widget/profile_edit_page.dart';
-import '../../data/store_service.dart';
+import '../../data/store_info_service.dart';
 
 
 class StoreHomePage extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../data/store_service.dart';
+import '../../data/store_info_service.dart';
 import '../../../../login/data/auth_service.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 
