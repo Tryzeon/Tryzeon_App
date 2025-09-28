@@ -94,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       return AlertDialog(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         title: const Text('確認登出'),
-                        content: const Text('您確定要登出嗎？'),
+                        content: const Text('您確定要登出齁 ?'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               Navigator.of(context).pop(); // 關閉 Dialog
                               _handleLogout(); // 執行登出跳轉
                             },
-                            child: const Text('確認'),
+                            child: const Text('確定，但我會記得回來'),
                           ),
                         ],
                       );
