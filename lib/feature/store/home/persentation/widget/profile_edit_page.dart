@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../data/store_service.dart';
 
 class StoreAccountPage extends StatefulWidget {
   const StoreAccountPage({super.key});
@@ -12,31 +13,116 @@ class StoreAccountPage extends StatefulWidget {
 class _StoreAccountPageState extends State<StoreAccountPage> {
   String storeName = '我的店家';
   String address = '台南市東區中華東路一段123號';
+  String? logoUrl;
   File? _logoImage;
   bool isEditingName = false;
   bool isEditingAddress = false;
+  bool isLoading = false;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  void _toggleEditName() {
-    setState(() {
-      if (isEditingName) {
-        storeName = nameController.text.trim();
-      } else {
+  @override
+  void initState() {
+    super.initState();
+    _loadStoreData();
+  }
+
+  Future<void> _loadStoreData() async {
+    setState(() => isLoading = true);
+    
+    final storeData = await StoreService.getStore();
+    if (storeData != null) {
+      setState(() {
+        storeName = storeData.storeName;
+        address = storeData.address;
+        logoUrl = storeData.logoUrl;
         nameController.text = storeName;
+        addressController.text = address;
+      });
+    }
+    
+    setState(() => isLoading = false);
+  }
+
+  void _toggleEditName() async {
+    if (isEditingName) {
+      final newName = nameController.text.trim();
+      if (newName.isNotEmpty && newName != storeName) {
+        setState(() => isLoading = true);
+        
+        final success = await StoreService.upsertStore(
+          storeName: newName,
+          address: address,
+          logoUrl: logoUrl,
+        );
+        
+        if (success) {
+          setState(() {
+            storeName = newName;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('店家名稱已更新')),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('更新失敗，請稍後再試')),
+            );
+          }
+          nameController.text = storeName;
+        }
+        
+        setState(() => isLoading = false);
       }
+    } else {
+      nameController.text = storeName;
+    }
+    
+    setState(() {
       isEditingName = !isEditingName;
     });
   }
 
-  void _toggleEditAddress() {
-    setState(() {
-      if (isEditingAddress) {
-        address = addressController.text.trim();
-      } else {
-        addressController.text = address;
+  void _toggleEditAddress() async {
+    if (isEditingAddress) {
+      final newAddress = addressController.text.trim();
+      if (newAddress.isNotEmpty && newAddress != address) {
+        setState(() => isLoading = true);
+        
+        final success = await StoreService.upsertStore(
+          storeName: storeName,
+          address: newAddress,
+          logoUrl: logoUrl,
+        );
+        
+        if (success) {
+          setState(() {
+            address = newAddress;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('店家地址已更新')),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('更新失敗，請稍後再試')),
+            );
+          }
+          addressController.text = address;
+        }
+        
+        setState(() => isLoading = false);
       }
+    } else {
+      addressController.text = address;
+    }
+    
+    setState(() {
       isEditingAddress = !isEditingAddress;
     });
   }
@@ -47,7 +133,47 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
       setState(() {
         _logoImage = File(image.path);
       });
+      
+      // 上傳圖片
+      await _uploadLogo();
     }
+  }
+
+  Future<void> _uploadLogo() async {
+    if (_logoImage == null) return;
+    
+    setState(() => isLoading = true);
+    
+    // 上傳logo到storage
+    final uploadedUrl = await StoreService.uploadLogo(_logoImage!);
+    
+    if (uploadedUrl != null) {
+      // 更新店家資料
+      final success = await StoreService.upsertStore(
+        storeName: storeName,
+        address: address,
+        logoUrl: uploadedUrl,
+      );
+      
+      if (success) {
+        setState(() {
+          logoUrl = uploadedUrl;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('店家Logo已更新')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('更新失敗，請稍後再試')),
+          );
+        }
+      }
+    }
+    
+    setState(() => isLoading = false);
   }
 
 
@@ -59,7 +185,9 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Padding(
         padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
           child: Column(
@@ -92,11 +220,26 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : Icon(
-                                Icons.camera_alt,
-                                size: 40,
-                                color: Colors.grey[600],
-                              ),
+                            : logoUrl != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(60),
+                                    child: Image.network(
+                                      logoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Icon(
+                                          Icons.store,
+                                          size: 40,
+                                          color: Colors.grey[600],
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.camera_alt,
+                                    size: 40,
+                                    color: Colors.grey[600],
+                                  ),
                       ),
                     ),
                     const SizedBox(height: 8),
