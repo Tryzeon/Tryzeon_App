@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:tryzeon/shared/image_picker_helper.dart';
+import '../../data/product_service.dart';
 
 
 class ProductSPage extends StatefulWidget {
@@ -16,6 +17,7 @@ class _ProductSPageState extends State<ProductSPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   File? selectedImage;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -76,17 +78,64 @@ class _ProductSPageState extends State<ProductSPage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                if (selectedImage != null && nameController.text.isNotEmpty && typeController.text.isNotEmpty && priceController.text.isNotEmpty) {
-                  // TODO: 儲存商品邏輯
-                  Navigator.pop(context);
+              onPressed: isLoading ? null : () async {
+                if (selectedImage != null && 
+                    nameController.text.isNotEmpty && 
+                    typeController.text.isNotEmpty && 
+                    priceController.text.isNotEmpty) {
+                  setState(() {
+                    isLoading = true;
+                  });
+
+                  final price = double.tryParse(priceController.text);
+                  if (price == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('請輸入有效的價格')),
+                    );
+                    setState(() {
+                      isLoading = false;
+                    });
+                    return;
+                  }
+
+                  final success = await ProductService.createProduct(
+                    name: nameController.text,
+                    type: typeController.text,
+                    price: price,
+                    imageFile: selectedImage,
+                  );
+
+                  setState(() {
+                    isLoading = false;
+                  });
+
+                  if (success) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('商品新增成功')),
+                      );
+                      Navigator.pop(context);
+                    }
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('商品新增失敗，請稍後再試')),
+                      );
+                    }
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('請填寫完整資料')),
                   );
                 }
               },
-              child: const Text('新增商品'),
+              child: isLoading 
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('新增商品'),
             ),
           ],
         ),
