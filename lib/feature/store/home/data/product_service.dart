@@ -13,19 +13,16 @@ class ProductService {
     required String name,
     required String type,
     required double price,
-    File? imageFile,
+    required String purchaseLink,
+    required File imageFile,
   }) async {
     try {
       // 獲取當前店家資料
       final storeData = await StoreService.getStore();
       if (storeData == null) return false;
-
-      String? imageUrl;
       
       // 如果有圖片，先上傳圖片
-      if (imageFile != null) {
-        imageUrl = await uploadProductImage(imageFile);
-      }
+      String imageUrl = await uploadProductImage(imageFile) ?? '';
 
       // 創建商品資料
       final product = Product(
@@ -33,6 +30,7 @@ class ProductService {
         name: name,
         type: type,
         price: price,
+        purchaseLink: purchaseLink,
         imageUrl: imageUrl,
       );
 
@@ -44,6 +42,101 @@ class ProductService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// 更新商品
+  static Future<bool> updateProduct({
+    required String productId,
+    required String name,
+    required String type,
+    required double price,
+    required String purchaseLink,
+    required String currentImageUrl,
+    File? newImageFile
+  }) async {
+    try {
+      String? imageUrl = currentImageUrl;
+      
+      // 如果有新圖片，上傳新圖片並刪除舊圖片
+      if (newImageFile != null) {
+        // 上傳新圖片
+        final newImageUrl = await uploadProductImage(newImageFile);
+        
+        // 如果新圖片上傳成功，刪除舊圖片
+        if (newImageUrl != null && currentImageUrl.isNotEmpty) {
+          await deleteProductImage(currentImageUrl);
+        }
+        
+        imageUrl = newImageUrl;
+      }
+
+      final updateData = {
+        'name': name,
+        'type': type,
+        'price': price,
+        'image_url': imageUrl,
+        'purchase_link': purchaseLink,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      await _supabase
+          .from(_productsTable)
+          .update(updateData)
+          .eq('id', productId);
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 刪除商品
+  static Future<bool> deleteProduct(String productId) async {
+    try {
+      // 先獲取商品資料以取得圖片 URL
+      final response = await _supabase
+          .from(_productsTable)
+          .select('image_url')
+          .eq('id', productId)
+          .single();
+      
+      final imageUrl = response['image_url'] as String?;
+      
+      // 如果有圖片，從 Storage 中刪除
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        await deleteProductImage(imageUrl);
+      }
+      
+      // 刪除商品資料
+      await _supabase
+          .from(_productsTable)
+          .delete()
+          .eq('id', productId);
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 獲取店家的所有商品
+  static Future<List<Product>> getStoreProducts() async {
+    try {
+      final storeData = await StoreService.getStore();
+      if (storeData == null) return [];
+
+      final response = await _supabase
+          .from(_productsTable)
+          .select()
+          .eq('store_id', storeData.id)
+          .order('created_at', ascending: false);
+
+      return (response as List)
+          .map((json) => Product.fromJson(json))
+          .toList();
+    } catch (e) {
+      return [];
     }
   }
 
@@ -76,28 +169,32 @@ class ProductService {
       
       return imageUrl;
     } catch (e) {
-      print('Error uploading product image: $e');
       return null;
     }
   }
 
-  /// 獲取店家的所有商品
-  static Future<List<Product>> getStoreProducts() async {
+  /// 刪除商品圖片
+  static Future<void> deleteProductImage(String imageUrl) async {
+    if (imageUrl.isEmpty) return;
+    
     try {
-      final storeData = await StoreService.getStore();
-      if (storeData == null) return [];
-
-      final response = await _supabase
-          .from(_productsTable)
-          .select()
-          .eq('store_id', storeData.id)
-          .order('created_at', ascending: false);
-
-      return (response as List)
-          .map((json) => Product.fromJson(json))
-          .toList();
+      // 從 URL 中提取檔案路徑
+      final uri = Uri.parse(imageUrl);
+      final pathSegments = uri.pathSegments;
+      
+      // 找出 product-images bucket 後的路徑
+      final bucketIndex = pathSegments.indexOf(_productImagesBucket);
+      if (bucketIndex != -1 && bucketIndex < pathSegments.length - 1) {
+        final filePath = pathSegments.sublist(bucketIndex + 1).join('/');
+        
+        // 刪除 Storage 中的圖片
+        await _supabase.storage
+            .from(_productImagesBucket)
+            .remove([filePath]);
+      }
     } catch (e) {
-      return [];
+      // 圖片刪除失敗不會拋出錯誤
+      print('Error deleting product image: $e');
     }
   }
 }

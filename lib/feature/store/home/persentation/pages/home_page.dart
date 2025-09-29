@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../widget/product_page.dart';
+import '../widget/add_product_page.dart';
 import '../widget/profile_edit_page.dart';
+import '../widget/product_detail_dialog.dart';
 import '../../data/store_info_service.dart';
 import '../../data/product_service.dart';
 import '../../data/product_model.dart';
@@ -88,7 +89,17 @@ class _StoreHomePageState extends State<StoreHomePage> {
                             itemCount: products.length,
                             itemBuilder: (context, index) {
                               final product = products[index];
-                              return Card(
+                              return GestureDetector(
+                                onTap: () async {
+                                  final result = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => ProductDetailDialog(product: product),
+                                  );
+                                  if (result == true) {
+                                    _loadStoreData();
+                                  }
+                                },
+                                child: Card(
                                 elevation: 2,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,8 +159,9 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                     ),
                                   ],
                                 ),
-                              );
-                            },
+                              ),
+                            );
+                          },
                           ),
                   ),
                 ],
@@ -160,7 +172,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const ProductSPage(),
+              builder: (context) => const AddProductPage(),
             ),
           ).then((_) {
             // 當從商品頁面返回時，重新載入商品資料

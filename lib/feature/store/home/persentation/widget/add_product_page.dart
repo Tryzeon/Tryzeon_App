@@ -5,17 +5,18 @@ import 'package:tryzeon/shared/image_picker_helper.dart';
 import '../../data/product_service.dart';
 
 
-class ProductSPage extends StatefulWidget {
-  const ProductSPage({super.key});
+class AddProductPage extends StatefulWidget {
+  const AddProductPage({super.key});
 
   @override
-  State<ProductSPage> createState() => _ProductSPageState();
+  State<AddProductPage> createState() => _AddProductPageState();
 }
 
-class _ProductSPageState extends State<ProductSPage> {
+class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController typeController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
+  final TextEditingController purchaseLinkController = TextEditingController();
   File? selectedImage;
   bool isLoading = false;
 
@@ -76,6 +77,15 @@ class _ProductSPageState extends State<ProductSPage> {
               decoration: const InputDecoration(labelText: '價格'),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: purchaseLinkController,
+              decoration: const InputDecoration(
+                labelText: '購買連結',
+                hintText: 'https://...',
+              ),
+              keyboardType: TextInputType.url,
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: isLoading ? null : () async {
@@ -102,7 +112,8 @@ class _ProductSPageState extends State<ProductSPage> {
                     name: nameController.text,
                     type: typeController.text,
                     price: price,
-                    imageFile: selectedImage,
+                    purchaseLink: purchaseLinkController.text,
+                    imageFile: selectedImage!,
                   );
 
                   setState(() {

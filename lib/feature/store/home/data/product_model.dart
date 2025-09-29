@@ -4,7 +4,8 @@ class Product {
   final String name;
   final String type;
   final double price;
-  final String? imageUrl;
+  final String imageUrl;
+  final String purchaseLink;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -14,7 +15,8 @@ class Product {
     required this.name,
     required this.type,
     required this.price,
-    this.imageUrl,
+    required this.imageUrl,
+    required this.purchaseLink,
     this.createdAt,
     this.updatedAt,
   });
@@ -26,7 +28,8 @@ class Product {
       'name': name,
       'type': type,
       'price': price,
-      if (imageUrl != null) 'image_url': imageUrl,
+      'image_url': imageUrl,
+      'purchase_link': purchaseLink,
       'created_at': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'updated_at': updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
@@ -40,6 +43,7 @@ class Product {
       type: json['type'],
       price: (json['price'] as num).toDouble(),
       imageUrl: json['image_url'],
+      purchaseLink: json['purchase_link'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
