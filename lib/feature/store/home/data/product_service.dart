@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'product_model.dart';
+import 'package:tryzeon/shared/data/models/product_model.dart';
 import 'store_info_service.dart';
 
 class ProductService {

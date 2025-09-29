@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:url_launcher/url_launcher.dart';
+import '../../data/shop_service.dart';
+import 'package:tryzeon/shared/data/models/product_model.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -10,12 +13,16 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   late List<String> adImages;
-  late List<Map<String, String>> partnerBrands;
   late List<String> extendedAdImages;
+  List<Map<String, dynamic>> products = [];
+  List<Map<String, dynamic>> displayedProducts = [];
+  bool isLoading = true;
+  final TextEditingController searchController = TextEditingController();
 
   late PageController _pageController;
   int _currentPage = 1;
   Timer? _timer;
+  String? _currentSearchQuery;
 
   @override
   void initState() {
@@ -28,14 +35,7 @@ class _ShopPageState extends State<ShopPage> {
       'assets/images/ads/zara.jpg',
     ];
 
-    partnerBrands = [
-      {"name": "品牌一", "image": "assets/images/ads/gu.jpg"},
-      {"name": "品牌二", "image": "assets/images/ads/gu.jpg"},
-      {"name": "品牌三", "image": "assets/images/ads/gu.jpg"},
-      {"name": "品牌四", "image": "assets/images/ads/gu.jpg"},
-      {"name": "品牌五", "image": "assets/images/ads/gu.jpg"},
-      {"name": "品牌六", "image": "assets/images/ads/gu.jpg"},
-    ];
+    _loadProducts();
 
     extendedAdImages = [
       adImages.last,       // 最前面加最後一張
@@ -66,11 +66,55 @@ class _ShopPageState extends State<ShopPage> {
     });
   }
 
+  Future<void> _loadProducts() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final fetchedProducts = await ShopService.getAllProducts();
+    
+    setState(() {
+      products = fetchedProducts;
+      displayedProducts = fetchedProducts;
+      isLoading = false;
+    });
+  }
+
+  void _searchProducts(String query) async {
+    // 儲存當前的搜尋查詢
+    _currentSearchQuery = query;
+    
+    if (query.trim().isEmpty) {
+      setState(() {
+        displayedProducts = products;
+        isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    // 儲存當前查詢的參考，用於檢查是否為最新的搜尋
+    final currentQuery = query;
+    
+    final searchResults = await ShopService.searchProducts(query);
+    
+    // 只有當這是最新的搜尋請求時才更新結果
+    if (currentQuery == _currentSearchQuery) {
+      setState(() {
+        displayedProducts = searchResults;
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
     _timer?.cancel();
+    searchController.dispose();
     super.dispose();
   }
 
@@ -115,13 +159,24 @@ class _ShopPageState extends State<ShopPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
+                  controller: searchController,
                   decoration: InputDecoration(
                     hintText: '搜尋品牌或商品',
                     prefixIcon: const Icon(Icons.search),
+                    suffixIcon: searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              searchController.clear();
+                              _searchProducts('');
+                            },
+                          )
+                        : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  onChanged: _searchProducts,
                 ),
               ),
 
@@ -143,63 +198,126 @@ class _ShopPageState extends State<ShopPage> {
 
               const SizedBox(height: 12),
 
-              // 🏬 合作品牌 Grid（可滾動）
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(), // 禁止 GridView 自己滾動
-                  itemCount: partnerBrands.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 0.8,
+              // 商品 Grid（可滾動）
+              if (isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(),
                   ),
-                  itemBuilder: (context, index) {
-                    final brand = partnerBrands[index];
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  brand['image']!,
-                                  fit: BoxFit.cover,
+                )
+              else if (displayedProducts.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Text('目前沒有商品'),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(), // 禁止 GridView 自己滾動
+                    itemCount: displayedProducts.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 0.7,
+                    ),
+                    itemBuilder: (context, index) {
+                      final productData = displayedProducts[index];
+                      final product = productData['product'] as Product;
+                      final storeName = productData['storeName'] as String;
+                      
+                      return GestureDetector(
+                        onTap: () async {
+                          if (product.purchaseLink.isNotEmpty) {
+                            final Uri url = Uri.parse(product.purchaseLink);
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                            } else {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('無法開啟購買連結')),
+                                );
+                              }
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('此商品尚無購買連結')),
+                            );
+                          }
+                        },
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                    topRight: Radius.circular(12),
+                                  ),
+                                  child: product.imageUrl.isNotEmpty
+                                      ? Image.network(
+                                          product.imageUrl,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              Container(
+                                                color: Colors.grey[300],
+                                                child: const Icon(Icons.image_not_supported),
+                                              ),
+                                        )
+                                      : Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.image),
+                                        ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              '商品：${brand['productName']}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF5D4037),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product.name,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '\$${product.price}',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: const Color(0xFF5D4037),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      storeName,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.grey[600],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Text(
-                              '價格：\$${brand['price']}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF5D4037),
-                              ),
-                            ),
-                            Text(
-                              '店家：${brand['storeName']}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF5D4037),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
 
               const SizedBox(height: 32), // 頁尾空間
             ],

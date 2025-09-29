@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StoreService {
   static final _supabase = Supabase.instance.client;
-  static const _storesTable = 'stores-info';
+  static const _storesTable = 'store-info';
   static const _logoBucket = 'store-logos';
 
   /// 獲取店家資料

@@ -5,7 +5,7 @@ import 'profile_edit_page.dart';
 import '../widget/product_detail_dialog.dart';
 import '../../data/store_info_service.dart';
 import '../../data/product_service.dart';
-import '../../data/product_model.dart';
+import 'package:tryzeon/shared/data/models/product_model.dart';
 
 
 class StoreHomePage extends StatefulWidget {

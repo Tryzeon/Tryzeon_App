@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:tryzeon/shared/image_picker_helper.dart';
-import '../../data/product_model.dart';
+import 'package:tryzeon/shared/data/models/product_model.dart';
 import '../../data/product_service.dart';
 
 class ProductDetailDialog extends StatefulWidget {
