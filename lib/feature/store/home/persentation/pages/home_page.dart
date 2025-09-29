@@ -110,22 +110,20 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFD7CCC8),
                                           borderRadius: const BorderRadius.vertical(
-                                            top: Radius.circular(4),
+                                            top: Radius.circular(10),
                                           ),
                                         ),
-                                        child: product.imageUrl != null
-                                            ? ClipRRect(
-                                                borderRadius: const BorderRadius.vertical(
-                                                  top: Radius.circular(4),
-                                                ),
-                                                child: Image.network(
-                                                  product.imageUrl!,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) =>
-                                                      const Icon(Icons.image_not_supported),
-                                                ),
-                                              )
-                                            : const Icon(Icons.image_not_supported),
+                                        child: ClipRRect(
+                                          borderRadius: const BorderRadius.vertical(
+                                            top: Radius.circular(10),
+                                          ),
+                                          child: Image.network(
+                                            product.imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.image_not_supported),
+                                          ),
+                                        )
                                       ),
                                     ),
                                     Padding(
