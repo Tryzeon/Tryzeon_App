@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../widget/add_product_page.dart';
-import '../widget/profile_edit_page.dart';
+import 'add_product_page.dart';
+import 'profile_edit_page.dart';
 import '../widget/product_detail_dialog.dart';
 import '../../data/store_info_service.dart';
 import '../../data/product_service.dart';
