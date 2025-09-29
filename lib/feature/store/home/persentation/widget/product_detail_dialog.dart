@@ -15,26 +15,28 @@ class ProductDetailDialog extends StatefulWidget {
 
 class _ProductDetailDialogState extends State<ProductDetailDialog> {
   late TextEditingController nameController;
-  late TextEditingController typeController;
   late TextEditingController priceController;
   late TextEditingController purchaseLinkController;
   File? newImage;
   bool isEditing = false;
   bool isLoading = false;
+  
+  // 衣服種類選項
+  final List<String> clothingTypes = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
+  String? selectedType;
 
   @override
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.product.name);
-    typeController = TextEditingController(text: widget.product.type);
     priceController = TextEditingController(text: widget.product.price.toString());
     purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
+    selectedType = widget.product.type;
   }
 
   @override
   void dispose() {
     nameController.dispose();
-    typeController.dispose();
     priceController.dispose();
     purchaseLinkController.dispose();
     super.dispose();
@@ -108,7 +110,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     final success = await ProductService.updateProduct(
       productId: widget.product.id!,
       name: nameController.text,
-      type: typeController.text,
+      type: selectedType!,
       price: price,
       purchaseLink: purchaseLinkController.text,
       currentImageUrl: widget.product.imageUrl,
@@ -238,13 +240,23 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                 ),
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: typeController,
-                enabled: isEditing,
+              DropdownButtonFormField<String>(
+                initialValue: selectedType,
                 decoration: const InputDecoration(
                   labelText: '衣服種類',
                   border: OutlineInputBorder(),
                 ),
+                items: clothingTypes.map((String type) {
+                  return DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
+                  );
+                }).toList(),
+                onChanged: isEditing ? (String? newValue) {
+                  setState(() {
+                    selectedType = newValue;
+                  });
+                } : null,
               ),
               const SizedBox(height: 12),
               TextField(
@@ -278,7 +290,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                           isEditing = false;
                           newImage = null;
                           nameController.text = widget.product.name;
-                          typeController.text = widget.product.type;
+                          selectedType = widget.product.type;
                           priceController.text = widget.product.price.toString();
                           purchaseLinkController.text = widget.product.purchaseLink;
                         });

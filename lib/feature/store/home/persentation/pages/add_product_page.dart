@@ -13,12 +13,15 @@ class AddProductPage extends StatefulWidget {
 }
 
 class _AddProductPageState extends State<AddProductPage> {
-  final TextEditingController typeController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController purchaseLinkController = TextEditingController();
   File? selectedImage;
   bool isLoading = false;
+  
+  // 衣服種類選項
+  final List<String> clothingTypes = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
+  String? selectedType;
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +70,23 @@ class _AddProductPageState extends State<AddProductPage> {
               decoration: const InputDecoration(labelText: '商品名稱'),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: typeController,
-              decoration: const InputDecoration(labelText: '衣服種類'),
+            DropdownButtonFormField<String>(
+              initialValue: selectedType,
+              decoration: const InputDecoration(
+                labelText: '衣服種類',
+                border: OutlineInputBorder(),
+              ),
+              items: clothingTypes.map((String type) {
+                return DropdownMenuItem<String>(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedType = newValue;
+                });
+              },
             ),
             const SizedBox(height: 12),
             TextField(
@@ -91,7 +108,7 @@ class _AddProductPageState extends State<AddProductPage> {
               onPressed: isLoading ? null : () async {
                 if (selectedImage != null && 
                     nameController.text.isNotEmpty && 
-                    typeController.text.isNotEmpty && 
+                    selectedType != null && 
                     priceController.text.isNotEmpty) {
                   setState(() {
                     isLoading = true;
@@ -110,7 +127,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
                   final success = await ProductService.createProduct(
                     name: nameController.text,
-                    type: typeController.text,
+                    type: selectedType!,
                     price: price,
                     purchaseLink: purchaseLinkController.text,
                     imageFile: selectedImage!,
