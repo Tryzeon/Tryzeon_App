@@ -38,9 +38,9 @@ class Tryzeon extends StatelessWidget {
           displayColor: Colors.brown[700],
         ),
       ),
-      // home: const LoginPage(),
+      home: const LoginPage(),
       // home: const HomeNavigator(),
-      home: const StoreHomePage(),
+      // home: const StoreHomePage(),
       
       routes: {
         // Add your routes here if needed
