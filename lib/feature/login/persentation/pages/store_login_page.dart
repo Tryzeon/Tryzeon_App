@@ -107,25 +107,17 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFFFF0055),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        backgroundColor: Colors.red,
       ),
     );
   }
-
+  
   void _showSuccess(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF00FF88),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -160,369 +152,148 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF0A0E27),
-              const Color(0xFF1A1F3A),
-              const Color(0xFF2D1B4E),
+      appBar: AppBar(
+        title: Text(_isLogin ? '店家登入' : '店家註冊'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 40),
+            Text(
+              _isLogin ? '歡迎回來！' : '註冊新帳號',
+              style: Theme.of(context).textTheme.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '開始上架您的服飾商品',
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 40),
+            
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: '電子郵件',
+                hintText: '請輸入您的電子郵件',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+            
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: '密碼',
+                hintText: '請輸入您的密碼',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: '確認密碼',
+                  hintText: '請再次輸入您的密碼',
+                  border: OutlineInputBorder(),
+                ),
+              ),
             ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-                // Back button
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back_ios,
-                      color: const Color(0xFFFF00FF),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+            
+            if (!_isLogin) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _storeNameController,
+                decoration: const InputDecoration(
+                  labelText: '店家名稱',
+                  hintText: '請輸入您的店家名稱',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 20),
-                // Header with icon
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFF00FF).withValues(alpha: 0.3),
-                        blurRadius: 25,
-                        spreadRadius: 3,
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.store_outlined,
-                    size: 48,
-                    color: const Color(0xFFFF00FF),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
-                    colors: [
-                      const Color(0xFFFF00FF),
-                      const Color(0xFFBD00FF),
-                    ],
-                  ).createShader(bounds),
-                  child: Text(
-                    _isLogin ? '店家入口' : '開設店舖',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _isLogin ? '管理您的數位服飾商店' : '創建虛擬時尚商店',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 15,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
+              ),
+            ],
+            const SizedBox(height: 24),
 
-                // Email field
-                _FuturisticTextField(
-                  controller: _emailController,
-                  labelText: '電子郵件',
-                  hintText: '輸入您的電子郵件地址',
-                  icon: Icons.email_outlined,
-                  accentColor: const Color(0xFFFF00FF),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 20),
-
-                // Password field
-                _FuturisticTextField(
-                  controller: _passwordController,
-                  labelText: '密碼',
-                  hintText: '輸入您的密碼',
-                  icon: Icons.lock_outline,
-                  accentColor: const Color(0xFFFF00FF),
-                  obscureText: true,
-                ),
-
-                if (!_isLogin) ...[
-                  const SizedBox(height: 20),
-                  _FuturisticTextField(
-                    controller: _confirmPasswordController,
-                    labelText: '確認密碼',
-                    hintText: '再次輸入您的密碼',
-                    icon: Icons.lock_outline,
-                    accentColor: const Color(0xFFFF00FF),
-                    obscureText: true,
-                  ),
-                ],
-
-                if (!_isLogin) ...[
-                  const SizedBox(height: 20),
-                  _FuturisticTextField(
-                    controller: _storeNameController,
-                    labelText: '店家名稱',
-                    hintText: '輸入您的店家名稱',
-                    icon: Icons.store_outlined,
-                    accentColor: const Color(0xFFFF00FF),
-                  ),
-                ],
-                const SizedBox(height: 32),
-
-                // Login/Register button
-                Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFFFF00FF),
-                        const Color(0xFFBD00FF),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFF00FF).withValues(alpha: 0.5),
-                        blurRadius: 20,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleAuth,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            _isLogin ? '登入' : '註冊',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          setState(() {
-                            _isLogin = !_isLogin;
-                          });
-                        },
-                  child: Text(
-                    _isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入',
-                    style: TextStyle(
-                      color: const Color(0xFFFF00FF),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-
-                // 在登入頁面才顯示分隔線和Google登入
-                if (_isLogin) ...[
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                Colors.white.withValues(alpha: 0.3),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          '或',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withValues(alpha: 0.3),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Google 登入按鈕
-                  Container(
-                    height: 56,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _handleGoogleSignIn,
-                      icon: SvgPicture.asset(
-                        'assets/images/logo/google.svg',
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: const Text(
-                        '使用 Google 登入',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        side: BorderSide.none,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 32),
-              ],
+            ElevatedButton(
+              onPressed: _isLoading ? null : _handleAuth,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(_isLogin ? '登入' : '註冊'),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FuturisticTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String labelText;
-  final String hintText;
-  final IconData icon;
-  final Color accentColor;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-
-  const _FuturisticTextField({
-    required this.controller,
-    required this.labelText,
-    required this.hintText,
-    required this.icon,
-    required this.accentColor,
-    this.obscureText = false,
-    this.keyboardType,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.05),
-            Colors.white.withValues(alpha: 0.02),
+            const SizedBox(height: 16),
+            
+            TextButton(
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                      });
+                    },
+              child: Text(
+                _isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入',
+              ),
+            ),
+            
+            // 在登入頁面才顯示分隔線和Google登入
+            if (_isLogin) ...[
+              const SizedBox(height: 16),
+              // 分隔線
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '或',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Google 登入按鈕
+              OutlinedButton.icon(
+                onPressed: _isLoading ? null : _handleGoogleSignIn,
+                icon: SvgPicture.asset(
+                  'assets/images/logo/google.svg',
+                  height: 18,
+                  width: 18,
+                ),
+                label: const Text('使用 Google 登入'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                ),
+              ),
+            ],
           ],
-        ),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-        ),
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          labelStyle: TextStyle(
-            color: accentColor.withValues(alpha: 0.8),
-            fontSize: 14,
-          ),
-          hintStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.3),
-            fontSize: 14,
-          ),
-          prefixIcon: Icon(
-            icon,
-            color: accentColor,
-            size: 22,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: accentColor,
-              width: 2,
-            ),
-          ),
-          filled: false,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
         ),
       ),
     );
