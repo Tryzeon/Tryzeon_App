@@ -7,58 +7,20 @@ class AvatarService {
   static final _supabase = Supabase.instance.client;
   static const _bucket = 'avatars';
 
-  /// 獲取本地緩存的頭像文件路徑
-  static Future<File?> _getLocalAvatarFile() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
-
-    return FileCacheService.getFile(
-      relativePath: 'avatars/$userId',
-      filePattern: 'avatar_',
-    );
-  }
-
-  /// 保存頭像到本地緩存
-  static Future<File> _saveAvatarToLocal(File imageFile) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) throw Exception('User not logged in');
-
-    // 使用時間戳記作為檔名
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'avatar_$timestamp.jpg';
-
-    return FileCacheService.saveFile(
-      sourceFile: imageFile,
-      relativePath: 'avatars/$userId',
-      fileName: fileName,
-      deleteOldFiles: true,
-      filePattern: 'avatar_',
-    );
-  }
-
-  /// 從本地緩存刪除頭像
-  static Future<void> _deleteLocalAvatar() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return;
-
-    await FileCacheService.deleteFiles(
-      relativePath: 'avatars/$userId',
-      filePattern: 'avatar_',
-    );
-  }
-
   /// 上傳頭像（先上傳到後端，成功後才保存到本地）
   static Future<String?> uploadAvatar(File imageFile) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final storageFileName = '$userId/avatar/avatar.jpg';
+    final localFileName = '$userId/avatar/avatar_$timestamp.jpg';
+
     try {
       // 1. 先上傳到 Supabase
-      final fileName = '$userId/avatar.jpg';
       final bytes = await imageFile.readAsBytes();
-
       await _supabase.storage.from(_bucket).uploadBinary(
-        fileName,
+        storageFileName,
         bytes,
         fileOptions: const FileOptions(
           contentType: 'image/jpeg',
@@ -67,8 +29,8 @@ class AvatarService {
       );
 
       // 2. 保存新的頭像到本地
-      final localFile = await _saveAvatarToLocal(imageFile);
-      return localFile.path;
+      final savedFile = await FileCacheService.saveFile(imageFile, localFileName);
+      return savedFile.path;
     } catch (e) {
       // 上傳失敗，拋出錯誤讓上層處理
       rethrow;
@@ -79,38 +41,35 @@ class AvatarService {
   static Future<String?> getAvatar() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
+    
+    final fileName = '$userId/avatar/avatar.jpg';
 
-    // 1. 先檢查本地是否有緩存
-    final localFile = await _getLocalAvatarFile();
-    if (localFile != null) {
-      return localFile.path;
-    }
-
-    // 2. 本地沒有，從 Supabase 下載
     try {
-      final files = await _supabase.storage.from(_bucket).list(path: userId);
+      // 1. 先檢查本地資料夾是否有緩存
+      final localFiles = await FileCacheService.getFiles(
+        relativePath: '$userId/avatar',
+        filePattern: 'avatar',
+      );
+      final avatarFile = localFiles.firstOrNull;
 
-      if (files.isEmpty) return null;
+      if (avatarFile != null) {
+        return avatarFile.path;
+      }
 
-      final fileName = '$userId/avatar.jpg';
+      // 2. 本地沒有，從 Supabase 下載
       final bytes = await _supabase.storage.from(_bucket).download(fileName);
 
-      // 創建臨時文件並使用 _saveAvatarToLocal 保存
+      // 創建臨時文件並保存到本地緩存
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/temp_avatar.jpg');
       await tempFile.writeAsBytes(bytes);
 
-      final savedFile = await _saveAvatarToLocal(tempFile);
+      final savedFile = await FileCacheService.saveFile(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
       return savedFile.path;
     } catch (e) {
       return null;
     }
-  }
-
-  /// 清除本地緩存（用於登出時）
-  static Future<void> clearLocalCache() async {
-    await _deleteLocalAvatar();
   }
 }

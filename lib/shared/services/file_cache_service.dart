@@ -1,35 +1,21 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-/// 通用的檔案緩存服務
-/// 提供保存、讀取、刪除檔案到本地緩存的功能
 class FileCacheService {
   /// 保存檔案到指定的緩存路徑
   ///
   /// [sourceFile] 要保存的源文件
-  /// [relativePath] 相對於應用文檔目錄的路徑（例如：'avatars/user123'）
-  /// [fileName] 檔案名稱（例如：'avatar_123456.jpg'）
-  /// [deleteOldFiles] 是否刪除目錄中的舊檔案（預設為 false）
-  /// [filePattern] 當 deleteOldFiles 為 true 時，指定要刪除的檔案模式（例如：'avatar_'）
+  /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   ///
   /// Returns 保存後的檔案
-  static Future<File> saveFile({
-    required File sourceFile,
-    required String relativePath,
-    required String fileName,
-    bool deleteOldFiles = false,
-    String? filePattern,
-  }) async {
-    // 如果需要刪除舊檔案
-    if (deleteOldFiles) {
-      await deleteFiles(
-        relativePath: relativePath,
-        filePattern: filePattern,
-      );
-    }
+  static Future<File> saveFile(File sourceFile, String filePath) async {
+    final baseDir = await getApplicationDocumentsDirectory();
 
-    final directory = await getApplicationDocumentsDirectory();
-    final targetDir = Directory('${directory.path}/$relativePath');
+    // 分離目錄路徑和檔名
+    final lastSlashIndex = filePath.lastIndexOf('/');
+    final dirPath = filePath.substring(0, lastSlashIndex);
+
+    final targetDir = Directory('${baseDir.path}/$dirPath');
 
     // 創建目錄（如果不存在）
     if (!targetDir.existsSync()) {
@@ -37,40 +23,31 @@ class FileCacheService {
     }
 
     // 保存檔案
-    final targetPath = '${targetDir.path}/$fileName';
+    final targetPath = '${baseDir.path}/$filePath';
     final savedFile = await sourceFile.copy(targetPath);
 
     return savedFile;
   }
 
-  /// 獲取指定路徑下的檔案
+  /// 獲取指定路徑的檔案
   ///
-  /// [relativePath] 相對於應用文檔目錄的路徑
-  /// [filePattern] 要查找的檔案模式（例如：'avatar_'），如果為 null 則返回目錄中的第一個檔案
+  /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   ///
   /// Returns 找到的檔案，如果不存在則返回 null
-  static Future<File?> getFile({
-    required String relativePath,
-    String? filePattern,
-  }) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final targetDir = Directory('${directory.path}/$relativePath');
+  static Future<File?> getFile(String filePath) async {
+    final baseDir = await getApplicationDocumentsDirectory();
+    final file = File('${baseDir.path}/$filePath');
 
-    if (!targetDir.existsSync()) return null;
-
-    final files = targetDir.listSync().whereType<File>();
-
-    if (filePattern != null) {
-      final matchedFiles = files.where((f) => f.path.contains(filePattern));
-      return matchedFiles.isEmpty ? null : matchedFiles.first;
+    if (await file.exists()) {
+      return file;
     }
 
-    return files.isEmpty ? null : files.first;
+    return null;
   }
 
   /// 獲取指定路徑下所有符合模式的檔案
   ///
-  /// [relativePath] 相對於應用文檔目錄的路徑
+  /// [relativePath] 相對於應用目錄的路徑
   /// [filePattern] 要查找的檔案模式（選填）
   ///
   /// Returns 找到的檔案列表
@@ -78,8 +55,8 @@ class FileCacheService {
     required String relativePath,
     String? filePattern,
   }) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final targetDir = Directory('${directory.path}/$relativePath');
+    final baseDir = await getApplicationDocumentsDirectory();
+    final targetDir = Directory('${baseDir.path}/$relativePath');
 
     if (!targetDir.existsSync()) return [];
 
@@ -92,23 +69,27 @@ class FileCacheService {
     return files.toList();
   }
 
-  /// 刪除指定路徑下的檔案
+  /// 刪除指定的單個檔案
   ///
-  /// [relativePath] 相對於應用文檔目錄的路徑
-  /// [filePattern] 要刪除的檔案模式（選填），如果為 null 則刪除目錄中的所有檔案
-  static Future<void> deleteFiles({
-    required String relativePath,
-    String? filePattern,
-  }) async {
-    final files = await getFiles(
-      relativePath: relativePath,
-      filePattern: filePattern,
-    );
+  /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
+  static Future<void> deleteFile(String filePath) async {
+    final baseDir = await getApplicationDocumentsDirectory();
+    final file = File('${baseDir.path}/$filePath');
 
-    for (final file in files) {
-      if (file.existsSync()) {
-        await file.delete();
-      }
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  /// 刪除指定的資料夾及其所有內容
+  ///
+  /// [relativePath] 相對於應用目錄的資料夾路徑（例如：'userId'）
+  static Future<void> deleteFolder(String relativePath) async {
+    final baseDir = await getApplicationDocumentsDirectory();
+    final directory = Directory('${baseDir.path}/$relativePath');
+
+    if (await directory.exists()) {
+      await directory.delete(recursive: true);
     }
   }
 }
