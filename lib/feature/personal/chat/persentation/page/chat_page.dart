@@ -373,6 +373,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.black),
