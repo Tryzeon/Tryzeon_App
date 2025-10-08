@@ -81,27 +81,34 @@ class _HomePageState extends State<HomePage> {
       context,
     );
 
-    if (clothingImage != null) {
-      setState(() {
-        _isTryingOn = true;
-      });
-
-      final tryonResult = await TryonService.uploadClothingForTryon(clothingImage, _avatarUrl);
-      
+    if (clothingImage == null) {
       if (mounted) {
-        setState(() {
-          _isTryingOn = false;
-          if (tryonResult != null) {
-            // Update avatar to show tryon result
-            _avatarUrl = tryonResult;
-          } else {
-            // Show error message
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('虛擬試穿失敗，請稍後再試')),
-            );
-          }
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('無法獲取您上傳的照片')),
+        );
       }
+      return;
+    }
+
+    setState(() {
+      _isTryingOn = true;
+    });
+
+    final tryonResult = await TryonService.uploadClothingForTryon(clothingImage);
+    
+    if (mounted) {
+      setState(() {
+        _isTryingOn = false;
+        if (tryonResult != null) {
+          // Update avatar to show tryon result
+          _avatarUrl = tryonResult;
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('虛擬試穿失敗，請稍後再試')),
+          );
+        }
+      });
     }
   }
 
@@ -140,14 +147,6 @@ class _HomePageState extends State<HomePage> {
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.asset(
-            'assets/images/profile/default.png',
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-          );
-        },
       );
     }
   }

@@ -5,22 +5,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
-  static Future<String?> uploadClothingForTryon(File clothingImage, String? avatarUrl) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null || avatarUrl == null) return null;
-
+  static Future<String?> uploadClothingForTryon(File clothingImage) async {
     try {
       // Convert clothing image to base64
       final clothingBytes = await clothingImage.readAsBytes();
       final clothingBase64 = base64Encode(clothingBytes);
 
-      // Call tryon endpoint with both images
       final response = await _supabase.functions.invoke(
         'tryon',
         body: {
-          'user_id': userId,
           'clothing_image': clothingBase64,
-          'avatar_url': avatarUrl,
         },
       );
 

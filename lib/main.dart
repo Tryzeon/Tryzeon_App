@@ -39,8 +39,8 @@ class Tryzeon extends StatelessWidget {
         ),
       ),
       // home: const LoginPage(),
-      // home: const HomeNavigator(),
-      home: const StoreHomePage(),
+      home: const HomeNavigator(),
+      // home: const StoreHomePage(),
       
       routes: {
         // Add your routes here if needed
