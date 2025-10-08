@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/auth_service.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import '../widget/profile_edit_page.dart';
-import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
+import 'package:tryzeon/shared/services/logout_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -28,8 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _handleLogout() async {
-    await AvatarService.clearLocalCache();
-    await AuthService.signOut();
+    await LogoutService.logout();
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,

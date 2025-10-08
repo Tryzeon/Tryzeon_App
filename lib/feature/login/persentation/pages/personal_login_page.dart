@@ -64,7 +64,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
       final AuthResult result;
       
       if (_isLogin) {
-        result = await AuthService.signIn(
+        result = await AuthService.signInWithPassword(
           email: email,
           password: password,
           expectedUserType: UserType.personal,

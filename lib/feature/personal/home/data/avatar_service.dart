@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class AvatarService {
   static final _supabase = Supabase.instance.client;
@@ -11,46 +12,39 @@ class AvatarService {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
-    final directory = await getApplicationDocumentsDirectory();
-    final avatarDir = Directory('${directory.path}/avatars/$userId');
-
-    if (!avatarDir.existsSync()) return null;
-
-    // 使用 glob 模式找到 avatar_ 開頭的文件
-    final files = avatarDir.listSync().whereType<File>().where((f) => f.path.contains('avatar_'));
-    return files.isEmpty ? null : files.first;
+    return FileCacheService.getFile(
+      relativePath: 'avatars/$userId',
+      filePattern: 'avatar_',
+    );
   }
 
   /// 保存頭像到本地緩存
   static Future<File> _saveAvatarToLocal(File imageFile) async {
-    // 先刪除舊的頭像
-    await _deleteLocalAvatar();
-
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) throw Exception('User not logged in');
 
-    final directory = await getApplicationDocumentsDirectory();
-    final avatarDir = Directory('${directory.path}/avatars/$userId');
-
-    // 創建目錄（如果不存在）
-    if (!avatarDir.existsSync()) {
-      await avatarDir.create(recursive: true);
-    }
-
     // 使用時間戳記作為檔名
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final avatarPath = '${avatarDir.path}/avatar_$timestamp.jpg';
-    final savedFile = await imageFile.copy(avatarPath);
+    final fileName = 'avatar_$timestamp.jpg';
 
-    return savedFile;
+    return FileCacheService.saveFile(
+      sourceFile: imageFile,
+      relativePath: 'avatars/$userId',
+      fileName: fileName,
+      deleteOldFiles: true,
+      filePattern: 'avatar_',
+    );
   }
 
   /// 從本地緩存刪除頭像
   static Future<void> _deleteLocalAvatar() async {
-    final localFile = await _getLocalAvatarFile();
-    if (localFile != null && localFile.existsSync()) {
-      await localFile.delete();
-    }
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    await FileCacheService.deleteFiles(
+      relativePath: 'avatars/$userId',
+      filePattern: 'avatar_',
+    );
   }
 
   /// 上傳頭像（先上傳到後端，成功後才保存到本地）

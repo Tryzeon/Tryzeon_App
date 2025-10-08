@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/shared/services/logout_service.dart';
 
 enum UserType { personal, store }
 
@@ -37,11 +38,6 @@ class AuthService {
     return "無名氏";
   }
 
-  /// 登出
-  static Future<void> signOut() async {
-    await _supabase.auth.signOut();
-  }
-
   /// 更新使用者名稱
   static Future<AuthResult> updateUserName(String name) async {
     try {
@@ -59,5 +55,10 @@ class AuthService {
     } catch (e) {
       return AuthResult.failure('更新失敗: $e');
     }
+  }
+
+  /// 登出
+  static Future<void> signOut() async {
+    await LogoutService.logout();
   }
 }

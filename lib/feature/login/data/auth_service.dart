@@ -96,7 +96,7 @@ class AuthService {
   }
 
   /// 登入用戶並驗證用戶類型
-  static Future<AuthResult> signIn({
+  static Future<AuthResult> signInWithPassword({
     required String email,
     required String password,
     required UserType expectedUserType,
@@ -117,7 +117,6 @@ class AuthService {
       
       if (!hasExpectedUserType) {
         // 用戶類型不符，登出
-        await _supabase.auth.signOut();
         return AuthResult.failure(
           expectedUserType == UserType.personal
               ? '此帳號不是個人用戶帳號'
@@ -131,11 +130,6 @@ class AuthService {
     } catch (e) {
       return AuthResult.failure('登入失敗，請稍後再試');
     }
-  }
-
-  /// 登出
-  static Future<void> signOut() async {
-    await _supabase.auth.signOut();
   }
 
   /// Google 登入

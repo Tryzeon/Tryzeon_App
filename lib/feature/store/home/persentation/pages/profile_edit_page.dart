@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/store_info_service.dart';
-import '../../../../login/data/auth_service.dart';
 import '../../../../login/persentation/pages/login_page.dart';
+import 'package:tryzeon/shared/services/logout_service.dart';
 
 class StoreAccountPage extends StatefulWidget {
   const StoreAccountPage({super.key});
@@ -201,7 +201,7 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
     );
 
     if (shouldSignOut == true) {
-      await AuthService.signOut();
+      await LogoutService.logout();
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const LoginPage()),
