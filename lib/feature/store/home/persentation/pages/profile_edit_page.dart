@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/store_info_service.dart';
-import '../../../../login/persentation/pages/login_page.dart';
-import 'package:tryzeon/shared/services/logout_service.dart';
 
 class StoreAccountPage extends StatefulWidget {
   const StoreAccountPage({super.key});
@@ -13,15 +11,11 @@ class StoreAccountPage extends StatefulWidget {
 }
 
 class _StoreAccountPageState extends State<StoreAccountPage> {
-  String storeName = '我的店家';
-  String address = '台南市東區中華東路一段123號';
   String? logoUrl;
   File? _logoImage;
-  bool isEditingName = false;
-  bool isEditingAddress = false;
   bool isLoading = false;
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
+  final TextEditingController storeNameController = TextEditingController();
+  final TextEditingController storeAddressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -32,101 +26,44 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
 
   Future<void> _loadStoreData() async {
     setState(() => isLoading = true);
-    
+
     final storeData = await StoreService.getStore();
     if (storeData != null) {
       setState(() {
-        storeName = storeData.storeName;
-        address = storeData.address;
+        storeNameController.text = storeData.storeName;
+        storeAddressController.text = storeData.address;
         logoUrl = storeData.logoUrl;
-        nameController.text = storeName;
-        addressController.text = address;
       });
     }
-    
+
     setState(() => isLoading = false);
   }
 
-  void _toggleEditName() async {
-    if (isEditingName) {
-      final newName = nameController.text.trim();
-      if (newName.isNotEmpty && newName != storeName) {
-        setState(() => isLoading = true);
-        
-        final success = await StoreService.upsertStore(
-          storeName: newName,
-          address: address,
-          logoUrl: logoUrl,
-        );
-        
-        if (success) {
-          setState(() {
-            storeName = newName;
-          });
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('店家名稱已更新')),
-            );
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('更新失敗，請稍後再試')),
-            );
-          }
-          nameController.text = storeName;
-        }
-        
-        setState(() => isLoading = false);
-      }
-    } else {
-      nameController.text = storeName;
-    }
-    
-    setState(() {
-      isEditingName = !isEditingName;
-    });
-  }
+  Future<void> _saveChanges() async {
+    setState(() => isLoading = true);
 
-  void _toggleEditAddress() async {
-    if (isEditingAddress) {
-      final newAddress = addressController.text.trim();
-      if (newAddress.isNotEmpty && newAddress != address) {
-        setState(() => isLoading = true);
-        
-        final success = await StoreService.upsertStore(
-          storeName: storeName,
-          address: newAddress,
-          logoUrl: logoUrl,
+    final success = await StoreService.upsertStore(
+      storeName: storeNameController.text.trim(),
+      address: storeAddressController.text.trim(),
+      logoUrl: logoUrl,
+    );
+
+    setState(() => isLoading = false);
+
+    if (success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('店家資訊已更新')),
         );
-        
-        if (success) {
-          setState(() {
-            address = newAddress;
-          });
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('店家地址已更新')),
-            );
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('更新失敗，請稍後再試')),
-            );
-          }
-          addressController.text = address;
-        }
-        
-        setState(() => isLoading = false);
+        Navigator.of(context).pop();
       }
     } else {
-      addressController.text = address;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('更新失敗，請稍後再試')),
+        );
+      }
     }
-    
-    setState(() {
-      isEditingAddress = !isEditingAddress;
-    });
   }
 
   Future<void> _pickImage() async {
@@ -152,8 +89,8 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
     if (uploadedUrl != null) {
       // 更新店家資料
       final success = await StoreService.upsertStore(
-        storeName: storeName,
-        address: address,
+        storeName: storeNameController.text.trim(),
+        address: storeAddressController.text.trim(),
         logoUrl: uploadedUrl,
       );
       
@@ -178,40 +115,6 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
     setState(() => isLoading = false);
   }
 
-  Future<void> _signOut() async {
-    // 顯示確認對話框
-    final shouldSignOut = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('確認登出'),
-          content: const Text('你確定要登出齁?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('確定，但我會記得回來'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldSignOut == true) {
-      await LogoutService.logout();
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -223,11 +126,11 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
       body: isLoading
         ? const Center(child: CircularProgressIndicator())
         : Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
               // 店家Logo
@@ -290,101 +193,51 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
               const SizedBox(height: 32),
               
               // 店家名稱
-              Row(
-                children: [
-                  Expanded(
-                    child: isEditingName
-                        ? TextField(
-                            controller: nameController,
-                            decoration: const InputDecoration(
-                              labelText: '店家名稱',
-                              border: OutlineInputBorder(),
-                            ),
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '店家名稱',
-                                style: TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                storeName,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                            ],
-                          ),
-                  ),
-                  IconButton(
-                    icon: Icon(isEditingName ? Icons.check : Icons.edit),
-                    onPressed: _toggleEditName,
-                  ),
-                ],
+              TextField(
+                controller: storeNameController,
+                decoration: const InputDecoration(
+                  labelText: '店家名稱',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 24),
               
               // 店家地址
-              Row(
-                children: [
-                  Expanded(
-                    child: isEditingAddress
-                        ? TextField(
-                            controller: addressController,
-                            decoration: const InputDecoration(
-                              labelText: '店家地址',
-                              border: OutlineInputBorder(),
-                            ),
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '店家地址',
-                                style: TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                address,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                            ],
-                          ),
-                  ),
-                  IconButton(
-                    icon: Icon(isEditingAddress ? Icons.check : Icons.edit),
-                    onPressed: _toggleEditAddress,
-                  ),
-                ],
-              ),
-                ],
-              ),
-            ),
-          ),
-          // 登出按鈕 - 貼齊底部
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _signOut,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5D4037),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  '登出',
-                  style: TextStyle(fontSize: 16),
+              TextField(
+                controller: storeAddressController,
+                decoration: const InputDecoration(
+                  labelText: '店家地址',
+                  border: OutlineInputBorder(),
                 ),
               ),
-            ),
+                ],
+                  ),
+                ),
+              ),
+              // 儲存按鈕 - 貼齊底部
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _saveChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5D4037),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      '儲存',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

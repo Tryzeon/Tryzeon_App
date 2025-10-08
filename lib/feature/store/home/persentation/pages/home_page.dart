@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-
 import 'add_product_page.dart';
 import 'profile_edit_page.dart';
 import '../widget/product_detail_dialog.dart';
 import '../../data/store_info_service.dart';
 import '../../data/product_service.dart';
 import 'package:tryzeon/shared/data/models/product_model.dart';
+import '../../../../login/persentation/pages/login_page.dart';
+import 'package:tryzeon/shared/services/logout_service.dart';
 
 
 class StoreHomePage extends StatefulWidget {
@@ -36,6 +37,39 @@ class _StoreHomePageState extends State<StoreHomePage> {
     });
   }
 
+  Future<void> _signOut() async {
+    // 顯示確認對話框
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('確認登出'),
+          content: const Text('你確定要登出齁?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('確定，但我會記得回來'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSignOut == true) {
+      await LogoutService.logout();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,6 +78,10 @@ class _StoreHomePageState extends State<StoreHomePage> {
         centerTitle: true,
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: _signOut,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
