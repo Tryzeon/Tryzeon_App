@@ -14,7 +14,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  File? _selectedImage;
   String? _avatarUrl;
   bool _isUploading = false;
   bool _isLoading = true;
@@ -36,36 +35,40 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _showImageSourceDialog() async {
-    final File? result = await ImagePickerHelper.pickImage(
+  Future<void> _uploadAvatar() async {
+    final File? imageFile = await ImagePickerHelper.pickImage(
       context,
     );
+    if (imageFile == null) return;
 
-    if (result != null) {
-      // User selected a new image
-      setState(() {
-        _selectedImage = result;
-      });
-      await _uploadAvatar(result);
-    }
-  }
-
-  Future<void> _uploadAvatar(File imageFile) async {
     setState(() {
       _isUploading = true;
     });
 
-    final url = await AvatarService.uploadAvatar(imageFile);
-    
-    if (mounted) {
-      setState(() {
-        _avatarUrl = url;
-        _isUploading = false;
-      });
+    try {
+      final url = await AvatarService.uploadAvatar(imageFile);
+
+      if (mounted) {
+        setState(() {
+          _avatarUrl = url;
+          _isUploading = false;
+        });
+      }
+    } catch (e) {
+      // 上傳失敗，顯示錯誤訊息並恢復原本的頭像
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('上傳失敗，請稍後再試')),
+        );
+      }
     }
   }
 
-  Future<void> _showClothingPicker() async {
+  Future<void> _virtualTryon() async {
     // Check if avatar is available
     if (_avatarUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -114,6 +117,22 @@ class _HomePageState extends State<HomePage> {
         height: double.infinity,
         fit: BoxFit.cover
       );
+    } else if (url.startsWith('/')) {
+      // Local file path
+      return Image.file(
+        File(url),
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/profile/default.png',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          );
+        },
+      );
     } else {
       // Regular URL
       return Image.network(
@@ -160,7 +179,7 @@ class _HomePageState extends State<HomePage> {
               // 虛擬人偶
               Expanded(
                 child: GestureDetector(
-                  onTap: _showImageSourceDialog,
+                  onTap: _uploadAvatar,
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -187,13 +206,6 @@ class _HomePageState extends State<HomePage> {
                             )
                           else if (_avatarUrl != null)
                             _buildAvatarImage(_avatarUrl!)
-                          else if (_selectedImage != null)
-                            Image.file(
-                              _selectedImage!,
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                            )
                           else
                             Image.asset(
                               'assets/images/profile/default.png',
@@ -257,7 +269,7 @@ class _HomePageState extends State<HomePage> {
                   
                   // 虛擬試穿按鈕
                   ElevatedButton.icon(
-                    onPressed: _isTryingOn ? null : _showClothingPicker,
+                    onPressed: _isTryingOn ? null : _virtualTryon,
                     icon: _isTryingOn 
                         ? const SizedBox(
                             width: 16,

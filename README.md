@@ -44,3 +44,10 @@ To run on a specific device:
 flutter devices  # List available devices
 flutter run -d <device-id>
 ```
+
+## Cache Location
+
+### Avatars: 
+
+* backend: `avatars_bucket/$userId/avatar.jpg` 
+* Local: `${directory.path}/avatars/${userId}/avatar_${timestamp}.jpg`

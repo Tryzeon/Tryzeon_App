@@ -44,6 +44,7 @@ dependencies:
   flutter_svg: ^2.0.10
   google_sign_in: ^6.2.2
   url_launcher: ^6.2.1
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
