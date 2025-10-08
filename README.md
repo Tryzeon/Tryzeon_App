@@ -1,16 +1,46 @@
-# tryzeon
+# Tryzeon App
 
-A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### 1. Install Flutter
 
-A few resources to get you started if this is your first Flutter project:
+Download and install Flutter from the official website:
+- Visit [https://flutter.dev/docs/get-started/install](https://flutter.dev/docs/get-started/install)
+- Follow the installation instructions for your operating system
+- Verify installation by running:
+  ```bash
+  flutter doctor
+  ```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 2. Install Dependencies
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Navigate to the project directory and install dependencies:
+```bash
+flutter pub get
+```
+
+### 3. Open Simulator/Emulator
+
+**For iOS (macOS only):**
+```bash
+open -a Simulator
+```
+
+**For Android:**
+- Open Android Studio
+- Go to Tools > Device Manager
+- Start your preferred Android Virtual Device (AVD)
+
+### 4. Run the Application
+
+Run the app on your connected device or simulator:
+```bash
+flutter run
+```
+
+To run on a specific device:
+```bash
+flutter devices  # List available devices
+flutter run -d <device-id>
+```
