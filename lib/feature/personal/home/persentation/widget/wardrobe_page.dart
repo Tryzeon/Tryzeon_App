@@ -29,10 +29,12 @@ class _WardrobePageState extends State<WardrobePage> {
     final items = await WardrobeService.getWardrobeItems();
     if (mounted) {
       setState(() {
-        clothingItems = items.map((item) => ClothingItem(
-          path: item.path,
-          category: item.category,
-        )).toList();
+        clothingItems = items
+            .map((item) => ClothingItem(
+                  path: item.path,
+                  category: item.category,
+                ))
+            .toList();
         _isLoading = false;
       });
     }
@@ -336,26 +338,24 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                           setState(() {
                             _isUploading = true;
                           });
-                          
+
                           final result = await WardrobeService.uploadWardrobeItem(
                             widget.image,
                             _selectedCategory!,
                           );
 
-                          if (result != null && mounted) {
+                          if (!context.mounted) return;
+
+                          if (result != null) {
                             widget.onUpload(result['path']!, _selectedCategory!);
-                            if (mounted) {
-                              Navigator.pop(context);
-                            }
-                          } else if (mounted) {
+                            Navigator.pop(context);
+                          } else {
                             setState(() {
                               _isUploading = false;
                             });
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('上傳失敗')),
-                              );
-                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('上傳失敗')),
+                            );
                           }
                         }
                       : null,

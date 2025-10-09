@@ -44,13 +44,12 @@ class AvatarService {
     try {
       // 刪除 Supabase 中的舊頭像
       final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
-      final fileName = '$userId/avatar/${files.first.name}';
-      await _supabase.storage.from(_bucket).remove([fileName]);
+      if (files.isNotEmpty) {
+        await _supabase.storage.from(_bucket).remove(['$userId/avatar/${files.first.name}']);
+      }
 
       // 刪除本地舊頭像
-      await FileCacheService.deleteFiles(
-        relativePath: '$userId/avatar',
-      );
+      await FileCacheService.deleteFiles(relativePath: '$userId/avatar');
     } catch (e) {
       // 忽略刪除錯誤
     }

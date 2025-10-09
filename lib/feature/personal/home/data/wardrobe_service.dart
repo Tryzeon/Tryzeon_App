@@ -21,13 +21,13 @@ class WardrobeService {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
-    final categoryCode = _getCategoryCode(category);
+    final categoryCode = _categories[category]!;
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final storagePath = '$userId/wardrobe/$categoryCode/$timestamp.jpg';
-    final bytes = await imageFile.readAsBytes();
 
     try {
       // 1. 先上傳到 Supabase
+      final bytes = await imageFile.readAsBytes();
       await _supabase.storage.from(_bucket).uploadBinary(
         storagePath,
         bytes,
@@ -38,8 +38,8 @@ class WardrobeService {
       );
 
       // 2. 上傳成功後保存到本地緩存
-      File localFile = await FileCacheService.saveFile(imageFile, storagePath);
-      
+      final localFile = await FileCacheService.saveFile(imageFile, storagePath);
+
       return {
         'path': localFile.path,
         'category': category,
@@ -134,7 +134,6 @@ class WardrobeService {
   }
 
   static Future<void> deleteWardrobeItem(String path) async {
-    // 從 path 中提取相對路徑（從 userId 開始的部分）
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
 
@@ -143,15 +142,8 @@ class WardrobeService {
 
     final relativePath = path.substring(userIdIndex);
 
-    // 1. 先從 Supabase 刪除
     await _supabase.storage.from(_bucket).remove([relativePath]);
-
-    // 2. 刪除本地緩存
     await FileCacheService.deleteFile(relativePath);
-  }
-
-  static String _getCategoryCode(String category) {
-    return _categories[category]!;
   }
 
   static String _getCategoryFromCode(String code) {

@@ -194,7 +194,6 @@ class ProductService {
       }
     } catch (e) {
       // 圖片刪除失敗不會拋出錯誤
-      print('Error deleting product image: $e');
     }
   }
 }
