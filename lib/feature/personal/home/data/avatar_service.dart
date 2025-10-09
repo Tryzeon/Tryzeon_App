@@ -13,23 +13,25 @@ class AvatarService {
     if (userId == null) return null;
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final storageFileName = '$userId/avatar/avatar.jpg';
-    final localFileName = '$userId/avatar/avatar_$timestamp.jpg';
+    final fileName = '$userId/avatar/$timestamp.jpg';
 
     try {
-      // 1. 先上傳到 Supabase
+      // 1. 先刪除舊頭像（本地和 Supabase）
+      await _deleteOldAvatars(userId);
+
+      // 2. 上傳到 Supabase
       final bytes = await imageFile.readAsBytes();
       await _supabase.storage.from(_bucket).uploadBinary(
-        storageFileName,
+        fileName,
         bytes,
         fileOptions: const FileOptions(
           contentType: 'image/jpeg',
-          upsert: true,
+          upsert: false,
         ),
       );
 
-      // 2. 保存新的頭像到本地
-      final savedFile = await FileCacheService.saveFile(imageFile, localFileName);
+      // 3. 保存新的頭像到本地
+      final savedFile = await FileCacheService.saveFile(imageFile, fileName);
       return savedFile.path;
     } catch (e) {
       // 上傳失敗，拋出錯誤讓上層處理
@@ -37,26 +39,43 @@ class AvatarService {
     }
   }
 
+  /// 刪除舊頭像（Supabase 和本地）
+  static Future<void> _deleteOldAvatars(String userId) async {
+    try {
+      // 刪除 Supabase 中的舊頭像
+      final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
+      final fileName = '$userId/avatar/${files.first.name}';
+      await _supabase.storage.from(_bucket).remove([fileName]);
+
+      // 刪除本地舊頭像
+      await FileCacheService.deleteFiles(
+        relativePath: '$userId/avatar',
+      );
+    } catch (e) {
+      // 忽略刪除錯誤
+    }
+  }
+
   /// 獲取頭像（優先從本地獲取，本地沒有才從後端拿）
   static Future<String?> getAvatar() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
-    
-    final fileName = '$userId/avatar/avatar.jpg';
 
     try {
       // 1. 先檢查本地資料夾是否有緩存
       final localFiles = await FileCacheService.getFiles(
         relativePath: '$userId/avatar',
-        filePattern: 'avatar',
       );
-      final avatarFile = localFiles.firstOrNull;
 
-      if (avatarFile != null) {
-        return avatarFile.path;
+      if (localFiles.isNotEmpty) {
+        return localFiles.first.path;
       }
 
       // 2. 本地沒有，從 Supabase 下載
+      final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
+      if (files.isEmpty) return null;
+
+      final fileName = '$userId/avatar/${files.first.name}';
       final bytes = await _supabase.storage.from(_bucket).download(fileName);
 
       // 創建臨時文件並保存到本地緩存

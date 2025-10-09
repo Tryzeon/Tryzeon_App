@@ -81,6 +81,21 @@ class FileCacheService {
     }
   }
 
+  /// 刪除指定路徑下的所有檔案
+  ///
+  /// [relativePath] 相對於應用目錄的路徑（例如：'userId/avatar'）
+  static Future<void> deleteFiles({required String relativePath}) async {
+    final baseDir = await getApplicationDocumentsDirectory();
+    final targetDir = Directory('${baseDir.path}/$relativePath');
+
+    if (await targetDir.exists()) {
+      final files = targetDir.listSync().whereType<File>();
+      for (final file in files) {
+        await file.delete();
+      }
+    }
+  }
+
   /// 刪除指定的資料夾及其所有內容
   ///
   /// [relativePath] 相對於應用目錄的資料夾路徑（例如：'userId'）
