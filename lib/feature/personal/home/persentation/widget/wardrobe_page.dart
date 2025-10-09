@@ -30,8 +30,7 @@ class _WardrobePageState extends State<WardrobePage> {
     if (mounted) {
       setState(() {
         clothingItems = items.map((item) => ClothingItem(
-          id: item.id,
-          imageUrl: item.url,
+          path: item.path,
           category: item.category,
         )).toList();
         _isLoading = false;
@@ -196,29 +195,17 @@ class _WardrobePageState extends State<WardrobePage> {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: item.imageUrl != null
-                    ? Image.network(
-                        item.imageUrl!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.error, color: Colors.grey),
-                          );
-                        },
-                      )
-                    : Image.file(
-                        File(item.imagePath!),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.error, color: Colors.grey),
-                          );
-                        },
-                      ),
+                child: Image.file(
+                  File(item.path),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.error, color: Colors.grey),
+                    );
+                  },
+                ),
               ),
             ),
             Padding(
@@ -251,10 +238,8 @@ class _WardrobePageState extends State<WardrobePage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              if (item.id != null) {
-                await WardrobeService.deleteWardrobeItem(item.id!);
-                await _loadWardrobeItems();
-              }
+              await WardrobeService.deleteWardrobeItem(item.path);
+              await _loadWardrobeItems();
             },
             child: const Text('刪除'),
           ),
@@ -285,15 +270,11 @@ class _WardrobePageState extends State<WardrobePage> {
 }
 
 class ClothingItem {
-  final String? id;
-  final String? imagePath;
-  final String? imageUrl;
+  final String path;
   final String category;
 
   ClothingItem({
-    this.id,
-    this.imagePath,
-    this.imageUrl,
+    required this.path,
     required this.category,
   });
 }
@@ -360,9 +341,9 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                             widget.image,
                             _selectedCategory!,
                           );
-                          
+
                           if (result != null && mounted) {
-                            widget.onUpload(result['id']!, _selectedCategory!);
+                            widget.onUpload(result['path']!, _selectedCategory!);
                             if (mounted) {
                               Navigator.pop(context);
                             }
