@@ -45,9 +45,10 @@ flutter devices  # List available devices
 flutter run -d <device-id>
 ```
 
-## Cache Location
+## File Storage Location
 
 ### Avatars: 
+`[avatars_bucket]/${userId}/avator/${timestamp}.jpg` 
 
-* backend: `avatars_bucket/$userId/avatar.jpg` 
-* Local: `${directory.path}/avatars/${userId}/avatar_${timestamp}.jpg`
+### Wardrobe: 
+`[wardrobe_bucket]/${userId}/wardrobe/${categoryCode}/${timestamp}.jpg`
