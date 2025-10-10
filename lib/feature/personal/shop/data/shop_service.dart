@@ -9,12 +9,13 @@ class ShopService {
   static Future<List<Map<String, dynamic>>> getAllProducts() async {
     try {
       // 查詢所有商品並關聯店家資訊
+      // products.store_id = store-info.user_id
       final response = await _supabase
           .from(_productsTable)
           .select('''
             *,
-            store-info!inner(
-              id,
+            store-info!products_store_id_fkey(
+              user_id,
               store_name
             )
           ''')
@@ -38,12 +39,13 @@ class ShopService {
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     try {
       // 先搜尋商品名稱和類型
+      // products.store_id = store-info.user_id
       final productResponse = await _supabase
           .from(_productsTable)
           .select('''
             *,
-            store-info!inner(
-              id,
+            store-info!products_store_id_fkey(
+              user_id,
               store_name
             )
           ''')
@@ -55,8 +57,8 @@ class ShopService {
           .from(_productsTable)
           .select('''
             *,
-            store-info!inner(
-              id,
+            store-info!products_store_id_fkey(
+              user_id,
               store_name
             )
           ''')
