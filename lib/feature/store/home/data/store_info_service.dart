@@ -145,7 +145,6 @@ class StoreService {
 }
 
 class StoreData {
-  final String id;
   final String userId;
   final String storeName;
   final String address;
@@ -153,7 +152,6 @@ class StoreData {
   final DateTime updatedAt;
 
   StoreData({
-    required this.id,
     required this.userId,
     required this.storeName,
     required this.address,
@@ -163,7 +161,6 @@ class StoreData {
 
   factory StoreData.fromJson(Map<String, dynamic> json) {
     return StoreData(
-      id: json['id'],
       userId: json['user_id'],
       storeName: json['store_name'],
       address: json['address'],

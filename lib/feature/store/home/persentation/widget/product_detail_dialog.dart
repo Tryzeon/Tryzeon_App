@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:tryzeon/shared/image_picker_helper.dart';
 import 'package:tryzeon/shared/data/models/product_model.dart';
+import 'package:tryzeon/shared/services/file_cache_service.dart';
 import '../../data/product_service.dart';
 
 class ProductDetailDialog extends StatefulWidget {
@@ -72,7 +73,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       isLoading = true;
     });
 
-    final success = await ProductService.deleteProduct(widget.product.id!);
+    final success = await ProductService.deleteProduct(widget.product);
 
     setState(() {
       isLoading = false;
@@ -113,7 +114,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       type: selectedType!,
       price: price,
       purchaseLink: purchaseLinkController.text,
-      currentImageUrl: widget.product.imageUrl,
+      currentFilePath: widget.product.imagePath,
       newImageFile: newImage
     );
 
@@ -221,12 +222,20 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                             newImage!,
                             fit: BoxFit.contain,
                           )
-                        : Image.network(
-                          widget.product.imageUrl,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported),
-                        )
+                        : FutureBuilder<File?>(
+                            future: FileCacheService.getFile(widget.product.imagePath),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData && snapshot.data != null) {
+                                return Image.file(
+                                  snapshot.data!,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.image_not_supported),
+                                );
+                              }
+                              return const Center(child: CircularProgressIndicator());
+                            },
+                          ),
                   ),
                 ),
               ),

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'add_product_page.dart';
 import 'profile_edit_page.dart';
@@ -30,6 +31,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
   Future<void> _loadStoreData() async {
     final name = await StoreService.getStoreName();
     final productList = await ProductService.getStoreProducts();
+    
     setState(() {
       storeName = name;
       products = productList;
@@ -155,11 +157,19 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                           borderRadius: const BorderRadius.vertical(
                                             top: Radius.circular(10),
                                           ),
-                                          child: Image.network(
-                                            product.imageUrl,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                const Icon(Icons.image_not_supported),
+                                          child: FutureBuilder<File?>(
+                                            future: ProductService.getProductImage(product.imagePath),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData && snapshot.data != null) {
+                                                return Image.file(
+                                                  snapshot.data!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) =>
+                                                      const Icon(Icons.image_not_supported),
+                                                );
+                                              }
+                                              return const Center(child: CircularProgressIndicator());
+                                            },
                                           ),
                                         )
                                       ),
