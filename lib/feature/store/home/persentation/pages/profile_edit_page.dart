@@ -11,7 +11,6 @@ class StoreAccountPage extends StatefulWidget {
 }
 
 class _StoreAccountPageState extends State<StoreAccountPage> {
-  String? logoPath;
   File? _logoImage;
   bool isLoading = false;
   final TextEditingController storeNameController = TextEditingController();
@@ -35,12 +34,7 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
       });
     }
 
-    // 從本地緩存或 Supabase 獲取 Logo
-    final localLogoPath = await StoreService.getLogo();
-    setState(() {
-      logoPath = localLogoPath;
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   Future<void> _saveChanges() async {
@@ -88,17 +82,14 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
 
     try {
       // 上傳 logo 到 storage（會自動保存到本地）
-      final localPath = await StoreService.uploadLogo(_logoImage!);
+      await StoreService.uploadLogo(_logoImage!);
 
-      if (localPath != null) {
-        setState(() {
-          logoPath = localPath;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('店家Logo已更新')),
-          );
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('店家Logo已更新')),
+        );
+        // 重新載入頁面以更新 Logo
+        setState(() {});
       }
     } catch (e) {
       if (mounted) {
@@ -156,26 +147,35 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : logoPath != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(60),
-                                    child: Image.file(
-                                      File(logoPath!),
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Icon(
-                                          Icons.store,
-                                          size: 40,
-                                          color: Colors.grey[600],
-                                        );
-                                      },
-                                    ),
-                                  )
-                                : Icon(
+                            : FutureBuilder<File?>(
+                                future: StoreService.getLogo(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  if (snapshot.hasData && snapshot.data != null) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(60),
+                                      child: Image.file(
+                                        snapshot.data!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(
+                                            Icons.store,
+                                            size: 40,
+                                            color: Colors.grey[600],
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
+                                  return Icon(
                                     Icons.camera_alt,
                                     size: 40,
                                     color: Colors.grey[600],
-                                  ),
+                                  );
+                                },
+                              ),
                       ),
                     ),
                     const SizedBox(height: 8),

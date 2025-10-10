@@ -108,7 +108,7 @@ class StoreService {
   }
 
   /// 獲取 Logo（優先從本地獲取，本地沒有才從後端拿）
-  static Future<String?> getLogo() async {
+  static Future<File?> getLogo() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
@@ -119,7 +119,7 @@ class StoreService {
       );
 
       if (localFiles.isNotEmpty) {
-        return localFiles.first.path;
+        return localFiles.first;
       }
 
       // 2. 本地沒有，從 Supabase 下載
@@ -137,7 +137,7 @@ class StoreService {
       final savedFile = await FileCacheService.saveFile(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
-      return savedFile.path;
+      return savedFile;
     } catch (e) {
       return null;
     }
