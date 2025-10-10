@@ -11,7 +11,7 @@ class StoreAccountPage extends StatefulWidget {
 }
 
 class _StoreAccountPageState extends State<StoreAccountPage> {
-  String? logoUrl;
+  String? logoPath;
   File? _logoImage;
   bool isLoading = false;
   final TextEditingController storeNameController = TextEditingController();
@@ -32,11 +32,15 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
       setState(() {
         storeNameController.text = storeData.storeName;
         storeAddressController.text = storeData.address;
-        logoUrl = storeData.logoUrl;
       });
     }
 
-    setState(() => isLoading = false);
+    // 從本地緩存或 Supabase 獲取 Logo
+    final localLogoPath = await StoreService.getLogo();
+    setState(() {
+      logoPath = localLogoPath;
+      isLoading = false;
+    });
   }
 
   Future<void> _saveChanges() async {
@@ -45,7 +49,6 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
     final success = await StoreService.upsertStore(
       storeName: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
-      logoUrl: logoUrl,
     );
 
     setState(() => isLoading = false);
@@ -80,38 +83,31 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
 
   Future<void> _uploadLogo() async {
     if (_logoImage == null) return;
-    
+
     setState(() => isLoading = true);
-    
-    // 上傳logo到storage
-    final uploadedUrl = await StoreService.uploadLogo(_logoImage!);
-        
-    if (uploadedUrl != null) {
-      // 更新店家資料
-      final success = await StoreService.upsertStore(
-        storeName: storeNameController.text.trim(),
-        address: storeAddressController.text.trim(),
-        logoUrl: uploadedUrl,
-      );
-      
-      if (success) {
+
+    try {
+      // 上傳 logo 到 storage（會自動保存到本地）
+      final localPath = await StoreService.uploadLogo(_logoImage!);
+
+      if (localPath != null) {
         setState(() {
-          logoUrl = uploadedUrl;
+          logoPath = localPath;
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('店家Logo已更新')),
           );
         }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('更新失敗，請稍後再試')),
-          );
-        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('上傳失敗，請稍後再試')),
+        );
       }
     }
-    
+
     setState(() => isLoading = false);
   }
 
@@ -160,11 +156,11 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : logoUrl != null
+                            : logoPath != null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(60),
-                                    child: Image.network(
-                                      logoUrl!,
+                                    child: Image.file(
+                                      File(logoPath!),
                                       fit: BoxFit.cover,
                                       errorBuilder: (context, error, stackTrace) {
                                         return Icon(
