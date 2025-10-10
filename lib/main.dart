@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/feature/personal/home/persentation/pages/home_navigator.dart';
 import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
+import 'package:tryzeon/feature/login/data/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class Tryzeon extends StatefulWidget {
 
 class _TryzeonState extends State<Tryzeon> {
   bool _isLoading = true;
-  bool _isLoggedIn = false;
+  UserType? _userType;
 
   @override
   void initState() {
@@ -37,8 +38,15 @@ class _TryzeonState extends State<Tryzeon> {
 
   Future<void> _checkAuthStatus() async {
     final session = Supabase.instance.client.auth.currentSession;
+    final user = session?.user;
+
+    UserType? userType;
+    if (user != null) {
+      userType = await AuthService.getLastLoginType();
+    }
+
     setState(() {
-      _isLoggedIn = session != null;
+      _userType = userType;
       _isLoading = false;
     });
   }
@@ -66,9 +74,11 @@ class _TryzeonState extends State<Tryzeon> {
                 child: CircularProgressIndicator(),
               ),
             )
-          : _isLoggedIn
-              ? const PersonalHomePage()
-              : const LoginPage(),
+          : _userType == null
+              ? const LoginPage()
+              : _userType == UserType.store
+                  ? const StoreHomePage()
+                  : const PersonalHomePage(),
 
       routes: {
         // Add your routes here if needed

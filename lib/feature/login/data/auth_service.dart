@@ -1,5 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum UserType { personal, store }
 
@@ -25,6 +26,25 @@ class AuthResult {
 
 class AuthService {
   static final _supabase = Supabase.instance.client;
+  static const _lastLoginTypeKey = 'last_login_type';
+
+  /// 儲存最後登入的類型
+  static Future<void> saveLastLoginType(UserType userType) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastLoginTypeKey, userType.name);
+  }
+
+  /// 取得最後登入的類型
+  static Future<UserType?> getLastLoginType() async {
+    final prefs = await SharedPreferences.getInstance();
+    final typeString = prefs.getString(_lastLoginTypeKey);
+    if (typeString == null) return null;
+
+    return UserType.values.firstWhere(
+      (type) => type.name == typeString,
+      orElse: () => UserType.personal,
+    );
+  }
 
   /// 註冊新用戶
   static Future<AuthResult> signUp({
@@ -123,6 +143,9 @@ class AuthService {
               : '此帳號不是店家帳號',
         );
       }
+      
+      // 儲存最後登入的類型
+      await saveLastLoginType(expectedUserType);
 
       return AuthResult.success(response.user!);
     } on AuthException catch (e) {
@@ -165,6 +188,9 @@ class AuthService {
         return AuthResult.failure('Google 登入失敗: user not found');
       }
 
+      // 儲存最後登入的類型
+      await saveLastLoginType(userType);
+
       // 獲取現有的 metadata
       final existingMetadata = response.user!.userMetadata ?? {};
       
@@ -172,22 +198,22 @@ class AuthService {
       if (existingMetadata[userType.name] == true) {
         // 已經有此類型，直接返回成功
         return AuthResult.success(response.user!);
+      }else{
+        // 添加新的用戶類型
+        final displayName = existingMetadata['name'];
+
+        await _supabase.auth.updateUser(
+          UserAttributes(
+            data: {
+              ...existingMetadata,
+              userType.name: true,
+              "username": displayName,
+            },
+          ),
+        );
+
+        return AuthResult.success(response.user!);
       }
-      
-      final displayName = existingMetadata['name'];
-
-      // 添加新的用戶類型
-      await _supabase.auth.updateUser(
-        UserAttributes(
-          data: {
-            ...existingMetadata,
-            userType.name: true,
-            "username": displayName,
-          },
-        ),
-      );
-
-      return AuthResult.success(response.user!);
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
     } catch (e) {
