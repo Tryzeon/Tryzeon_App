@@ -18,8 +18,30 @@ Future<void> main() async {
   runApp(const Tryzeon());
 }
 
-class Tryzeon extends StatelessWidget {
+class Tryzeon extends StatefulWidget {
   const Tryzeon({super.key});
+
+  @override
+  State<Tryzeon> createState() => _TryzeonState();
+}
+
+class _TryzeonState extends State<Tryzeon> {
+  bool _isLoading = true;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    final session = Supabase.instance.client.auth.currentSession;
+    setState(() {
+      _isLoggedIn = session != null;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +60,16 @@ class Tryzeon extends StatelessWidget {
           displayColor: Colors.brown[700],
         ),
       ),
-      // home: const LoginPage(),
-      home: const HomeNavigator(),
-      // home: const StoreHomePage(),
-      
+      home: _isLoading
+          ? const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : _isLoggedIn
+              ? const HomeNavigator()
+              : const LoginPage(),
+
       routes: {
         // Add your routes here if needed
       },
