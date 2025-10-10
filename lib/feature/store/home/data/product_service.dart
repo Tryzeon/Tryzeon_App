@@ -6,7 +6,7 @@ import 'store_info_service.dart';
 class ProductService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products';
-  static const _productImagesBucket = 'product-images';
+  static const _productImagesBucket = 'store';
 
   /// 創建新商品
   static Future<bool> createProduct({
@@ -148,7 +148,7 @@ class ProductService {
 
       // 生成唯一的檔案名稱
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = '$userId/product_$timestamp.jpg';
+      final fileName = '$userId/products/$timestamp.jpg';
       
       final bytes = await imageFile.readAsBytes();
 
