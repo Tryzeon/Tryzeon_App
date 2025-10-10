@@ -67,7 +67,7 @@ class _TryzeonState extends State<Tryzeon> {
               ),
             )
           : _isLoggedIn
-              ? const HomeNavigator()
+              ? const PersonalHomePage()
               : const LoginPage(),
 
       routes: {

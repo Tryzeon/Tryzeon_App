@@ -6,14 +6,14 @@ import '../../../shop/persentation/page/shop_page.dart';
 import '../../../profile/persentation/pages/profile_page.dart';
 
 
-class HomeNavigator extends StatefulWidget {
-  const HomeNavigator({super.key});
+class PersonalHomePage extends StatefulWidget {
+  const PersonalHomePage({super.key});
 
   @override
-  State<HomeNavigator> createState() => _HomeNavigatorState();
+  State<PersonalHomePage> createState() => _PersonalHomePageState();
 }
 
-class _HomeNavigatorState extends State<HomeNavigator> {
+class _PersonalHomePageState extends State<PersonalHomePage> {
   int _selectedIndex = 2;
 
   final List<Widget> _pages = const [

@@ -85,6 +85,7 @@ class _StoreAccountPageState extends State<StoreAccountPage> {
     
     // 上傳logo到storage
     final uploadedUrl = await StoreService.uploadLogo(_logoImage!);
+    print(uploadedUrl);
     
     if (uploadedUrl != null) {
       // 更新店家資料

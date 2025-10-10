@@ -73,7 +73,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
         if (result.success && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeNavigator()),
+            MaterialPageRoute(builder: (context) => const PersonalHomePage()),
           );
         } else if (!result.success) {
           _showError(result.errorMessage ?? '登入失敗');
@@ -141,7 +141,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
       if (result.success && mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeNavigator()),
+          MaterialPageRoute(builder: (context) => const PersonalHomePage()),
         );
       } else if (!result.success) {
         _showError(result.errorMessage ?? 'Google 登入失敗');
