@@ -93,7 +93,6 @@ class ProductService {
 
       return true;
     } catch (e) {
-      print(e);
       return false;
     }
   }

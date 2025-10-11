@@ -125,6 +125,9 @@ class _AddProductPageState extends State<AddProductPage> {
                     return;
                   }
 
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
+
                   final success = await ProductService.createProduct(
                     name: nameController.text,
                     type: selectedType!,
@@ -133,23 +136,21 @@ class _AddProductPageState extends State<AddProductPage> {
                     imageFile: selectedImage!,
                   );
 
+                  if (!mounted) return;
+
                   setState(() {
                     isLoading = false;
                   });
 
                   if (success) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('商品新增成功')),
-                      );
-                      Navigator.pop(context);
-                    }
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('商品新增成功')),
+                    );
+                    navigator.pop();
                   } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('商品新增失敗，請稍後再試')),
-                      );
-                    }
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('商品新增失敗，請稍後再試')),
+                    );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
