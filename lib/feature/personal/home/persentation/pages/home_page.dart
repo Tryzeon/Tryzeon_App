@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
 import '../widget/wardrobe_page.dart';
-import 'package:tryzeon/shared/image_picker_helper.dart';
+import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
 

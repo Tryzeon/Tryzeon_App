@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../data/wardrobe_service.dart';
-import 'package:tryzeon/shared/image_picker_helper.dart';
+import 'package:tryzeon/shared/component/image_picker_helper.dart';
 
 class WardrobePage extends StatefulWidget {
   const WardrobePage({super.key});

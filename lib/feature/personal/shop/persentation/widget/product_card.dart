@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:tryzeon/shared/data/models/product_model.dart';
+import 'package:tryzeon/shared/models/product_model.dart';
 import '../../data/shop_service.dart';
 
 class ProductCard extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tryzeon/shared/data/models/product_model.dart';
+import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class ProductService {

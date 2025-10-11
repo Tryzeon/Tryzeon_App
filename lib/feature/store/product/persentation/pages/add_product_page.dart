@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:tryzeon/shared/image_picker_helper.dart';
+import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import '../../../data/product_service.dart';
 
 

@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/data/models/product_model.dart';
+import 'package:tryzeon/shared/models/product_model.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
