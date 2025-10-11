@@ -4,6 +4,13 @@ import 'package:tryzeon/shared/data/models/product_model.dart';
 class ShopService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products';
+  static const _storeBucket = 'store';
+
+  /// 獲取商品圖片 URL
+  static String getProductImageUrl(String imagePath) {
+    if (imagePath.isEmpty) return '';
+    return _supabase.storage.from(_storeBucket).getPublicUrl(imagePath);
+  }
 
   /// 獲取所有商品（包含店家資訊）
   static Future<List<Map<String, dynamic>>> getAllProducts() async {

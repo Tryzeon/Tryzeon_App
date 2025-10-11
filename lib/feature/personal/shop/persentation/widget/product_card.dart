@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/data/models/product_model.dart';
+import '../../data/shop_service.dart';
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic> productData;
@@ -11,17 +11,11 @@ class ProductCard extends StatelessWidget {
     required this.productData,
   });
 
-  String _getImageUrl(String imagePath) {
-    if (imagePath.isEmpty) return '';
-    final supabase = Supabase.instance.client;
-    return supabase.storage.from('store').getPublicUrl(imagePath);
-  }
-
   @override
   Widget build(BuildContext context) {
     final storeName = productData['storeName'] as String;
     final product = productData['product'] as Product;
-    final imageUrl = _getImageUrl(product.imagePath);
+    final imageUrl = ShopService.getProductImageUrl(product.imagePath);
 
     return GestureDetector(
       onTap: () async {
