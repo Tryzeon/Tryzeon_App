@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/store/settings/data/store_info_service.dart';
+import 'package:tryzeon/feature/store/data/store_service.dart';
 import 'package:tryzeon/feature/store/onboarding/persentation/pages/store_onboarding_page.dart';
 import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
 

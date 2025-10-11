@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../data/store_info_service.dart';
+import '../../../data/store_service.dart';
 
 class StoreAccountSettingsPage extends StatefulWidget {
   const StoreAccountSettingsPage({super.key});

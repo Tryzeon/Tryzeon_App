@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:tryzeon/shared/image_picker_helper.dart';
 import 'package:tryzeon/shared/data/models/product_model.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
-import '../../data/product_service.dart';
+import '../../../data/product_service.dart';
 
 class ProductDetailDialog extends StatefulWidget {
   final Product product;

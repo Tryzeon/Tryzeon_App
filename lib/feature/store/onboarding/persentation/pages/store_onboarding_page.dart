@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../settings/data/store_info_service.dart';
-import '../../../../login/data/auth_service.dart';
+import '../../../data/store_service.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 
 class StoreOnboardingPage extends StatefulWidget {

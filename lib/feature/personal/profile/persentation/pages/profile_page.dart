@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
-import 'package:tryzeon/feature/login/data/auth_service.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
 import '../widget/account_page.dart';
 import '../../data/account_service.dart';

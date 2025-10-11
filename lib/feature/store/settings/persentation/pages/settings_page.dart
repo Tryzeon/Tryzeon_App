@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'account_settings_page.dart';
+import '../widget/account_settings_page.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 import '../../../../login/persentation/pages/login_page.dart';
-import '../../../../login/data/auth_service.dart';
 import '../../../../personal/personal_entry.dart';
 
 class StoreSettingsPage extends StatelessWidget {

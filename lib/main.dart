@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
-import 'package:tryzeon/feature/login/data/auth_service.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

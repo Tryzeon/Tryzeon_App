@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../data/auth_service.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
 
 class StoreLoginPage extends StatefulWidget {
