@@ -1,10 +1,62 @@
 import 'package:flutter/material.dart';
 import 'account_settings_page.dart';
 import '../../../../login/persentation/pages/login_page.dart';
+import '../../../../login/data/auth_service.dart';
+import '../../../../personal/home/persentation/pages/home_navigator.dart';
 import 'package:tryzeon/shared/services/logout_service.dart';
 
 class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});
+
+  Future<void> _switchToPersonal(BuildContext context) async {
+    // 顯示載入對話框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    // 切換帳號類型
+    final result = await AuthService.switchUserType(UserType.personal);
+
+    // 關閉載入對話框
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+
+    if (result.success) {
+      // 切換成功，導航到個人版主頁
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const PersonalHomePage()),
+          (route) => false,
+        );
+      }
+    } else {
+      // 切換失敗，顯示錯誤訊息
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('切換失敗'),
+              content: Text(result.errorMessage ?? '無法切換到個人版'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('確定'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
 
   Future<void> _signOut(BuildContext context) async {
     final shouldSignOut = await showDialog<bool>(
@@ -65,6 +117,16 @@ class StoreSettingsPage extends StatelessWidget {
                       ),
                     );
                   },
+                ),
+                const Divider(height: 1),
+
+                // 切換到個人帳號
+                ListTile(
+                  leading: const Icon(Icons.swap_horiz),
+                  title: const Text('切換到個人帳號'),
+                  subtitle: const Text('切換到個人帳號'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _switchToPersonal(context),
                 ),
                 const Divider(height: 1),
 

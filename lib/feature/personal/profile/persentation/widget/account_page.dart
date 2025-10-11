@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/auth_service.dart';
+import '../../data/account_service.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({super.key});
@@ -21,7 +21,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   void _loadUserData() {
-    final displayName = AuthService.displayName;
+    final displayName = AccountService.displayName;
     setState(() {
       _nameController.text = displayName;
     });
@@ -34,7 +34,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       _isLoading = true;
     });
 
-    final result = await AuthService.updateUserName(_nameController.text);
+    final result = await AccountService.updateUserName(_nameController.text);
 
     if (mounted) {
       setState(() {

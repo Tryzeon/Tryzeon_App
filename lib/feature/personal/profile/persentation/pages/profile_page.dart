@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../data/auth_service.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
-import '../widget/profile_edit_page.dart';
 import 'package:tryzeon/shared/services/logout_service.dart';
+import 'package:tryzeon/feature/login/data/auth_service.dart';
+import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
+import '../widget/account_page.dart';
+import '../../data/account_service.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -13,18 +16,68 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String username = '';
-  
+
   @override
   void initState() {
     super.initState();
     _loadUsername();
   }
-  
+
   void _loadUsername() {
-    final displayName = AuthService.displayName;
+    final displayName = AccountService.displayName;
     setState(() {
       username = displayName;
     });
+  }
+
+  Future<void> _switchToStore() async {
+    // 顯示載入對話框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    // 切換帳號類型
+    final result = await AuthService.switchUserType(UserType.store);
+
+    // 關閉載入對話框
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+
+    if (result.success) {
+      // 切換成功，導航到店家版主頁
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const StoreHomePage()),
+          (route) => false,
+        );
+      }
+    } else {
+      // 切換失敗，顯示錯誤訊息
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('切換失敗'),
+              content: Text(result.errorMessage ?? '無法切換到店家版'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('確定'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 
   void _handleLogout() async {
@@ -79,6 +132,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     _loadUsername();
                   }
                 },
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // 切換到店家帳號
+            Card(
+              elevation: 2,
+              color: const Color(0xFFF5EBDD),
+              child: ListTile(
+                leading: const Icon(Icons.swap_horiz),
+                title: const Text('切換到店家帳號'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: _switchToStore,
               ),
             ),
             const SizedBox(height: 12),

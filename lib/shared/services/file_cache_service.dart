@@ -25,7 +25,7 @@ class FileCacheService {
     // 保存檔案
     final targetPath = '${baseDir.path}/$filePath';
     final savedFile = await sourceFile.copy(targetPath);
-
+    print("Cache file saved to $targetPath");
     return savedFile;
   }
 

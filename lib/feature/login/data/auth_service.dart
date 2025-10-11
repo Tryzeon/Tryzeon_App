@@ -165,19 +165,19 @@ class AuthService {
       final googleSignIn = GoogleSignIn(
         clientId: iosClientId,
       );
-      
+
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         return AuthResult.failure('登入失敗');
       }
-      
+
       final googleAuth = await googleUser.authentication;
       final idToken = googleAuth.idToken;
-      
+
       if (idToken == null) {
         throw AuthException('無法取得 Google ID Token');
       }
-      
+
       final response = await _supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
@@ -193,7 +193,7 @@ class AuthService {
 
       // 獲取現有的 metadata
       final existingMetadata = response.user!.userMetadata ?? {};
-      
+
       // 檢查是否已有此類型
       if (existingMetadata[userType.name] == true) {
         // 已經有此類型，直接返回成功
@@ -218,6 +218,46 @@ class AuthService {
       return AuthResult.failure(e.message);
     } catch (e) {
       return AuthResult.failure('Google 登入失敗：${e.toString()}');
+    }
+  }
+
+  /// 檢查當前用戶是否有指定類型的帳號
+  static Future<bool> hasUserType(UserType userType) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return false;
+
+      final userMetadata = user.userMetadata;
+      return userMetadata?[userType.name] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 切換帳號類型（需要檢查是否有該類型的帳號）
+  static Future<AuthResult> switchUserType(UserType targetType) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        return AuthResult.failure('未登入');
+      }
+
+      // 檢查是否有目標類型的帳號
+      final hasType = await hasUserType(targetType);
+      if (!hasType) {
+        return AuthResult.failure(
+          targetType == UserType.personal
+              ? '您還沒有個人帳號'
+              : '您還沒有店家帳號'
+        );
+      }
+
+      // 儲存切換後的登入類型
+      await saveLastLoginType(targetType);
+
+      return AuthResult.success(user);
+    } catch (e) {
+      return AuthResult.failure('切換失敗，請稍後再試');
     }
   }
 }

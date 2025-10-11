@@ -1,29 +1,26 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/logout_service.dart';
 
-enum UserType { personal, store }
-
-class AuthResult {
+class AccountResult {
   final bool success;
   final User? user;
   final String? errorMessage;
 
-  AuthResult({
+  AccountResult({
     required this.success,
     this.user,
     this.errorMessage,
   });
 
-  factory AuthResult.success(User user) {
-    return AuthResult(success: true, user: user);
+  factory AccountResult.success(User user) {
+    return AccountResult(success: true, user: user);
   }
 
-  factory AuthResult.failure(String errorMessage) {
-    return AuthResult(success: false, errorMessage: errorMessage);
+  factory AccountResult.failure(String errorMessage) {
+    return AccountResult(success: false, errorMessage: errorMessage);
   }
 }
 
-class AuthService {
+class AccountService {
   static final _supabase = Supabase.instance.client;
 
   static String get displayName {
@@ -39,7 +36,7 @@ class AuthService {
   }
 
   /// 更新使用者名稱
-  static Future<AuthResult> updateUserName(String name) async {
+  static Future<AccountResult> updateUserName(String name) async {
     try {
       final response = await _supabase.auth.updateUser(
         UserAttributes(
@@ -48,17 +45,12 @@ class AuthService {
       );
 
       if (response.user != null) {
-        return AuthResult.success(response.user!);
+        return AccountResult.success(response.user!);
       } else {
-        return AuthResult.failure('更新失敗');
+        return AccountResult.failure('更新失敗');
       }
     } catch (e) {
-      return AuthResult.failure('更新失敗: $e');
+      return AccountResult.failure('更新失敗: $e');
     }
-  }
-
-  /// 登出
-  static Future<void> signOut() async {
-    await LogoutService.logout();
   }
 }
