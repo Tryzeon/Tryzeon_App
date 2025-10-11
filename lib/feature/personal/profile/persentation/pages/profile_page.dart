@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
-import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
+import 'package:tryzeon/feature/store/store_entry.dart';
 import '../widget/account_page.dart';
 import '../../data/account_service.dart';
 
@@ -53,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
       // 切換成功，導航到店家版主頁
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const StoreHomePage()),
+          MaterialPageRoute(builder: (context) => const StoreEntry()),
           (route) => false,
         );
       }

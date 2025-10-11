@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
-import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
+import 'package:tryzeon/feature/store/store_entry.dart';
 
 class StoreLoginPage extends StatefulWidget {
   const StoreLoginPage({super.key});
@@ -67,7 +67,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
         if (result.success && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const StoreHomePage()),
+            MaterialPageRoute(builder: (context) => const StoreEntry()),
           );
         } else if (!result.success) {
           _showError(result.errorMessage ?? '登入失敗');
@@ -135,7 +135,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
       if (result.success && mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const StoreHomePage()),
+          MaterialPageRoute(builder: (context) => const StoreEntry()),
         );
       } else if (!result.success) {
         _showError(result.errorMessage ?? 'Google 登入失敗');
