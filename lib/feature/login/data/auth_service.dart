@@ -1,6 +1,7 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 enum UserType { personal, store }
 
@@ -259,5 +260,22 @@ class AuthService {
     } catch (e) {
       return AuthResult.failure('切換失敗，請稍後再試');
     }
+  }
+
+  /// 登出
+  static Future<void> signOut() async {
+    final userId = _supabase.auth.currentUser?.id;
+
+    // 清除當前用戶的所有本地緩存
+    if (userId != null) {
+      await FileCacheService.deleteFolder(userId);
+    }
+
+    // 清除 SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_lastLoginTypeKey);
+    
+    // 執行 Supabase 登出
+    await _supabase.auth.signOut();
   }
 }

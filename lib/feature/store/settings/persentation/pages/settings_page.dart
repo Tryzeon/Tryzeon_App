@@ -3,7 +3,6 @@ import 'account_settings_page.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 import '../../../../login/data/auth_service.dart';
 import '../../../../personal/home/persentation/pages/home_navigator.dart';
-import 'package:tryzeon/shared/services/logout_service.dart';
 
 class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});
@@ -80,7 +79,7 @@ class StoreSettingsPage extends StatelessWidget {
     );
 
     if (shouldSignOut == true) {
-      await LogoutService.logout();
+      await AuthService.signOut();
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const LoginPage()),
