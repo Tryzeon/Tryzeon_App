@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/store_info_service.dart';
 
-class StoreAccountPage extends StatefulWidget {
-  const StoreAccountPage({super.key});
+class StoreAccountSettingsPage extends StatefulWidget {
+  const StoreAccountSettingsPage({super.key});
 
   @override
-  State<StoreAccountPage> createState() => _StoreAccountPageState();
+  State<StoreAccountSettingsPage> createState() => _StoreAccountSettingsPageState();
 }
 
-class _StoreAccountPageState extends State<StoreAccountPage> {
+class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   File? _logoImage;
   bool isLoading = false;
   final TextEditingController storeNameController = TextEditingController();
