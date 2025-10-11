@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'account_settings_page.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 import '../../../../login/data/auth_service.dart';
-import '../../../../personal/home/persentation/pages/home_navigator.dart';
+import '../../../../personal/personal_entry.dart';
 
 class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});
@@ -31,7 +31,7 @@ class StoreSettingsPage extends StatelessWidget {
       // 切換成功，導航到個人版主頁
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const PersonalHomePage()),
+          MaterialPageRoute(builder: (context) => const PersonalEntry()),
           (route) => false,
         );
       }

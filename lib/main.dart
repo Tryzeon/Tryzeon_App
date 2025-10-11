@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
-import 'package:tryzeon/feature/personal/home/persentation/pages/home_navigator.dart';
-import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
+import 'package:tryzeon/feature/personal/personal_entry.dart';
+import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/feature/login/data/auth_service.dart';
 
 Future<void> main() async {
@@ -77,13 +77,8 @@ class _TryzeonState extends State<Tryzeon> {
           : _userType == null
               ? const LoginPage()
               : _userType == UserType.store
-                  ? const StoreHomePage()
-                  : const PersonalHomePage(),
-
-      routes: {
-        // Add your routes here if needed
-      },
+                  ? const StoreEntry()
+                  : const PersonalEntry(),
     );
   }
 }
-

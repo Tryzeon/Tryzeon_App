@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../chat/persentation/page/chat_page.dart';
-import '../../../community/persentation/pages/community_page.dart';
-import 'home_page.dart';
-import '../../../shop/persentation/page/shop_page.dart';
-import '../../../profile/persentation/pages/profile_page.dart';
+import 'chat/persentation/page/chat_page.dart';
+import 'community/persentation/pages/community_page.dart';
+import 'home/persentation/pages/home_page.dart';
+import 'shop/persentation/page/shop_page.dart';
+import 'profile/persentation/pages/profile_page.dart';
 
 
-class PersonalHomePage extends StatefulWidget {
-  const PersonalHomePage({super.key});
+class PersonalEntry extends StatefulWidget {
+  const PersonalEntry({super.key});
 
   @override
-  State<PersonalHomePage> createState() => _PersonalHomePageState();
+  State<PersonalEntry> createState() => _PersonalEntryState();
 }
 
-class _PersonalHomePageState extends State<PersonalHomePage> {
+class _PersonalEntryState extends State<PersonalEntry> {
   int _selectedIndex = 2;
 
   final List<Widget> _pages = const [
