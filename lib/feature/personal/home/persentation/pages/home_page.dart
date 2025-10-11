@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
       _isTryingOn = true;
     });
 
-    final tryonResult = await TryonService.uploadClothingForTryon(clothingImage);
+    final tryonResult = await TryonService.tryon(clothingImage);
     
     if (mounted) {
       setState(() {

@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
-  static Future<String?> uploadClothingForTryon(File clothingImage) async {
+  static Future<String?> tryon(File clothingImage) async {
     try {
       // Convert clothing image to base64
       final clothingBytes = await clothingImage.readAsBytes();
@@ -17,7 +17,7 @@ class TryonService {
           'clothing_image': clothingBase64,
         },
       );
-
+      
       if (response.data != null && response.data['image'] != null) {
         // Return the base64 image data URL directly
         return response.data['image'];
