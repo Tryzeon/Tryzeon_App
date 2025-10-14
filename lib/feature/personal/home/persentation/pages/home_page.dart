@@ -15,8 +15,7 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String? _avatarUrl;
-  bool _isUploading = false;
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -50,7 +49,6 @@ class HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() {
         _avatarUrl = url;
-        _isLoading = false;
       });
     }
   }
@@ -62,7 +60,7 @@ class HomePageState extends State<HomePage> {
     if (imageFile == null) return;
 
     setState(() {
-      _isUploading = true;
+      _isLoading = true;
     });
 
     try {
@@ -71,14 +69,14 @@ class HomePageState extends State<HomePage> {
       if (mounted) {
         setState(() {
           _avatarUrl = url;
-          _isUploading = false;
+          _isLoading = false;
         });
       }
     } catch (e) {
       // 上傳失敗，顯示錯誤訊息並恢復原本的頭像
       if (mounted) {
         setState(() {
-          _isUploading = false;
+          _isLoading = false;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -216,14 +214,7 @@ class HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(20),
                       child: Stack(
                         children: [
-                          if (_isLoading)
-                            Container(
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          else if (_avatarUrl != null)
+                          if (_avatarUrl != null)
                             _buildAvatarImage(_avatarUrl!)
                           else
                             Image.asset(
@@ -242,7 +233,7 @@ class HomePageState extends State<HomePage> {
                                 );
                               },
                             ),
-                          if (_isUploading)
+                          if (_isLoading)
                             Container(
                               color: Colors.black54,
                               child: const Center(
