@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../../../product/persentation/pages/add_product_page.dart';
+import '../widget/add_product_page.dart';
 import '../../../settings/persentation/pages/settings_page.dart';
-import '../../../product/persentation/widget/product_detail_dialog.dart';
+import '../widget/product_detail_dialog.dart';
 import '../../../data/store_service.dart';
 import '../../../data/product_service.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
