@@ -10,24 +10,44 @@ class PersonalEntry extends StatefulWidget {
   const PersonalEntry({super.key});
 
   @override
-  State<PersonalEntry> createState() => _PersonalEntryState();
+  State<PersonalEntry> createState() => PersonalEntryState();
+
+  static PersonalEntryState? of(BuildContext context) {
+    return context.findAncestorStateOfType<PersonalEntryState>();
+  }
 }
 
-class _PersonalEntryState extends State<PersonalEntry> {
+class PersonalEntryState extends State<PersonalEntry> {
   int _selectedIndex = 2;
+  late final List<Widget> _pages;
+  final GlobalKey<HomePageState> _homePageKey = GlobalKey<HomePageState>();
 
-  final List<Widget> _pages = const [
-    CommunityPage(),
-    ChatPage(),
-    HomePage(),
-    ShopPage(),
-    ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const CommunityPage(),
+      const ChatPage(),
+      HomePage(key: _homePageKey),
+      const ShopPage(),
+      const ProfilePage(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> startTryonFromProduct(String productImageUrl) async {
+    // 切換到 HomePage
+    setState(() {
+      _selectedIndex = 2;
+    });
+
+    // 呼叫 HomePage 的試穿方法
+    await _homePageKey.currentState?.startTryonFromProduct(productImageUrl);
   }
 
   @override

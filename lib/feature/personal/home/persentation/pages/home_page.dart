@@ -10,19 +10,39 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   String? _avatarUrl;
   bool _isUploading = false;
   bool _isLoading = true;
-  bool _isTryingOn = false;
 
   @override
   void initState() {
     super.initState();
     _loadAvatar();
+  }
+
+  Future<void> startTryonFromProduct(String productImageUrl) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final tryonResult = await TryonService.tryonProduct(productImageUrl);
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (tryonResult != null) {
+          _avatarUrl = tryonResult;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('虛擬試穿失敗，請稍後再試')),
+          );
+        }
+      });
+    }
   }
 
   Future<void> _loadAvatar() async {
@@ -91,14 +111,14 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {
-      _isTryingOn = true;
+      _isLoading = true;
     });
 
     final tryonResult = await TryonService.tryon(clothingImage);
     
     if (mounted) {
       setState(() {
-        _isTryingOn = false;
+        _isLoading = false;
         if (tryonResult != null) {
           // Update avatar to show tryon result
           _avatarUrl = tryonResult;
@@ -268,18 +288,9 @@ class _HomePageState extends State<HomePage> {
                   
                   // 虛擬試穿按鈕
                   ElevatedButton.icon(
-                    onPressed: _isTryingOn ? null : _virtualTryon,
-                    icon: _isTryingOn 
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.add_a_photo),
-                    label: Text(_isTryingOn ? '處理中...' : '虛擬試穿'),
+                    onPressed: _isLoading ? null : _virtualTryon,
+                    icon: const Icon(Icons.add_a_photo),
+                    label: const Text('虛擬試穿'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.brown[700],
                       foregroundColor: Colors.white,

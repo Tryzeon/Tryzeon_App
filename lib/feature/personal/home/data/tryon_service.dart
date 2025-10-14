@@ -29,4 +29,26 @@ class TryonService {
       return null;
     }
   }
+
+  /// Try on product by URL - downloads image in edge function
+  static Future<String?> tryonProduct(String productImageUrl) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'tryon-product',
+        body: {
+          'product_image_url': productImageUrl,
+        },
+      );
+
+      if (response.data != null && response.data['image'] != null) {
+        // Return the base64 image data URL directly
+        return response.data['image'];
+      }
+
+      return null;
+    } catch (e) {
+      // Error handling - in production use proper logging framework
+      return null;
+    }
+  }
 }
