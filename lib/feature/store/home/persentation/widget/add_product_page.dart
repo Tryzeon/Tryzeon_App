@@ -114,7 +114,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     isLoading = true;
                   });
 
-                  final price = double.tryParse(priceController.text);
+                  final price = int.tryParse(priceController.text);
                   if (price == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('請輸入有效的價格')),

@@ -67,7 +67,7 @@ class ProductService {
   static Future<bool> createProduct({
     required String name,
     required String type,
-    required double price,
+    required int price,
     required String purchaseLink,
     required File imageFile,
   }) async {
@@ -105,7 +105,7 @@ class ProductService {
     required String productId,
     required String name,
     required String type,
-    required double price,
+    required int price,
     required String purchaseLink,
     required String currentFilePath,
     File? newImageFile

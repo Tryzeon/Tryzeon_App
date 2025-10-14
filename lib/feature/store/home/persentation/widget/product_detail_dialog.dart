@@ -95,7 +95,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   }
 
   Future<void> _updateProduct() async {
-    final price = double.tryParse(priceController.text);
+    final price = int.tryParse(priceController.text);
     if (price == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('請輸入有效的價格')),

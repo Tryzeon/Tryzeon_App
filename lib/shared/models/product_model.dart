@@ -3,7 +3,7 @@ class Product {
   final String storeId;
   final String name;
   final String type;
-  final double price;
+  final int price;
   final String imagePath;
   final String purchaseLink;
   final DateTime? createdAt;
@@ -47,7 +47,7 @@ class Product {
       storeId: json['store_id'],
       name: json['name'],
       type: json['type'],
-      price: (json['price'] as num).toDouble(),
+      price: json['price'].toInt(),
       imagePath: json['image_path'],
       purchaseLink: json['purchase_link'],
       createdAt: DateTime.parse(json['created_at']),

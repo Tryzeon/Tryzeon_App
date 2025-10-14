@@ -81,7 +81,7 @@ class StoreProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${product.price.toStringAsFixed(2)}',
+                    '\$${product.price}',
                     style: const TextStyle(
                       color: Color(0xFF5D4037),
                       fontWeight: FontWeight.bold,
