@@ -40,6 +40,11 @@ class _ProductCardState extends State<ProductCard> {
         if (product.purchaseLink.isNotEmpty) {
           final Uri url = Uri.parse(product.purchaseLink);
           if (await canLaunchUrl(url)) {
+            // 記錄購買連結點擊次數（不等待結果）
+            if (product.id != null) {
+              ShopService.incrementPurchaseClickCount(product.id!);
+            }
+
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
             if (context.mounted) {

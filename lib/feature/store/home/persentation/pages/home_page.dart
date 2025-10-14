@@ -78,6 +78,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                         _buildSortOption('建立時間', 'created_at'),
                         _buildSortOption('更新時間', 'updated_at'),
                         _buildSortOption('試穿次數', 'tryon_count'),
+                        _buildSortOption('購買點擊次數', 'purchase_click_count'),
                       ],
                     ),
                   ),
