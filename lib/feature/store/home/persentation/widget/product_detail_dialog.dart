@@ -19,7 +19,6 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   late TextEditingController priceController;
   late TextEditingController purchaseLinkController;
   File? newImage;
-  bool isEditing = false;
   bool isLoading = false;
   
   // 衣服種類選項
@@ -163,28 +162,14 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (!isEditing) ...[
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: _deleteProduct,
-                          tooltip: '刪除商品',
-                          iconSize: 20,
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.all(8),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            setState(() {
-                              isEditing = true;
-                            });
-                          },
-                          tooltip: '編輯商品',
-                          iconSize: 20,
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.all(8),
-                        ),
-                      ],
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: _deleteProduct,
+                        tooltip: '刪除商品',
+                        iconSize: 20,
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(8),
+                      ),
                       IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () => Navigator.pop(context),
@@ -198,16 +183,14 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
               ),
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: isEditing
-                    ? () async {
-                        final image = await ImagePickerHelper.pickImage(context);
-                        if (image != null) {
-                          setState(() {
-                            newImage = image;
-                          });
-                        }
-                      }
-                    : null,
+                onTap: () async {
+                  final image = await ImagePickerHelper.pickImage(context);
+                  if (image != null) {
+                    setState(() {
+                      newImage = image;
+                    });
+                  }
+                },
                 child: Container(
                   height: 200,
                   width: double.infinity,
@@ -242,7 +225,6 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
               const SizedBox(height: 16),
               TextField(
                 controller: nameController,
-                enabled: isEditing,
                 decoration: const InputDecoration(
                   labelText: '商品名稱',
                   border: OutlineInputBorder(),
@@ -261,16 +243,15 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                     child: Text(type),
                   );
                 }).toList(),
-                onChanged: isEditing ? (String? newValue) {
+                onChanged: (String? newValue) {
                   setState(() {
                     selectedType = newValue;
                   });
-                } : null,
+                },
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: priceController,
-                enabled: isEditing,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: '價格',
@@ -280,7 +261,6 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
               const SizedBox(height: 12),
               TextField(
                 controller: purchaseLinkController,
-                enabled: isEditing,
                 keyboardType: TextInputType.url,
                 decoration: const InputDecoration(
                   labelText: '購買連結',
@@ -288,38 +268,22 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              if (isEditing) ...[
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          isEditing = false;
-                          newImage = null;
-                          nameController.text = widget.product.name;
-                          selectedType = widget.product.type;
-                          priceController.text = widget.product.price.toString();
-                          purchaseLinkController.text = widget.product.purchaseLink;
-                        });
-                      },
-                      child: const Text('取消'),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _updateProduct,
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('儲存'),
-                    ),
-                  ],
-                ),
-              ],
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: isLoading ? null : _updateProduct,
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('儲存'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
