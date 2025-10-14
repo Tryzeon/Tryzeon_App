@@ -19,6 +19,8 @@ class _StoreHomePageState extends State<StoreHomePage> {
   String storeName = '店家';
   bool isLoading = true;
   List<Product> products = [];
+  String _sortBy = 'created_at';
+  bool _ascending = false;
 
   @override
   void initState() {
@@ -28,13 +30,87 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
   Future<void> _loadStoreData() async {
     final name = await StoreService.getStoreName();
-    final productList = await ProductService.getStoreProducts();
-    
+    final productList = await ProductService.getStoreProducts(
+      sortBy: _sortBy,
+      ascending: _ascending,
+    );
+
     setState(() {
       storeName = name;
       products = productList;
       isLoading = false;
     });
+  }
+
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '排序方式',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  RadioGroup<String>(
+                    groupValue: _sortBy,
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setModalState(() {
+                          _sortBy = newValue;
+                        });
+                        setState(() {
+                          _sortBy = newValue;
+                        });
+                        _loadStoreData();
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        _buildSortOption('價格', 'price'),
+                        _buildSortOption('建立時間', 'created_at'),
+                        _buildSortOption('更新時間', 'updated_at'),
+                        _buildSortOption('試穿次數', 'tryon_count'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('遞增排序'),
+                    value: _ascending,
+                    onChanged: (value) {
+                      setModalState(() {
+                        _ascending = value;
+                      });
+                      setState(() {
+                        _ascending = value;
+                      });
+                      _loadStoreData();
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOption(String label, String value) {
+    return ListTile(
+      title: Text(label),
+      leading: Radio<String>(
+        value: value,
+      ),
+    );
   }
 
 
@@ -73,8 +149,18 @@ class _StoreHomePageState extends State<StoreHomePage> {
                   Text('歡迎回來，$storeName !',
                       style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 24),
-                  Text('我的商品',
-                      style: Theme.of(context).textTheme.titleMedium),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('我的商品',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      IconButton(
+                        icon: const Icon(Icons.sort),
+                        onPressed: _showSortOptions,
+                        tooltip: '排序',
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   Expanded(
                     child: products.isEmpty

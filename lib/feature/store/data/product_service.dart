@@ -10,7 +10,10 @@ class ProductService {
   static const _productImagesBucket = 'store';
 
   /// 獲取店家的所有商品
-  static Future<List<Product>> getStoreProducts() async {
+  static Future<List<Product>> getStoreProducts({
+    String sortBy = 'created_at',
+    bool ascending = false,
+  }) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return [];
@@ -19,7 +22,7 @@ class ProductService {
           .from(_productsTable)
           .select()
           .eq('store_id', userId)
-          .order('created_at', ascending: false);
+          .order(sortBy, ascending: ascending);
 
       return (response as List)
           .map((json) => Product.fromJson(json))
