@@ -18,6 +18,13 @@ class ProductCard extends StatefulWidget {
 
 class _ProductCardState extends State<ProductCard> {
   Future<void> _handleTryon(BuildContext context, String imageUrl) async {
+    final product = widget.productData['product'] as Product;
+
+    // 記錄虛擬試穿點擊次數（不等待結果）
+    if (product.id != null) {
+      ShopService.incrementTryonCount(product.id!);
+    }
+
     final personalEntry = PersonalEntry.of(context);
     await personalEntry?.startTryonFromProduct(imageUrl);
   }

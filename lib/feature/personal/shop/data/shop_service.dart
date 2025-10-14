@@ -42,6 +42,17 @@ class ShopService {
     }
   }
 
+  /// 增加商品的虛擬試穿點擊次數
+  static Future<void> incrementTryonCount(String productId) async {
+    try {
+      await _supabase.rpc('increment_tryon_count', params: {
+        'product_uuid': productId,
+      });
+    } catch (e) {
+      // 靜默失敗，不影響用戶體驗
+    }
+  }
+
   /// 搜尋商品（包含商品名稱、類型和店家名稱）
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     try {
