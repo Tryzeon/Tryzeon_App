@@ -34,11 +34,13 @@ class _StoreHomePageState extends State<StoreHomePage> {
       ascending: _ascending,
     );
 
-    setState(() {
-      storeName = name;
-      products = productList;
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        storeName = name;
+        products = productList;
+        isLoading = false;
+      });
+    }
   }
 
   void _showSortOptions() {
@@ -65,10 +67,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
                         setModalState(() {
                           _sortBy = newValue;
                         });
-                        setState(() {
-                          _sortBy = newValue;
-                        });
-                        _loadStoreData();
+                        if (mounted) {
+                          setState(() {
+                            _sortBy = newValue;
+                          });
+                          _loadStoreData();
+                        }
                       }
                     },
                     child: Column(
@@ -89,10 +93,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
                       setModalState(() {
                         _ascending = value;
                       });
-                      setState(() {
-                        _ascending = value;
-                      });
-                      _loadStoreData();
+                      if (mounted) {
+                        setState(() {
+                          _ascending = value;
+                        });
+                        _loadStoreData();
+                      }
                     },
                   ),
                 ],
