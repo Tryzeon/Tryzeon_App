@@ -13,11 +13,16 @@ class ShopService {
   }
 
   /// 獲取所有商品（包含店家資訊）
-  static Future<List<Map<String, dynamic>>> getAllProducts() async {
+  static Future<List<Map<String, dynamic>>> getAllProducts({
+    String sortBy = 'created_at',
+    bool ascending = false,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
     try {
       // 查詢所有商品並關聯店家資訊
       // products.store_id = store-info.user_id
-      final response = await _supabase
+      dynamic query = _supabase
           .from(_productsTable)
           .select('''
             *,
@@ -25,8 +30,18 @@ class ShopService {
               user_id,
               store_name
             )
-          ''')
-          .order('created_at', ascending: false);
+          ''');
+
+      // 價格區間過濾
+      if (minPrice != null) {
+        query = query.gte('price', minPrice);
+      }
+      if (maxPrice != null) {
+        query = query.lte('price', maxPrice);
+      }
+
+      // 排序
+      final response = await query.order(sortBy, ascending: ascending);
 
       return (response as List).map((item) {
         final product = Product.fromJson(item);
