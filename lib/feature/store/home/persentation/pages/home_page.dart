@@ -249,6 +249,24 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.auto_awesome, size: 14, color: Colors.grey),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${product.tryonCount}',
+                                                style: Theme.of(context).textTheme.bodySmall,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              const Icon(Icons.link, size: 14, color: Colors.grey),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${product.purchaseClickCount}',
+                                                style: Theme.of(context).textTheme.bodySmall,
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),

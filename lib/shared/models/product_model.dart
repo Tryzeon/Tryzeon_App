@@ -8,6 +8,8 @@ class Product {
   final String purchaseLink;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final int tryonCount;
+  final int purchaseClickCount;
 
   Product({
     this.id,
@@ -19,6 +21,8 @@ class Product {
     required this.purchaseLink,
     this.createdAt,
     this.updatedAt,
+    this.tryonCount = 0,
+    this.purchaseClickCount = 0,
   });
 
   Map<String, dynamic> toJson() {
@@ -32,6 +36,8 @@ class Product {
       'purchase_link': purchaseLink,
       'created_at': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'updated_at': updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'tryon_count': tryonCount,
+      'purchase_click_count': purchaseClickCount,
     };
   }
 
@@ -46,6 +52,8 @@ class Product {
       purchaseLink: json['purchase_link'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
+      tryonCount: json['tryon_count'] ?? 0,
+      purchaseClickCount: json['purchase_click_count'] ?? 0,
     );
   }
 }
