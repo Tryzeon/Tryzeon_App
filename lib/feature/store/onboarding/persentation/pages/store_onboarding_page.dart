@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../data/store_service.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import '../../../../login/persentation/pages/login_page.dart';
+import '../../../../personal/personal_entry.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StoreOnboardingPage extends StatefulWidget {
   final VoidCallback? onComplete;
@@ -13,60 +14,47 @@ class StoreOnboardingPage extends StatefulWidget {
 }
 
 class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _storeNameController = TextEditingController();
-  final _addressController = TextEditingController();
-  bool _isSubmitting = false;
+  static const String formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLScu_hKsOTUVcuB0R3sKnRh9cAbn7zchO7W8izdgG1N9-WC9AQ/viewform';
 
-  @override
-  void dispose() {
-    _storeNameController.dispose();
-    _addressController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      final success = await StoreService.upsertStore(
-        storeName: _storeNameController.text.trim(),
-        address: _addressController.text.trim(),
-      );
-
-      if (!mounted) return;
-
-      if (success) {
-        // 通知完成 onboarding
-        widget.onComplete?.call();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('儲存失敗，請稍後再試'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
+  Future<void> _openForm() async {
+    final uri = Uri.parse(formUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('發生錯誤：$e'),
+        const SnackBar(
+          content: Text('無法開啟表單連結'),
           backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
+    }
+  }
+
+  Future<void> _switchToPersonalAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('切換到個人帳號'),
+        content: const Text('確定要切換到個人帳號嗎？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('確定'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const PersonalEntry()),
+        (route) => false,
+      );
     }
   }
 
@@ -104,11 +92,16 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('歡迎加入'),
+        title: const Text('店家註冊'),
         centerTitle: true,
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,
-        automaticallyImplyLeading: false, // 不顯示返回按鈕
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: _switchToPersonalAccount,
+          tooltip: '切換回個人帳號',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -117,85 +110,107 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 24),
+              const Icon(
+                Icons.description,
+                size: 80,
+                color: Color(0xFF5D4037),
+              ),
+              const SizedBox(height: 32),
               Text(
-                '讓我們開始設定您的店家資訊',
+                '店家註冊',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF5D4037),
                     ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
-              Text(
-                '這些資訊將會顯示給您的客戶',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              TextFormField(
-                controller: _storeNameController,
-                decoration: const InputDecoration(
-                  labelText: '店家名稱',
-                  hintText: '請輸入店家名稱',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.store),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade200),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '請輸入店家名稱';
-                  }
-                  return null;
-                },
-                enabled: !_isSubmitting,
+                child: Column(
+                  children: [
+                    Text(
+                      '請使用以下表單註冊',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '必須使用相同 Gmail',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: _openForm,
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('開啟申請表單'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5D4037),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: '店家地址',
-                  hintText: '請輸入店家地址',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_on),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade200),
                 ),
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '請輸入店家地址';
-                  }
-                  return null;
-                },
-                enabled: !_isSubmitting,
-              ),
-              const SizedBox(height: 48),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5D4037),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue.shade700),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '審核時間',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue.shade700,
+                                ),
+                          ),
                         ),
-                      )
-                    : const Text('完成設定'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '如果您已經填完表單，請稍等 7-14 個工作天，我們會進行審核作業',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.start,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
