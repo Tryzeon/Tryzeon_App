@@ -27,11 +27,11 @@ class AccountService {
     final user = _supabase.auth.currentUser;
     if (user == null) return "無名氏";
 
-    final displayName = user.userMetadata?['username'] as String?;
+    final displayName = user.userMetadata?['name'] as String?;
     if (displayName != null && displayName.isNotEmpty) {
       return displayName;
     }
-    
+
     return "無名氏";
   }
 
@@ -40,7 +40,7 @@ class AccountService {
     try {
       final response = await _supabase.auth.updateUser(
         UserAttributes(
-          data: {'username': name.trim()},
+          data: {'name': name.trim()},
         ),
       );
 

@@ -52,3 +52,7 @@ flutter run -d <device-id>
 
 ### Wardrobe: 
 `[wardrobe_bucket]/${userId}/wardrobe/${categoryCode}/${timestamp}.jpg`
+
+
+## TODO, Bugs:
+1. 現在的個人設定-基本資料-更改姓名方式不會被正確更改，因為 metadata['name'] 欄位每次使用第三方登入都會被覆蓋，所以只是拿來 Demo 設定欄位的。

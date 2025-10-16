@@ -47,115 +47,6 @@ class AuthService {
     );
   }
 
-  /// 註冊新用戶
-  static Future<AuthResult> signUp({
-    required String email,
-    required String password,
-    required UserType userType,
-    String? name,
-  }) async {
-    try {
-      // 先檢查用戶是否已存在
-      final existingUser = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      
-      if (existingUser.user != null) {
-        // 用戶已存在，添加新的用戶類型
-        final existingMetadata = existingUser.user!.userMetadata ?? {};
-        
-        // 檢查是否已有此類型
-        if (existingMetadata[userType.name] == true) {
-          return AuthResult.failure(
-            userType == UserType.personal 
-              ? '此帳號已經是個人用戶' 
-              : '此帳號已經是店家用戶'
-          );
-        }
-        
-        // 添加新的用戶類型
-        await _supabase.auth.updateUser(
-          UserAttributes(
-            data: {
-              ...existingMetadata,
-              userType.name: true,
-              if (name != null && existingMetadata['name'] == null) 'name': name,
-            },
-          ),
-        );
-        
-        return AuthResult.success(existingUser.user!);
-      }
-    } catch (e) {
-      // 登入失敗，表示用戶不存在，繼續註冊新用戶
-    }
-
-    try {
-      // 註冊新用戶
-      final metadata = {
-        userType.name: true,
-        'username': name
-      };
-
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: metadata,
-      );
-
-      if (response.user != null) {
-        return AuthResult.success(response.user!);
-      }
-      
-      return AuthResult.failure('註冊失敗，請稍後再試');
-    } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('註冊失敗，請稍後再試');
-    }
-  }
-
-  /// 登入用戶並驗證用戶類型
-  static Future<AuthResult> signInWithPassword({
-    required String email,
-    required String password,
-    required UserType expectedUserType,
-  }) async {
-    try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-
-      if (response.user == null) {
-        return AuthResult.failure('登入失敗');
-      }
-
-      // 檢查用戶類型
-      final userMetadata = response.user!.userMetadata;
-      final hasExpectedUserType = userMetadata?[expectedUserType.name] == true;
-      
-      if (!hasExpectedUserType) {
-        // 用戶類型不符，登出
-        return AuthResult.failure(
-          expectedUserType == UserType.personal
-              ? '此帳號不是個人用戶帳號'
-              : '此帳號不是店家帳號',
-        );
-      }
-      
-      // 儲存最後登入的類型
-      await saveLastLoginType(expectedUserType);
-
-      return AuthResult.success(response.user!);
-    } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('登入失敗，請稍後再試');
-    }
-  }
-
   /// Google 登入
   static Future<AuthResult> signInWithGoogle({
     required UserType userType,
@@ -192,29 +83,7 @@ class AuthService {
       // 儲存最後登入的類型
       await saveLastLoginType(userType);
 
-      // 獲取現有的 metadata
-      final existingMetadata = response.user!.userMetadata ?? {};
-
-      // 檢查是否已有此類型
-      if (existingMetadata[userType.name] == true) {
-        // 已經有此類型，直接返回成功
-        return AuthResult.success(response.user!);
-      }else{
-        // 添加新的用戶類型
-        final displayName = existingMetadata['name'];
-
-        await _supabase.auth.updateUser(
-          UserAttributes(
-            data: {
-              ...existingMetadata,
-              userType.name: true,
-              "username": displayName,
-            },
-          ),
-        );
-
-        return AuthResult.success(response.user!);
-      }
+      return AuthResult.success(response.user!);
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
     } catch (e) {
@@ -222,35 +91,12 @@ class AuthService {
     }
   }
 
-  /// 檢查當前用戶是否有指定類型的帳號
-  static Future<bool> hasUserType(UserType userType) async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return false;
-
-      final userMetadata = user.userMetadata;
-      return userMetadata?[userType.name] == true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// 切換帳號類型（需要檢查是否有該類型的帳號）
+  /// 切換帳號類型
   static Future<AuthResult> switchUserType(UserType targetType) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
         return AuthResult.failure('未登入');
-      }
-
-      // 檢查是否有目標類型的帳號
-      final hasType = await hasUserType(targetType);
-      if (!hasType) {
-        return AuthResult.failure(
-          targetType == UserType.personal
-              ? '您還沒有個人帳號'
-              : '您還沒有店家帳號'
-        );
       }
 
       // 儲存切換後的登入類型
