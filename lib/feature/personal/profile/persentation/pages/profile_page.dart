@@ -93,100 +93,300 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('個人設定'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 使用者名稱區塊
-            Text(
-              '您好, $username',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-
-
-            // 基本資料卡片
-            Card(
-              elevation: 2,
-              color: const Color(0xFFF5EBDD),
-              child: ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: const Text('基本資料'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileEditPage(),
-                    ),
-                  );
-                  
-                  // 果從編輯頁面返回且有更新，重新載入使用者名稱如
-                  if (result == true) {
-                    _loadUsername();
-                  }
-                },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                Theme.of(context).colorScheme.surface,
               ),
-            ),
-            const SizedBox(height: 12),
-
-            // 切換到店家帳號
-            Card(
-              elevation: 2,
-              color: const Color(0xFFF5EBDD),
-              child: ListTile(
-                leading: const Icon(Icons.swap_horiz),
-                title: const Text('切換到店家帳號'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: _switchToStore,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // 登出
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                icon: const Icon(Icons.logout, color: Colors.brown),
-                label: const Text('登出', style: TextStyle(color: Colors.brown)),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        title: const Text('確認登出'),
-                        content: const Text('您確定要登出齁 ?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('取消'),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 頂部標題區
+              Container(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // 登出按鈕（右上角）
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.brown,
-                              foregroundColor: Colors.white,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      backgroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      title: const Text(
+                                        '確認登出',
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      content: const Text(
+                                        '您確定要登出嗎？',
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(),
+                                          child: Text(
+                                            '取消',
+                                            style: TextStyle(
+                                              color: Colors.grey[700],
+                                            ),
+                                          ),
+                                        ),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Theme.of(context).colorScheme.primary,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            _handleLogout();
+                                          },
+                                          child: const Text('確定登出'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(22),
+                              child: Icon(
+                                Icons.logout_rounded,
+                                color: Colors.grey[700],
+                                size: 20,
+                              ),
                             ),
-                            onPressed: () {
-                              Navigator.of(context).pop(); // 關閉 Dialog
-                              _handleLogout(); // 執行登出跳轉
-                            },
-                            child: const Text('確定，但我會記得回來'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 頭像
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
                         ],
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        size: 50,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
-          ],
+                    // 使用者名稱
+                    ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.secondary,
+                        ],
+                      ).createShader(bounds),
+                      child: Text(
+                        '您好, $username',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 功能列表
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 8),
+
+                      // 基本資料卡片
+                      _buildMenuCard(
+                        context: context,
+                        icon: Icons.person_outline_rounded,
+                        title: '基本資料',
+                        subtitle: '編輯您的個人資訊',
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                          ],
+                        ),
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileEditPage(),
+                            ),
+                          );
+
+                          if (result == true) {
+                            _loadUsername();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // 切換到店家帳號
+                      _buildMenuCard(
+                        context: context,
+                        icon: Icons.store_outlined,
+                        title: '切換到店家帳號',
+                        subtitle: '管理您的商店',
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          ],
+                        ),
+                        onTap: _switchToStore,
+                      ),
+
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: gradient,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.grey[400],
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -52,50 +52,189 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('店家登入'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '歡迎回來！',
-              style: Theme.of(context).textTheme.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '開始上架您的服飾商品',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
+    final screenHeight = MediaQuery.of(context).size.height;
 
-            // Google 登入按鈕
-            OutlinedButton.icon(
-              onPressed: _isLoading ? null : _handleGoogleSignIn,
-              icon: _isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : SvgPicture.asset(
-                      'assets/images/logo/google.svg',
-                      height: 18,
-                      width: 18,
-                    ),
-              label: const Text('使用 Google 登入'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(color: Theme.of(context).colorScheme.outline),
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Color.alphaBlend(
+                Colors.white.withValues(alpha: 0.2),
+                Theme.of(context).colorScheme.surface,
               ),
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                Theme.of(context).colorScheme.surface,
+              ),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: screenHeight * 0.05),
+
+                // 返回按鈕
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                      padding: const EdgeInsets.all(12),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: screenHeight * 0.05),
+
+                // Logo與標題區域
+                _buildHeader(context),
+
+                const Spacer(),
+
+                // Google 登入按鈕
+                _buildGoogleButton(),
+
+                SizedBox(height: screenHeight * 0.1),
+              ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Column(
+      children: [
+        // Logo圖示
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.store_outlined,
+            size: 48,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        // 標題
+        ShaderMask(
+          shaderCallback: (bounds) => LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
+          ).createShader(bounds),
+          child: Text(
+            '歡迎回來!',
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        Text(
+          '開始上架您的服飾商品',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                letterSpacing: 0.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGoogleButton() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.white.withValues(alpha: 0.95),
           ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isLoading ? null : _handleGoogleSignIn,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  )
+                else
+                  SvgPicture.asset(
+                    'assets/images/logo/google.svg',
+                    height: 20,
+                    width: 20,
+                  ),
+                const SizedBox(width: 12),
+                Text(
+                  '使用 Google 登入',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

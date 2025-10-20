@@ -42,11 +42,36 @@ class ChatBubble extends StatelessWidget {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-        padding: const EdgeInsets.all(12),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isUser ? Colors.blueAccent : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(16),
+          gradient: isUser
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
+                )
+              : null,
+          color: isUser ? null : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(4),
+            bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,45 +82,50 @@ class ChatBubble extends StatelessWidget {
               styleSheet: MarkdownStyleSheet(
                 p: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 16,
+                  fontSize: 15,
+                  height: 1.4,
                 ),
                 strong: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
                 em: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 16,
+                  fontSize: 15,
                   fontStyle: FontStyle.italic,
                 ),
                 h1: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
                 h2: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 20,
+                  fontSize: 19,
                   fontWeight: FontWeight.bold,
                 ),
                 h3: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
                 listBullet: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 16,
+                  fontSize: 15,
                 ),
                 code: TextStyle(
                   color: isUser ? Colors.white : Colors.black87,
-                  backgroundColor: isUser ? Colors.blue.shade700 : Colors.grey.shade300,
+                  backgroundColor: isUser
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : Colors.grey.shade200,
                   fontFamily: 'monospace',
                 ),
                 codeblockDecoration: BoxDecoration(
-                  color: isUser ? Colors.blue.shade700 : Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(4),
+                  color: isUser
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
               shrinkWrap: true,
@@ -161,15 +191,38 @@ class QuickReplyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            width: 1.5,
           ),
         ),
-        child: Text(text),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -311,10 +364,10 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     final currentQuestion = QAConfig.questions[currentQuestionIndex];
-    
+
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      height: 60,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: currentQuestion.quickReplies
@@ -361,94 +414,225 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: const Text(
-          '穿搭顧問',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.03),
+                Theme.of(context).colorScheme.surface,
+              ),
+            ],
           ),
         ),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('重設對話'),
-                    content: const Text('確定要重設整個對話嗎？'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('取消'),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 自訂 AppBar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                        ),
+                        shape: BoxShape.circle,
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          _resetChat();
-                        },
-                        child: const Text('確定'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                padding: const EdgeInsets.all(12),
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  return ChatBubble(message: messages[index]);
-                },
-              ),
-            ),
-          _buildQuickReplies(),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: isWaitingForAnswer ? '請輸入您的回答...' : '',
-                      enabled: !isLoadingRecommendation,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      child: const Icon(
+                        Icons.psychology_outlined,
+                        color: Colors.white,
+                        size: 22,
                       ),
                     ),
-                    onSubmitted: (text) => sendMessage(text),
-                    enabled: !isLoadingRecommendation,
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '穿搭顧問',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'AI 時尚助手',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              title: const Text(
+                                '重設對話',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              content: const Text(
+                                '確定要重設整個對話嗎？',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: Text(
+                                    '取消',
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _resetChat();
+                                  },
+                                  child: const Text('確定'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: isLoadingRecommendation ? null : () => sendMessage(controller.text),
-                )
-              ],
-            ),
-          )
-          ],
+              ),
+
+              // 訊息列表
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    return ChatBubble(message: messages[index]);
+                  },
+                ),
+              ),
+
+              // 快速回覆
+              _buildQuickReplies(),
+
+              // 輸入框
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: TextField(
+                          controller: controller,
+                          decoration: InputDecoration(
+                            hintText: isWaitingForAnswer ? '請輸入您的回答...' : '',
+                            hintStyle: TextStyle(color: Colors.grey[500]),
+                            enabled: !isLoadingRecommendation,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                          ),
+                          onSubmitted: (text) => sendMessage(text),
+                          enabled: !isLoadingRecommendation,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isLoadingRecommendation
+                              ? [Colors.grey[300]!, Colors.grey[400]!]
+                              : [
+                                  Theme.of(context).colorScheme.primary,
+                                  Theme.of(context).colorScheme.secondary,
+                                ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: isLoadingRecommendation ? null : () => sendMessage(controller.text),
+                          borderRadius: BorderRadius.circular(24),
+                          child: const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

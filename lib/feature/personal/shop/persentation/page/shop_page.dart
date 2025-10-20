@@ -61,31 +61,71 @@ class _ShopPageState extends State<ShopPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
-            return Padding(
+            return Container(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '篩選與排序',
-                      style: Theme.of(context).textTheme.titleLarge,
+                    // 標題
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.tune_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          '篩選與排序',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
 
                     // 排序選項
-                    Text(
+                    const Text(
                       '排序方式',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     RadioGroup<String>(
                       groupValue: _sortBy,
                       onChanged: (String? newValue) {
@@ -97,39 +137,71 @@ class _ShopPageState extends State<ShopPage> {
                       },
                       child: Column(
                         children: [
-                          _buildSortOption('價格', 'price'),
-                          _buildSortOption('建立時間', 'created_at'),
-                          _buildSortOption('更新時間', 'updated_at'),
-                          _buildSortOption('試穿次數', 'tryon_count'),
+                          _buildSortOption('價格', 'price', setModalState),
+                          _buildSortOption('建立時間', 'created_at', setModalState),
+                          _buildSortOption('更新時間', 'updated_at', setModalState),
+                          _buildSortOption('試穿次數', 'tryon_count', setModalState),
                         ],
                       ),
                     ),
 
-                    SwitchListTile(
-                      title: const Text('遞增排序'),
-                      value: _ascending,
-                      onChanged: (value) {
-                        setModalState(() {
-                          _ascending = value;
-                        });
-                      },
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: SwitchListTile(
+                        title: const Text(
+                          '遞增排序',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        value: _ascending,
+                        activeTrackColor: Theme.of(context).colorScheme.primary,
+                        onChanged: (value) {
+                          setModalState(() {
+                            _ascending = value;
+                          });
+                        },
+                      ),
                     ),
 
-                    const Divider(height: 32),
+                    const SizedBox(height: 24),
 
                     // 價格區間
-                    Text(
+                    const Text(
                       '價格區間',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: '最低價格',
-                              border: OutlineInputBorder(),
+                              labelStyle: TextStyle(color: Colors.grey[600]),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
                               prefixText: '\$',
                             ),
                             keyboardType: TextInputType.number,
@@ -146,9 +218,19 @@ class _ShopPageState extends State<ShopPage> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: TextField(
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: '最高價格',
-                              border: OutlineInputBorder(),
+                              labelStyle: TextStyle(color: Colors.grey[600]),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
                               prefixText: '\$',
                             ),
                             keyboardType: TextInputType.number,
@@ -171,40 +253,91 @@ class _ShopPageState extends State<ShopPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              setModalState(() {
-                                _sortBy = 'created_at';
-                                _ascending = false;
-                                _minPrice = null;
-                                _maxPrice = null;
-                              });
-                              setState(() {
-                                _sortBy = 'created_at';
-                                _ascending = false;
-                                _minPrice = null;
-                                _maxPrice = null;
-                              });
-                              _loadProducts();
-                            },
-                            child: const Text('重置'),
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  setModalState(() {
+                                    _sortBy = 'created_at';
+                                    _ascending = false;
+                                    _minPrice = null;
+                                    _maxPrice = null;
+                                  });
+                                  setState(() {
+                                    _sortBy = 'created_at';
+                                    _ascending = false;
+                                    _minPrice = null;
+                                    _maxPrice = null;
+                                  });
+                                  _loadProducts();
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Center(
+                                  child: Text(
+                                    '重置',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                // 套用篩選
-                              });
-                              _loadProducts();
-                              Navigator.pop(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF5D4037),
-                              foregroundColor: Colors.white,
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).colorScheme.primary,
+                                  Theme.of(context).colorScheme.secondary,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: const Text('套用'),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    // 套用篩選
+                                  });
+                                  _loadProducts();
+                                  Navigator.pop(context);
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: const Center(
+                                  child: Text(
+                                    '套用',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -219,11 +352,44 @@ class _ShopPageState extends State<ShopPage> {
     );
   }
 
-  Widget _buildSortOption(String label, String value) {
-    return ListTile(
-      title: Text(label),
-      leading: Radio<String>(
-        value: value,
+  Widget _buildSortOption(String label, String value, StateSetter setModalState) {
+    final isSelected = _sortBy == value;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        gradient: isSelected
+            ? LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                ],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(12),
+        border: isSelected
+            ? Border.all(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              )
+            : null,
+      ),
+      child: ListTile(
+        title: Text(
+          label,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? Theme.of(context).colorScheme.primary : Colors.black87,
+          ),
+        ),
+        leading: Radio<String>(
+          value: value,
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Theme.of(context).colorScheme.primary;
+            }
+            return null;
+          }),
+        ),
       ),
     );
   }
@@ -237,93 +403,210 @@ class _ShopPageState extends State<ShopPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              // 🔍 搜尋欄
-              ShopSearchBar(
-                products: products,
-                onSearchResults: (results) {
-                  setState(() {
-                    displayedProducts = results;
-                    isLoading = false;
-                  });
-                },
-                onSearchStart: () {
-                  setState(() {
-                    isLoading = true;
-                  });
-                },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.02),
+                Theme.of(context).colorScheme.surface,
               ),
-
-              const SizedBox(height: 20),
-
-              // 📢 廣告輪播
-              AdBanner(adImages: adImages),
-
-              const SizedBox(height: 24),
-
-              // 推薦商品標題 + 篩選按鈕
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 頂部標題欄
+              Container(
+                padding: const EdgeInsets.all(16),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '推薦商品',
-                      style: Theme.of(context).textTheme.titleLarge,
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.shopping_bag_outlined,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.filter_list),
-                      onPressed: _showFilterDialog,
-                      tooltip: '篩選與排序',
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '商店',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '發現時尚新品',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.filter_list_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        onPressed: _showFilterDialog,
+                        tooltip: '篩選與排序',
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 12),
+              // 內容區域
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 🔍 搜尋欄
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ShopSearchBar(
+                          products: products,
+                          onSearchResults: (results) {
+                            setState(() {
+                              displayedProducts = results;
+                              isLoading = false;
+                            });
+                          },
+                          onSearchStart: () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                          },
+                        ),
+                      ),
 
-              // 商品 Grid（可滾動）
-              if (isLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              else if (displayedProducts.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Text('目前沒有商品'),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(), // 禁止 GridView 自己滾動
-                    itemCount: displayedProducts.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 0.7,
-                    ),
-                    itemBuilder: (context, index) {
-                      final productData = displayedProducts[index];
-                      return ProductCard(productData: productData);
-                    },
+                      const SizedBox(height: 20),
+
+                      // 📢 廣告輪播
+                      AdBanner(adImages: adImages),
+
+                      const SizedBox(height: 24),
+
+                      // 推薦商品標題
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 4,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.secondary,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              '推薦商品',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 商品 Grid（可滾動）
+                      if (isLoading)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(48.0),
+                            child: CircularProgressIndicator(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        )
+                      else if (displayedProducts.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(48.0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.shopping_bag_outlined,
+                                  size: 64,
+                                  color: Colors.grey[300],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '目前沒有商品',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: displayedProducts.length,
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.7,
+                            ),
+                            itemBuilder: (context, index) {
+                              final productData = displayedProducts[index];
+                              return ProductCard(productData: productData);
+                            },
+                          ),
+                        ),
+
+                      const SizedBox(height: 32),
+                    ],
                   ),
                 ),
-
-              const SizedBox(height: 32), // 頁尾空間
+              ),
             ],
           ),
         ),

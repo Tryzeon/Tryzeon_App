@@ -63,65 +63,259 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('編輯個人資料'),
-        centerTitle: true,
-        backgroundColor: Colors.brown,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              
-              // 姓名
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: '姓名',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: const Color(0xFFF5EBDD),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '請輸入姓名';
-                  }
-                  return null;
-                },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                Theme.of(context).colorScheme.surface,
               ),
-              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 自訂 AppBar
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_ios_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '編輯個人資料',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '更新您的個人資訊',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-              // 儲存按鈕
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              // 表單內容
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+
+                        // 表單卡片
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 圖示標題
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                          Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.person_outline_rounded,
+                                      color: Theme.of(context).colorScheme.primary,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    '基本資料',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              // 姓名欄位
+                              TextFormField(
+                                controller: _nameController,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: '姓名',
+                                  labelStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.person_outline_rounded,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Colors.grey[300]!),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Colors.grey[300]!),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return '請輸入姓名';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // 儲存按鈕
+                        Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: _isLoading
+                                ? LinearGradient(
+                                    colors: [Colors.grey[300]!, Colors.grey[400]!],
+                                  )
+                                : LinearGradient(
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.secondary,
+                                    ],
+                                  ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: _isLoading
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _isLoading ? null : _saveProfile,
+                              borderRadius: BorderRadius.circular(16),
+                              child: Center(
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.save_rounded,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Text(
+                                            '儲存',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          '儲存',
-                          style: TextStyle(fontSize: 18),
-                        ),
                 ),
               ),
             ],

@@ -178,124 +178,294 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // 標題
-              const Text(
-                '虛擬試衣間',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.brown,
-                ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
+                Theme.of(context).colorScheme.surface,
               ),
-              const SizedBox(height: 40),
-              
-              // 虛擬人偶
-              Expanded(
-                child: GestureDetector(
-                  onTap: _uploadAvatar,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.3),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
+              Color.alphaBlend(
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                Theme.of(context).colorScheme.surface,
+              ),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+            child: Column(
+              children: [
+                // 標題
+                ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
+                  ).createShader(bounds),
+                  child: const Text(
+                    '虛擬試衣間',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Stack(
-                        children: [
-                          if (_avatarUrl != null)
-                            _buildAvatarImage(_avatarUrl!)
-                          else
-                            Image.asset(
-                              'assets/images/profile/default.png',
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[300],
-                                  child: const Icon(
-                                    Icons.person,
-                                    size: 100,
-                                    color: Colors.grey,
-                                  ),
-                                );
-                              },
-                            ),
-                          if (_isLoading)
-                            Container(
-                              color: Colors.black54,
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // 虛擬人偶容器
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _uploadAvatar,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white,
+                            Colors.white.withValues(alpha: 0.9),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                            spreadRadius: 0,
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
                         ],
                       ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: Stack(
+                          children: [
+                            // 主要圖片
+                            if (_avatarUrl != null)
+                              _buildAvatarImage(_avatarUrl!)
+                            else
+                              Image.asset(
+                                'assets/images/profile/default.png',
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Colors.grey[200]!,
+                                          Colors.grey[300]!,
+                                        ],
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.person_outline_rounded,
+                                            size: 80,
+                                            color: Colors.grey[400],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            '點擊上傳您的照片',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+
+                            // 載入遮罩
+                            if (_isLoading)
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.6),
+                                      Colors.black.withValues(alpha: 0.8),
+                                    ],
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircularProgressIndicator(
+                                        color: Theme.of(context).colorScheme.secondary,
+                                        strokeWidth: 3,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      const Text(
+                                        '處理中...',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                            // 上傳提示（當沒有載入時顯示）
+                            if (!_isLoading && _avatarUrl != null)
+                              Positioned(
+                                top: 16,
+                                right: 16,
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt_outlined,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              
-              const SizedBox(height: 40),
-              
-              // 按鈕區域
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // 衣櫃按鈕
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const WardrobePage(),
+
+                const SizedBox(height: 32),
+
+                // 按鈕區域
+                Row(
+                  children: [
+                    // 衣櫃按鈕
+                    Expanded(
+                      child: _buildActionButton(
+                        context: context,
+                        icon: Icons.checkroom_rounded,
+                        label: '我的衣櫃',
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                          ],
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.checkroom),
-                    label: const Text('我的衣櫃'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const WardrobePage(),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                  
-                  // 虛擬試穿按鈕
-                  ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _virtualTryon,
-                    icon: const Icon(Icons.add_a_photo),
-                    label: const Text('虛擬試穿'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown[700],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+
+                    const SizedBox(width: 16),
+
+                    // 虛擬試穿按鈕
+                    Expanded(
+                      child: _buildActionButton(
+                        context: context,
+                        icon: Icons.auto_awesome_rounded,
+                        label: '虛擬試穿',
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Theme.of(context).colorScheme.secondary,
+                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
+                          ],
+                        ),
+                        onPressed: _isLoading ? null : _virtualTryon,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Gradient gradient,
+    required VoidCallback? onPressed,
+  }) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: onPressed == null
+            ? LinearGradient(
+                colors: [Colors.grey[300]!, Colors.grey[400]!],
+              )
+            : gradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: onPressed == null
+            ? []
+            : [
+                BoxShadow(
+                  color: gradient.colors.first.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
               ),
-              
-              const SizedBox(height: 20),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ],
           ),
         ),
