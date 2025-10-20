@@ -15,7 +15,7 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String? _avatarUrl;
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -49,6 +49,7 @@ class HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() {
         _avatarUrl = url;
+        _isLoading = false;
       });
     }
   }
