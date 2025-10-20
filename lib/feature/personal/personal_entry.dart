@@ -67,7 +67,7 @@ class PersonalEntryState extends State<PersonalEntry> {
           BottomNavigationBarItem(icon: Icon(Icons.group), label: '社群'),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: '聊天'),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '首頁'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: '商城'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: '試衣間'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: '個人'),
         ],
       ),
