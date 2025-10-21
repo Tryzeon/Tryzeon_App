@@ -47,19 +47,82 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('確認刪除'),
-          content: Text('確定要刪除「${widget.product.name}」嗎？'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.warning_rounded,
+                  color: Colors.red,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '確認刪除',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Text('確定要刪除「${widget.product.name}」嗎？此操作無法復原。'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D4037),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              child: const Text('刪除', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                '取消',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Colors.red,
+                    Color(0xFFE53935),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  '刪除',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
           ],
         );
@@ -140,48 +203,85 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Colors.transparent,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
         constraints: BoxConstraints(maxWidth: 500, maxHeight: MediaQuery.of(context).size.height * 0.9),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 標題列
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.secondary,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.inventory_2_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       '商品資訊',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: _deleteProduct,
-                        tooltip: '刪除商品',
-                        iconSize: 20,
-                        constraints: const BoxConstraints(),
-                        padding: const EdgeInsets.all(8),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                        iconSize: 20,
-                        constraints: const BoxConstraints(),
-                        padding: const EdgeInsets.all(8),
-                      ),
-                    ],
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: _deleteProduct,
+                      tooltip: '刪除商品',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: Theme.of(context).colorScheme.primary),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // 圖片區域
               GestureDetector(
                 onTap: () async {
                   final image = await ImagePickerHelper.pickImage(context);
@@ -195,47 +295,123 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                   height: 200,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD7CCC8),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                        Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                      width: 2,
+                    ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: newImage != null
-                        ? Image.file(
-                            newImage!,
-                            fit: BoxFit.contain,
-                          )
-                        : FutureBuilder<File?>(
-                            future: FileCacheService.getFile(widget.product.imagePath),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData && snapshot.data != null) {
-                                return Image.file(
-                                  snapshot.data!,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.image_not_supported),
-                                );
-                              }
-                              return const Center(child: CircularProgressIndicator());
-                            },
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: newImage != null
+                            ? Image.file(
+                                newImage!,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                              )
+                            : FutureBuilder<File?>(
+                                future: FileCacheService.getFile(widget.product.imagePath),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData && snapshot.data != null) {
+                                    return Image.file(
+                                      snapshot.data!,
+                                      fit: BoxFit.contain,
+                                      width: double.infinity,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          Center(
+                                            child: Icon(
+                                              Icons.image_not_supported,
+                                              size: 48,
+                                              color: Colors.grey[400],
+                                            ),
+                                          ),
+                                    );
+                                  }
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                      Positioned(
+                        bottom: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                              ),
+                            ],
                           ),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 商品名稱
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: '商品名稱',
+                  prefixIcon: Icon(Icons.shopping_bag_outlined, color: Theme.of(context).colorScheme.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: '商品名稱',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
+
+              // 衣服種類
               DropdownButtonFormField<String>(
-                initialValue: selectedType,
-                decoration: const InputDecoration(
+                value: selectedType,
+                decoration: InputDecoration(
                   labelText: '衣服種類',
-                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.category_outlined, color: Theme.of(context).colorScheme.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
                 ),
                 items: clothingTypes.map((String type) {
                   return DropdownMenuItem<String>(
@@ -249,40 +425,100 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                   });
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // 價格
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: '價格',
-                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.payments_outlined, color: Theme.of(context).colorScheme.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // 購買連結
               TextField(
                 controller: purchaseLinkController,
                 keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: '購買連結',
                   hintText: 'https://...',
-                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.link_rounded, color: Theme.of(context).colorScheme.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
+
+              // 儲存按鈕
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.secondary,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
                     onPressed: isLoading ? null : _updateProduct,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     child: isLoading
                         ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
                           )
-                        : const Text('儲存'),
+                        : const Text(
+                            '儲存',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                ],
+                ),
               ),
             ],
           ),
