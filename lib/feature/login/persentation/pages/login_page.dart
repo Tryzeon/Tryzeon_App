@@ -267,12 +267,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  color: const Color(0x33FFFFFF),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0x4DFFFFFF),
-                    width: 1.5,
-                  ),
                 ),
                 child: Icon(
                   icon,
@@ -299,7 +295,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: const Color(0xE6FFFFFF),
+                            color: Colors.white.withValues(alpha: 0.9),
                             letterSpacing: 0.3,
                       ),
                     ),
@@ -308,9 +304,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ),
 
               // 箭頭
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Color(0xCCFFFFFF),
+                color: Colors.white.withValues(alpha: 0.8),
                 size: 20,
               ),
             ],
@@ -407,7 +403,7 @@ class _GlassPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0x1AFFFFFF)
+      ..color = Colors.white.withValues(alpha: 0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
     final path = Path()

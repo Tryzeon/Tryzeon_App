@@ -107,18 +107,21 @@ class CommunityPage extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.share_outlined,
                       title: '分享穿搭',
                       subtitle: '與朋友分享你的時尚品味',
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.favorite_outline_rounded,
                       title: '按讚收藏',
                       subtitle: '收藏喜歡的穿搭靈感',
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.comment_outlined,
                       title: '互動交流',
                       subtitle: '與其他用戶交流心得',
@@ -134,6 +137,7 @@ class CommunityPage extends StatelessWidget {
   }
 
   Widget _buildFeatureItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -144,12 +148,10 @@ class CommunityPage extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFE8DEF8), Color(0xFFF3E5F5)],
-            ),
+            color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF6750A4)),
+          child: Icon(icon, color: Theme.of(context).colorScheme.tertiary),
         ),
         const SizedBox(width: 16),
         Expanded(

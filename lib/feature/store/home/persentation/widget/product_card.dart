@@ -35,7 +35,6 @@ class StoreProductCard extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD7CCC8),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(10),
                   ),
@@ -82,8 +81,8 @@ class StoreProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '\$${product.price}',
-                    style: const TextStyle(
-                      color: Color(0xFF5D4037),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

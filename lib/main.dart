@@ -58,15 +58,8 @@ class _TryzeonState extends State<Tryzeon> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.brown,
-        ).copyWith(
-          onSurface: Colors.brown[900],
         ),
-        scaffoldBackgroundColor: const Color(0xFFFAF4EC),
         useMaterial3: true,
-        textTheme: ThemeData.light().textTheme.apply(
-          bodyColor: Colors.brown[700],
-          displayColor: Colors.brown[700],
-        ),
       ),
       home: _isLoading
           ? const Scaffold(

@@ -94,7 +94,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
       appBar: AppBar(
         title: const Text('店家註冊'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF5D4037),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
         leading: IconButton(
@@ -117,17 +117,17 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.description,
                 size: 80,
-                color: Color(0xFF5D4037),
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 32),
               Text(
                 '店家註冊',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF5D4037),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -163,7 +163,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                       icon: const Icon(Icons.open_in_new),
                       label: const Text('開啟申請表單'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF5D4037),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
