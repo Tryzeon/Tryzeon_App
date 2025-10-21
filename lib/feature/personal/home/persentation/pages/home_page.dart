@@ -210,12 +210,25 @@ class HomePageState extends State<HomePage> {
                     ],
                   ).createShader(bounds),
                   child: const Text(
-                    '享受時尚，自由穿搭',
+                    'Tryzeon',
                     style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
                       color: Colors.white,
-                      letterSpacing: 1.2,
+                      letterSpacing: 3.0,
+                      height: 1.2,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(2, 2),
+                          blurRadius: 4,
+                          color: Color.fromARGB(80, 0, 0, 0),
+                        ),
+                        Shadow(
+                          offset: Offset(-1, -1),
+                          blurRadius: 8,
+                          color: Color.fromARGB(40, 255, 255, 255),
+                        ),
+                      ],
                     ),
                   ),
                 ),
