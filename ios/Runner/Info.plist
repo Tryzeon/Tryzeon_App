@@ -52,7 +52,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-			<string>com.googleusercontent.apps.186632123893-jbfo2s7ubp3r14luahjiuu3fvi21fler</string>
+			<string>io.supabase.tryzeon</string>
 			</array>
 		</dict>
 	</array>

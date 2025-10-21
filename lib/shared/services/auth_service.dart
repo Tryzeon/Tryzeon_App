@@ -1,4 +1,3 @@
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
@@ -52,42 +51,76 @@ class AuthService {
     required UserType userType,
   }) async {
     try {
-      const iosClientId = '186632123893-jbfo2s7ubp3r14luahjiuu3fvi21fler.apps.googleusercontent.com';
-
-      final googleSignIn = GoogleSignIn(
-        clientId: iosClientId,
+      final success = await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.tryzeon://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        return AuthResult.failure('登入失敗');
+      if (!success) {
+        return AuthResult.failure('Google 登入失敗，請稍後再試');
       }
 
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
+      // 等待認證狀態變化，最多等待 60 秒
+      final user = await _supabase.auth.onAuthStateChange
+          .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () => throw Exception('登入超時'),
+          )
+          .then((state) => state.session?.user);
 
-      if (idToken == null) {
-        throw AuthException('無法取得 Google ID Token');
+      if (user == null) {
+        return AuthResult.failure('Google 登入失敗：無法取得用戶資訊');
       }
 
-      final response = await _supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: googleAuth.accessToken,
-      );
-
-      if (response.user == null) {
-        return AuthResult.failure('Google 登入失敗: user not found');
-      }
-
-      // 儲存最後登入的類型
+      // 儲存登入類型
       await saveLastLoginType(userType);
 
-      return AuthResult.success(response.user!);
+      return AuthResult.success(user);
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
     } catch (e) {
       return AuthResult.failure('Google 登入失敗：${e.toString()}');
+    }
+  }
+
+  /// Facebook 登入
+  static Future<AuthResult> signInWithFacebook({
+    required UserType userType,
+  }) async {
+    try {
+      final success = await _supabase.auth.signInWithOAuth(
+        OAuthProvider.facebook,
+        redirectTo: 'io.supabase.tryzeon://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      if (!success) {
+        return AuthResult.failure('Facebook 登入失敗，請稍後再試');
+      }
+
+      // 等待認證狀態變化，最多等待 60 秒
+      final user = await _supabase.auth.onAuthStateChange
+          .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () => throw Exception('登入超時'),
+          )
+          .then((state) => state.session?.user);
+
+      if (user == null) {
+        return AuthResult.failure('Facebook 登入失敗：無法取得用戶資訊');
+      }
+
+      // 儲存登入類型
+      await saveLastLoginType(userType);
+
+      return AuthResult.success(user);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Facebook 登入失敗：${e.toString()}');
     }
   }
 
@@ -120,7 +153,7 @@ class AuthService {
     // 清除 SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_lastLoginTypeKey);
-    
+
     // 執行 Supabase 登出
     await _supabase.auth.signOut();
   }
