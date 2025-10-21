@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/shared/services/account_service.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
 import '../widget/account_page.dart';
-import '../../data/account_service.dart';
 
 
 class ProfilePage extends StatefulWidget {

@@ -23,13 +23,14 @@ class AccountResult {
 class AccountService {
   static final _supabase = Supabase.instance.client;
 
+  /// 取得顯示名稱
   static String get displayName {
     final user = _supabase.auth.currentUser;
     if (user == null) return "無名氏";
 
-    final displayName = user.userMetadata?['name'] as String?;
-    if (displayName != null && displayName.isNotEmpty) {
-      return displayName;
+    final name = user.userMetadata?['name'] as String?;
+    if (name != null && name.isNotEmpty) {
+      return name;
     }
 
     return "無名氏";
@@ -49,8 +50,10 @@ class AccountService {
       } else {
         return AccountResult.failure('更新失敗');
       }
+    } on AuthException catch (e) {
+      return AccountResult.failure(e.message);
     } catch (e) {
-      return AccountResult.failure('更新失敗: $e');
+      return AccountResult.failure('更新失敗: ${e.toString()}');
     }
   }
 }

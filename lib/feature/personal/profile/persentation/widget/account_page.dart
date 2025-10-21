@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/account_service.dart';
+import 'package:tryzeon/shared/services/account_service.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({super.key});
