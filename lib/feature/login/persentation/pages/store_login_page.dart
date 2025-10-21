@@ -11,8 +11,6 @@ class StoreLoginPage extends StatefulWidget {
 }
 
 class _StoreLoginPageState extends State<StoreLoginPage> {
-  bool _isLoading = false;
-
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -24,29 +22,32 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
+    final result = await AuthService.signInWithGoogle(
+      userType: UserType.store,
+    );
 
-    try {
-      final result = await AuthService.signInWithGoogle(
-        userType: UserType.store,
+    if (result.success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const StoreEntry()),
       );
+    } else if (!result.success) {
+      _showError(result.errorMessage ?? 'Google 登入失敗');
+    }
+  }
 
-      if (result.success && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const StoreEntry()),
-        );
-      } else if (!result.success) {
-        _showError(result.errorMessage ?? 'Google 登入失敗');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+  Future<void> _handleFacebookSignIn() async {
+    final result = await AuthService.signInWithFacebook(
+      userType: UserType.store,
+    );
+
+    if (result.success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const StoreEntry()),
+      );
+    } else if (!result.success) {
+      _showError(result.errorMessage ?? 'Facebook 登入失敗');
     }
   }
 
@@ -103,6 +104,11 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
 
                 // Google 登入按鈕
                 _buildGoogleButton(),
+
+                const SizedBox(height: 16),
+
+                // Facebook 登入按鈕
+                _buildFacebookButton(),
 
                 SizedBox(height: screenHeight * 0.1),
               ],
@@ -201,31 +207,73 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _isLoading ? null : _handleGoogleSignIn,
+          onTap: _handleGoogleSignIn,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (_isLoading)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  )
-                else
-                  SvgPicture.asset(
-                    'assets/images/logo/google.svg',
-                    height: 20,
-                    width: 20,
-                  ),
+                const SizedBox(width: 60),
+                SvgPicture.asset(
+                  'assets/images/logo/google.svg',
+                  height: 24,
+                  width: 24,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   '使用 Google 登入',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFacebookButton() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.white.withValues(alpha: 0.95),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _handleFacebookSignIn,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+            child: Row(
+              children: [
+                const SizedBox(width: 60),
+                SvgPicture.asset(
+                  'assets/images/logo/facebook.svg',
+                  height: 24,
+                  width: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '使用 Facebook 登入',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
