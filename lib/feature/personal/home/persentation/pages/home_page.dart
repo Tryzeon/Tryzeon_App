@@ -210,7 +210,7 @@ class HomePageState extends State<HomePage> {
                     ],
                   ).createShader(bounds),
                   child: const Text(
-                    '虛擬試衣間',
+                    '享受時尚，自由穿搭',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -222,7 +222,8 @@ class HomePageState extends State<HomePage> {
                 const SizedBox(height: 24),
 
                 // 虛擬人偶容器
-                Expanded(
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
                   child: GestureDetector(
                     onTap: _uploadAvatar,
                     child: Container(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'chat/persentation/page/chat_page.dart';
 import 'community/persentation/pages/community_page.dart';
 import 'home/persentation/pages/home_page.dart';
@@ -52,23 +54,57 @@ class PersonalEntryState extends State<PersonalEntry> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AdaptiveScaffold(
+      minimizeBehavior: TabBarMinimizeBehavior.never,
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.brown,
-        unselectedItemColor: Colors.grey,
+      bottomNavigationBar: AdaptiveBottomNavigationBar(
+        selectedIndex: _selectedIndex,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: '社群'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: '聊天'),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '首頁'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: '試衣間'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '個人'),
+        useNativeBottomBar: true,
+        items: [
+          AdaptiveNavigationDestination(
+            icon: PlatformInfo.isIOS26OrHigher()
+                ? "person.3"
+                : PlatformInfo.isIOS
+                ? CupertinoIcons.group
+                : Icons.group_outlined,
+            label: '社群',
+          ),
+          AdaptiveNavigationDestination(
+            icon: PlatformInfo.isIOS26OrHigher()
+                ? "message"
+                : PlatformInfo.isIOS
+                ? CupertinoIcons.chat_bubble
+                : Icons.chat_outlined,
+            label: '聊天',
+          ),
+          AdaptiveNavigationDestination(
+            icon: PlatformInfo.isIOS26OrHigher()
+                ? "house"
+                : PlatformInfo.isIOS
+                ? CupertinoIcons.house
+                : Icons.home_outlined,
+            label: '首頁',
+          ),
+          AdaptiveNavigationDestination(
+            icon: PlatformInfo.isIOS26OrHigher()
+                ? "cart"
+                : PlatformInfo.isIOS
+                ? CupertinoIcons.cart
+                : Icons.shopping_cart_outlined,
+            label: '試衣間',
+          ),
+          AdaptiveNavigationDestination(
+            icon: PlatformInfo.isIOS26OrHigher()
+                ? "person"
+                : PlatformInfo.isIOS
+                ? CupertinoIcons.person
+                : Icons.person_outline,
+            label: '個人',
+          ),
         ],
       ),
     );
