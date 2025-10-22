@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 import '../widget/wardrobe_page.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
 
@@ -36,8 +37,10 @@ class HomePageState extends State<HomePage> {
         if (tryonResult != null) {
           _avatarUrl = tryonResult;
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('虛擬試穿失敗，請稍後再試')),
+          TopNotification.show(
+            context,
+            message: '虛擬試穿失敗，請稍後再試',
+            type: NotificationType.error,
           );
         }
       });
@@ -80,8 +83,10 @@ class HomePageState extends State<HomePage> {
           _isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('上傳失敗，請稍後再試')),
+        TopNotification.show(
+          context,
+          message: '上傳失敗，請稍後再試',
+          type: NotificationType.error,
         );
       }
     }
@@ -90,8 +95,10 @@ class HomePageState extends State<HomePage> {
   Future<void> _virtualTryon() async {
     // Check if avatar is available
     if (_avatarUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('請先上傳您的照片')),
+      TopNotification.show(
+        context,
+        message: '請先上傳您的照片',
+        type: NotificationType.warning,
       );
       return;
     }
@@ -102,8 +109,10 @@ class HomePageState extends State<HomePage> {
 
     if (clothingImage == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('無法獲取您上傳的照片')),
+        TopNotification.show(
+          context,
+          message: '無法獲取您上傳的照片',
+          type: NotificationType.error,
         );
       }
       return;
@@ -123,8 +132,10 @@ class HomePageState extends State<HomePage> {
           _avatarUrl = tryonResult;
         } else {
           // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('虛擬試穿失敗，請稍後再試')),
+          TopNotification.show(
+            context,
+            message: '虛擬試穿失敗，請稍後再試',
+            type: NotificationType.error,
           );
         }
       });

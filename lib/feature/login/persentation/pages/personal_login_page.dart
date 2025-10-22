@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 
 class PersonalLoginPage extends StatefulWidget {
@@ -13,11 +14,10 @@ class PersonalLoginPage extends StatefulWidget {
 class _PersonalLoginPageState extends State<PersonalLoginPage> {
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+    TopNotification.show(
+      context,
+      message: message,
+      type: NotificationType.error,
     );
   }
 

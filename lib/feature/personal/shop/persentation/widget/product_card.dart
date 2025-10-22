@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 import '../../data/shop_service.dart';
 
@@ -48,14 +49,18 @@ class _ProductCardState extends State<ProductCard> {
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('無法開啟購買連結')),
+              TopNotification.show(
+                context,
+                message: '無法開啟購買連結',
+                type: NotificationType.error,
               );
             }
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('此商品尚無購買連結')),
+          TopNotification.show(
+            context,
+            message: '此商品尚無購買連結',
+            type: NotificationType.info,
           );
         }
       },

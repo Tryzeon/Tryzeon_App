@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import '../../../data/product_service.dart';
 
 class AddProductPage extends StatefulWidget {
@@ -468,12 +469,10 @@ class _AddProductPageState extends State<AddProductPage> {
                                       priceController.text,
                                     );
                                     if (price == null) {
-                                      ScaffoldMessenger.of(
+                                      TopNotification.show(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('請輸入有效的價格'),
-                                        ),
+                                        message: '請輸入有效的價格',
+                                        type: NotificationType.warning,
                                       );
                                       setState(() {
                                         isLoading = false;
@@ -481,8 +480,6 @@ class _AddProductPageState extends State<AddProductPage> {
                                       return;
                                     }
 
-                                    final scaffoldMessenger =
-                                        ScaffoldMessenger.of(context);
                                     final navigator = Navigator.of(context);
 
                                     final success =
@@ -502,20 +499,24 @@ class _AddProductPageState extends State<AddProductPage> {
                                     });
 
                                     if (success) {
-                                      scaffoldMessenger.showSnackBar(
-                                        const SnackBar(content: Text('商品新增成功')),
-                                      );
                                       navigator.pop();
+                                      TopNotification.show(
+                                        context,
+                                        message: '商品新增成功',
+                                        type: NotificationType.success,
+                                      );
                                     } else {
-                                      scaffoldMessenger.showSnackBar(
-                                        const SnackBar(
-                                          content: Text('商品新增失敗，請稍後再試'),
-                                        ),
+                                      TopNotification.show(
+                                        context,
+                                        message: '商品新增失敗，請稍後再試',
+                                        type: NotificationType.error,
                                       );
                                     }
                                   } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('請填寫完整資料')),
+                                    TopNotification.show(
+                                      context,
+                                      message: '請填寫完整資料',
+                                      type: NotificationType.warning,
                                     );
                                   }
                                 },

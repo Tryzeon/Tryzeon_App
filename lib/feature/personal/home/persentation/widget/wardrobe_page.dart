@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../data/wardrobe_service.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 
 class WardrobePage extends StatefulWidget {
   const WardrobePage({super.key});
@@ -603,8 +604,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                               setState(() {
                                 _isUploading = false;
                               });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('上傳失敗')),
+                              TopNotification.show(
+                                context,
+                                message: '上傳失敗，請稍後再試',
+                                type: NotificationType.error,
                               );
                             }
                           }

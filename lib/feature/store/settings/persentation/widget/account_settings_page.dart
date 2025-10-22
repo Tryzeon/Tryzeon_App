@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import '../../../data/store_service.dart';
 
 class StoreAccountSettingsPage extends StatefulWidget {
@@ -49,15 +50,19 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
 
     if (success) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('店家資訊已更新')),
-        );
         Navigator.of(context).pop();
+        TopNotification.show(
+          context,
+          message: '店家資訊已更新',
+          type: NotificationType.success,
+        );
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('更新失敗，請稍後再試')),
+        TopNotification.show(
+          context,
+          message: '更新失敗，請稍後再試',
+          type: NotificationType.error,
         );
       }
     }
@@ -85,16 +90,20 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
       await StoreService.uploadLogo(_logoImage!);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('店家Logo已更新')),
+        TopNotification.show(
+          context,
+          message: '店家Logo已更新',
+          type: NotificationType.success,
         );
         // 重新載入頁面以更新 Logo
         setState(() {});
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('上傳失敗，請稍後再試')),
+        TopNotification.show(
+          context,
+          message: '上傳失敗，請稍後再試',
+          type: NotificationType.error,
         );
       }
     }

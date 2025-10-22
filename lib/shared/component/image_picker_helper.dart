@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import 'dart:io';
 
 class ImagePickerHelper {
@@ -68,8 +69,10 @@ class ImagePickerHelper {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('選擇圖片失敗: $e')),
+          TopNotification.show(
+            context,
+            message: '選擇圖片失敗: $e',
+            type: NotificationType.error,
           );
         }
       }

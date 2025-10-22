@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/account_service.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({super.key});
@@ -42,13 +43,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       });
 
       if (result.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('個人資料已更新')),
-        );
         Navigator.pop(context, true);
+        TopNotification.show(
+          context,
+          message: '個人資料已更新',
+          type: NotificationType.success,
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.errorMessage ?? '更新失敗')),
+        TopNotification.show(
+          context,
+          message: result.errorMessage ?? '更新失敗',
+          type: NotificationType.error,
         );
       }
     }
