@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import '../../../data/product_service.dart';
 
-
 class AddProductPage extends StatefulWidget {
   const AddProductPage({super.key});
 
@@ -18,7 +17,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController purchaseLinkController = TextEditingController();
   File? selectedImage;
   bool isLoading = false;
-  
+
   // 衣服種類選項
   final List<String> clothingTypes = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
   String? selectedType;
@@ -62,7 +61,9 @@ class _AddProductPageState extends State<AddProductPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
@@ -134,7 +135,9 @@ class _AddProductPageState extends State<AddProductPage> {
                           const SizedBox(height: 12),
                           GestureDetector(
                             onTap: () async {
-                              final image = await ImagePickerHelper.pickImage(context);
+                              final image = await ImagePickerHelper.pickImage(
+                                context,
+                              );
                               if (image != null) {
                                 setState(() {
                                   selectedImage = image;
@@ -147,31 +150,40 @@ class _AddProductPageState extends State<AddProductPage> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                    Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                                    Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.1),
+                                    Theme.of(context).colorScheme.secondary
+                                        .withValues(alpha: 0.1),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.3),
                                   width: 2,
                                 ),
                               ),
                               child: selectedImage == null
                                   ? Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.add_photo_alternate_rounded,
                                           size: 40,
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
                                           '點擊選擇圖片',
                                           style: TextStyle(
                                             fontSize: 13,
-                                            color: Theme.of(context).colorScheme.primary,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -240,11 +252,15 @@ class _AddProductPageState extends State<AddProductPage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -279,11 +295,15 @@ class _AddProductPageState extends State<AddProductPage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -329,11 +349,15 @@ class _AddProductPageState extends State<AddProductPage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -370,11 +394,15 @@ class _AddProductPageState extends State<AddProductPage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -414,7 +442,9 @@ class _AddProductPageState extends State<AddProductPage> {
                             ? []
                             : [
                                 BoxShadow(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.3),
                                   blurRadius: 15,
                                   offset: const Offset(0, 8),
                                 ),
@@ -423,59 +453,72 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: isLoading ? null : () async {
-                if (selectedImage != null && 
-                    nameController.text.isNotEmpty && 
-                    selectedType != null && 
-                    priceController.text.isNotEmpty) {
-                  setState(() {
-                    isLoading = true;
-                  });
+                          onTap: isLoading
+                              ? null
+                              : () async {
+                                  if (selectedImage != null &&
+                                      nameController.text.isNotEmpty &&
+                                      selectedType != null &&
+                                      priceController.text.isNotEmpty) {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
 
-                  final price = int.tryParse(priceController.text);
-                  if (price == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('請輸入有效的價格')),
-                    );
-                    setState(() {
-                      isLoading = false;
-                    });
-                    return;
-                  }
+                                    final price = int.tryParse(
+                                      priceController.text,
+                                    );
+                                    if (price == null) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('請輸入有效的價格'),
+                                        ),
+                                      );
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      return;
+                                    }
 
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-                  final navigator = Navigator.of(context);
+                                    final scaffoldMessenger =
+                                        ScaffoldMessenger.of(context);
+                                    final navigator = Navigator.of(context);
 
-                  final success = await ProductService.createProduct(
-                    name: nameController.text,
-                    type: selectedType!,
-                    price: price,
-                    purchaseLink: purchaseLinkController.text,
-                    imageFile: selectedImage!,
-                  );
+                                    final success =
+                                        await ProductService.createProduct(
+                                          name: nameController.text,
+                                          type: selectedType!,
+                                          price: price,
+                                          purchaseLink:
+                                              purchaseLinkController.text,
+                                          imageFile: selectedImage!,
+                                        );
 
-                  if (!mounted) return;
+                                    if (!mounted) return;
 
-                  setState(() {
-                    isLoading = false;
-                  });
+                                    setState(() {
+                                      isLoading = false;
+                                    });
 
-                  if (success) {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(content: Text('商品新增成功')),
-                    );
-                    navigator.pop();
-                  } else {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(content: Text('商品新增失敗，請稍後再試')),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('請填寫完整資料')),
-                  );
-                }
-              },
+                                    if (success) {
+                                      scaffoldMessenger.showSnackBar(
+                                        const SnackBar(content: Text('商品新增成功')),
+                                      );
+                                      navigator.pop();
+                                    } else {
+                                      scaffoldMessenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Text('商品新增失敗，請稍後再試'),
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('請填寫完整資料')),
+                                    );
+                                  }
+                                },
                           borderRadius: BorderRadius.circular(16),
                           child: Center(
                             child: isLoading
