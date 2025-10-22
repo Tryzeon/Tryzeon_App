@@ -4,7 +4,6 @@ import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/services/account_service.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/component/confirmation_dialog.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
 import '../widget/account_page.dart';
 
 
@@ -39,41 +38,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (confirmed != true) return;
 
-    // 切換帳號類型
-    final result = await AuthService.switchUserType(UserType.store);
-
-    // 關閉載入對話框
     if (mounted) {
-      Navigator.of(context).pop();
-    }
-
-    if (result.success) {
-      // 切換成功，導航到店家版主頁
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const StoreEntry()),
-          (route) => false,
-        );
-      }
-    } else {
-      // 切換失敗，顯示錯誤訊息
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('切換失敗'),
-              content: Text(result.errorMessage ?? '無法切換到店家版'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('確定'),
-                ),
-              ],
-            );
-          },
-        );
-      }
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const StoreEntry()),
+        (route) => false,
+      );
     }
   }
 

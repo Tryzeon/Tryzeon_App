@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 import 'chat/persentation/page/chat_page.dart';
 import 'community/persentation/pages/community_page.dart';
 import 'home/persentation/pages/home_page.dart';
@@ -34,6 +35,8 @@ class PersonalEntryState extends State<PersonalEntry> {
       const ShopPage(),
       const ProfilePage(),
     ];
+    
+    AuthService.saveLastLoginType(UserType.personal);
   }
 
   void _onItemTapped(int index) {

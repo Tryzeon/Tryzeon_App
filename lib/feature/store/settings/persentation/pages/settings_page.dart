@@ -17,63 +17,11 @@ class StoreSettingsPage extends StatelessWidget {
 
     if (confirmed != true) return;
 
-    // 切換帳號類型
-    final result = await AuthService.switchUserType(UserType.personal);
-
-    // 關閉載入對話框
     if (context.mounted) {
-      Navigator.of(context).pop();
-    }
-
-    if (result.success) {
-      // 切換成功，導航到個人版主頁
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const PersonalEntry()),
-          (route) => false,
-        );
-      }
-    } else {
-      // 切換失敗，顯示錯誤訊息
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: const Text(
-                '切換失敗',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: Text(
-                result.errorMessage ?? '無法切換到個人版',
-                style: const TextStyle(
-                  color: Colors.black87,
-                ),
-              ),
-              actions: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('確定'),
-                ),
-              ],
-            );
-          },
-        );
-      }
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const PersonalEntry()),
+        (route) => false,
+      );
     }
   }
 

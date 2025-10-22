@@ -124,23 +124,6 @@ class AuthService {
     }
   }
 
-  /// 切換帳號類型
-  static Future<AuthResult> switchUserType(UserType targetType) async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
-        return AuthResult.failure('未登入');
-      }
-
-      // 儲存切換後的登入類型
-      await saveLastLoginType(targetType);
-
-      return AuthResult.success(user);
-    } catch (e) {
-      return AuthResult.failure('切換失敗，請稍後再試');
-    }
-  }
-
   /// 登出
   static Future<void> signOut() async {
     final userId = _supabase.auth.currentUser?.id;

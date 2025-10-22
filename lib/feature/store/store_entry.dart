@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/store/data/store_service.dart';
 import 'package:tryzeon/feature/store/onboarding/persentation/pages/store_onboarding_page.dart';
 import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
+import 'package:tryzeon/shared/services/auth_service.dart';
 
 /// 店家入口 - 負責判斷是否需要 onboarding
 class StoreEntry extends StatefulWidget {
@@ -19,6 +20,8 @@ class _StoreEntryState extends State<StoreEntry> {
   void initState() {
     super.initState();
     _checkStoreInfo();
+    
+    AuthService.saveLastLoginType(UserType.store);
   }
 
   Future<void> _checkStoreInfo() async {
