@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 import '../../../../personal/personal_entry.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,22 +33,9 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
   }
 
   Future<void> _switchToPersonalAccount() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await ConfirmationDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('切換到個人帳號'),
-        content: const Text('確定要切換到個人帳號嗎？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('確定'),
-          ),
-        ],
-      ),
+      content: '你確定要切換到個人版帳號嗎？',
     );
 
     if (confirmed == true && mounted) {
@@ -59,22 +47,10 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
   }
 
   Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await ConfirmationDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('確認登出'),
-        content: const Text('確定要登出嗎？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('登出'),
-          ),
-        ],
-      ),
+      content: '你確定要登出嗎？',
+      confirmText: '登出',
     );
 
     if (confirmed == true) {

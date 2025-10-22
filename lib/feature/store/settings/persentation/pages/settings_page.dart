@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widget/account_settings_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/shared/component/confirmation_dialog.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 import '../../../../personal/personal_entry.dart';
 
@@ -8,16 +10,12 @@ class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});
 
   Future<void> _switchToPersonal(BuildContext context) async {
-    // 顯示載入對話框
-    showDialog(
+    final confirmed = await ConfirmationDialog.show(
       context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+      content: '你確定要切換到個人版帳號嗎？',
     );
+
+    if (confirmed != true) return;
 
     // 切換帳號類型
     final result = await AuthService.switchUserType(UserType.personal);
@@ -80,54 +78,13 @@ class StoreSettingsPage extends StatelessWidget {
   }
 
   Future<void> _signOut(BuildContext context) async {
-    final shouldSignOut = await showDialog<bool>(
+    final comfirmed = await ConfirmationDialog.show(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            '確認登出',
-            style: TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: const Text(
-            '你確定要登出嗎？',
-            style: TextStyle(
-              color: Colors.black87,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: Colors.grey[700],
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('確定登出'),
-            ),
-          ],
-        );
-      },
+      content: '你確定要登出嗎？',
+      confirmText: '登出',
     );
 
-    if (shouldSignOut == true) {
+    if (comfirmed == true) {
       await AuthService.signOut();
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(

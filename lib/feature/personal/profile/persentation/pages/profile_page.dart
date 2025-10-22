@@ -3,6 +3,8 @@ import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/services/account_service.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
+import 'package:tryzeon/shared/component/confirmation_dialog.dart';
+import 'package:tryzeon/shared/component/top_notification.dart';
 import '../widget/account_page.dart';
 
 
@@ -30,16 +32,12 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _switchToStore() async {
-    // 顯示載入對話框
-    showDialog(
+    final confirmed = await ConfirmationDialog.show(
       context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+      content: '你確定要切換到店家版帳號嗎？',
     );
+
+    if (confirmed != true) return;
 
     // 切換帳號類型
     final result = await AuthService.switchUserType(UserType.store);
@@ -136,56 +134,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () {
-                                showDialog(
+                              onTap: () async {
+                                final confirmed = await ConfirmationDialog.show(
                                   context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      backgroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      title: const Text(
-                                        '確認登出',
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      content: const Text(
-                                        '您確定要登出嗎？',
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(context).pop(),
-                                          child: Text(
-                                            '取消',
-                                            style: TextStyle(
-                                              color: Colors.grey[700],
-                                            ),
-                                          ),
-                                        ),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Theme.of(context).colorScheme.primary,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            _handleLogout();
-                                          },
-                                          child: const Text('確定登出'),
-                                        ),
-                                      ],
-                                    );
-                                  },
+                                  content: '你確定要登出嗎？',
+                                  confirmText: '登出',
                                 );
+
+                                if (confirmed == true) {
+                                  _handleLogout();
+                                }
                               },
                               borderRadius: BorderRadius.circular(22),
                               child: Icon(

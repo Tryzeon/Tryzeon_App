@@ -3,6 +3,7 @@ import 'dart:io';
 import '../../data/wardrobe_service.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 
 class WardrobePage extends StatefulWidget {
   const WardrobePage({super.key});
@@ -407,55 +408,17 @@ class _WardrobePageState extends State<WardrobePage> {
     );
   }
 
-  void _showDeleteDialog(ClothingItem item) {
-    showDialog(
+  void _showDeleteDialog(ClothingItem item) async {
+    final confirmed = await ConfirmationDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          '刪除衣物',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: const Text(
-          '確定要刪除這件衣物嗎？',
-          style: TextStyle(
-            color: Colors.black87,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              '取消',
-              style: TextStyle(
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () async {
-              Navigator.pop(context);
-              await WardrobeService.deleteWardrobeItem(item.path);
-              await _loadWardrobeItems();
-            },
-            child: const Text('刪除'),
-          ),
-        ],
-      ),
+      content: '你確定要刪除這件衣物嗎？',
+      confirmText: '刪除',
     );
+
+    if (confirmed == true) {
+      await WardrobeService.deleteWardrobeItem(item.path);
+      await _loadWardrobeItems();
+    }
   }
 
   void _showUploadDialog() async {

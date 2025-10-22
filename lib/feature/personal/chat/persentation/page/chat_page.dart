@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 import '../../data/chat_service.dart';
 
 // Question data structure
@@ -491,56 +492,15 @@ class _ChatPageState extends State<ChatPage> {
                         Icons.refresh_rounded,
                         color: Theme.of(context).colorScheme.primary,
                       ),
-                      onPressed: () {
-                        showDialog(
+                      onPressed: () async {
+                        final confirmed = await ConfirmationDialog.show(
                           context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              title: const Text(
-                                '重設對話',
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              content: const Text(
-                                '確定要重設整個對話嗎？',
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Text(
-                                    '取消',
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                    ),
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).colorScheme.primary,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    _resetChat();
-                                  },
-                                  child: const Text('確定'),
-                                ),
-                              ],
-                            );
-                          },
+                          content: '你確定要重設整個對話嗎？',
                         );
+
+                        if (confirmed == true) {
+                          _resetChat();
+                        }
                       },
                     ),
                   ],
