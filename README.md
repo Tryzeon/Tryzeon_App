@@ -34,7 +34,12 @@ open -a Simulator
 
 ### 4. Run the Application
 
-Run the app on your connected device or simulator:
+Run the app on your connected device:
+```bash
+flutter run --release
+```
+
+Run the app on your simulator:
 ```bash
 flutter run
 ```
