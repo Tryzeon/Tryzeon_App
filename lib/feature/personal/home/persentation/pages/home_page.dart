@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import '../widget/wardrobe_page.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -164,6 +167,156 @@ class HomePageState extends State<HomePage> {
       return _tryonAvatarUrls[_currentTryonIndex];
     }
     return _avatarUrl;
+  }
+
+  void _showMoreOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.download_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                title: const Text(
+                  '下載照片',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text('儲存到相簿'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _downloadCurrentImage();
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                title: const Text(
+                  '刪除此試穿',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text('移除這張試穿照片'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteCurrentTryon();
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _downloadCurrentImage() async {
+    try {
+      final base64Url = _tryonAvatarUrls[_currentTryonIndex];
+      final base64String = base64Url.split(',')[1];
+      final imageBytes = base64Decode(base64String);
+
+      // 儲存到相簿
+      final result = await ImageGallerySaver.saveImage(
+        imageBytes,
+        quality: 100,
+        name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      if (mounted) {
+        if (result != null && result['isSuccess'] == true) {
+          TopNotification.show(
+            context,
+            message: '照片已儲存到相簿',
+            type: NotificationType.success,
+          );
+        } else {
+          TopNotification.show(
+            context,
+            message: '儲存失敗，請稍後再試',
+            type: NotificationType.error,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        TopNotification.show(
+          context,
+          message: '儲存失敗：$e',
+          type: NotificationType.error,
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteCurrentTryon() async {
+    final confirmed = await ConfirmationDialog.show(
+      context: context,
+      content: '確定要刪除這張試穿照片嗎？',
+      confirmText: '刪除',
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _tryonAvatarUrls.removeAt(_currentTryonIndex);
+
+        // 調整索引
+        if (_tryonAvatarUrls.isEmpty) {
+          // 如果沒有試穿照片了，回到原圖
+          _currentTryonIndex = -1;
+        } else if (_currentTryonIndex >= _tryonAvatarUrls.length) {
+          // 如果刪除的是最後一張，往前移一張
+          _currentTryonIndex = _tryonAvatarUrls.length - 1;
+        }
+        // 否則保持當前索引，會自動顯示下一張
+      });
+
+      if (mounted) {
+        TopNotification.show(
+          context,
+          message: '已刪除試穿照片',
+          type: NotificationType.success,
+        );
+      }
+    }
   }
 
   Widget _buildAvatarImage(String url) {
@@ -380,21 +533,28 @@ class HomePageState extends State<HomePage> {
                                 ),
                               ),
 
-                            // 上傳提示（當沒有載入時顯示）
-                            if (!_isLoading && _avatarUrl != null)
+                            // 更多選項按鈕（僅在顯示試穿結果時顯示）
+                            if (!_isLoading && _currentTryonIndex >= 0)
                               Positioned(
                                 top: 16,
                                 right: 16,
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.5),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _showMoreOptions,
                                     borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: const Icon(
-                                    Icons.camera_alt_outlined,
-                                    color: Colors.white,
-                                    size: 24,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.5),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Icon(
+                                        Icons.more_vert_rounded,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
