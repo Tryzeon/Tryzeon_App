@@ -521,7 +521,7 @@ class HomePageState extends State<HomePage> {
                                       ),
                                       const SizedBox(height: 16),
                                       const Text(
-                                        '處理中...',
+                                        '正在努力穿衣中...',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
