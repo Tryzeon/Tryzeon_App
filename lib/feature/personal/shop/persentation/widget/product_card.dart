@@ -27,7 +27,7 @@ class _ProductCardState extends State<ProductCard> {
     }
 
     final personalEntry = PersonalEntry.of(context);
-    await personalEntry?.startTryonFromProduct(imageUrl);
+    await personalEntry?.virtualTryOnProduct(imageUrl);
   }
 
   @override

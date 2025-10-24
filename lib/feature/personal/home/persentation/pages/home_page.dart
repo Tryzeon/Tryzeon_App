@@ -16,6 +16,8 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String? _avatarUrl;
+  final List<String> _tryonAvatarUrls = []; // 試穿後的圖片列表
+  int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
   bool _isLoading = true;
 
   @override
@@ -24,7 +26,57 @@ class HomePageState extends State<HomePage> {
     _loadAvatar();
   }
 
-  Future<void> startTryonFromProduct(String productImageUrl) async {
+  Future<void> _virtualTryOn() async {
+    // Check if avatar is available
+    if (_avatarUrl == null) {
+      TopNotification.show(
+        context,
+        message: '請先上傳您的照片',
+        type: NotificationType.warning,
+      );
+      return;
+    }
+
+    final File? clothingImage = await ImagePickerHelper.pickImage(
+      context,
+    );
+
+    if (clothingImage == null) {
+      if (mounted) {
+        TopNotification.show(
+          context,
+          message: '無法獲取您上傳的照片',
+          type: NotificationType.error,
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final tryonResult = await TryonService.tryon(clothingImage);
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (tryonResult != null) {
+          _tryonAvatarUrls.add(tryonResult);
+          _currentTryonIndex = _tryonAvatarUrls.length - 1;
+        } else {
+          // Show error message
+          TopNotification.show(
+            context,
+            message: '虛擬試穿失敗，請稍後再試',
+            type: NotificationType.error,
+          );
+        }
+      });
+    }
+  }
+
+  Future<void> virtualTryOnProduct(String productImageUrl) async {
     setState(() {
       _isLoading = true;
     });
@@ -35,7 +87,8 @@ class HomePageState extends State<HomePage> {
       setState(() {
         _isLoading = false;
         if (tryonResult != null) {
-          _avatarUrl = tryonResult;
+          _tryonAvatarUrls.add(tryonResult);
+          _currentTryonIndex = _tryonAvatarUrls.length - 1;
         } else {
           TopNotification.show(
             context,
@@ -73,6 +126,8 @@ class HomePageState extends State<HomePage> {
       if (mounted) {
         setState(() {
           _avatarUrl = url;
+          _tryonAvatarUrls.clear(); // 上傳新頭像時清除試穿圖片
+          _currentTryonIndex = -1;
           _isLoading = false;
         });
       }
@@ -92,54 +147,23 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _virtualTryon() async {
-    // Check if avatar is available
-    if (_avatarUrl == null) {
-      TopNotification.show(
-        context,
-        message: '請先上傳您的照片',
-        type: NotificationType.warning,
-      );
-      return;
-    }
-
-    final File? clothingImage = await ImagePickerHelper.pickImage(
-      context,
-    );
-
-    if (clothingImage == null) {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '無法獲取您上傳的照片',
-          type: NotificationType.error,
-        );
-      }
-      return;
-    }
-
+  void _previousTryon() {
     setState(() {
-      _isLoading = true;
+      _currentTryonIndex--;
     });
+  }
 
-    final tryonResult = await TryonService.tryon(clothingImage);
-    
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        if (tryonResult != null) {
-          // Update avatar to show tryon result
-          _avatarUrl = tryonResult;
-        } else {
-          // Show error message
-          TopNotification.show(
-            context,
-            message: '虛擬試穿失敗，請稍後再試',
-            type: NotificationType.error,
-          );
-        }
-      });
+  void _nextTryon() {
+    setState(() {
+      _currentTryonIndex++;
+    });
+  }
+
+  String? get _currentDisplayUrl {
+    if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonAvatarUrls.length) {
+      return _tryonAvatarUrls[_currentTryonIndex];
     }
+    return _avatarUrl;
   }
 
   Widget _buildAvatarImage(String url) {
@@ -275,9 +299,9 @@ class HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(32),
                         child: Stack(
                           children: [
-                            // 主要圖片
-                            if (_avatarUrl != null)
-                              _buildAvatarImage(_avatarUrl!)
+                            // 主要圖片 - 優先顯示試穿圖片
+                            if (_currentDisplayUrl != null)
+                              _buildAvatarImage(_currentDisplayUrl!)
                             else
                               Image.asset(
                                 'assets/images/profile/default.png',
@@ -374,6 +398,89 @@ class HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
+
+                            // 上一步/下一步按鈕（僅在有試穿結果時顯示）
+                            if (!_isLoading && _tryonAvatarUrls.isNotEmpty)
+                              Positioned(
+                                left: 16,
+                                right: 16,
+                                bottom: 16,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // 上一步按鈕
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: _currentTryonIndex >= 0 ? _previousTryon : null,
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: _currentTryonIndex >= 0
+                                                ? Colors.black.withValues(alpha: 0.5)
+                                                : Colors.black.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                          child: Icon(
+                                            Icons.arrow_back_ios_rounded,
+                                            color: _currentTryonIndex >= 0
+                                                ? Colors.white
+                                                : Colors.white.withValues(alpha: 0.5),
+                                            size: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // 頁數指示器
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.5),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        _currentTryonIndex >= 0
+                                            ? '${_currentTryonIndex + 1} / ${_tryonAvatarUrls.length}'
+                                            : '原圖',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+
+                                    // 下一步按鈕
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: _currentTryonIndex < _tryonAvatarUrls.length - 1
+                                            ? _nextTryon
+                                            : null,
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: _currentTryonIndex < _tryonAvatarUrls.length - 1
+                                                ? Colors.black.withValues(alpha: 0.5)
+                                                : Colors.black.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                          child: Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            color: _currentTryonIndex < _tryonAvatarUrls.length - 1
+                                                ? Colors.white
+                                                : Colors.white.withValues(alpha: 0.5),
+                                            size: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -427,7 +534,7 @@ class HomePageState extends State<HomePage> {
                             Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
                           ],
                         ),
-                        onPressed: _isLoading ? null : _virtualTryon,
+                        onPressed: _isLoading ? null : _virtualTryOn,
                       ),
                     ),
                   ],
