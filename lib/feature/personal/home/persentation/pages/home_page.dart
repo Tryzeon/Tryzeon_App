@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data';
 import '../widget/wardrobe_page.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
@@ -44,16 +43,7 @@ class HomePageState extends State<HomePage> {
       context,
     );
 
-    if (clothingImage == null) {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '無法獲取您上傳的照片',
-          type: NotificationType.error,
-        );
-      }
-      return;
-    }
+    if (clothingImage == null) return;
 
     setState(() {
       _isLoading = true;
@@ -521,7 +511,7 @@ class HomePageState extends State<HomePage> {
                                       ),
                                       const SizedBox(height: 16),
                                       const Text(
-                                        '正在努力穿衣中...',
+                                        '正在努力穿搭中...',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
