@@ -34,7 +34,7 @@ class TryonService {
   static Future<String?> tryonProduct(String productImageUrl) async {
     try {
       final response = await _supabase.functions.invoke(
-        'tryon-product',
+        'tryon',
         body: {
           'product_image_url': productImageUrl,
         },

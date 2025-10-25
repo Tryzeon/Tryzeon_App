@@ -8,6 +8,7 @@ import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,7 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  String? _avatarUrl;
+  String? _avatarPath;
   final List<String> _tryonAvatarUrls = []; // 試穿後的圖片列表
   int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
   bool _isLoading = true;
@@ -30,7 +31,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _virtualTryOn() async {
     // Check if avatar is available
-    if (_avatarUrl == null) {
+    if (_avatarPath == null) {
       TopNotification.show(
         context,
         message: '請先上傳您的照片',
@@ -94,10 +95,10 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadAvatar() async {
-    final url = await AvatarService.getAvatar();
+    final path = await AvatarService.getAvatar();
     if (mounted) {
       setState(() {
-        _avatarUrl = url;
+        _avatarPath = path;
         _isLoading = false;
       });
     }
@@ -114,11 +115,11 @@ class HomePageState extends State<HomePage> {
     });
 
     try {
-      final url = await AvatarService.uploadAvatar(imageFile);
+      final path = await AvatarService.uploadAvatar(imageFile);
 
       if (mounted) {
         setState(() {
-          _avatarUrl = url;
+          _avatarPath = path;
           _tryonAvatarUrls.clear(); // 上傳新頭像時清除試穿圖片
           _currentTryonIndex = -1;
           _isLoading = false;
@@ -156,7 +157,7 @@ class HomePageState extends State<HomePage> {
     if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonAvatarUrls.length) {
       return _tryonAvatarUrls[_currentTryonIndex];
     }
-    return _avatarUrl;
+    return _avatarPath;
   }
 
   void _showMoreOptions() {
@@ -309,43 +310,46 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildAvatarImage(String url) {
-    // Check if it's a base64 data URL
-    if (url.startsWith('data:image')) {
-      // Extract base64 string from data URL
-      final base64String = url.split(',')[1];
-      final bytes = base64Decode(base64String);
-      return Image.memory(
-        bytes,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover
-      );
-    } else if (url.startsWith('/')) {
-      // Local file path
-      return Image.file(
-        File(url),
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.asset(
-            'assets/images/profile/default.png',
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-          );
-        },
-      );
-    } else {
-      // Regular URL
-      return Image.network(
-        url,
+  Widget _buildAvatarImage(String? path) {
+    // No path - show default
+    if (path == null) {
+      return Image.asset(
+        'assets/images/profile/default.png',
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
       );
     }
+
+    // Base64 data URL (tryon results)
+    if (path.startsWith('data:image')) {
+      final base64String = path.split(',')[1];
+      final bytes = base64Decode(base64String);
+      return Image.memory(
+        bytes,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+
+    // Load from cache
+    return FutureBuilder<File?>(
+      future: FileCacheService.getFile(path),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data != null) {
+          return Image.file(
+            snapshot.data!,
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.image_not_supported),
+          );
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    );
   }
 
   @override
@@ -442,51 +446,8 @@ class HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(32),
                         child: Stack(
                           children: [
-                            // 主要圖片 - 優先顯示試穿圖片
-                            if (_currentDisplayUrl != null)
-                              _buildAvatarImage(_currentDisplayUrl!)
-                            else
-                              Image.asset(
-                                'assets/images/profile/default.png',
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Colors.grey[200]!,
-                                          Colors.grey[300]!,
-                                        ],
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.person_outline_rounded,
-                                            size: 80,
-                                            color: Colors.grey[400],
-                                          ),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            '點擊上傳您的照片',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                            // 主要圖片
+                            _buildAvatarImage(_currentDisplayUrl),
 
                             // 載入遮罩
                             if (_isLoading)

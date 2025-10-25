@@ -31,8 +31,8 @@ class AvatarService {
       );
 
       // 3. 保存新的頭像到本地
-      final savedFile = await FileCacheService.saveFile(imageFile, fileName);
-      return savedFile.path;
+      await FileCacheService.saveFile(imageFile, fileName);
+      return fileName;
     } catch (e) {
       // 上傳失敗，拋出錯誤讓上層處理
       rethrow;
@@ -61,20 +61,19 @@ class AvatarService {
     if (userId == null) return null;
 
     try {
-      // 1. 先檢查本地資料夾是否有緩存
-      final localFiles = await FileCacheService.getFiles(
-        relativePath: '$userId/avatar',
-      );
-
-      if (localFiles.isNotEmpty) {
-        return localFiles.first.path;
-      }
-
-      // 2. 本地沒有，從 Supabase 下載
+      // 1. 先從 Supabase 查詢檔案名稱
       final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
       if (files.isEmpty) return null;
 
       final fileName = '$userId/avatar/${files.first.name}';
+
+      // 2. 檢查本地是否有緩存
+      final localFile = await FileCacheService.getFile(fileName);
+      if (localFile != null) {
+        return fileName;
+      }
+
+      // 3. 本地沒有，從 Supabase 下載
       final bytes = await _supabase.storage.from(_bucket).download(fileName);
 
       // 創建臨時文件並保存到本地緩存
@@ -82,10 +81,10 @@ class AvatarService {
       final tempFile = File('${tempDir.path}/temp_avatar.jpg');
       await tempFile.writeAsBytes(bytes);
 
-      final savedFile = await FileCacheService.saveFile(tempFile, fileName);
+      await FileCacheService.saveFile(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
-      return savedFile.path;
+      return fileName;
     } catch (e) {
       return null;
     }
