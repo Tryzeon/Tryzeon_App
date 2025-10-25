@@ -22,6 +22,7 @@ class HomePageState extends State<HomePage> {
   final List<String> _tryonAvatarUrls = []; // 試穿後的圖片列表
   int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
   bool _isLoading = true;
+  int? _customAvatarIndex; // 記錄哪張試穿照片被設為自訂 avatar
 
   @override
   void initState() {
@@ -50,7 +51,17 @@ class HomePageState extends State<HomePage> {
       _isLoading = true;
     });
 
-    final tryonResult = await TryonService.tryon(clothingImage);
+    // 如果有自訂 avatar，取得其 base64
+    String? customAvatarBase64;
+    if (_customAvatarIndex != null) {
+      final avatarUrl = _tryonAvatarUrls[_customAvatarIndex!];
+      customAvatarBase64 = avatarUrl.split(',')[1];
+    }
+
+    final tryonResult = await TryonService.tryon(
+      clothingImage,
+      avatarBase64: customAvatarBase64,
+    );
 
     if (mounted) {
       setState(() {
@@ -75,7 +86,17 @@ class HomePageState extends State<HomePage> {
       _isLoading = true;
     });
 
-    final tryonResult = await TryonService.tryonProduct(productImageUrl);
+    // 如果有自訂 avatar，取得其 base64
+    String? customAvatarBase64;
+    if (_customAvatarIndex != null && _customAvatarIndex! < _tryonAvatarUrls.length) {
+      final avatarUrl = _tryonAvatarUrls[_customAvatarIndex!];
+      customAvatarBase64 = avatarUrl.split(',')[1];
+    }
+
+    final tryonResult = await TryonService.tryonProduct(
+      productImageUrl,
+      avatarBase64: customAvatarBase64,
+    );
 
     if (mounted) {
       setState(() {
@@ -215,6 +236,38 @@ class HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
+                    _customAvatarIndex == _currentTryonIndex
+                        ? Icons.person_off_outlined
+                        : Icons.person_outline_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                title: Text(
+                  _customAvatarIndex == _currentTryonIndex
+                      ? '取消我的形象'
+                      : '設為我的形象',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  _customAvatarIndex == _currentTryonIndex
+                      ? '取消使用此照片作為試穿形象'
+                      : '使用此照片作為試穿形象',
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _toggleAvatar();
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
                     Icons.delete_outline_rounded,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -278,6 +331,38 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _toggleAvatar() async {
+    try {
+      final isCurrentlySet = _customAvatarIndex == _currentTryonIndex;
+
+      setState(() {
+        if (isCurrentlySet) {
+          // 取消設定
+          _customAvatarIndex = null;
+        } else {
+          // 設定為 avatar
+          _customAvatarIndex = _currentTryonIndex;
+        }
+      });
+
+      if (mounted) {
+        TopNotification.show(
+          context,
+          message: isCurrentlySet ? '已取消試穿形象' : '已設定為試穿形象',
+          type: NotificationType.success,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        TopNotification.show(
+          context,
+          message: '操作失敗：$e',
+          type: NotificationType.error,
+        );
+      }
+    }
+  }
+
   Future<void> _deleteCurrentTryon() async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
@@ -286,10 +371,20 @@ class HomePageState extends State<HomePage> {
     );
 
     if (confirmed == true) {
+      final deletedIndex = _currentTryonIndex;
+
       setState(() {
         _tryonAvatarUrls.removeAt(_currentTryonIndex);
 
-        // 調整索引
+        // 如果刪除的照片是自訂 avatar，清除設定
+        if (_customAvatarIndex == deletedIndex) {
+          _customAvatarIndex = null;
+        } else if (_customAvatarIndex != null && _customAvatarIndex! > deletedIndex) {
+          // 如果自訂 avatar 在刪除照片之後，索引需要 -1
+          _customAvatarIndex = _customAvatarIndex! - 1;
+        }
+
+        // 調整當前索引
         if (_tryonAvatarUrls.isEmpty) {
           // 如果沒有試穿照片了，回到原圖
           _currentTryonIndex = -1;

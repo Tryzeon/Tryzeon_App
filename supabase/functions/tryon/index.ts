@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // 從請求中取得可能的圖像欄位
     const body = await req.json();
-    const { clothing_image, product_image_url, avatar_image } = body;
+    const { avatar_image, clothing_image, product_image_url } = body;
 
     // 處理 avatar 圖片：優先使用傳入的 base64，否則從 storage 下載
     let avatarBase64: string;
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       // 若有 clothing_image (直接是 Base64)
       secondImageBase64 = clothing_image;
       secondImageMime = "image/png"; // 若你知道是 PNG，可以保留；若可能為 JPEG，可做判別
-    } else if (product_image_url) {
+    } else {
       // 若無 clothing_image，但有 product_image_url → 下載
       console.log("Product image URL:", product_image_url);
       const productImageResponse = await fetch(product_image_url);
@@ -79,14 +79,9 @@ Deno.serve(async (req) => {
       secondImageBase64 = btoa(
         Array.from(productImageBytes, (b) => String.fromCharCode(b)).join("")
       );
-      secondImageMime =
-        productImageResponse.headers.get("content-type") ?? "image/png";
+      secondImageMime = productImageResponse.headers.get("content-type") ?? "image/png";
       console.log("Product image downloaded successfully");
-    } else {
-      throw new Error(
-        "Either clothing_image or product_image_url must be provided"
-      );
-    }
+    } 
 
     // 設定 model
     const model = genAI.getGenerativeModel({
@@ -142,8 +137,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        user_id: user.id,
+      JSON.stringify({ 
         image: `data:image/png;base64,${generatedImageBase64}`,
       }),
       {
