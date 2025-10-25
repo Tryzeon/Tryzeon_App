@@ -405,20 +405,18 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildAvatarImage(String? path) {
-    // No path - show default
-    if (path == null) {
+  Widget _buildAvatarImage(String? image) {
+    if (image == null) {
+      // No image - show default
       return Image.asset(
         'assets/images/profile/default.png',
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
       );
-    }
-
-    // Base64 data URL (tryon results)
-    if (path.startsWith('data:image')) {
-      final base64String = path.split(',')[1];
+    }else if (image.startsWith('data:image')) {
+      // Base64 data URL (tryon results)
+      final base64String = image.split(',')[1];
       final bytes = base64Decode(base64String);
       return Image.memory(
         bytes,
@@ -426,25 +424,25 @@ class HomePageState extends State<HomePage> {
         height: double.infinity,
         fit: BoxFit.cover,
       );
-    }
-
-    // Load from cache
-    return FutureBuilder<File?>(
-      future: FileCacheService.getFile(path),
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data != null) {
-          return Image.file(
-            snapshot.data!,
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.image_not_supported),
-          );
+    }else {
+      // Load from cache
+      return FutureBuilder<File?>(
+        future: FileCacheService.getFile(image),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return Image.file(
+              snapshot.data!,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.image_not_supported),
+            );
+          }
+          return Center(child: CircularProgressIndicator());
         }
-        return Center(child: CircularProgressIndicator());
-      },
-    );
+      );
+    }
   }
 
   @override
