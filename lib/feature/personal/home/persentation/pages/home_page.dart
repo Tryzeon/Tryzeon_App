@@ -19,7 +19,7 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String? _avatarPath;
-  final List<String> _tryonAvatarUrls = []; // 試穿後的圖片列表
+  final List<String> _tryonImages = []; // 試穿後的圖片列表
   int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
   bool _isLoading = true;
   int? _customAvatarIndex; // 記錄哪張試穿照片被設為自訂 avatar
@@ -54,7 +54,7 @@ class HomePageState extends State<HomePage> {
     // 如果有自訂 avatar，取得其 base64
     String? customAvatarBase64;
     if (_customAvatarIndex != null) {
-      final avatarUrl = _tryonAvatarUrls[_customAvatarIndex!];
+      final avatarUrl = _tryonImages[_customAvatarIndex!];
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
@@ -67,8 +67,8 @@ class HomePageState extends State<HomePage> {
       setState(() {
         _isLoading = false;
         if (tryonResult != null) {
-          _tryonAvatarUrls.add(tryonResult);
-          _currentTryonIndex = _tryonAvatarUrls.length - 1;
+          _tryonImages.add(tryonResult);
+          _currentTryonIndex = _tryonImages.length - 1;
         } else {
           // Show error message
           TopNotification.show(
@@ -88,8 +88,8 @@ class HomePageState extends State<HomePage> {
 
     // 如果有自訂 avatar，取得其 base64
     String? customAvatarBase64;
-    if (_customAvatarIndex != null && _customAvatarIndex! < _tryonAvatarUrls.length) {
-      final avatarUrl = _tryonAvatarUrls[_customAvatarIndex!];
+    if (_customAvatarIndex != null && _customAvatarIndex! < _tryonImages.length) {
+      final avatarUrl = _tryonImages[_customAvatarIndex!];
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
@@ -102,8 +102,8 @@ class HomePageState extends State<HomePage> {
       setState(() {
         _isLoading = false;
         if (tryonResult != null) {
-          _tryonAvatarUrls.add(tryonResult);
-          _currentTryonIndex = _tryonAvatarUrls.length - 1;
+          _tryonImages.add(tryonResult);
+          _currentTryonIndex = _tryonImages.length - 1;
         } else {
           TopNotification.show(
             context,
@@ -141,7 +141,7 @@ class HomePageState extends State<HomePage> {
       if (mounted) {
         setState(() {
           _avatarPath = path;
-          _tryonAvatarUrls.clear(); // 上傳新頭像時清除試穿圖片
+          _tryonImages.clear(); // 上傳新頭像時清除試穿圖片
           _currentTryonIndex = -1;
           _isLoading = false;
         });
@@ -175,8 +175,8 @@ class HomePageState extends State<HomePage> {
   }
 
   String? get _currentDisplayUrl {
-    if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonAvatarUrls.length) {
-      return _tryonAvatarUrls[_currentTryonIndex];
+    if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonImages.length) {
+      return _tryonImages[_currentTryonIndex];
     }
     return _avatarPath;
   }
@@ -294,7 +294,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _downloadCurrentImage() async {
     try {
-      final base64Url = _tryonAvatarUrls[_currentTryonIndex];
+      final base64Url = _tryonImages[_currentTryonIndex];
       final base64String = base64Url.split(',')[1];
       final imageBytes = base64Decode(base64String);
 
@@ -374,7 +374,7 @@ class HomePageState extends State<HomePage> {
       final deletedIndex = _currentTryonIndex;
 
       setState(() {
-        _tryonAvatarUrls.removeAt(_currentTryonIndex);
+        _tryonImages.removeAt(_currentTryonIndex);
 
         // 如果刪除的照片是自訂 avatar，清除設定
         if (_customAvatarIndex == deletedIndex) {
@@ -385,12 +385,12 @@ class HomePageState extends State<HomePage> {
         }
 
         // 調整當前索引
-        if (_tryonAvatarUrls.isEmpty) {
+        if (_tryonImages.isEmpty) {
           // 如果沒有試穿照片了，回到原圖
           _currentTryonIndex = -1;
-        } else if (_currentTryonIndex >= _tryonAvatarUrls.length) {
+        } else if (_currentTryonIndex >= _tryonImages.length) {
           // 如果刪除的是最後一張，往前移一張
-          _currentTryonIndex = _tryonAvatarUrls.length - 1;
+          _currentTryonIndex = _tryonImages.length - 1;
         }
         // 否則保持當前索引，會自動顯示下一張
       });
@@ -606,7 +606,7 @@ class HomePageState extends State<HomePage> {
                               ),
 
                             // 上一步/下一步按鈕（僅在有試穿結果時顯示）
-                            if (!_isLoading && _tryonAvatarUrls.isNotEmpty)
+                            if (!_isLoading && _tryonImages.isNotEmpty)
                               Positioned(
                                 left: 16,
                                 right: 16,
@@ -648,7 +648,7 @@ class HomePageState extends State<HomePage> {
                                       ),
                                       child: Text(
                                         _currentTryonIndex >= 0
-                                            ? '${_currentTryonIndex + 1} / ${_tryonAvatarUrls.length}'
+                                            ? '${_currentTryonIndex + 1} / ${_tryonImages.length}'
                                             : '原圖',
                                         style: const TextStyle(
                                           color: Colors.white,
@@ -662,21 +662,21 @@ class HomePageState extends State<HomePage> {
                                     Material(
                                       color: Colors.transparent,
                                       child: InkWell(
-                                        onTap: _currentTryonIndex < _tryonAvatarUrls.length - 1
+                                        onTap: _currentTryonIndex < _tryonImages.length - 1
                                             ? _nextTryon
                                             : null,
                                         borderRadius: BorderRadius.circular(16),
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: _currentTryonIndex < _tryonAvatarUrls.length - 1
+                                            color: _currentTryonIndex < _tryonImages.length - 1
                                                 ? Colors.black.withValues(alpha: 0.5)
                                                 : Colors.black.withValues(alpha: 0.2),
                                             borderRadius: BorderRadius.circular(16),
                                           ),
                                           child: Icon(
                                             Icons.arrow_forward_ios_rounded,
-                                            color: _currentTryonIndex < _tryonAvatarUrls.length - 1
+                                            color: _currentTryonIndex < _tryonImages.length - 1
                                                 ? Colors.white
                                                 : Colors.white.withValues(alpha: 0.5),
                                             size: 24,
