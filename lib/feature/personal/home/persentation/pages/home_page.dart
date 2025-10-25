@@ -472,7 +472,7 @@ class HomePageState extends State<HomePage> {
                                       ),
                                       const SizedBox(height: 16),
                                       const Text(
-                                        '正在努力穿搭中...',
+                                        '正在前往試衣間...',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
