@@ -7,6 +7,41 @@ class AvatarService {
   static final _supabase = Supabase.instance.client;
   static const _bucket = 'avatars';
 
+  /// 獲取頭像（優先從本地獲取，本地沒有才從後端拿）
+  static Future<String?> getAvatar() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return null;
+
+    try {
+      // 1. 先從 Supabase 查詢檔案名稱
+      final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
+      if (files.isEmpty) return null;
+
+      final fileName = '$userId/avatar/${files.first.name}';
+
+      // 2. 檢查本地是否有緩存
+      final localFile = await FileCacheService.getFile(fileName);
+      if (localFile != null) {
+        return fileName;
+      }
+
+      // 3. 本地沒有，從 Supabase 下載
+      final bytes = await _supabase.storage.from(_bucket).download(fileName);
+
+      // 創建臨時文件並保存到本地緩存
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp_avatar.jpg');
+      await tempFile.writeAsBytes(bytes);
+
+      await FileCacheService.saveFile(tempFile, fileName);
+      await tempFile.delete(); // 刪除臨時文件
+
+      return fileName;
+    } catch (e) {
+      return null;
+    }
+  }
+  
   /// 上傳頭像（先上傳到後端，成功後才保存到本地）
   static Future<String?> uploadAvatar(File imageFile) async {
     final userId = _supabase.auth.currentUser?.id;
@@ -52,41 +87,6 @@ class AvatarService {
       await FileCacheService.deleteFiles(relativePath: '$userId/avatar');
     } catch (e) {
       // 忽略刪除錯誤
-    }
-  }
-
-  /// 獲取頭像（優先從本地獲取，本地沒有才從後端拿）
-  static Future<String?> getAvatar() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
-
-    try {
-      // 1. 先從 Supabase 查詢檔案名稱
-      final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
-      if (files.isEmpty) return null;
-
-      final fileName = '$userId/avatar/${files.first.name}';
-
-      // 2. 檢查本地是否有緩存
-      final localFile = await FileCacheService.getFile(fileName);
-      if (localFile != null) {
-        return fileName;
-      }
-
-      // 3. 本地沒有，從 Supabase 下載
-      final bytes = await _supabase.storage.from(_bucket).download(fileName);
-
-      // 創建臨時文件並保存到本地緩存
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_avatar.jpg');
-      await tempFile.writeAsBytes(bytes);
-
-      await FileCacheService.saveFile(tempFile, fileName);
-      await tempFile.delete(); // 刪除臨時文件
-
-      return fileName;
-    } catch (e) {
-      return null;
     }
   }
 }
