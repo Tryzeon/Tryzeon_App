@@ -1,0 +1,170 @@
+// Setup type definitions for built-in Supabase Runtime APIs
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { GoogleGenerativeAI } from "npm:@google/generative-ai";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+const genAI = new GoogleGenerativeAI(Deno.env.get("API_KEY"));
+
+Deno.serve(async (req) => {
+  try {
+    const authHeader = req.headers.get("Authorization");
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+      {
+        global: {
+          headers: {
+            Authorization: authHeader ?? "",
+          },
+        },
+      }
+    );
+
+    // 取得使用者
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("User not found");
+
+    // 從請求中取得可能的圖像欄位
+    const body = await req.json();
+    const { clothing_image, product_image_url, avatar_image } = body;
+
+    // 處理 avatar 圖片：優先使用傳入的 base64，否則從 storage 下載
+    let avatarBase64: string;
+    if (avatar_image) {
+      // 使用傳入的 avatar base64
+      avatarBase64 = avatar_image;
+      console.log("Using provided avatar image (base64)");
+    } else {
+      // 從 storage 下載 avatar
+      console.log("Downloading avatar from storage");
+      const { data: files, error: listError } = await supabase.storage
+        .from("avatars")
+        .list(`${user.id}/avatar`);
+      if (listError) throw listError;
+      if (!files || files.length === 0) throw new Error("No avatar found");
+
+      const fileName = `${user.id}/avatar/${files[0].name}`;
+      const { data: avatarData, error: downloadError } = await supabase.storage
+        .from("avatars")
+        .download(fileName);
+      if (downloadError) throw downloadError;
+
+      // 轉成 Base64
+      const buf = new Uint8Array(await avatarData.arrayBuffer());
+      avatarBase64 = btoa(
+        Array.from(buf, (b) => String.fromCharCode(b)).join("")
+      );
+      console.log("Avatar downloaded successfully");
+    }
+
+    let secondImageBase64 = null;
+    let secondImageMime = "image/png";
+
+    if (clothing_image) {
+      // 若有 clothing_image (直接是 Base64)
+      secondImageBase64 = clothing_image;
+      secondImageMime = "image/png"; // 若你知道是 PNG，可以保留；若可能為 JPEG，可做判別
+    } else if (product_image_url) {
+      // 若無 clothing_image，但有 product_image_url → 下載
+      console.log("Product image URL:", product_image_url);
+      const productImageResponse = await fetch(product_image_url);
+      if (!productImageResponse.ok) {
+        throw new Error(
+          `Failed to download product image: ${productImageResponse.statusText}`
+        );
+      }
+
+      const productImageBuffer = await productImageResponse.arrayBuffer();
+      const productImageBytes = new Uint8Array(productImageBuffer);
+      secondImageBase64 = btoa(
+        Array.from(productImageBytes, (b) => String.fromCharCode(b)).join("")
+      );
+      secondImageMime =
+        productImageResponse.headers.get("content-type") ?? "image/png";
+      console.log("Product image downloaded successfully");
+    } else {
+      throw new Error(
+        "Either clothing_image or product_image_url must be provided"
+      );
+    }
+
+    // 設定 model
+    const model = genAI.getGenerativeModel({
+      model: "models/gemini-2.5-flash-image",
+      generationConfig: {
+        responseModalities: ["TEXT", "IMAGE"],
+      },
+    });
+
+    // retry 最多 3 次
+    let generatedImageBase64 = null;
+    const MAX_RETRIES = 3;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const result = await model.generateContent([
+        {
+          text: "請將第一張照片中的人換上第二張照片中的服裝，保持人物臉部清晰、姿勢自然，生成完整的合成圖。輸出為直式 9 : 16 比例。",
+        },
+        {
+          inlineData: {
+            data: avatarBase64,
+            mimeType: "image/jpeg",
+          },
+        },
+        {
+          inlineData: {
+            data: secondImageBase64,
+            mimeType: secondImageMime,
+          },
+        },
+      ]);
+
+      const candidates = result.response.candidates ?? [];
+      for (const c of candidates) {
+        for (const p of c.content.parts ?? []) {
+          if (p.inlineData?.mimeType?.startsWith("image/")) {
+            generatedImageBase64 = p.inlineData.data;
+            break;
+          }
+        }
+        if (generatedImageBase64) break;
+      }
+
+      if (generatedImageBase64) break;
+
+      console.warn(`⚠️ Gemini failed to return image (attempt ${attempt})`);
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+
+    if (!generatedImageBase64) {
+      console.warn("🚨 Gemini failed after 3 retries. Using original avatar.");
+      generatedImageBase64 = avatarBase64;
+    }
+
+    return new Response(
+      JSON.stringify({
+        user_id: user.id,
+        image: `data:image/png;base64,${generatedImageBase64}`,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    return new Response(
+      JSON.stringify({
+        error: String(err),
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+});
+
