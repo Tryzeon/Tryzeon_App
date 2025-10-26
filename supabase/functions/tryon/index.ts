@@ -24,6 +24,67 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error("User not found");
 
+    // ========== Rate Limiting Logic with Subscription Plans ==========
+    // Define limits for each plan
+    const PLAN_LIMITS = {
+      free: 5,
+      pro: 50,
+      ultra: 1000,
+    };
+
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // Get user's subscription info
+    const { data: subscribeData, error: subscribeError } = await supabase
+      .from('subscribe')
+      .select('plan, daily_usage_count, last_reset_date')
+      .eq('user_id', user.id)
+      .single();
+
+    if (subscribeError || !subscribeData) {
+      console.error('Error fetching subscription:', subscribeError);
+      throw new Error('User subscription not found. Please contact support.');
+    }
+
+    const userPlan = subscribeData.plan;
+    const dailyLimit = PLAN_LIMITS[userPlan as keyof typeof PLAN_LIMITS];
+    let currentUsage = subscribeData.daily_usage_count;
+    const lastResetDate = subscribeData.last_reset_date;
+
+    // Reset counter if it's a new day
+    if (lastResetDate !== today) {
+      currentUsage = 0;
+      await supabase
+        .from('subscribe')
+        .update({
+          daily_usage_count: 0,
+          last_reset_date: today,
+        })
+        .eq('user_id', user.id);
+    }
+
+    // Check if limit exceeded
+    if (currentUsage >= dailyLimit) {
+      return new Response(
+        JSON.stringify({
+          error: '今日試穿次數已達上限，請明天再試或升級方案',
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
+    // Increment usage count
+    await supabase
+      .from('subscribe')
+      .update({ daily_usage_count: currentUsage + 1 })
+      .eq('user_id', user.id);
+    // ========== End Rate Limiting ==========
+
     // 從請求中取得可能的圖像欄位
     const body = await req.json();
     const { avatar_image, clothing_image, product_image_url } = body;
@@ -140,7 +201,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         image: `data:image/png;base64,${generatedImageBase64}`,
       }),
       {
@@ -153,7 +214,7 @@ Deno.serve(async (req) => {
     console.error(err);
     return new Response(
       JSON.stringify({
-        error: String(err),
+        error: "伺服器發生錯誤，請稍後再試。",
       }),
       {
         status: 500,

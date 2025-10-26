@@ -2,10 +2,20 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+class TryonResult {
+  final String? image;
+  final String? error;
+
+  TryonResult({
+    this.image,
+    this.error,
+  });
+}
+
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
-  static Future<String?> tryon(
+  static Future<TryonResult> tryon(
     File clothingImage, {
     String? avatarBase64,
   }) async {
@@ -27,16 +37,17 @@ class TryonService {
         'tryon',
         body: body,
       );
-
-      return response.data['image'];
+      // Success case
+      return TryonResult(image: response.data['image']);
+    } on FunctionException catch (e) {
+      return TryonResult(error: e.details['error']);
     } catch (e) {
-      // Error handling - in production use proper logging framework
-      return null;
+      return TryonResult(error: e.toString());
     }
   }
 
   /// Try on product by URL - downloads image in edge function
-  static Future<String?> tryonProduct(
+  static Future<TryonResult> tryonProduct(
     String productImageUrl, {
     String? avatarBase64,
   }) async {
@@ -55,10 +66,11 @@ class TryonService {
         body: body,
       );
 
-      return response.data['image'];
+      return TryonResult(image: response.data['image']);
+    } on FunctionException catch (e) {
+      return TryonResult(error: e.details['error']);
     } catch (e) {
-      // Error handling - in production use proper logging framework
-      return null;
+      return TryonResult(error: e.toString());
     }
   }
 }

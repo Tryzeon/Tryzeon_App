@@ -66,18 +66,27 @@ class HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        if (tryonResult != null) {
-          _tryonImages.add(tryonResult);
-          _currentTryonIndex = _tryonImages.length - 1;
-        } else {
-          // Show error message
-          TopNotification.show(
-            context,
-            message: '虛擬試穿失敗，請稍後再試',
-            type: NotificationType.error,
-          );
-        }
       });
+
+      // Check if success
+      if (tryonResult.image != null) {
+        setState(() {
+          _tryonImages.add(tryonResult.image!);
+          _currentTryonIndex = _tryonImages.length - 1;
+        });
+
+        TopNotification.show(
+          context,
+          message: '試穿成功！',
+          type: NotificationType.success,
+        );
+      } else {
+        TopNotification.show(
+          context,
+          message: tryonResult.error ?? '發生錯誤',
+          type: NotificationType.error,
+        );
+      }
     }
   }
 
@@ -101,17 +110,28 @@ class HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        if (tryonResult != null) {
-          _tryonImages.add(tryonResult);
-          _currentTryonIndex = _tryonImages.length - 1;
-        } else {
-          TopNotification.show(
-            context,
-            message: '虛擬試穿失敗，請稍後再試',
-            type: NotificationType.error,
-          );
-        }
       });
+
+      // Check if success
+      if (tryonResult.isSuccess && tryonResult.image != null) {
+        setState(() {
+          _tryonImages.add(tryonResult.image!);
+          _currentTryonIndex = _tryonImages.length - 1;
+        });
+
+        TopNotification.show(
+          context,
+          message: '試穿成功！',
+          type: NotificationType.success,
+        );
+      } else {
+        // Show error message from backend
+        TopNotification.show(
+          context,
+          message: tryonResult.error ?? '發生錯誤',
+          type: NotificationType.error,
+        );
+      }
     }
   }
 
