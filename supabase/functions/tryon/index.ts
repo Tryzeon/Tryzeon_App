@@ -88,6 +88,9 @@ Deno.serve(async (req) => {
       model: "models/gemini-2.5-flash-image",
       generationConfig: {
         responseModalities: ["TEXT", "IMAGE"],
+        imageConfig: {
+          aspect_ratio: "9:16"
+        }
       },
     });
 
