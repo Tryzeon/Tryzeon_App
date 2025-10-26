@@ -414,7 +414,7 @@ class HomePageState extends State<HomePage> {
         height: double.infinity,
         fit: BoxFit.cover,
       );
-    }else if (image.startsWith('data:image')) {
+    } else if (image.startsWith('data:image')) {
       // Base64 data URL (tryon results)
       final base64String = image.split(',')[1];
       final bytes = base64Decode(base64String);
@@ -424,8 +424,8 @@ class HomePageState extends State<HomePage> {
         height: double.infinity,
         fit: BoxFit.cover,
       );
-    }else {
-      // Load from cache
+    } else {
+      // Load from file
       return FutureBuilder<File?>(
         future: FileCacheService.getFile(image),
         builder: (context, snapshot) {
@@ -564,12 +564,21 @@ class HomePageState extends State<HomePage> {
                                         strokeWidth: 3,
                                       ),
                                       const SizedBox(height: 16),
-                                      const Text(
-                                        '正在前往試衣間...',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
+                                      ShaderMask(
+                                        shaderCallback: (bounds) => const LinearGradient(
+                                          colors: [
+                                            Colors.white,
+                                            Color(0xFFE0E0E0),
+                                          ],
+                                        ).createShader(bounds),
+                                        child: const Text(
+                                          '正在努力試穿中...',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 1.5,
+                                          ),
                                         ),
                                       ),
                                     ],
