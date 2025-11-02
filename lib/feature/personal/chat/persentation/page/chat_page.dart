@@ -256,7 +256,9 @@ class _ChatPageState extends State<ChatPage> {
     ));
     // Start Q&A after a short delay
     Future.delayed(const Duration(milliseconds: 1000), () {
-      _askNextQuestion();
+      if (mounted) {
+        _askNextQuestion();
+      }
     });
   }
 
@@ -289,7 +291,9 @@ class _ChatPageState extends State<ChatPage> {
     scrollToBottom();
 
     Future.delayed(const Duration(milliseconds: 100), () {
-      _askNextQuestion();
+      if (mounted) {
+        _askNextQuestion();
+      }
     });
   }
 
@@ -303,6 +307,8 @@ class _ChatPageState extends State<ChatPage> {
   }
   
   Future<void> _getLLMRecommendation() async {
+    if (!mounted) return;
+
     setState(() {
       isLoadingRecommendation = true;
       messages.add(ChatMessage(
@@ -311,17 +317,19 @@ class _ChatPageState extends State<ChatPage> {
       ));
     });
     scrollToBottom();
-    
+
     try {
       // 使用 ChatService 獲取 LLM 建議
       final recommendationText = await ChatService.getLLMRecommendation(answers);
-      
+
+      if (!mounted) return;
+
       // Remove loading message
       setState(() {
         messages.removeLast();
         isLoadingRecommendation = false;
       });
-      
+
       // Add LLM response
       setState(() {
         messages.add(ChatMessage(
@@ -329,8 +337,10 @@ class _ChatPageState extends State<ChatPage> {
           isUser: false,
         ));
       });
-      
+
     } catch (e) {
+      if (!mounted) return;
+
       // Remove loading message and show error
       setState(() {
         messages.removeLast();
@@ -341,7 +351,7 @@ class _ChatPageState extends State<ChatPage> {
         ));
       });
     }
-    
+
     scrollToBottom();
   }
 
@@ -383,11 +393,13 @@ class _ChatPageState extends State<ChatPage> {
 
   void scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 300), () {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      if (mounted && scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -398,17 +410,19 @@ class _ChatPageState extends State<ChatPage> {
       answers.clear();
       isWaitingForAnswer = true;
       isLoadingRecommendation = false;
-      
+
       // Add greeting message
       messages.add(ChatMessage(
         text: '你好，今天想怎麼穿呢？',
         isUser: false,
       ));
     });
-    
+
     // Start Q&A after a short delay
     Future.delayed(const Duration(milliseconds: 1000), () {
-      _askNextQuestion();
+      if (mounted) {
+        _askNextQuestion();
+      }
     });
   }
 
