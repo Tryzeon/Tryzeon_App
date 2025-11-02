@@ -38,6 +38,8 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   Future<void> _loadProducts() async {
+    if (!mounted) return;
+
     setState(() {
       isLoading = true;
     });
@@ -48,6 +50,8 @@ class _ShopPageState extends State<ShopPage> {
       minPrice: _minPrice,
       maxPrice: _maxPrice,
     );
+
+    if (!mounted) return;
 
     setState(() {
       products = fetchedProducts;
@@ -272,13 +276,15 @@ class _ShopPageState extends State<ShopPage> {
                                     _minPrice = null;
                                     _maxPrice = null;
                                   });
-                                  setState(() {
-                                    _sortBy = 'created_at';
-                                    _ascending = false;
-                                    _minPrice = null;
-                                    _maxPrice = null;
-                                  });
-                                  _loadProducts();
+                                  if (mounted) {
+                                    setState(() {
+                                      _sortBy = 'created_at';
+                                      _ascending = false;
+                                      _minPrice = null;
+                                      _maxPrice = null;
+                                    });
+                                    _loadProducts();
+                                  }
                                 },
                                 borderRadius: BorderRadius.circular(12),
                                 child: Center(
@@ -319,10 +325,12 @@ class _ShopPageState extends State<ShopPage> {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
-                                  setState(() {
-                                    // 套用篩選
-                                  });
-                                  _loadProducts();
+                                  if (mounted) {
+                                    setState(() {
+                                      // 套用篩選
+                                    });
+                                    _loadProducts();
+                                  }
                                   Navigator.pop(context);
                                 },
                                 borderRadius: BorderRadius.circular(12),
@@ -496,15 +504,19 @@ class _ShopPageState extends State<ShopPage> {
                         child: ShopSearchBar(
                           products: products,
                           onSearchResults: (results) {
-                            setState(() {
-                              displayedProducts = results;
-                              isLoading = false;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                displayedProducts = results;
+                                isLoading = false;
+                              });
+                            }
                           },
                           onSearchStart: () {
-                            setState(() {
-                              isLoading = true;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                isLoading = true;
+                              });
+                            }
                           },
                         ),
                       ),
