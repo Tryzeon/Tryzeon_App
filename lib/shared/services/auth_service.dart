@@ -124,6 +124,45 @@ class AuthService {
     }
   }
 
+  /// Apple 登入
+  static Future<AuthResult> signInWithApple({
+    required UserType userType,
+  }) async {
+    try {
+      final success = await _supabase.auth.signInWithOAuth(
+        OAuthProvider.apple,
+        redirectTo: 'io.supabase.tryzeon://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      if (!success) {
+        return AuthResult.failure('Apple 登入失敗，請稍後再試');
+      }
+
+      // 等待認證狀態變化，最多等待 60 秒
+      final user = await _supabase.auth.onAuthStateChange
+          .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () => throw Exception('登入超時'),
+          )
+          .then((state) => state.session?.user);
+
+      if (user == null) {
+        return AuthResult.failure('Apple 登入失敗：無法取得用戶資訊');
+      }
+
+      // 儲存登入類型
+      await saveLastLoginType(userType);
+
+      return AuthResult.success(user);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Apple 登入失敗：${e.toString()}');
+    }
+  }
+
   /// 登出
   static Future<void> signOut() async {
     final userId = _supabase.auth.currentUser?.id;

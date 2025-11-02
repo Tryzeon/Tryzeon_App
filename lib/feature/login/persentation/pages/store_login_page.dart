@@ -51,6 +51,21 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     }
   }
 
+  Future<void> _handleAppleSignIn() async {
+    final result = await AuthService.signInWithApple(
+      userType: UserType.store,
+    );
+
+    if (result.success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const StoreEntry()),
+      );
+    } else if (!result.success) {
+      _showError(result.errorMessage ?? 'Apple 登入失敗');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -103,12 +118,17 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
                 const Spacer(),
 
                 // Google 登入按鈕
-                _buildGoogleButton(),
+                _buildLoginButton('Google', _handleGoogleSignIn),
 
                 const SizedBox(height: 16),
 
                 // Facebook 登入按鈕
-                _buildFacebookButton(),
+                _buildLoginButton('Facebook', _handleFacebookSignIn),
+
+                const SizedBox(height: 16),
+
+                // Apple 登入按鈕
+                _buildLoginButton('Apple', _handleAppleSignIn),
 
                 SizedBox(height: screenHeight * 0.1),
               ],
@@ -184,7 +204,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     );
   }
 
-  Widget _buildGoogleButton() {
+  Widget _buildLoginButton(String provider, VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -207,7 +227,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _handleGoogleSignIn,
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
@@ -215,65 +235,13 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
               children: [
                 const SizedBox(width: 60),
                 SvgPicture.asset(
-                  'assets/images/logo/google.svg',
+                  'assets/images/logo/$provider.svg',
                   height: 24,
                   width: 24,
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '使用 Google 登入',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFacebookButton() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            Colors.white.withValues(alpha: 0.95),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _handleFacebookSignIn,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-            child: Row(
-              children: [
-                const SizedBox(width: 60),
-                SvgPicture.asset(
-                  'assets/images/logo/facebook.svg',
-                  height: 24,
-                  width: 24,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '使用 Facebook 登入',
+                  '使用 $provider 登入',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
