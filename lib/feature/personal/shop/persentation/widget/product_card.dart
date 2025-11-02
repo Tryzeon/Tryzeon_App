@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
@@ -18,7 +19,7 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  Future<void> _handleTryon(BuildContext context, String imageUrl) async {
+  Future<void> _handleTryon(BuildContext context, String storagePath) async {
     final product = widget.productData['product'] as Product;
 
     // 記錄虛擬試穿點擊次數（不等待結果）
@@ -27,14 +28,15 @@ class _ProductCardState extends State<ProductCard> {
     }
 
     final personalEntry = PersonalEntry.of(context);
-    await personalEntry?.virtualTryOnProduct(imageUrl);
+    await personalEntry?.virtualTryOnFromStorage(storagePath);
   }
 
   @override
   Widget build(BuildContext context) {
     final storeName = widget.productData['storeName'] as String;
     final product = widget.productData['product'] as Product;
-    final imageUrl = ShopService.getProductImageUrl(product.imagePath);
+    final storagePath = product.imagePath;
+    final imageUrl = Supabase.instance.client.storage.from('store').getPublicUrl(product.imagePath);
 
     return GestureDetector(
       onTap: () async {
@@ -101,7 +103,7 @@ class _ProductCardState extends State<ProductCard> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => _handleTryon(context, imageUrl),
+                        onTap: () => _handleTryon(context, storagePath),
                         borderRadius: BorderRadius.circular(20),
                         child: Container(
                           padding: const EdgeInsets.all(8),

@@ -90,6 +90,7 @@ class WardrobeService {
             items.add(WardrobeItemData(
               path: localFile.path,
               category: category,
+              imageUrl: storagePath,
             ));
           } catch (e) {
             // 下載失敗，跳過此項目
@@ -119,9 +120,12 @@ class WardrobeService {
         );
 
         for (final file in files) {
+          final storagePath = '$userId/wardrobe/$categoryCode/${file.path.split('/').last}';
+
           items.add(WardrobeItemData(
             path: file.path,
             category: categoryName,
+            imageUrl: storagePath,
           ));
         }
       }
@@ -154,9 +158,11 @@ class WardrobeService {
 class WardrobeItemData {
   final String path;
   final String category;
+  final String imageUrl;
 
   WardrobeItemData({
     required this.path,
     required this.category,
+    required this.imageUrl,
   });
 }

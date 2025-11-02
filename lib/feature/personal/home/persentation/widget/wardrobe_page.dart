@@ -6,7 +6,12 @@ import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 
 class WardrobePage extends StatefulWidget {
-  const WardrobePage({super.key});
+  final Future<void> Function(String imageUrl) onTryOn;
+
+  const WardrobePage({
+    super.key,
+    required this.onTryOn,
+  });
 
   @override
   State<WardrobePage> createState() => _WardrobePageState();
@@ -35,6 +40,7 @@ class _WardrobePageState extends State<WardrobePage> {
             .map((item) => ClothingItem(
                   path: item.path,
                   category: item.category,
+                  imageUrl: item.imageUrl,
                 ))
             .toList();
         _isLoading = false;
@@ -376,6 +382,37 @@ class _WardrobePageState extends State<WardrobePage> {
                       ),
                     ),
                   ),
+                  // 虛擬試穿按鈕
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _handleTryon(item),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -410,6 +447,14 @@ class _WardrobePageState extends State<WardrobePage> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleTryon(ClothingItem item) async {
+    // 關閉 WardrobePage
+    Navigator.of(context).pop();
+
+    // 直接呼叫虛擬試穿
+    await widget.onTryOn(item.imageUrl);
   }
 
   void _showDeleteDialog(ClothingItem item) async {
@@ -449,10 +494,12 @@ class _WardrobePageState extends State<WardrobePage> {
 class ClothingItem {
   final String path;
   final String category;
+  final String imageUrl;
 
   ClothingItem({
     required this.path,
     required this.category,
+    required this.imageUrl,
   });
 }
 

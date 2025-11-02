@@ -30,7 +30,7 @@ class HomePageState extends State<HomePage> {
     _loadAvatar();
   }
 
-  Future<void> _virtualTryOn() async {
+  Future<void> virtualTryOnFromLocal() async {
     // Check if avatar is available
     if (_avatarPath == null) {
       TopNotification.show(
@@ -90,7 +90,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> virtualTryOnProduct(String productImageUrl) async {
+  Future<void> virtualTryOnFromStorage(String storagePath) async {
     setState(() {
       _isLoading = true;
     });
@@ -102,8 +102,8 @@ class HomePageState extends State<HomePage> {
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
-    final tryonResult = await TryonService.tryonProduct(
-      productImageUrl,
+    final tryonResult = await TryonService.tryonFromStorage(
+      storagePath,
       avatarBase64: customAvatarBase64,
     );
 
@@ -744,7 +744,9 @@ class HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const WardrobePage(),
+                              builder: (context) => WardrobePage(
+                                onTryOn: virtualTryOnFromStorage,
+                              ),
                             ),
                           );
                         },
@@ -767,7 +769,7 @@ class HomePageState extends State<HomePage> {
                             Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
                           ],
                         ),
-                        onPressed: _isLoading ? null : _virtualTryOn,
+                        onPressed: _isLoading ? null : virtualTryOnFromLocal,
                       ),
                     ),
                   ],

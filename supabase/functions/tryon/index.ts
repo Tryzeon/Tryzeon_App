@@ -119,30 +119,37 @@ Deno.serve(async (req) => {
     }
 
     let secondImageBase64 = null;
-    let secondImageMime = "image/png";
+    let secondImageMime = "image/jpeg";
 
     if (clothing_image) {
       // 若有 clothing_image (直接是 Base64)
       secondImageBase64 = clothing_image;
-      secondImageMime = "image/png"; // 若你知道是 PNG，可以保留；若可能為 JPEG，可做判別
-    } else {
-      // 若無 clothing_image，但有 product_image_url → 下載
-      console.log("Product image URL:", product_image_url);
-      const productImageResponse = await fetch(product_image_url);
-      if (!productImageResponse.ok) {
-        throw new Error(
-          `Failed to download product image: ${productImageResponse.statusText}`
-        );
+      secondImageMime = "image/jpeg";
+    } else if (product_image_url) {
+      let bucket: string;
+      if (product_image_url.includes('wardrobe')) {
+        bucket = 'wardrobe';
+      } else if (product_image_url.includes('product')) {
+        bucket = 'store';
+      } else {
+        throw new Error(`Cannot determine bucket from path: ${product_image_url}`);
       }
 
-      const productImageBuffer = await productImageResponse.arrayBuffer();
-      const productImageBytes = new Uint8Array(productImageBuffer);
+      const { data: clothingData, error: downloadError } = await supabase.storage
+        .from(bucket)
+        .download(product_image_url);
+
+      if (downloadError) {
+        console.error(`Failed to download from ${bucket}:`, downloadError);
+        throw new Error(`Failed to download item: ${JSON.stringify(downloadError)}`);
+      }
+
+      const buf = new Uint8Array(await clothingData.arrayBuffer());
       secondImageBase64 = btoa(
-        Array.from(productImageBytes, (b) => String.fromCharCode(b)).join("")
+        Array.from(buf, (b) => String.fromCharCode(b)).join("")
       );
-      secondImageMime = productImageResponse.headers.get("content-type") ?? "image/png";
-      console.log("Product image downloaded successfully");
-    } 
+      console.log(`Item downloaded successfully from ${bucket}`);
+    }
 
     // 設定 model
     const model = genAI.getGenerativeModel({

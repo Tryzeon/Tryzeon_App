@@ -46,14 +46,13 @@ class TryonService {
     }
   }
 
-  /// Try on product by URL - downloads image in edge function
-  static Future<TryonResult> tryonProduct(
-    String productImageUrl, {
+  static Future<TryonResult> tryonFromStorage(
+    String storagePath, {
     String? avatarBase64,
   }) async {
     try {
       final body = {
-        'product_image_url': productImageUrl,
+        'product_image_url': storagePath,
       };
 
       // 如果有自訂的 avatar base64，加入到 body
