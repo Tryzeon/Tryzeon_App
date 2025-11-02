@@ -113,7 +113,7 @@ class HomePageState extends State<HomePage> {
       });
 
       // Check if success
-      if (tryonResult.isSuccess && tryonResult.image != null) {
+      if (tryonResult.image != null) {
         setState(() {
           _tryonImages.add(tryonResult.image!);
           _currentTryonIndex = _tryonImages.length - 1;
