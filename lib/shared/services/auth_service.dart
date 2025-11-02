@@ -46,19 +46,36 @@ class AuthService {
     );
   }
 
-  /// Google 登入
-  static Future<AuthResult> signInWithGoogle({
+  /// 通用第三方登入
+  static Future<AuthResult> signInWithProvider({
+    required String provider,
     required UserType userType,
   }) async {
     try {
+      // 根據 provider 選擇對應的 OAuth Provider
+      final OAuthProvider oauthProvider;
+      switch (provider.toLowerCase()) {
+        case 'google':
+          oauthProvider = OAuthProvider.google;
+          break;
+        case 'facebook':
+          oauthProvider = OAuthProvider.facebook;
+          break;
+        case 'apple':
+          oauthProvider = OAuthProvider.apple;
+          break;
+        default:
+          return AuthResult.failure('不支援的登入方式：$provider');
+      }
+
       final success = await _supabase.auth.signInWithOAuth(
-        OAuthProvider.google,
+        oauthProvider,
         redirectTo: 'io.supabase.tryzeon://login-callback',
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
       if (!success) {
-        return AuthResult.failure('Google 登入失敗，請稍後再試');
+        return AuthResult.failure('$provider 登入失敗，請稍後再試');
       }
 
       // 等待認證狀態變化，最多等待 60 秒
@@ -71,7 +88,7 @@ class AuthService {
           .then((state) => state.session?.user);
 
       if (user == null) {
-        return AuthResult.failure('Google 登入失敗：無法取得用戶資訊');
+        return AuthResult.failure('$provider 登入失敗：無法取得用戶資訊');
       }
 
       // 儲存登入類型
@@ -81,85 +98,7 @@ class AuthService {
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
     } catch (e) {
-      return AuthResult.failure('Google 登入失敗：${e.toString()}');
-    }
-  }
-
-  /// Facebook 登入
-  static Future<AuthResult> signInWithFacebook({
-    required UserType userType,
-  }) async {
-    try {
-      final success = await _supabase.auth.signInWithOAuth(
-        OAuthProvider.facebook,
-        redirectTo: 'io.supabase.tryzeon://login-callback',
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
-
-      if (!success) {
-        return AuthResult.failure('Facebook 登入失敗，請稍後再試');
-      }
-
-      // 等待認證狀態變化，最多等待 60 秒
-      final user = await _supabase.auth.onAuthStateChange
-          .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
-          .timeout(
-            const Duration(seconds: 60),
-            onTimeout: () => throw Exception('登入超時'),
-          )
-          .then((state) => state.session?.user);
-
-      if (user == null) {
-        return AuthResult.failure('Facebook 登入失敗：無法取得用戶資訊');
-      }
-
-      // 儲存登入類型
-      await saveLastLoginType(userType);
-
-      return AuthResult.success(user);
-    } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('Facebook 登入失敗：${e.toString()}');
-    }
-  }
-
-  /// Apple 登入
-  static Future<AuthResult> signInWithApple({
-    required UserType userType,
-  }) async {
-    try {
-      final success = await _supabase.auth.signInWithOAuth(
-        OAuthProvider.apple,
-        redirectTo: 'io.supabase.tryzeon://login-callback',
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
-
-      if (!success) {
-        return AuthResult.failure('Apple 登入失敗，請稍後再試');
-      }
-
-      // 等待認證狀態變化，最多等待 60 秒
-      final user = await _supabase.auth.onAuthStateChange
-          .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
-          .timeout(
-            const Duration(seconds: 60),
-            onTimeout: () => throw Exception('登入超時'),
-          )
-          .then((state) => state.session?.user);
-
-      if (user == null) {
-        return AuthResult.failure('Apple 登入失敗：無法取得用戶資訊');
-      }
-
-      // 儲存登入類型
-      await saveLastLoginType(userType);
-
-      return AuthResult.success(user);
-    } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('Apple 登入失敗：${e.toString()}');
+      return AuthResult.failure('$provider 登入失敗：${e.toString()}');
     }
   }
 

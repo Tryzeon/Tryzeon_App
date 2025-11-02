@@ -21,8 +21,9 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     );
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    final result = await AuthService.signInWithGoogle(
+  Future<void> _handleSignIn(String provider) async {
+    final result = await AuthService.signInWithProvider(
+      provider: provider,
       userType: UserType.store,
     );
 
@@ -32,37 +33,7 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
         MaterialPageRoute(builder: (context) => const StoreEntry()),
       );
     } else if (!result.success) {
-      _showError(result.errorMessage ?? 'Google 登入失敗');
-    }
-  }
-
-  Future<void> _handleFacebookSignIn() async {
-    final result = await AuthService.signInWithFacebook(
-      userType: UserType.store,
-    );
-
-    if (result.success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const StoreEntry()),
-      );
-    } else if (!result.success) {
-      _showError(result.errorMessage ?? 'Facebook 登入失敗');
-    }
-  }
-
-  Future<void> _handleAppleSignIn() async {
-    final result = await AuthService.signInWithApple(
-      userType: UserType.store,
-    );
-
-    if (result.success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const StoreEntry()),
-      );
-    } else if (!result.success) {
-      _showError(result.errorMessage ?? 'Apple 登入失敗');
+      _showError(result.errorMessage ?? '$provider 登入失敗');
     }
   }
 
@@ -118,17 +89,17 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
                 const Spacer(),
 
                 // Google 登入按鈕
-                _buildLoginButton('Google', _handleGoogleSignIn),
+                _buildLoginButton('Google', () => _handleSignIn('Google')),
 
                 const SizedBox(height: 16),
 
                 // Facebook 登入按鈕
-                _buildLoginButton('Facebook', _handleFacebookSignIn),
+                _buildLoginButton('Facebook', () => _handleSignIn('Facebook')),
 
                 const SizedBox(height: 16),
 
                 // Apple 登入按鈕
-                _buildLoginButton('Apple', _handleAppleSignIn),
+                _buildLoginButton('Apple', () => _handleSignIn('Apple')),
 
                 SizedBox(height: screenHeight * 0.1),
               ],
