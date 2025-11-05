@@ -473,20 +473,6 @@ class _ShopPageState extends State<ShopPage> {
                         ],
                       ),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.filter_list_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        onPressed: _showFilterDialog,
-                        tooltip: '篩選與排序',
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -554,6 +540,21 @@ class _ShopPageState extends State<ShopPage> {
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.filter_list_rounded,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                onPressed: _showFilterDialog,
+                                tooltip: '篩選與排序',
+                              ),
                             ),
                           ],
                         ),
