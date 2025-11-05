@@ -20,8 +20,9 @@ class _ShopPageState extends State<ShopPage> {
   // 過濾和排序狀態
   String _sortBy = 'created_at';
   bool _ascending = false;
-  double? _minPrice;
-  double? _maxPrice;
+  int? _minPrice;
+  int? _maxPrice;
+  RangeValues _priceRange = const RangeValues(0, 3000);
 
   @override
   void initState() {
@@ -188,67 +189,53 @@ class _ShopPageState extends State<ShopPage> {
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              labelText: '最低價格',
-                              labelStyle: TextStyle(color: Colors.grey[600]),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              prefixText: '\$',
-                            ),
-                            keyboardType: TextInputType.number,
-                            controller: TextEditingController(
-                              text: _minPrice?.toString() ?? '',
-                            ),
-                            onChanged: (value) {
-                              setModalState(() {
-                                _minPrice = double.tryParse(value);
-                              });
-                            },
+                        Text(
+                          '\$${_priceRange.start.round()}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              labelText: '最高價格',
-                              labelStyle: TextStyle(color: Colors.grey[600]),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              prefixText: '\$',
-                            ),
-                            keyboardType: TextInputType.number,
-                            controller: TextEditingController(
-                              text: _maxPrice?.toString() ?? '',
-                            ),
-                            onChanged: (value) {
-                              setModalState(() {
-                                _maxPrice = double.tryParse(value);
-                              });
-                            },
+                        Text(
+                          _priceRange.end.round() >= 3000
+                            ? '\$3000+'
+                            : '\$${_priceRange.end.round()}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: Theme.of(context).colorScheme.primary,
+                        inactiveTrackColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                        thumbColor: Theme.of(context).colorScheme.primary,
+                        overlayColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                        trackHeight: 4,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+                      ),
+                      child: RangeSlider(
+                        values: _priceRange,
+                        min: 0,
+                        max: 3000,
+                        divisions: 100,
+                        onChanged: (RangeValues values) {
+                          setModalState(() {
+                            _priceRange = values;
+                            _minPrice = values.start.round();
+                            _maxPrice = values.end >= 3000 ? null : values.end.round();
+                          });
+                        },
+                      ),
                     ),
 
                     const SizedBox(height: 24),
@@ -275,6 +262,7 @@ class _ShopPageState extends State<ShopPage> {
                                     _ascending = false;
                                     _minPrice = null;
                                     _maxPrice = null;
+                                    _priceRange = const RangeValues(0, 3000);
                                   });
                                   if (mounted) {
                                     setState(() {
@@ -282,6 +270,7 @@ class _ShopPageState extends State<ShopPage> {
                                       _ascending = false;
                                       _minPrice = null;
                                       _maxPrice = null;
+                                      _priceRange = const RangeValues(0, 3000);
                                     });
                                     _loadProducts();
                                   }

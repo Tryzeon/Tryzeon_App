@@ -9,8 +9,8 @@ class ShopService {
   static Future<List<Map<String, dynamic>>> getAllProducts({
     String sortBy = 'created_at',
     bool ascending = false,
-    double? minPrice,
-    double? maxPrice,
+    int? minPrice,
+    int? maxPrice,
   }) async {
     try {
       // 查詢所有商品並關聯店家資訊
