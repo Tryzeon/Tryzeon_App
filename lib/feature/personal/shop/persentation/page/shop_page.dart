@@ -4,6 +4,7 @@ import '../../data/product_type_service.dart';
 import '../widget/ad_banner.dart';
 import '../widget/search_bar.dart';
 import '../widget/product_card.dart';
+import '../widget/product_type_filter.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -252,57 +253,6 @@ class _ShopPageState extends State<ShopPage> {
                           });
                         },
                       ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // 商品類型標籤
-                    const Text(
-                      '商品類型',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _productTypes.map((type) {
-                        final isSelected = _selectedTypes.contains(type);
-                        return FilterChip(
-                          label: Text(type),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setModalState(() {
-                              if (selected) {
-                                _selectedTypes.add(type);
-                              } else {
-                                _selectedTypes.remove(type);
-                              }
-                            });
-                          },
-                          backgroundColor: Colors.white,
-                          selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                          checkmarkColor: Theme.of(context).colorScheme.primary,
-                          labelStyle: TextStyle(
-                            color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.black87,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                          side: BorderSide(
-                            color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey[300]!,
-                            width: isSelected ? 2 : 1,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        );
-                      }).toList(),
                     ),
 
                     const SizedBox(height: 24),
@@ -572,6 +522,24 @@ class _ShopPageState extends State<ShopPage> {
 
                       const SizedBox(height: 24),
 
+                      // 商品類型篩選標籤
+                      ProductTypeFilter(
+                        productTypes: _productTypes,
+                        selectedTypes: _selectedTypes,
+                        onTypeToggle: (type) {
+                          setState(() {
+                            if (_selectedTypes.contains(type)) {
+                              _selectedTypes.remove(type);
+                            } else {
+                              _selectedTypes.add(type);
+                            }
+                          });
+                          _loadProducts();
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
                       // 推薦商品標題
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -627,29 +595,6 @@ class _ShopPageState extends State<ShopPage> {
                             padding: const EdgeInsets.all(48.0),
                             child: CircularProgressIndicator(
                               color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        )
-                      else if (displayedProducts.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(48.0),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 64,
-                                  color: Colors.grey[300],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  '目前沒有商品',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         )
