@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 
+const double kMaxPrice = 3000;
+
 class FilterDialog {
   final BuildContext context;
-  final String sortBy;
-  final bool ascending;
-  final RangeValues priceRange;
-  final Set<String> selectedTypes;
-  final Function(String sortBy, bool ascending, int? minPrice, int? maxPrice, Set<String> selectedTypes) onApply;
+  final Function(int? minPrice, int? maxPrice) onApply;
 
   FilterDialog({
     required this.context,
-    required this.sortBy,
-    required this.ascending,
-    required this.priceRange,
-    required this.selectedTypes,
     required this.onApply,
   }) {
     showModalBottomSheet(
@@ -22,10 +16,6 @@ class FilterDialog {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return _FilterDialogContent(
-          sortBy: sortBy,
-          ascending: ascending,
-          priceRange: priceRange,
-          selectedTypes: selectedTypes,
           onApply: onApply,
         );
       },
@@ -34,17 +24,9 @@ class FilterDialog {
 }
 
 class _FilterDialogContent extends StatefulWidget {
-  final String sortBy;
-  final bool ascending;
-  final RangeValues priceRange;
-  final Set<String> selectedTypes;
-  final Function(String sortBy, bool ascending, int? minPrice, int? maxPrice, Set<String> selectedTypes) onApply;
+  final Function(int? minPrice, int? maxPrice) onApply;
 
   const _FilterDialogContent({
-    required this.sortBy,
-    required this.ascending,
-    required this.priceRange,
-    required this.selectedTypes,
     required this.onApply,
   });
 
@@ -53,88 +35,20 @@ class _FilterDialogContent extends StatefulWidget {
 }
 
 class _FilterDialogContentState extends State<_FilterDialogContent> {
-  late String _sortBy;
-  late bool _ascending;
-  late RangeValues _priceRange;
-  late Set<String> _selectedTypes;
+  RangeValues _priceRange = const RangeValues(0, kMaxPrice);
   int? _minPrice;
   int? _maxPrice;
 
-  @override
-  void initState() {
-    super.initState();
-    _sortBy = widget.sortBy;
-    _ascending = widget.ascending;
-    _priceRange = widget.priceRange;
-    _selectedTypes = Set.from(widget.selectedTypes);
-    _minPrice = widget.priceRange.start.round();
-    _maxPrice = widget.priceRange.end >= 3000 ? null : widget.priceRange.end.round();
-  }
-
-  Widget _buildSortOption(String label, String value) {
-    final isSelected = _sortBy == value;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        gradient: isSelected
-            ? LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
-                ],
-              )
-            : null,
-        borderRadius: BorderRadius.circular(12),
-        border: isSelected
-            ? Border.all(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              )
-            : null,
-      ),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _sortBy = value;
-          });
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          child: Row(
-            children: [
-              Icon(
-                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected ? Theme.of(context).colorScheme.primary : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _resetFilters() {
     setState(() {
-      _sortBy = 'created_at';
-      _ascending = false;
       _minPrice = null;
       _maxPrice = null;
-      _priceRange = const RangeValues(0, 3000);
-      _selectedTypes.clear();
+      _priceRange = const RangeValues(0, kMaxPrice);
     });
   }
 
   void _applyFilters() {
-    widget.onApply(_sortBy, _ascending, _minPrice, _maxPrice, _selectedTypes);
+    widget.onApply(_minPrice, _maxPrice);
     Navigator.pop(context);
   }
 
@@ -180,7 +94,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  '篩選與排序',
+                  '篩選條件',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -191,56 +105,9 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
             ),
             const SizedBox(height: 24),
 
-            // 排序選項
+            // 價格範圍
             const Text(
-              '排序方式',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildSortOption('價格', 'price'),
-            _buildSortOption('建立時間', 'created_at'),
-            _buildSortOption('更新時間', 'updated_at'),
-            _buildSortOption('試穿次數', 'tryon_count'),
-
-            const SizedBox(height: 12),
-
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: SwitchListTile(
-                title: const Text(
-                  '遞增排序',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                value: _ascending,
-                activeTrackColor: Theme.of(context).colorScheme.primary,
-                onChanged: (value) {
-                  setState(() {
-                    _ascending = value;
-                  });
-                },
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // 價格區間
-            const Text(
-              '價格區間',
+              '價格範圍',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -260,8 +127,8 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                   ),
                 ),
                 Text(
-                  _priceRange.end.round() >= 3000
-                    ? '\$3000+'
+                  _priceRange.end.round() >= kMaxPrice
+                    ? '\$${kMaxPrice.round()}+'
                     : '\$${_priceRange.end.round()}',
                   style: TextStyle(
                     fontSize: 14,
@@ -284,13 +151,13 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
               child: RangeSlider(
                 values: _priceRange,
                 min: 0,
-                max: 3000,
+                max: kMaxPrice,
                 divisions: 100,
                 onChanged: (RangeValues values) {
                   setState(() {
                     _priceRange = values;
                     _minPrice = values.start.round();
-                    _maxPrice = values.end >= 3000 ? null : values.end.round();
+                    _maxPrice = values.end >= kMaxPrice ? null : values.end.round();
                   });
                 },
               ),
@@ -318,7 +185,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                         borderRadius: BorderRadius.circular(12),
                         child: Center(
                           child: Text(
-                            '重置',
+                            '清除',
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
                               fontSize: 16,

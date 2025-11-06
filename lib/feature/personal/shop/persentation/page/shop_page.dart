@@ -21,11 +21,10 @@ class _ShopPageState extends State<ShopPage> {
   bool isLoading = true;
 
   // 過濾和排序狀態
-  String _sortBy = 'created_at';
+  String _sortBy = 'tryon_count';
   bool _ascending = false;
   int? _minPrice;
   int? _maxPrice;
-  RangeValues _priceRange = const RangeValues(0, 3000);
   final Set<String> _selectedTypes = {};
 
   // 商品類型列表
@@ -238,43 +237,139 @@ class _ShopPageState extends State<ShopPage> {
                                   ),
                             ),
                             const Spacer(),
+                            // 綜合排名按鈕
                             Container(
+                              decoration: BoxDecoration(
+                                color: _sortBy != 'price'
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    if (_sortBy != 'tryon_count') {
+                                      setState(() {
+                                        _sortBy = 'tryon_count';
+                                        _ascending = false;
+                                      });
+                                      _loadProducts();
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.emoji_events_outlined,
+                                          color: _sortBy != 'price'
+                                              ? Colors.white
+                                              : Theme.of(context).colorScheme.primary,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '綜合',
+                                          style: TextStyle(
+                                            color: _sortBy != 'price'
+                                                ? Colors.white
+                                                : Theme.of(context).colorScheme.primary,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // 價格排序按鈕
+                            Container(
+                              decoration: BoxDecoration(
+                                color: _sortBy == 'price'
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _sortBy = 'price';
+                                      _ascending = !_ascending;
+                                    });
+                                    _loadProducts();
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _ascending
+                                              ? Icons.arrow_upward
+                                              : Icons.arrow_downward,
+                                          color: _sortBy == 'price'
+                                              ? Colors.white
+                                              : Theme.of(context).colorScheme.primary,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '價格',
+                                          style: TextStyle(
+                                            color: _sortBy == 'price'
+                                                ? Colors.white
+                                                : Theme.of(context).colorScheme.primary,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 34,
+                              height: 34,
                               decoration: BoxDecoration(
                                 color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.filter_list_rounded,
-                                  color: Theme.of(context).colorScheme.primary,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    FilterDialog(
+                                      context: context,
+                                      onApply: (minPrice, maxPrice) {
+                                        if (mounted) {
+                                          setState(() {
+                                            _minPrice = minPrice;
+                                            _maxPrice = maxPrice;
+                                          });
+                                          _loadProducts();
+                                        }
+                                      },
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Icon(
+                                    Icons.filter_list_rounded,
+                                    color: Theme.of(context).colorScheme.primary,
+                                    size: 18,
+                                  ),
                                 ),
-                                onPressed: () {
-                                  FilterDialog(
-                                    context: context,
-                                    sortBy: _sortBy,
-                                    ascending: _ascending,
-                                    priceRange: _priceRange,
-                                    selectedTypes: _selectedTypes,
-                                    onApply: (sortBy, ascending, minPrice, maxPrice, selectedTypes) {
-                                      if (mounted) {
-                                        setState(() {
-                                          _sortBy = sortBy;
-                                          _ascending = ascending;
-                                          _minPrice = minPrice;
-                                          _maxPrice = maxPrice;
-                                          _priceRange = RangeValues(
-                                            minPrice?.toDouble() ?? 0,
-                                            maxPrice?.toDouble() ?? 3000,
-                                          );
-                                          _selectedTypes.clear();
-                                          _selectedTypes.addAll(selectedTypes);
-                                        });
-                                        _loadProducts();
-                                      }
-                                    },
-                                  );
-                                },
-                                tooltip: '篩選與排序',
                               ),
                             ),
                           ],
@@ -290,6 +385,29 @@ class _ShopPageState extends State<ShopPage> {
                             padding: const EdgeInsets.all(48.0),
                             child: CircularProgressIndicator(
                               color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        )
+                      else if (displayedProducts.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(48.0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.shopping_bag_outlined,
+                                  size: 64,
+                                  color: Colors.grey[300],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '目前沒有商品符合搜尋條件',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         )
