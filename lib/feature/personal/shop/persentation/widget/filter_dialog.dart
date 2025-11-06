@@ -4,10 +4,14 @@ const double kMaxPrice = 3000;
 
 class FilterDialog {
   final BuildContext context;
+  final int? minPrice;
+  final int? maxPrice;
   final Function(int? minPrice, int? maxPrice) onApply;
 
   FilterDialog({
     required this.context,
+    this.minPrice,
+    this.maxPrice,
     required this.onApply,
   }) {
     showModalBottomSheet(
@@ -16,6 +20,8 @@ class FilterDialog {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return _FilterDialogContent(
+          minPrice: minPrice,
+          maxPrice: maxPrice,
           onApply: onApply,
         );
       },
@@ -24,9 +30,13 @@ class FilterDialog {
 }
 
 class _FilterDialogContent extends StatefulWidget {
+  final int? minPrice;
+  final int? maxPrice;
   final Function(int? minPrice, int? maxPrice) onApply;
 
   const _FilterDialogContent({
+    this.minPrice,
+    this.maxPrice,
     required this.onApply,
   });
 
@@ -35,9 +45,20 @@ class _FilterDialogContent extends StatefulWidget {
 }
 
 class _FilterDialogContentState extends State<_FilterDialogContent> {
-  RangeValues _priceRange = const RangeValues(0, kMaxPrice);
-  int? _minPrice;
-  int? _maxPrice;
+  late RangeValues _priceRange;
+  late int? _minPrice;
+  late int? _maxPrice;
+
+  @override
+  void initState() {
+    super.initState();
+    _minPrice = widget.minPrice;
+    _maxPrice = widget.maxPrice;
+    _priceRange = RangeValues(
+      widget.minPrice?.toDouble() ?? 0,
+      widget.maxPrice?.toDouble() ?? kMaxPrice,
+    );
+  }
 
   void _resetFilters() {
     setState(() {

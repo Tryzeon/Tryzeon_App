@@ -352,6 +352,8 @@ class _ShopPageState extends State<ShopPage> {
                                   onTap: () {
                                     FilterDialog(
                                       context: context,
+                                      minPrice: _minPrice,
+                                      maxPrice: _maxPrice,
                                       onApply: (minPrice, maxPrice) {
                                         if (mounted) {
                                           setState(() {
