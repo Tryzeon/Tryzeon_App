@@ -59,5 +59,16 @@ flutter run -d <device-id>
 `[wardrobe_bucket]/${userId}/wardrobe/${categoryCode}/${timestamp}.jpg`
 
 
+## Clothing Categories
+
+- 上衣 : `top`
+- 褲子 : `pants`
+- 裙子 : `skirt`
+- 外套 : `jacket`
+- 鞋子 : `shoes`
+- 配件 : `accessories`
+- 其他 : `others`
+
+
 ## TODO, Bugs:
 1. 現在的個人設定-基本資料-更改姓名方式不會被正確更改，因為 metadata['name'] 欄位每次使用第三方登入都會被覆蓋，所以只是拿來 Demo 設定欄位的。
