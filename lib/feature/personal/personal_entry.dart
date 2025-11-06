@@ -30,9 +30,9 @@ class PersonalEntryState extends State<PersonalEntry> {
     super.initState();
     _pages = [
       const CommunityPage(),
-      const ChatPage(),
-      HomePage(key: _homePageKey),
       const ShopPage(),
+      HomePage(key: _homePageKey),
+      const ChatPage(),
       const ProfilePage(),
     ];
     
@@ -78,11 +78,11 @@ class PersonalEntryState extends State<PersonalEntry> {
           ),
           AdaptiveNavigationDestination(
             icon: PlatformInfo.isIOS26OrHigher()
-                ? "message"
+                ? "cart"
                 : PlatformInfo.isIOS
-                ? CupertinoIcons.chat_bubble
-                : Icons.chat_outlined,
-            label: '聊天',
+                ? CupertinoIcons.cart
+                : Icons.shopping_cart_outlined,
+            label: '試衣間',
           ),
           AdaptiveNavigationDestination(
             icon: PlatformInfo.isIOS26OrHigher()
@@ -94,11 +94,11 @@ class PersonalEntryState extends State<PersonalEntry> {
           ),
           AdaptiveNavigationDestination(
             icon: PlatformInfo.isIOS26OrHigher()
-                ? "cart"
+                ? "message"
                 : PlatformInfo.isIOS
-                ? CupertinoIcons.cart
-                : Icons.shopping_cart_outlined,
-            label: '試衣間',
+                ? CupertinoIcons.chat_bubble
+                : Icons.chat_outlined,
+            label: '聊天',
           ),
           AdaptiveNavigationDestination(
             icon: PlatformInfo.isIOS26OrHigher()
