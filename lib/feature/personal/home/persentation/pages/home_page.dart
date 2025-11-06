@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
-import '../widget/wardrobe_page.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/shared/component/confirmation_dialog.dart';
@@ -723,117 +722,65 @@ class HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 32),
 
-                // 按鈕區域
-                Row(
-                  children: [
-                    // 衣櫃按鈕
-                    Expanded(
-                      child: _buildActionButton(
-                        context: context,
-                        icon: Icons.checkroom_rounded,
-                        label: '我的衣櫃',
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-                          ],
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WardrobePage(
-                                onTryOn: virtualTryOnFromStorage,
-                              ),
+                // 虛擬試穿按鈕
+                Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: _isLoading
+                        ? LinearGradient(
+                            colors: [Colors.grey[300]!, Colors.grey[400]!],
+                          )
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Theme.of(context).colorScheme.secondary,
+                              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
+                            ],
+                          ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: _isLoading
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // 虛擬試穿按鈕
-                    Expanded(
-                      child: _buildActionButton(
-                        context: context,
-                        icon: Icons.auto_awesome_rounded,
-                        label: '虛擬試穿',
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).colorScheme.secondary,
-                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
                           ],
-                        ),
-                        onPressed: _isLoading ? null : virtualTryOnFromLocal,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _isLoading ? null : virtualTryOnFromLocal,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '虛擬試穿',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
 
                 const SizedBox(height: 16),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required Gradient gradient,
-    required VoidCallback? onPressed,
-  }) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: onPressed == null
-            ? LinearGradient(
-                colors: [Colors.grey[300]!, Colors.grey[400]!],
-              )
-            : gradient,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: onPressed == null
-            ? []
-            : [
-                BoxShadow(
-                  color: gradient.colors.first.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 24,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
           ),
         ),
       ),
