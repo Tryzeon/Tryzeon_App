@@ -11,6 +11,7 @@ class ShopService {
     bool ascending = false,
     int? minPrice,
     int? maxPrice,
+    List<String>? types,
   }) async {
     try {
       // 查詢所有商品並關聯店家資訊
@@ -31,6 +32,10 @@ class ShopService {
       }
       if (maxPrice != null) {
         query = query.lte('price', maxPrice);
+      }
+      // 類型過濾
+      if (types != null && types.isNotEmpty) {
+        query = query.inFilter('type', types);
       }
 
       // 排序

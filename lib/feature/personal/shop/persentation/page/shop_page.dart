@@ -23,6 +23,7 @@ class _ShopPageState extends State<ShopPage> {
   int? _minPrice;
   int? _maxPrice;
   RangeValues _priceRange = const RangeValues(0, 3000);
+  final Set<String> _selectedTypes = {};
 
   @override
   void initState() {
@@ -50,6 +51,7 @@ class _ShopPageState extends State<ShopPage> {
       ascending: _ascending,
       minPrice: _minPrice,
       maxPrice: _maxPrice,
+      types: _selectedTypes.isEmpty ? null : _selectedTypes.toList(),
     );
 
     if (!mounted) return;
@@ -240,6 +242,57 @@ class _ShopPageState extends State<ShopPage> {
 
                     const SizedBox(height: 24),
 
+                    // 商品類型標籤
+                    const Text(
+                      '商品類型',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'].map((type) {
+                        final isSelected = _selectedTypes.contains(type);
+                        return FilterChip(
+                          label: Text(type),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setModalState(() {
+                              if (selected) {
+                                _selectedTypes.add(type);
+                              } else {
+                                _selectedTypes.remove(type);
+                              }
+                            });
+                          },
+                          backgroundColor: Colors.white,
+                          selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                          checkmarkColor: Theme.of(context).colorScheme.primary,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                          side: BorderSide(
+                            color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey[300]!,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+
                     // 按鈕
                     Row(
                       children: [
@@ -263,6 +316,7 @@ class _ShopPageState extends State<ShopPage> {
                                     _minPrice = null;
                                     _maxPrice = null;
                                     _priceRange = const RangeValues(0, 3000);
+                                    _selectedTypes.clear();
                                   });
                                   if (mounted) {
                                     setState(() {
@@ -271,6 +325,7 @@ class _ShopPageState extends State<ShopPage> {
                                       _minPrice = null;
                                       _maxPrice = null;
                                       _priceRange = const RangeValues(0, 3000);
+                                      _selectedTypes.clear();
                                     });
                                     _loadProducts();
                                   }
