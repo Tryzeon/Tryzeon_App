@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/feature/personal/shop/data/product_type_service.dart';
 import '../../../data/product_service.dart';
 
 class AddProductPage extends StatefulWidget {
@@ -20,8 +21,23 @@ class _AddProductPageState extends State<AddProductPage> {
   bool isLoading = false;
 
   // 衣服種類選項
-  final List<String> clothingTypes = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
+  List<String> clothingTypes = [];
   String? selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProductTypes();
+  }
+
+  Future<void> _loadProductTypes() async {
+    final types = await ProductTypeService.getProductTypesList();
+    if (mounted) {
+      setState(() {
+        clothingTypes = types;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../data/wardrobe_service.dart';
+import 'package:tryzeon/feature/personal/shop/data/product_type_service.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/shared/component/confirmation_dialog.dart';
@@ -18,7 +19,6 @@ class WardrobePage extends StatefulWidget {
 }
 
 class _WardrobePageState extends State<WardrobePage> {
-  final List<String> defaultCategories = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
   List<String> categories = [];
   String selectedCategory = '全部';
   List<ClothingItem> clothingItems = [];
@@ -28,8 +28,17 @@ class _WardrobePageState extends State<WardrobePage> {
   @override
   void initState() {
     super.initState();
-    categories = ['全部', ...defaultCategories];
+    _loadProductTypes();
     _loadWardrobeItems();
+  }
+
+  Future<void> _loadProductTypes() async {
+    final types = await ProductTypeService.getProductTypesList();
+    if (mounted) {
+      setState(() {
+        categories = ['全部', ...types];
+      });
+    }
   }
 
   Future<void> _loadWardrobeItems() async {

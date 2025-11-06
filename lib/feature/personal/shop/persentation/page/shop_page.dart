@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
+import '../../data/product_type_service.dart';
 import '../widget/ad_banner.dart';
 import '../widget/search_bar.dart';
 import '../widget/product_card.dart';
@@ -25,6 +26,9 @@ class _ShopPageState extends State<ShopPage> {
   RangeValues _priceRange = const RangeValues(0, 3000);
   final Set<String> _selectedTypes = {};
 
+  // 商品類型列表
+  List<String> _productTypes = [];
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +40,17 @@ class _ShopPageState extends State<ShopPage> {
       'assets/images/ads/zara.jpg',
     ];
 
+    _loadProductTypes();
     _loadProducts();
+  }
+
+  Future<void> _loadProductTypes() async {
+    final types = await ProductTypeService.getProductTypesList();
+    if (mounted) {
+      setState(() {
+        _productTypes = types;
+      });
+    }
   }
 
   Future<void> _loadProducts() async {
@@ -255,7 +269,7 @@ class _ShopPageState extends State<ShopPage> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'].map((type) {
+                      children: _productTypes.map((type) {
                         final isSelected = _selectedTypes.contains(type);
                         return FilterChip(
                           label: Text(type),

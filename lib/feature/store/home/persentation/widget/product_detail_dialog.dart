@@ -4,6 +4,7 @@ import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/shared/component/top_notification.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
+import 'package:tryzeon/feature/personal/shop/data/product_type_service.dart';
 import '../../../data/product_service.dart';
 
 class ProductDetailDialog extends StatefulWidget {
@@ -21,9 +22,9 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   late TextEditingController purchaseLinkController;
   File? newImage;
   bool isLoading = false;
-  
+
   // 衣服種類選項
-  final List<String> clothingTypes = ['上衣', '褲子', '裙子', '外套', '鞋子', '配件', '其他'];
+  List<String> clothingTypes = [];
   String? selectedType;
 
   @override
@@ -33,6 +34,16 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     priceController = TextEditingController(text: widget.product.price.toString());
     purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
     selectedType = widget.product.type;
+    _loadProductTypes();
+  }
+
+  Future<void> _loadProductTypes() async {
+    final types = await ProductTypeService.getProductTypesList();
+    if (mounted) {
+      setState(() {
+        clothingTypes = types;
+      });
+    }
   }
 
   @override
