@@ -6,7 +6,7 @@ class ShopService {
   static const _productsTable = 'products';
 
   /// 獲取所有商品（包含店家資訊）
-  static Future<List<Map<String, dynamic>>> getAllProducts({
+  static Future<List<Map<String, dynamic>>> getProducts({
     String sortBy = 'created_at',
     bool ascending = false,
     int? minPrice,

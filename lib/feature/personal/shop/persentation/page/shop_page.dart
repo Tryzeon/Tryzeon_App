@@ -46,7 +46,7 @@ class _ShopPageState extends State<ShopPage> {
       isLoading = true;
     });
 
-    final fetchedProducts = await ShopService.getAllProducts(
+    final fetchedProducts = await ShopService.getProducts(
       sortBy: _sortBy,
       ascending: _ascending,
       minPrice: _minPrice,
