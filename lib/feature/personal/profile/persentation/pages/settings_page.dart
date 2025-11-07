@@ -45,14 +45,21 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  void _handleLogout() async {
-    await AuthService.signOut();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-        (route) => false,
-      );
+  Future<void> _handleSignOut(BuildContext context) async {
+    final confirmed = await ConfirmationDialog.show(
+      context: context,
+      content: '你確定要登出嗎？',
+      confirmText: '登出',
+    );
+
+    if (confirmed == true) {
+      await AuthService.signOut();
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+      }
     }
   }
 
@@ -139,7 +146,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         },
                       ),
 
-                      const Spacer(),
+                      const SizedBox(height: 12),
 
                       // 切換到店家帳號
                       _buildMenuCard(
@@ -149,25 +156,46 @@ class _SettingsPageState extends State<SettingsPage> {
                         subtitle: '管理您的商店',
                         onTap: _switchToStore,
                       ),
-                      const SizedBox(height: 12),
 
-                      // 登出卡片
-                      _buildMenuCard(
-                        context: context,
-                        icon: Icons.logout_rounded,
-                        title: '登出',
-                        subtitle: '登出您的帳號',
-                        onTap: () async {
-                          final confirmed = await ConfirmationDialog.show(
-                            context: context,
-                            content: '你確定要登出嗎？',
-                            confirmText: '登出',
-                          );
+                      const Spacer(),
 
-                          if (confirmed == true) {
-                            _handleLogout();
-                          }
-                        },
+                      // 登出按鈕
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.red,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _handleSignOut(context),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  Icons.logout_rounded,
+                                  color: Colors.red,
+                                  size: 24,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '登出',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 16),

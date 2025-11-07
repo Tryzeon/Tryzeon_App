@@ -24,7 +24,7 @@ class StoreSettingsPage extends StatelessWidget {
     }
   }
 
-  Future<void> _signOut(BuildContext context) async {
+  Future<void> _handleSignOut(BuildContext context) async {
     final comfirmed = await ConfirmationDialog.show(
       context: context,
       content: '你確定要登出嗎？',
@@ -132,7 +132,7 @@ class StoreSettingsPage extends StatelessWidget {
                       _buildMenuCard(
                         context: context,
                         icon: Icons.person_outline_rounded,
-                        title: '帳號設定',
+                        title: '店家設定',
                         subtitle: '管理店家資訊、Logo',
                         gradient: LinearGradient(
                           colors: [
@@ -183,7 +183,7 @@ class StoreSettingsPage extends StatelessWidget {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () => _signOut(context),
+                            onTap: () => _handleSignOut(context),
                             borderRadius: BorderRadius.circular(16),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
