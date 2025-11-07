@@ -38,11 +38,11 @@ class WardrobeService {
     }
   }
 
-  static Future<List<WardrobeItemData>> getWardrobeItems() async {
+  static Future<List<WardrobeItem>> getWardrobeItems() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return [];
 
-    final List<WardrobeItemData> items = [];
+    final List<WardrobeItem> items = [];
 
     // 先嘗試從本地資料夾讀取
     final localItems = await _getLocalWardrobeItems(userId);
@@ -71,7 +71,7 @@ class WardrobeService {
           final localFile = await FileCacheService.saveFile(tempFile, storagePath);
           await tempFile.delete();
 
-          items.add(WardrobeItemData(
+          items.add(WardrobeItem(
             path: localFile.path,
             category: type,
             imageUrl: storagePath,
@@ -86,8 +86,8 @@ class WardrobeService {
   }
 
   /// 從本地資料夾讀取所有衣櫃項目
-  static Future<List<WardrobeItemData>> _getLocalWardrobeItems(String userId) async {
-    final List<WardrobeItemData> items = [];
+  static Future<List<WardrobeItem>> _getLocalWardrobeItems(String userId) async {
+    final List<WardrobeItem> items = [];
 
     try {
       final typesList = await ProductTypeService.getProductTypesList();
@@ -102,7 +102,7 @@ class WardrobeService {
         for (final file in files) {
           final storagePath = '$userId/wardrobe/$categoryCode/${file.path.split('/').last}';
 
-          items.add(WardrobeItemData(
+          items.add(WardrobeItem(
             path: file.path,
             category: type,
             imageUrl: storagePath,
@@ -131,12 +131,12 @@ class WardrobeService {
   }
 }
 
-class WardrobeItemData {
+class WardrobeItem {
   final String path;
   final String category;
   final String imageUrl;
 
-  WardrobeItemData({
+  WardrobeItem({
     required this.path,
     required this.category,
     required this.imageUrl,

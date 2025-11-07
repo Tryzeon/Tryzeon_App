@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:tryzeon/feature/personal/profile/data/clothing_item.dart';
+import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
 
 class ClothingCard extends StatelessWidget {
-  final ClothingItem item;
+  final WardrobeItem item;
   final VoidCallback onDelete;
 
   const ClothingCard({

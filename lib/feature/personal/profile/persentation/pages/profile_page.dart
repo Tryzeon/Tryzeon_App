@@ -4,7 +4,6 @@ import 'package:tryzeon/shared/services/account_service.dart';
 import 'package:tryzeon/shared/component/confirmation_dialog.dart';
 import 'package:tryzeon/shared/component/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
-import 'package:tryzeon/feature/personal/profile/data/clothing_item.dart';
 import 'package:tryzeon/feature/personal/shop/data/product_type_filter_service.dart';
 import 'package:tryzeon/feature/personal/profile/persentation/widget/upload_clothing_dialog.dart';
 import 'package:tryzeon/feature/personal/profile/persentation/widget/clothing_card.dart';
@@ -22,7 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String username = '';
   List<String> categories = [];
   String selectedCategory = '全部';
-  List<ClothingItem> clothingItems = [];
+  List<WardrobeItem> clothingItems = [];
   final ScrollController _categoryScrollController = ScrollController();
   bool _isLoading = true;
 
@@ -60,19 +59,13 @@ class _ProfilePageState extends State<ProfilePage> {
     final items = await WardrobeService.getWardrobeItems();
     if (mounted) {
       setState(() {
-        clothingItems = items
-            .map((item) => ClothingItem(
-                  path: item.path,
-                  category: item.category,
-                  imageUrl: item.imageUrl,
-                ))
-            .toList();
+        clothingItems = items;
         _isLoading = false;
       });
     }
   }
 
-  void _showDeleteDialog(ClothingItem item) async {
+  void _showDeleteDialog(WardrobeItem item) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
       content: '你確定要刪除這件衣物嗎？',
