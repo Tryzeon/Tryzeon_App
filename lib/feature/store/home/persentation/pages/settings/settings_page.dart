@@ -11,6 +11,7 @@ class StoreSettingsPage extends StatelessWidget {
   Future<void> _switchToPersonal(BuildContext context) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
+      title: '切換帳號',
       content: '你確定要切換到個人版帳號嗎？',
     );
 
@@ -27,6 +28,7 @@ class StoreSettingsPage extends StatelessWidget {
   Future<void> _handleSignOut(BuildContext context) async {
     final comfirmed = await ConfirmationDialog.show(
       context: context,
+      title: '登出',
       content: '你確定要登出嗎？',
       confirmText: '登出',
     );

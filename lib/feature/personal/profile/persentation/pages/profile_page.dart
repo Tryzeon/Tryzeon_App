@@ -68,6 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showDeleteDialog(WardrobeItem item) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
+      title: '刪除衣物',
       content: '你確定要刪除這件衣物嗎？',
       confirmText: '刪除',
     );

@@ -32,6 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _switchToStore() async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
+      title: '切換帳號',
       content: '你確定要切換到店家版帳號嗎？',
     );
 
@@ -48,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _handleSignOut(BuildContext context) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
+      title: '登出',
       content: '你確定要登出嗎？',
       confirmText: '登出',
     );
