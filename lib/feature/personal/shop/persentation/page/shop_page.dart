@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
-import '../../data/product_type_service.dart';
+import '../../data/product_type_filter_service.dart';
 import '../widget/ad_banner.dart';
 import '../widget/search_bar.dart';
 import '../widget/product_card.dart';
