@@ -66,6 +66,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
       _maxPrice = null;
       _priceRange = const RangeValues(0, kMaxPrice);
     });
+    _applyFilters();
   }
 
   void _applyFilters() {
