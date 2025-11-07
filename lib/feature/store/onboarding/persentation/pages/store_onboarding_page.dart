@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
-import 'package:tryzeon/shared/component/confirmation_dialog.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 import '../../../../personal/personal_entry.dart';
 import 'package:url_launcher/url_launcher.dart';

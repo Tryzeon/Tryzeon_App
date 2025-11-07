@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
-import '../../../data/product_service.dart';
-import 'product_detail_dialog.dart';
+import '../../data/product_service.dart';
+import '../dialogs/product_detail_dialog.dart';
 
 class StoreProductCard extends StatelessWidget {
   final Product product;

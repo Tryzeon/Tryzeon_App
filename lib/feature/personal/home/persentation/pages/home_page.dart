@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'package:tryzeon/shared/component/image_picker_helper.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
-import 'package:tryzeon/shared/component/confirmation_dialog.dart';
+import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';

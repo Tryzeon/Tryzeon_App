@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/account_service.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({super.key});

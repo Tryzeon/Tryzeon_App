@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:tryzeon/shared/services/account_service.dart';
-import 'package:tryzeon/shared/component/confirmation_dialog.dart';
-import 'package:tryzeon/shared/component/image_picker_helper.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
-import 'package:tryzeon/feature/personal/shop/data/product_type_filter_service.dart';
-import 'package:tryzeon/feature/personal/profile/persentation/widget/upload_clothing_dialog.dart';
-import 'package:tryzeon/feature/personal/profile/persentation/widget/clothing_card.dart';
-import 'settings_page.dart';
+import 'package:tryzeon/feature/personal/shop/data/type_filter_service.dart';
+import 'package:tryzeon/feature/personal/profile/persentation/dialogs/upload_clothing_dialog.dart';
+import 'package:tryzeon/feature/personal/profile/persentation/widgets/clothing_card.dart';
+import 'settings/settings_page.dart';
 
 
 class ProfilePage extends StatefulWidget {

@@ -3,7 +3,7 @@ import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/services/account_service.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
-import 'package:tryzeon/shared/component/confirmation_dialog.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'account_page.dart';
 
 class SettingsPage extends StatefulWidget {

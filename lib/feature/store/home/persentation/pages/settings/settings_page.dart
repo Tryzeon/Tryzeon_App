@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'account_settings_page.dart';
+import 'account_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
-import 'package:tryzeon/shared/component/confirmation_dialog.dart';
-import '../../../../login/persentation/pages/login_page.dart';
-import '../../../../personal/personal_entry.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import '../../../../../login/persentation/pages/login_page.dart';
+import '../../../../../personal/personal_entry.dart';
 
 class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});

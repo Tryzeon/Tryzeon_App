@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'dart:io';
 
 class ImagePickerHelper {

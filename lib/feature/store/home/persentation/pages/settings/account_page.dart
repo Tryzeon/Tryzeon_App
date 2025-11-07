@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../../data/store_service.dart';
 
 class StoreAccountSettingsPage extends StatefulWidget {

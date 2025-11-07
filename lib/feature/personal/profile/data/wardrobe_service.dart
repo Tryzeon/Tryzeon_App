@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
-import 'package:tryzeon/feature/personal/shop/data/product_type_filter_service.dart';
+import 'package:tryzeon/feature/personal/shop/data/type_filter_service.dart';
 
 class WardrobeService {
   static final _supabase = Supabase.instance.client;

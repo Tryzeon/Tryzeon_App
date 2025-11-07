@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'add_product_page.dart';
-import '../../../settings/persentation/pages/settings_page.dart';
-import '../widget/product_card.dart';
-import '../widget/sort_dialog.dart';
-import '../../../data/store_service.dart';
-import '../../../data/product_service.dart';
+import 'new_product_page.dart';
+import 'settings/settings_page.dart';
+import '../widgets/product_card.dart';
+import '../dialogs/sort_dialog.dart';
+import '../../data/store_service.dart';
+import '../../data/product_service.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 
 

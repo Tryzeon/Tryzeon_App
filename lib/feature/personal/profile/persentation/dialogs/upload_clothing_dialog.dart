@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
-import 'package:tryzeon/shared/component/top_notification.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class UploadClothingDialog extends StatefulWidget {
   final File image;

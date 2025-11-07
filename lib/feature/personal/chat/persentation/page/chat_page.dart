@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:tryzeon/shared/component/confirmation_dialog.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import '../../data/chat_service.dart';
 
 // Question data structure

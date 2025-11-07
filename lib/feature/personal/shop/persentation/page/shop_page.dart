@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
-import '../../data/product_type_filter_service.dart';
-import '../widget/ad_banner.dart';
-import '../widget/search_bar.dart';
-import '../widget/product_card.dart';
-import '../widget/product_type_filter.dart';
-import '../widget/filter_dialog.dart';
+import '../../data/type_filter_service.dart';
+import '../widgets/ad_banner.dart';
+import '../widgets/search_bar.dart';
+import '../widgets/product_card.dart';
+import '../widgets/type_filter.dart';
+import '../dialogs/filter_dialog.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
