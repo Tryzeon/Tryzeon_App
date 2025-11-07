@@ -120,6 +120,111 @@ class _ShopPageState extends State<ShopPage> {
   }
 
 
+  Widget _buildSortingSection() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildComprehensiveSortButton(),
+        const SizedBox(width: 8),
+        _buildPriceSortButton(),
+        const SizedBox(width: 8),
+        _buildFilterButton(),
+      ],
+    );
+  }
+
+  Widget _buildComprehensiveSortButton() {
+    final isActive = _sortBy != 'price';
+    return _buildSortButton(
+      label: '綜合',
+      icon: Icons.emoji_events_outlined,
+      isActive: isActive,
+      onTap: _handleSortByTryonCount,
+    );
+  }
+
+  Widget _buildPriceSortButton() {
+    final isActive = _sortBy == 'price';
+    return _buildSortButton(
+      label: '價格',
+      icon: _ascending ? Icons.arrow_upward : Icons.arrow_downward,
+      isActive: isActive,
+      onTap: _handleSortByPrice,
+    );
+  }
+
+  Widget _buildSortButton({
+    required String label,
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isActive
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: isActive
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isActive
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterButton() {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _handleShowFilterDialog,
+          borderRadius: BorderRadius.circular(12),
+          child: Icon(
+            Icons.filter_list_rounded,
+            color: Theme.of(context).colorScheme.primary,
+            size: 18,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -272,114 +377,7 @@ class _ShopPageState extends State<ShopPage> {
                                   ),
                             ),
                             const Spacer(),
-                            // 綜合排名按鈕
-                            Container(
-                              decoration: BoxDecoration(
-                                color: _sortBy != 'price'
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _handleSortByTryonCount,
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.emoji_events_outlined,
-                                          color: _sortBy != 'price'
-                                              ? Colors.white
-                                              : Theme.of(context).colorScheme.primary,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '綜合',
-                                          style: TextStyle(
-                                            color: _sortBy != 'price'
-                                                ? Colors.white
-                                                : Theme.of(context).colorScheme.primary,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // 價格排序按鈕
-                            Container(
-                              decoration: BoxDecoration(
-                                color: _sortBy == 'price'
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _handleSortByPrice,
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          _ascending
-                                              ? Icons.arrow_upward
-                                              : Icons.arrow_downward,
-                                          color: _sortBy == 'price'
-                                              ? Colors.white
-                                              : Theme.of(context).colorScheme.primary,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '價格',
-                                          style: TextStyle(
-                                            color: _sortBy == 'price'
-                                                ? Colors.white
-                                                : Theme.of(context).colorScheme.primary,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _handleShowFilterDialog,
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Icon(
-                                    Icons.filter_list_rounded,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    size: 18,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            _buildSortingSection(),
                           ],
                         ),
                       ),

@@ -200,117 +200,6 @@ class HomePageState extends State<HomePage> {
     return _avatarPath;
   }
 
-  void _showMoreOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.download_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                title: const Text(
-                  '下載照片',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: const Text('儲存到相簿'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _downloadCurrentImage();
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    _customAvatarIndex == _currentTryonIndex
-                        ? Icons.person_off_outlined
-                        : Icons.person_outline_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                title: Text(
-                  _customAvatarIndex == _currentTryonIndex
-                      ? '取消我的形象'
-                      : '設為我的形象',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Text(
-                  _customAvatarIndex == _currentTryonIndex
-                      ? '取消使用此照片作為試穿形象'
-                      : '使用此照片作為試穿形象',
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _toggleAvatar();
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.delete_outline_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                title: const Text(
-                  '刪除此試穿',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: const Text('移除這張試穿照片'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteCurrentTryon();
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _downloadCurrentImage() async {
     try {
       final base64Url = _tryonImages[_currentTryonIndex];
@@ -422,6 +311,198 @@ class HomePageState extends State<HomePage> {
         );
       }
     }
+  }
+
+  Widget _buildMoreOptionsButton() {
+    return Positioned(
+      top: 16,
+      right: 16,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.transparent,
+              builder: (context) => Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildOptionButton(
+                        title: '下載照片',
+                        subtitle: '儲存到相簿',
+                        icon: Icons.download_rounded,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _downloadCurrentImage();
+                        },
+                      ),
+                      _buildOptionButton(
+                        title: _customAvatarIndex == _currentTryonIndex
+                            ? '取消我的形象'
+                            : '設為我的形象',
+                        subtitle: _customAvatarIndex == _currentTryonIndex
+                            ? '取消使用此照片作為試穿形象'
+                            : '使用此照片作為試穿形象',
+                        icon: _customAvatarIndex == _currentTryonIndex
+                            ? Icons.person_off_outlined
+                            : Icons.person_outline_rounded,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _toggleAvatar();
+                        },
+                      ),
+                      _buildOptionButton(
+                        title: '刪除此試穿',
+                        subtitle: '移除這張試穿照片',
+                        icon: Icons.delete_outline_rounded,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _deleteCurrentTryon();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.more_vert_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionButton({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(subtitle),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildNavigationButtons() {
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 16,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // 上一步按鈕
+          _buildNavButton(
+            icon: Icons.arrow_back_ios_rounded,
+            isEnabled: _currentTryonIndex >= 0,
+            onTap: _currentTryonIndex >= 0 ? _previousTryon : null,
+          ),
+
+          // 頁數指示器
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              _currentTryonIndex >= 0
+                  ? '${_currentTryonIndex + 1} / ${_tryonImages.length}'
+                  : '原圖',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+
+          // 下一步按鈕
+          _buildNavButton(
+            icon: Icons.arrow_forward_ios_rounded,
+            isEnabled: _currentTryonIndex < _tryonImages.length - 1,
+            onTap: _currentTryonIndex < _tryonImages.length - 1 ? _nextTryon : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavButton({
+    required IconData icon,
+    required bool isEnabled,
+    required VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isEnabled
+                ? Colors.black.withValues(alpha: 0.5)
+                : Colors.black.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(
+            icon,
+            color: isEnabled
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.5),
+            size: 24,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAvatarImage(String? image) {
@@ -607,112 +688,11 @@ class HomePageState extends State<HomePage> {
 
                             // 更多選項按鈕（僅在顯示試穿結果時顯示）
                             if (!_isLoading && _currentTryonIndex >= 0)
-                              Positioned(
-                                top: 16,
-                                right: 16,
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: _showMoreOptions,
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.5),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: const Icon(
-                                        Icons.more_vert_rounded,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              _buildMoreOptionsButton(),
 
                             // 上一步/下一步按鈕（僅在有試穿結果時顯示）
                             if (!_isLoading && _tryonImages.isNotEmpty)
-                              Positioned(
-                                left: 16,
-                                right: 16,
-                                bottom: 16,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    // 上一步按鈕
-                                    Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: _currentTryonIndex >= 0 ? _previousTryon : null,
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: _currentTryonIndex >= 0
-                                                ? Colors.black.withValues(alpha: 0.5)
-                                                : Colors.black.withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
-                                          child: Icon(
-                                            Icons.arrow_back_ios_rounded,
-                                            color: _currentTryonIndex >= 0
-                                                ? Colors.white
-                                                : Colors.white.withValues(alpha: 0.5),
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    // 頁數指示器
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.5),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Text(
-                                        _currentTryonIndex >= 0
-                                            ? '${_currentTryonIndex + 1} / ${_tryonImages.length}'
-                                            : '原圖',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-
-                                    // 下一步按鈕
-                                    Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: _currentTryonIndex < _tryonImages.length - 1
-                                            ? _nextTryon
-                                            : null,
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: _currentTryonIndex < _tryonImages.length - 1
-                                                ? Colors.black.withValues(alpha: 0.5)
-                                                : Colors.black.withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
-                                          child: Icon(
-                                            Icons.arrow_forward_ios_rounded,
-                                            color: _currentTryonIndex < _tryonImages.length - 1
-                                                ? Colors.white
-                                                : Colors.white.withValues(alpha: 0.5),
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              _buildNavigationButtons(),
                           ],
                         ),
                       ),
