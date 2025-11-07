@@ -39,6 +39,72 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
+  bool _validateProductForm() {
+    if (selectedImage == null ||
+        nameController.text.isEmpty ||
+        selectedType == null ||
+        priceController.text.isEmpty) {
+      TopNotification.show(
+        context,
+        message: '請填寫完整資料',
+        type: NotificationType.warning,
+      );
+      return false;
+    }
+
+    final price = int.tryParse(priceController.text);
+    if (price == null) {
+      TopNotification.show(
+        context,
+        message: '請輸入有效的價格',
+        type: NotificationType.warning,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _handleAddProduct() async {
+    if (!_validateProductForm()) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final price = int.parse(priceController.text);
+    final navigator = Navigator.of(context);
+
+    final success = await ProductService.createProduct(
+      name: nameController.text,
+      type: selectedType!,
+      price: price,
+      purchaseLink: purchaseLinkController.text,
+      imageFile: selectedImage!,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (success) {
+      navigator.pop();
+      TopNotification.show(
+        context,
+        message: '商品新增成功',
+        type: NotificationType.success,
+      );
+    } else {
+      TopNotification.show(
+        context,
+        message: '商品新增失敗,請稍後再試',
+        type: NotificationType.error,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -470,72 +536,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: isLoading
-                              ? null
-                              : () async {
-                                  if (selectedImage != null &&
-                                      nameController.text.isNotEmpty &&
-                                      selectedType != null &&
-                                      priceController.text.isNotEmpty) {
-                                    setState(() {
-                                      isLoading = true;
-                                    });
-
-                                    final price = int.tryParse(
-                                      priceController.text,
-                                    );
-                                    if (price == null) {
-                                      TopNotification.show(
-                                        context,
-                                        message: '請輸入有效的價格',
-                                        type: NotificationType.warning,
-                                      );
-                                      setState(() {
-                                        isLoading = false;
-                                      });
-                                      return;
-                                    }
-
-                                    final navigator = Navigator.of(context);
-
-                                    final success =
-                                        await ProductService.createProduct(
-                                          name: nameController.text,
-                                          type: selectedType!,
-                                          price: price,
-                                          purchaseLink:
-                                              purchaseLinkController.text,
-                                          imageFile: selectedImage!,
-                                        );
-
-                                    if (!mounted) return;
-
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-
-                                    if (success) {
-                                      navigator.pop();
-                                      TopNotification.show(
-                                        context,
-                                        message: '商品新增成功',
-                                        type: NotificationType.success,
-                                      );
-                                    } else {
-                                      TopNotification.show(
-                                        context,
-                                        message: '商品新增失敗，請稍後再試',
-                                        type: NotificationType.error,
-                                      );
-                                    }
-                                  } else {
-                                    TopNotification.show(
-                                      context,
-                                      message: '請填寫完整資料',
-                                      type: NotificationType.warning,
-                                    );
-                                  }
-                                },
+                          onTap: isLoading ? null : _handleAddProduct,
                           borderRadius: BorderRadius.circular(16),
                           child: Center(
                             child: isLoading

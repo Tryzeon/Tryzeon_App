@@ -78,6 +78,41 @@ class _ShopPageState extends State<ShopPage> {
     });
   }
 
+  void _handleSortByTryonCount() {
+    if (_sortBy != 'tryon_count') {
+      setState(() {
+        _sortBy = 'tryon_count';
+        _ascending = false;
+      });
+      _loadProducts();
+    }
+  }
+
+  void _handleSortByPrice() {
+    setState(() {
+      _sortBy = 'price';
+      _ascending = !_ascending;
+    });
+    _loadProducts();
+  }
+
+  void _handleShowFilterDialog() {
+    FilterDialog(
+      context: context,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice,
+      onApply: (minPrice, maxPrice) {
+        if (mounted) {
+          setState(() {
+            _minPrice = minPrice;
+            _maxPrice = maxPrice;
+          });
+          _loadProducts();
+        }
+      },
+    );
+  }
+
 
   @override
   void dispose() {
@@ -248,15 +283,7 @@ class _ShopPageState extends State<ShopPage> {
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () {
-                                    if (_sortBy != 'tryon_count') {
-                                      setState(() {
-                                        _sortBy = 'tryon_count';
-                                        _ascending = false;
-                                      });
-                                      _loadProducts();
-                                    }
-                                  },
+                                  onTap: _handleSortByTryonCount,
                                   borderRadius: BorderRadius.circular(12),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -299,13 +326,7 @@ class _ShopPageState extends State<ShopPage> {
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      _sortBy = 'price';
-                                      _ascending = !_ascending;
-                                    });
-                                    _loadProducts();
-                                  },
+                                  onTap: _handleSortByPrice,
                                   borderRadius: BorderRadius.circular(12),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -349,22 +370,7 @@ class _ShopPageState extends State<ShopPage> {
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () {
-                                    FilterDialog(
-                                      context: context,
-                                      minPrice: _minPrice,
-                                      maxPrice: _maxPrice,
-                                      onApply: (minPrice, maxPrice) {
-                                        if (mounted) {
-                                          setState(() {
-                                            _minPrice = minPrice;
-                                            _maxPrice = maxPrice;
-                                          });
-                                          _loadProducts();
-                                        }
-                                      },
-                                    );
-                                  },
+                                  onTap: _handleShowFilterDialog,
                                   borderRadius: BorderRadius.circular(12),
                                   child: Icon(
                                     Icons.filter_list_rounded,

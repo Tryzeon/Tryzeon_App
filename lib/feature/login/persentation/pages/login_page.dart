@@ -53,6 +53,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  void _navigateToPersonalLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PersonalLoginPage(),
+      ),
+    );
+  }
+
+  void _navigateToStoreLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const StoreLoginPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -98,7 +116,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildAnimatedCard(
+                          _buildLoginOptionCard(
                             context: context,
                             icon: Icons.person_outline_rounded,
                             title: '個人登入',
@@ -114,20 +132,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const PersonalLoginPage(),
-                                ),
-                              );
-                            },
+                            onTap: _navigateToPersonalLogin,
                             delay: 100,
                           ),
 
                           const SizedBox(height: 24),
 
-                          _buildAnimatedCard(
+                          _buildLoginOptionCard(
                             context: context,
                             icon: Icons.store_outlined,
                             title: '店家登入',
@@ -143,14 +154,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const StoreLoginPage(),
-                                ),
-                              );
-                            },
+                            onTap: _navigateToStoreLogin,
                             delay: 200,
                           ),
                         ],
@@ -233,7 +237,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildAnimatedCard({
+  Widget _buildLoginOptionCard({
     required BuildContext context,
     required IconData icon,
     required String title,
