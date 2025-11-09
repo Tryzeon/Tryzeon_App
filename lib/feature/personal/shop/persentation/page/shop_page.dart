@@ -40,8 +40,6 @@ class _ShopPageState extends State<ShopPage> {
       'assets/images/ads/net.png',
       'assets/images/ads/zara.jpg',
     ];
-
-    _loadProductTypes();
     _loadProducts();
   }
 
@@ -60,6 +58,8 @@ class _ShopPageState extends State<ShopPage> {
     setState(() {
       isLoading = true;
     });
+
+    await _loadProductTypes();
 
     final fetchedProducts = await ShopService.getProducts(
       sortBy: _sortBy,
@@ -102,21 +102,13 @@ class _ShopPageState extends State<ShopPage> {
       minPrice: _minPrice,
       maxPrice: _maxPrice,
       onApply: (minPrice, maxPrice) {
-        if (mounted) {
-          setState(() {
-            _minPrice = minPrice;
-            _maxPrice = maxPrice;
-          });
-          _loadProducts();
-        }
+        setState(() {
+          _minPrice = minPrice;
+          _maxPrice = maxPrice;
+        });
+        _loadProducts();
       },
     );
-  }
-
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
 
@@ -296,9 +288,12 @@ class _ShopPageState extends State<ShopPage> {
 
               // 內容區域
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
+                child: RefreshIndicator(
+                  onRefresh: _loadProducts,
+                  color: Theme.of(context).colorScheme.primary,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 🔍 搜尋欄
@@ -307,19 +302,15 @@ class _ShopPageState extends State<ShopPage> {
                         child: ShopSearchBar(
                           products: products,
                           onSearchResults: (results) {
-                            if (mounted) {
-                              setState(() {
-                                displayedProducts = results;
-                                isLoading = false;
-                              });
-                            }
+                            setState(() {
+                              displayedProducts = results;
+                              isLoading = false;
+                            });
                           },
                           onSearchStart: () {
-                            if (mounted) {
-                              setState(() {
-                                isLoading = true;
-                              });
-                            }
+                            setState(() {
+                              isLoading = true;
+                            });
                           },
                         ),
                       ),
@@ -440,6 +431,7 @@ class _ShopPageState extends State<ShopPage> {
                       const SizedBox(height: 32),
                     ],
                   ),
+                ),
                 ),
               ),
             ],
