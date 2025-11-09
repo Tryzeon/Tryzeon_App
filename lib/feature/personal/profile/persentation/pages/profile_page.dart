@@ -4,7 +4,6 @@ import 'package:tryzeon/shared/services/account_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
-import 'package:tryzeon/feature/personal/shop/data/type_filter_service.dart';
 import 'package:tryzeon/feature/personal/profile/persentation/dialogs/upload_clothing_dialog.dart';
 import 'package:tryzeon/feature/personal/profile/persentation/widgets/clothing_card.dart';
 import 'settings/settings_page.dart';
@@ -19,9 +18,9 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String username = '';
-  List<String> categories = [];
+  List<String> wardrobeCategories = [];
   String selectedCategory = '全部';
-  List<WardrobeItem> clothingItems = [];
+  List<WardrobeItem> wardrobeItems = [];
   final ScrollController _categoryScrollController = ScrollController();
   bool _isLoading = true;
 
@@ -29,7 +28,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _loadUsername();
-    _loadProductTypes();
     _loadWardrobeItems();
   }
 
@@ -46,20 +44,13 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  Future<void> _loadProductTypes() async {
-    final types = await ProductTypeService.getProductTypesList();
-    if (mounted) {
-      setState(() {
-        categories = ['全部', ...types];
-      });
-    }
-  }
-
   Future<void> _loadWardrobeItems() async {
     final items = await WardrobeService.getWardrobeItems();
+    final categories = WardrobeService.getWardrobeTypesList();
     if (mounted) {
       setState(() {
-        clothingItems = items;
+        wardrobeItems = items;
+        wardrobeCategories = ['全部', ...categories];
         _isLoading = false;
       });
     }
@@ -87,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
         context: context,
         builder: (context) => UploadClothingDialog(
           image: image,
-          categories: categories.where((c) => c != '全部').toList(),
+          categories: WardrobeService.getWardrobeTypesList(),
           onUpload: (imageId, category) async {
             setState(() {
               _isLoading = true;
@@ -267,9 +258,9 @@ class _ProfilePageState extends State<ProfilePage> {
         controller: _categoryScrollController,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length,
+        itemCount: wardrobeCategories.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
+          final category = wardrobeCategories[index];
           final isSelected = selectedCategory == category;
           return _buildCategoryChip(category, isSelected);
         },
@@ -339,8 +330,8 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     final filteredItems = selectedCategory == '全部'
-        ? clothingItems
-        : clothingItems.where((item) => item.category == selectedCategory).toList();
+        ? wardrobeItems
+        : wardrobeItems.where((item) => item.category == selectedCategory).toList();
 
     if (filteredItems.isEmpty) {
       return Center(

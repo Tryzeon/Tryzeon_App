@@ -2,17 +2,37 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
-import 'package:tryzeon/feature/personal/shop/data/type_filter_service.dart';
 
 class WardrobeService {
   static final _supabase = Supabase.instance.client;
   static const _bucket = 'wardrobe';
 
+  static const List<({String zh, String en})> _wardrobeTypes = [
+    (zh: '上衣', en: 'top'),
+    (zh: '褲子', en: 'pants'),
+    (zh: '裙子', en: 'skirt'),
+    (zh: '外套', en: 'jacket'),
+    (zh: '鞋子', en: 'shoes'),
+    (zh: '配件', en: 'accessories'),
+    (zh: '其他', en: 'others'),
+  ];
+
+  /// 獲取所有衣櫃類型（中文名稱列表）
+  static List<String> getWardrobeTypesList() {
+    return _wardrobeTypes.map((t) => t.zh).toList();
+  }
+
+  /// 根據中文名稱獲取英文代碼
+  static String getEnglishCode(String nameZh) {
+    final type = _wardrobeTypes.where((t) => t.zh == nameZh).firstOrNull;
+    return type?.en ?? nameZh;
+  }
+
   static Future<bool> uploadWardrobeItem(File imageFile, String category) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return false;
 
-    final categoryCode = await ProductTypeService.getEnglishCode(category);
+    final categoryCode = getEnglishCode(category);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final storagePath = '$userId/wardrobe/$categoryCode/$timestamp.jpg';
 
@@ -50,10 +70,10 @@ class WardrobeService {
 
     try {
       // 本地沒有資料，從後端獲取並緩存
-      final typesList = await ProductTypeService.getProductTypesList();
+      final typesList = getWardrobeTypesList();
 
       for (final type in typesList) {
-        final categoryCode = await ProductTypeService.getEnglishCode(type);
+        final categoryCode = getEnglishCode(type);
 
         final filesInCategory = await _supabase.storage.from(_bucket).list(
           path: '$userId/wardrobe/$categoryCode',
@@ -90,10 +110,10 @@ class WardrobeService {
     final List<WardrobeItem> items = [];
 
     try {
-      final typesList = await ProductTypeService.getProductTypesList();
+      final typesList = getWardrobeTypesList();
 
       for (final type in typesList) {
-        final categoryCode = await ProductTypeService.getEnglishCode(type);
+        final categoryCode = getEnglishCode(type);
 
         final files = await FileCacheService.getFiles(
           relativePath: '$userId/wardrobe/$categoryCode',
