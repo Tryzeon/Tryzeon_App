@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
 
-class ClothingCard extends StatelessWidget {
+class ClothingCard extends StatefulWidget {
   final WardrobeItem item;
   final VoidCallback onDelete;
 
@@ -11,6 +11,42 @@ class ClothingCard extends StatelessWidget {
     required this.item,
     required this.onDelete,
   });
+
+  @override
+  State<ClothingCard> createState() => _ClothingCardState();
+}
+
+class _ClothingCardState extends State<ClothingCard> {
+  File? _imageFile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  @override
+  void didUpdateWidget(ClothingCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 當 item 改變時重新載入圖片
+    if (oldWidget.item.imageUrl != widget.item.imageUrl) {
+      setState(() {
+        _isLoading = true;
+      });
+      _loadImage();
+    }
+  }
+
+  Future<void> _loadImage() async {
+    final file = await WardrobeService.getWardrobeImage(widget.item.imageUrl);
+    if (mounted) {
+      setState(() {
+        _imageFile = file;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,51 +70,72 @@ class ClothingCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: Stack(
                 children: [
-                  Image.file(
-                    File(item.path),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.grey[200]!,
-                              Colors.grey[300]!,
-                            ],
+                  _isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                        ),
-                        child: const Icon(Icons.error_outline, color: Colors.grey),
-                      );
-                    },
-                  ),
-                  // 刪除按鈕
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: onDelete,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.delete_outline,
-                            size: 16,
-                            color: Colors.white,
+                        )
+                      : _imageFile != null
+                          ? Image.file(
+                              _imageFile!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.grey[200]!,
+                                        Colors.grey[300]!,
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.error_outline, color: Colors.grey),
+                                );
+                              },
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.grey[200]!,
+                                    Colors.grey[300]!,
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(Icons.error_outline, color: Colors.grey),
+                            ),
+                  if (!_isLoading)
+                    // 刪除按鈕
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: widget.onDelete,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline,
+                              size: 16,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -99,7 +156,7 @@ class ClothingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    item.category,
+                    widget.item.category,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

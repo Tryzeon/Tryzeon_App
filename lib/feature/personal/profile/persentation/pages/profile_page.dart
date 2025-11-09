@@ -65,7 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (confirmed == true) {
-      await WardrobeService.deleteWardrobeItem(item.path);
+      await WardrobeService.deleteWardrobeItem(item);
       await _loadWardrobeItems();
     }
   }

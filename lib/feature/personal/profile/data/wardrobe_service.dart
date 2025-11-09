@@ -5,6 +5,7 @@ import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class WardrobeService {
   static final _supabase = Supabase.instance.client;
+  static const _wardrobeTable = 'wardrobe_items';
   static const _bucket = 'wardrobe';
 
   static const List<({String zh, String en})> _wardrobeTypes = [
@@ -34,10 +35,10 @@ class WardrobeService {
 
     final categoryCode = getEnglishCode(category);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final storagePath = '$userId/wardrobe/$categoryCode/$timestamp.jpg';
+    final storagePath = '$userId/$categoryCode/$timestamp.jpg';
 
     try {
-      // 1. 先上傳到 Supabase
+      // 1. 上傳圖片到 Supabase Storage
       final bytes = await imageFile.readAsBytes();
       await _supabase.storage.from(_bucket).uploadBinary(
         storagePath,
@@ -48,12 +49,18 @@ class WardrobeService {
         ),
       );
 
-      // 2. 上傳成功後保存到本地緩存
+      // 2. 保存到本地緩存
       await FileCacheService.saveFile(imageFile, storagePath);
+
+      // 3. 新增 DB 記錄
+      await _supabase.from(_wardrobeTable).insert({
+        'user_id': userId,
+        'category': category,
+        'image_path': storagePath,
+      });
 
       return true;
     } catch (e) {
-      print("Error uploading wardrobe item: $e");
       return false;
     }
   }
@@ -62,116 +69,84 @@ class WardrobeService {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return [];
 
-    final List<WardrobeItem> items = [];
-
-    // 先嘗試從本地資料夾讀取
-    final localItems = await _getLocalWardrobeItems(userId);
-    if (localItems.isNotEmpty) return localItems;
-
     try {
-      // 本地沒有資料，從後端獲取並緩存
-      final typesList = getWardrobeTypesList();
+      final response = await _supabase
+          .from(_wardrobeTable)
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
 
-      for (final type in typesList) {
-        final categoryCode = getEnglishCode(type);
-
-        final filesInCategory = await _supabase.storage.from(_bucket).list(
-          path: '$userId/wardrobe/$categoryCode',
-        );
-
-        for (final file in filesInCategory) {
-          final storagePath = '$userId/wardrobe/$categoryCode/${file.name}';
-
-          final bytes = await _supabase.storage.from(_bucket).download(storagePath);
-
-          final tempDir = await getTemporaryDirectory();
-          final tempFile = File('${tempDir.path}/temp_${file.name}');
-          await tempFile.writeAsBytes(bytes);
-
-          final localFile = await FileCacheService.saveFile(tempFile, storagePath);
-          await tempFile.delete();
-
-          items.add(WardrobeItem(
-            path: localFile.path,
-            category: type,
-            imageUrl: storagePath,
-          ));
-        }
-      }
-
-      // 按時間戳降序排序
-      items.sort((a, b) {
-        final timestampA = a.imageUrl.split('/').last.split('.').first;
-        final timestampB = b.imageUrl.split('/').last.split('.').first;
-        return timestampB.compareTo(timestampA);
-      });
-
-      return items;
+      return (response as List)
+          .map((json) => WardrobeItem(
+                id: json['id'],
+                path: json['image_path'],
+                category: json['category'],
+                imageUrl: json['image_path'],
+              ))
+          .toList();
     } catch (e) {
-      print("Error fetching wardrobe items: $e");
       return [];
     }
   }
 
-  /// 從本地資料夾讀取所有衣櫃項目
-  static Future<List<WardrobeItem>> _getLocalWardrobeItems(String userId) async {
-    final List<WardrobeItem> items = [];
+  static Future<File?> getWardrobeImage(String storagePath) async {
 
     try {
-      final typesList = getWardrobeTypesList();
-
-      for (final type in typesList) {
-        final categoryCode = getEnglishCode(type);
-
-        final files = await FileCacheService.getFiles(
-          relativePath: '$userId/wardrobe/$categoryCode',
-        );
-
-        for (final file in files) {
-          final storagePath = '$userId/wardrobe/$categoryCode/${file.path.split('/').last}';
-
-          items.add(WardrobeItem(
-            path: file.path,
-            category: type,
-            imageUrl: storagePath,
-          ));
-        }
+      // 1. 先檢查本地是否有該圖片
+      final localFile = await FileCacheService.getFile(storagePath);
+      if (localFile != null && await localFile.exists()) {
+        return localFile;
       }
 
-      // 按時間戳降序排序
-      items.sort((a, b) {
-        final timestampA = a.imageUrl.split('/').last.split('.').first;
-        final timestampB = b.imageUrl.split('/').last.split('.').first;
-        return timestampB.compareTo(timestampA);
-      });
+      // 2. 本地沒有，從 Supabase 下載
+      final bytes = await _supabase.storage.from(_bucket).download(storagePath);
 
-      return items;
+      final imageName = storagePath.split('/').last;
+
+      // 創建臨時文件並保存到本地緩存
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp_wardrobe_$imageName');
+      await tempFile.writeAsBytes(bytes);
+
+      final savedFile = await FileCacheService.saveFile(tempFile, storagePath);
+      await tempFile.delete();
+
+      return savedFile;
     } catch (e) {
-      print("Error fetching local wardrobe items: $e");
-      return [];
+      return null;
     }
   }
 
-  static Future<void> deleteWardrobeItem(String path) async {
+  static Future<void> deleteWardrobeItem(WardrobeItem item) async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return;
+    if (userId == null || item.id == null) return;
 
-    final userIdIndex = path.indexOf(userId);
-    if (userIdIndex == -1) return;
+    try {
+      // 1. 刪除 DB 記錄
+      await _supabase
+          .from(_wardrobeTable)
+          .delete()
+          .eq('id', item.id!);
 
-    final relativePath = path.substring(userIdIndex);
+      // 2. 刪除 Supabase Storage 中的圖片
+      await _supabase.storage.from(_bucket).remove([item.imageUrl]);
 
-    await _supabase.storage.from(_bucket).remove([relativePath]);
-    await FileCacheService.deleteFile(relativePath);
+      // 3. 刪除本地快取的圖片
+      await FileCacheService.deleteFile(item.imageUrl);
+    } catch (e) {
+      // 圖片刪除失敗不會拋出錯誤
+    }
   }
 }
 
 class WardrobeItem {
+  final String? id;
   final String path;
   final String category;
   final String imageUrl;
 
   WardrobeItem({
+    this.id,
     required this.path,
     required this.category,
     required this.imageUrl,
