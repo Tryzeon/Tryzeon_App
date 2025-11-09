@@ -78,13 +78,9 @@ class AuthService {
         return AuthResult.failure('$provider 登入失敗，請稍後再試');
       }
 
-      // 等待認證狀態變化，最多等待 60 秒
+      // 等待認證狀態變化
       final user = await _supabase.auth.onAuthStateChange
           .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
-          .timeout(
-            const Duration(seconds: 60),
-            onTimeout: () => throw Exception('登入超時'),
-          )
           .then((state) => state.session?.user);
 
       if (user == null) {
