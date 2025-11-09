@@ -3,7 +3,7 @@ import 'package:tryzeon/shared/models/product_model.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
-  static const _productsTable = 'products';
+  static const _productsTable = 'products_info';
 
   /// 獲取所有商品（包含店家資訊）
   static Future<List<Map<String, dynamic>>> getProducts({
