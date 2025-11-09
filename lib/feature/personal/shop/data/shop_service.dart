@@ -15,12 +15,12 @@ class ShopService {
   }) async {
     try {
       // 查詢所有商品並關聯店家資訊
-      // products.store_id = store-info.user_id
+      // products.store_id = store_profile.user_id
       dynamic query = _supabase
           .from(_productsTable)
           .select('''
             *,
-            store-info!products_store_id_fkey(
+            store_profile!products_store_id_fkey(
               user_id,
               store_name
             )
@@ -43,7 +43,7 @@ class ShopService {
 
       return (response as List).map((item) {
         final product = Product.fromJson(item);
-        final storeInfo = item['store-info'] as Map<String, dynamic>;
+        final storeInfo = item['store_profile'] as Map<String, dynamic>;
         
         return {
           'product': product,
@@ -81,12 +81,12 @@ class ShopService {
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     try {
       // 先搜尋商品名稱和類型
-      // products.store_id = store-info.user_id
+      // products.store_id = store_profile.user_id
       final productResponse = await _supabase
           .from(_productsTable)
           .select('''
             *,
-            store-info!products_store_id_fkey(
+            store_profile!products_store_id_fkey(
               user_id,
               store_name
             )
@@ -99,12 +99,12 @@ class ShopService {
           .from(_productsTable)
           .select('''
             *,
-            store-info!products_store_id_fkey(
+            store_profile!products_store_id_fkey(
               user_id,
               store_name
             )
           ''')
-          .ilike('store-info.store_name', '%$query%')
+          .ilike('store_profile.store_name', '%$query%')
           .order('created_at', ascending: false);
 
       // 合併結果並去重
@@ -113,7 +113,7 @@ class ShopService {
       // 處理商品搜尋結果
       for (final item in productResponse as List) {
         final product = Product.fromJson(item);
-        final storeInfo = item['store-info'] as Map<String, dynamic>;
+        final storeInfo = item['store_profile'] as Map<String, dynamic>;
         uniqueProducts[product.id!] = {
           'product': product,
           'storeName': storeInfo['store_name']
@@ -123,7 +123,7 @@ class ShopService {
       // 處理店家搜尋結果
       for (final item in storeResponse as List) {
         final product = Product.fromJson(item);
-        final storeInfo = item['store-info'] as Map<String, dynamic>;
+        final storeInfo = item['store_profile'] as Map<String, dynamic>;
         if (!uniqueProducts.containsKey(product.id)) {
           uniqueProducts[product.id!] = {
             'product': product,

@@ -5,7 +5,7 @@ import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class StoreService {
   static final _supabase = Supabase.instance.client;
-  static const _storesTable = 'store-info';
+  static const _storesTable = 'store_profile';
   static const _logoBucket = 'store';
 
   /// 獲取店家資料
