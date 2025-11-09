@@ -98,6 +98,14 @@ class WardrobeService {
           ));
         }
       }
+
+      // 按時間戳降序排序
+      items.sort((a, b) {
+        final timestampA = a.imageUrl.split('/').last.split('.').first;
+        final timestampB = b.imageUrl.split('/').last.split('.').first;
+        return timestampB.compareTo(timestampA);
+      });
+
       return items;
     } catch (e) {
       print("Error fetching wardrobe items: $e");
@@ -129,6 +137,13 @@ class WardrobeService {
           ));
         }
       }
+
+      // 按時間戳降序排序
+      items.sort((a, b) {
+        final timestampA = a.imageUrl.split('/').last.split('.').first;
+        final timestampB = b.imageUrl.split('/').last.split('.').first;
+        return timestampB.compareTo(timestampA);
+      });
 
       return items;
     } catch (e) {

@@ -371,24 +371,24 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       );
+    } else {
+      return GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.7,
+        ),
+        itemCount: filteredItems.length,
+        itemBuilder: (context, index) {
+          return ClothingCard(
+            item: filteredItems[index],
+            onDelete: () => _showDeleteDialog(filteredItems[index]),
+          );
+        },
+      );
     }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.7,
-      ),
-      itemCount: filteredItems.length,
-      itemBuilder: (context, index) {
-        return ClothingCard(
-          item: filteredItems[index],
-          onDelete: () => _showDeleteDialog(filteredItems[index]),
-        );
-      },
-    );
   }
 }
 
