@@ -107,9 +107,9 @@ class AuthService {
       await FileCacheService.deleteFolder(userId);
     }
 
-    // 清除 SharedPreferences
+    // 清除所有 SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_lastLoginTypeKey);
+    await prefs.clear();
 
     // 執行 Supabase 登出
     await _supabase.auth.signOut();

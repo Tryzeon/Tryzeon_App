@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:tryzeon/shared/services/account_service.dart';
+import '../../data/user_profile_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
@@ -37,16 +37,23 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  void _loadUsername() {
-    final displayName = AccountService.displayName;
+  Future<void> _loadUsername() async {
+    final profileResult = await UserProfileService.getUserProfile();
     setState(() {
-      username = displayName;
+      if (profileResult.success && profileResult.profile != null) {
+        username = profileResult.profile!.name;
+      }
     });
   }
 
   Future<void> _loadWardrobeItems() async {
-    final items = await WardrobeService.getWardrobeItems();
+    setState(() {
+      _isLoading = true;
+    });
+
     final categories = WardrobeService.getWardrobeTypesList();
+    final items = await WardrobeService.getWardrobeItems();
+
     if (mounted) {
       setState(() {
         wardrobeItems = items;
@@ -79,12 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (context) => UploadClothingDialog(
           image: image,
           categories: WardrobeService.getWardrobeTypesList(),
-          onUpload: (imageId, category) async {
-            setState(() {
-              _isLoading = true;
-            });
-            await _loadWardrobeItems();
-          },
+          onUpload: _loadWardrobeItems,
         ),
       );
     }

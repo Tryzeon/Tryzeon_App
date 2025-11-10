@@ -6,7 +6,7 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 class UploadClothingDialog extends StatefulWidget {
   final File image;
   final List<String> categories;
-  final Function(String imagePath, String category) onUpload;
+  final VoidCallback onUpload;
 
   const UploadClothingDialog({
     super.key,
@@ -36,7 +36,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
     if (!mounted) return;
 
     if (success) {
-      widget.onUpload('', _selectedCategory!);
+      widget.onUpload();
       Navigator.pop(context);
     } else {
       setState(() {

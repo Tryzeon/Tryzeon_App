@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/shared/services/account_service.dart';
+import 'package:flutter/services.dart';
+import '../../../data/user_profile_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class ProfileEditPage extends StatefulWidget {
@@ -12,7 +13,14 @@ class ProfileEditPage extends StatefulWidget {
 class _ProfileEditPageState extends State<ProfileEditPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _chestController = TextEditingController();
+  final _waistController = TextEditingController();
+  final _hipsController = TextEditingController();
+  final _shoulderWidthController = TextEditingController();
+  final _sleeveLengthController = TextEditingController();
+
   bool _isLoading = false;
 
   @override
@@ -21,11 +29,30 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     _loadUserData();
   }
 
-  void _loadUserData() {
-    final displayName = AccountService.displayName;
+  Future<void> _loadUserData() async {
     setState(() {
-      _nameController.text = displayName;
+      _isLoading = true;
     });
+
+    final result = await UserProfileService.getUserProfile();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (result.success && result.profile != null) {
+        final profile = result.profile!;
+        _nameController.text = profile.name;
+        _heightController.text = profile.height?.toString() ?? '';
+        _weightController.text = profile.weight?.toString() ?? '';
+        _chestController.text = profile.chest?.toString() ?? '';
+        _waistController.text = profile.waist?.toString() ?? '';
+        _hipsController.text = profile.hips?.toString() ?? '';
+        _shoulderWidthController.text = profile.shoulderWidth?.toString() ?? '';
+        _sleeveLengthController.text = profile.sleeveLength?.toString() ?? '';
+      }
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -35,7 +62,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       _isLoading = true;
     });
 
-    final result = await AccountService.updateUserName(_nameController.text);
+    final result = await UserProfileService.updateUserProfile(
+      name: _nameController.text,
+      height: _heightController.text.isNotEmpty ? double.tryParse(_heightController.text) : null,
+      weight: _weightController.text.isNotEmpty ? double.tryParse(_weightController.text) : null,
+      chest: _chestController.text.isNotEmpty ? double.tryParse(_chestController.text) : null,
+      waist: _waistController.text.isNotEmpty ? double.tryParse(_waistController.text) : null,
+      hips: _hipsController.text.isNotEmpty ? double.tryParse(_hipsController.text) : null,
+      shoulderWidth: _shoulderWidthController.text.isNotEmpty ? double.tryParse(_shoulderWidthController.text) : null,
+      sleeveLength: _sleeveLengthController.text.isNotEmpty ? double.tryParse(_sleeveLengthController.text) : null,
+    );
 
     if (mounted) {
       setState(() {
@@ -62,6 +98,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _heightController.dispose();
+    _weightController.dispose();
+    _chestController.dispose();
+    _waistController.dispose();
+    _hipsController.dispose();
+    _shoulderWidthController.dispose();
+    _sleeveLengthController.dispose();
     super.dispose();
   }
 
@@ -154,101 +197,127 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       children: [
                         const SizedBox(height: 8),
 
-                        // 表單卡片
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 圖示標題
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                          Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(
-                                      Icons.person_outline_rounded,
-                                      color: Theme.of(context).colorScheme.primary,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Text(
-                                    '基本資料',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
+                        // 基本資料卡片
+                        _buildSectionCard(
+                          context: context,
+                          icon: Icons.person_outline_rounded,
+                          title: '基本資料',
+                          children: [
+                            _buildTextField(
+                              controller: _nameController,
+                              label: '姓名',
+                              icon: Icons.person_outline_rounded,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return '請輸入姓名';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
 
-                              // 姓名欄位
-                              TextFormField(
-                                controller: _nameController,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black87,
+                        // 身體測量卡片
+                        _buildSectionCard(
+                          context: context,
+                          icon: Icons.straighten_rounded,
+                          title: '身型資料',
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _heightController,
+                                    label: '身高 (cm)',
+                                    icon: Icons.height_rounded,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                    ],
+                                  ),
                                 ),
-                                decoration: InputDecoration(
-                                  labelText: '姓名',
-                                  labelStyle: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _weightController,
+                                    label: '體重 (kg)',
+                                    icon: Icons.monitor_weight_outlined,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                    ],
                                   ),
-                                  prefixIcon: Icon(
-                                    Icons.person_outline_rounded,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey[300]!),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey[300]!),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return '請輸入姓名';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _chestController,
+                                    label: '胸圍 (cm)',
+                                    icon: Icons.accessibility_rounded,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _waistController,
+                                    label: '腰圍 (cm)',
+                                    icon: Icons.accessibility_rounded,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _hipsController,
+                                    label: '臀圍 (cm)',
+                                    icon: Icons.accessibility_rounded,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    controller: _shoulderWidthController,
+                                    label: '肩寬 (cm)',
+                                    icon: Icons.accessibility_rounded,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              controller: _sleeveLengthController,
+                              label: '袖長 (cm)',
+                              icon: Icons.accessibility_rounded,
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                              ],
+                            ),
+                          ],
                         ),
 
                         const SizedBox(height: 32),
@@ -327,6 +396,115 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 圖示標題
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                      Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      style: const TextStyle(
+        fontSize: 16,
+        color: Colors.black87,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 14,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
+      ),
+      validator: validator,
     );
   }
 }

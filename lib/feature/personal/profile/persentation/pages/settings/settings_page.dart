@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
-import 'package:tryzeon/shared/services/account_service.dart';
+import '../../../data/user_profile_service.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'account_page.dart';
@@ -14,19 +14,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  String username = '';
-
   @override
   void initState() {
     super.initState();
-    _loadUsername();
-  }
-
-  void _loadUsername() {
-    final displayName = AccountService.displayName;
-    setState(() {
-      username = displayName;
-    });
   }
 
   Future<void> _switchToStore() async {
@@ -135,16 +125,12 @@ class _SettingsPageState extends State<SettingsPage> {
                         title: '基本資料',
                         subtitle: '編輯您的個人資訊',
                         onTap: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ProfileEditPage(),
-                            ),
+                          await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfileEditPage(),
+                          ),
                           );
-
-                          if (result == true) {
-                            _loadUsername();
-                          }
                         },
                       ),
 
