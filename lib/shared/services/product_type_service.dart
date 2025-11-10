@@ -9,19 +9,18 @@ class ProductTypeService {
   static const _cacheTimestampKey = 'cached_product_types_timestamp';
   static const _cacheDuration = Duration(days: 7);
 
-  /// 獲取所有商品類型
-  static Future<Map<String, String>> getProductTypes() async {
+  static Future<List<String>> getProductTypesList() async {
     final cached = await _getCachedTypes();
     if (cached != null) return cached;
 
     final response = await _supabase
         .from(_typesTable)
-        .select('name_zh, name_en')
+        .select('name_zh')
         .order('order', ascending: true);
 
-    final Map<String, String> types = {};
+    final List<String> types = [];
     for (final item in response as List) {
-      types[item['name_zh']] = item['name_en'];
+      types.add(item['name_zh'] as String);
     }
 
     if (types.isNotEmpty) {
@@ -31,14 +30,8 @@ class ProductTypeService {
     return types;
   }
 
-  /// 獲取所有商品類型（中文名稱列表）
-  static Future<List<String>> getProductTypesList() async {
-    final types = await getProductTypes();
-    return types.keys.toList();
-  }
-
   /// 從快取讀取
-  static Future<Map<String, String>?> _getCachedTypes() async {
+  static Future<List<String>?> _getCachedTypes() async {
     final prefs = await SharedPreferences.getInstance();
     final timestamp = prefs.getInt(_cacheTimestampKey);
 
@@ -53,14 +46,14 @@ class ProductTypeService {
     final cachedJson = prefs.getString(_cacheKey);
     if (cachedJson != null) {
       final decoded = json.decode(cachedJson);
-      return Map<String, String>.from(decoded);
+      return List<String>.from(decoded);
     }
 
     return null;
   }
 
   /// 儲存到快取
-  static Future<void> _cacheTypes(Map<String, String> types) async {
+  static Future<void> _cacheTypes(List<String> types) async {
     final prefs = await SharedPreferences.getInstance();
     final encodedTypes = json.encode(types);
     await prefs.setString(_cacheKey, encodedTypes);
