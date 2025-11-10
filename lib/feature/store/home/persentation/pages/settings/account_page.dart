@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import '../../../data/store_service.dart';
+import '../../../data/store_profile_service.dart';
 
 class StoreAccountSettingsPage extends StatefulWidget {
   const StoreAccountSettingsPage({super.key});
@@ -27,7 +27,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _loadStoreData() async {
     setState(() => isLoading = true);
 
-    final storeData = await StoreService.getStore();
+    final storeData = await StoreProfileService.getStore();
     if (storeData != null) {
       setState(() {
         storeNameController.text = storeData.storeName;
@@ -41,7 +41,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _saveChanges() async {
     setState(() => isLoading = true);
 
-    final success = await StoreService.upsertStore(
+    final success = await StoreProfileService.upsertStore(
       storeName: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
     );
@@ -87,7 +87,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
 
     try {
       // 上傳 logo 到 storage（會自動保存到本地）
-      await StoreService.uploadLogo(_logoImage!);
+      await StoreProfileService.uploadLogo(_logoImage!);
 
       if (mounted) {
         TopNotification.show(
@@ -256,7 +256,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
                                               ),
                                             )
                                           : FutureBuilder<File?>(
-                                              future: StoreService.getLogo(),
+                                              future: StoreProfileService.getLogo(),
                                               builder: (context, snapshot) {
                                                 if (snapshot.connectionState == ConnectionState.waiting) {
                                                   return CircularProgressIndicator(

@@ -3,7 +3,7 @@ import 'new_product_page.dart';
 import 'settings/settings_page.dart';
 import '../widgets/product_card.dart';
 import '../dialogs/sort_dialog.dart';
-import '../../data/store_service.dart';
+import '../../data/store_profile_service.dart';
 import '../../data/product_service.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 
@@ -29,7 +29,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
   }
 
   Future<void> _loadStoreData() async {
-    final name = await StoreService.getStoreName();
+    final name = await StoreProfileService.getStoreName();
     final productList = await ProductService.getStoreProducts(
       sortBy: _sortBy,
       ascending: _ascending,

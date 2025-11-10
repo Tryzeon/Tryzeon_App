@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
 
-class StoreService {
+class StoreProfileService {
   static final _supabase = Supabase.instance.client;
   static const _storesTable = 'store_profile';
   static const _logoBucket = 'store';
@@ -46,7 +46,6 @@ class StoreService {
         'user_id': userId,
         'store_name': storeName,
         'address': address,
-        'updated_at': DateTime.now().toIso8601String(),
       };
 
       await _supabase
@@ -148,15 +147,11 @@ class StoreData {
   final String userId;
   final String storeName;
   final String address;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   StoreData({
     required this.userId,
     required this.storeName,
     required this.address,
-    required this.createdAt,
-    required this.updatedAt,
   });
 
   factory StoreData.fromJson(Map<String, dynamic> json) {
@@ -164,8 +159,6 @@ class StoreData {
       userId: json['user_id'],
       storeName: json['store_name'],
       address: json['address'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
     );
   }
 }

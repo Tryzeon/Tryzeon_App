@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/store/home/data/store_service.dart';
+import 'package:tryzeon/feature/store/home/data/store_profile_service.dart';
 import 'package:tryzeon/feature/store/onboarding/persentation/pages/store_onboarding_page.dart';
 import 'package:tryzeon/feature/store/home/persentation/pages/home_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
@@ -25,7 +25,7 @@ class _StoreEntryState extends State<StoreEntry> {
   }
 
   Future<void> _checkStoreInfo() async {
-    final storeData = await StoreService.getStore();
+    final storeData = await StoreProfileService.getStore();
     setState(() {
       _needsOnboarding = storeData == null;
       _isChecking = false;
