@@ -9,7 +9,12 @@ class ProductTypeService {
   static const _cacheTimestampKey = 'cached_product_types_timestamp';
   static const _cacheDuration = Duration(days: 7);
 
-  static Future<List<String>> getProductTypesList() async {
+  static Future<List<String>> getProductTypesList({bool forceRefresh = false}) async {
+    // 如果強制刷新，清除快取
+    if (forceRefresh) {
+      await _clearCache();
+    }
+
     final cached = await _getCachedTypes();
     if (cached != null) return cached;
 

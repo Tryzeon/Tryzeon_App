@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
+import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/product_card.dart';
@@ -15,7 +16,7 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
-  late List<String> adImages;
+  List<String> adImages = [];
   List<Map<String, dynamic>> products = [];
   List<Map<String, dynamic>> displayedProducts = [];
   bool isLoading = true;
@@ -37,22 +38,23 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   /// 初始化所有資料
-  Future<void> _initializeData() async {
-    await _loadAdImages();
-    await _loadProductTypes();
+  Future<void> _initializeData({bool forceRefresh = false}) async {
+    await _loadAdImages(forceRefresh: forceRefresh);
+    await _loadProductTypes(forceRefresh: forceRefresh);
     await _loadProducts();
   }
 
-  Future<void> _loadAdImages() async {
-    adImages = [
-      'assets/images/ads/gu.jpg',
-      'assets/images/ads/net.png',
-      'assets/images/ads/zara.jpg',
-    ];
+  Future<void> _loadAdImages({bool forceRefresh = false}) async {
+    final response = await AdService.getAdImages(forceRefresh: forceRefresh);
+    if (mounted) {
+      setState(() {
+        adImages = response;
+      });
+    }
   }
-
-  Future<void> _loadProductTypes() async {
-    final types = await ProductTypeService.getProductTypesList();
+  
+  Future<void> _loadProductTypes({bool forceRefresh = false}) async {
+    final types = await ProductTypeService.getProductTypesList(forceRefresh: forceRefresh);
     if (mounted) {
       setState(() {
         _productTypes = types;
@@ -281,7 +283,7 @@ class _ShopPageState extends State<ShopPage> {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _initializeData,
+                  onRefresh: () => _initializeData(forceRefresh: true),
                   color: Theme.of(context).colorScheme.primary,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
