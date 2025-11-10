@@ -4,7 +4,7 @@ import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
-import 'package:tryzeon/feature/personal/shop/data/type_filter_service.dart';
+import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import '../../data/product_service.dart';
 

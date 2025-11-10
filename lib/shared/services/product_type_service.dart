@@ -17,7 +17,7 @@ class ProductTypeService {
     final response = await _supabase
         .from(_typesTable)
         .select('name_zh, name_en')
-        .order('name_zh');
+        .order('order', ascending: true);
 
     final Map<String, String> types = {};
     for (final item in response as List) {
