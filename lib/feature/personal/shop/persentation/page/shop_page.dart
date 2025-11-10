@@ -25,22 +25,30 @@ class _ShopPageState extends State<ShopPage> {
   bool _ascending = false;
   int? _minPrice;
   int? _maxPrice;
-  final Set<String> _selectedTypes = {};
-
+  
   // 商品類型列表
   List<String> _productTypes = [];
+  final Set<String> _selectedTypes = {};
 
   @override
   void initState() {
     super.initState();
+    _initializeData();
+  }
 
-    // 初始化資料（未來可改為 API 載入）
+  /// 初始化所有資料
+  Future<void> _initializeData() async {
+    await _loadAdImages();
+    await _loadProductTypes();
+    await _loadProducts();
+  }
+
+  Future<void> _loadAdImages() async {
     adImages = [
       'assets/images/ads/gu.jpg',
       'assets/images/ads/net.png',
       'assets/images/ads/zara.jpg',
     ];
-    _loadProducts();
   }
 
   Future<void> _loadProductTypes() async {
@@ -58,8 +66,6 @@ class _ShopPageState extends State<ShopPage> {
     setState(() {
       isLoading = true;
     });
-
-    await _loadProductTypes();
 
     final fetchedProducts = await ShopService.getProducts(
       sortBy: _sortBy,
@@ -275,7 +281,7 @@ class _ShopPageState extends State<ShopPage> {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _loadProducts,
+                  onRefresh: _initializeData,
                   color: Theme.of(context).colorScheme.primary,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 8),

@@ -37,19 +37,6 @@ class ProductTypeService {
     return types.keys.toList();
   }
 
-  /// 根據中文名稱獲取英文代碼
-  static Future<String> getEnglishCode(String nameZh) async {
-    final types = await getProductTypes();
-    return types[nameZh] ?? nameZh;
-  }
-
-  /// 根據英文代碼獲取中文名稱
-  static Future<String> getChineseName(String nameEn) async {
-    final types = await getProductTypes();
-    final entry = types.entries.where((e) => e.value == nameEn).firstOrNull;
-    return entry?.key ?? nameEn;
-  }
-
   /// 從快取讀取
   static Future<Map<String, String>?> _getCachedTypes() async {
     final prefs = await SharedPreferences.getInstance();
