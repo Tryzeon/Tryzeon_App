@@ -2,7 +2,7 @@ class Product {
   final String? id;
   final String storeId;
   final String name;
-  final String type;
+  final List<String> types;
   final int price;
   final String imagePath;
   final String purchaseLink;
@@ -15,7 +15,7 @@ class Product {
     this.id,
     required this.storeId,
     required this.name,
-    required this.type,
+    required this.types,
     required this.price,
     required this.imagePath,
     required this.purchaseLink,
@@ -30,7 +30,7 @@ class Product {
       if (id != null) 'id': id,
       'store_id': storeId,
       'name': name,
-      'type': type,
+      'type': types,
       'price': price,
       'image_path': imagePath,
       'purchase_link': purchaseLink,
@@ -46,7 +46,7 @@ class Product {
       id: json['id'],
       storeId: json['store_id'],
       name: json['name'],
-      type: json['type'],
+      types: (json['type'] as List).map((e) => e.toString()).toList(),
       price: json['price'].toInt(),
       imagePath: json['image_path'],
       purchaseLink: json['purchase_link'],

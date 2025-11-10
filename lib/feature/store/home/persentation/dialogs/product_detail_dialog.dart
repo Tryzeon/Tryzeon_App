@@ -26,7 +26,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
   // 衣服種類選項
   List<String> clothingTypes = [];
-  String? selectedType;
+  Set<String> selectedTypes = {}; 
 
   @override
   void initState() {
@@ -34,7 +34,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     nameController = TextEditingController(text: widget.product.name);
     priceController = TextEditingController(text: widget.product.price.toString());
     purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
-    selectedType = widget.product.type;
+    selectedTypes = Set<String>.from(widget.product.types);
     _loadProductTypes();
   }
 
@@ -106,6 +106,15 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       return;
     }
 
+    if (selectedTypes.isEmpty) {
+      TopNotification.show(
+        context,
+        message: '請至少選擇一個類型',
+        type: NotificationType.warning,
+      );
+      return;
+    }
+
     setState(() {
       isLoading = true;
     });
@@ -113,7 +122,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     final success = await ProductService.updateProduct(
       productId: widget.product.id!,
       name: nameController.text,
-      type: selectedType!,
+      types: selectedTypes.toList(),  // 改為 types 傳遞陣列
       price: price,
       purchaseLink: purchaseLinkController.text,
       currentFilePath: widget.product.imagePath,
@@ -306,7 +315,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                     ),
                     const SizedBox(height: 16),
 
-                    _buildDropdown(context),
+                    _buildTypeSelector(),
                     const SizedBox(height: 16),
 
                     _buildTextField(
@@ -404,41 +413,77 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     );
   }
 
-  Widget _buildDropdown(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: selectedType,
-      style: const TextStyle(fontSize: 15, color: Colors.black87),
-      decoration: InputDecoration(
-        labelText: '衣服種類',
-        labelStyle: TextStyle(color: Colors.grey[700], fontSize: 14),
-        prefixIcon: Icon(Icons.category_outlined, color: Colors.grey[600], size: 20),
-        filled: true,
-        fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+  Widget _buildTypeSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.category_outlined, color: Colors.grey[600], size: 20),
+            const SizedBox(width: 8),
+            Text(
+              '商品類型',
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '(可多選)',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: clothingTypes.map((type) {
+              final isSelected = selectedTypes.contains(type);
+              return FilterChip(
+                label: Text(type),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      selectedTypes.add(type);
+                    } else {
+                      selectedTypes.remove(type);
+                    }
+                  });
+                },
+                backgroundColor: Colors.white,
+                selectedColor: Colors.black87,
+                checkmarkColor: Colors.white,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontSize: 13,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: isSelected ? Colors.black87 : Colors.grey[300]!,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black87, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-      items: clothingTypes.map((String type) {
-        return DropdownMenuItem<String>(
-          value: type,
-          child: Text(type),
-        );
-      }).toList(),
-      onChanged: (String? newValue) {
-        setState(() {
-          selectedType = newValue;
-        });
-      },
+      ],
     );
   }
 }

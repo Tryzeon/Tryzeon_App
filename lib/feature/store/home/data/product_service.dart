@@ -66,7 +66,7 @@ class ProductService {
   /// 創建新商品
   static Future<bool> createProduct({
     required String name,
-    required String type,
+    required List<String> types,
     required int price,
     required String purchaseLink,
     required File imageFile,
@@ -83,7 +83,7 @@ class ProductService {
       final product = Product(
         storeId: userId,
         name: name,
-        type: type,
+        types: types,
         price: price,
         purchaseLink: purchaseLink,
         imagePath: filePath,
@@ -104,7 +104,7 @@ class ProductService {
   static Future<bool> updateProduct({
     required String productId,
     required String name,
-    required String type,
+    required List<String> types,
     required int price,
     required String purchaseLink,
     required String currentFilePath,
@@ -128,7 +128,7 @@ class ProductService {
 
       final updateData = {
         'name': name,
-        'type': type,
+        'type': types,
         'price': price,
         'image_path': filePath,
         'purchase_link': purchaseLink,

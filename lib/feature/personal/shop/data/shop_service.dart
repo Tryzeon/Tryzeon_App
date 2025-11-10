@@ -33,9 +33,9 @@ class ShopService {
       if (maxPrice != null) {
         query = query.lte('price', maxPrice);
       }
-      // 類型過濾
+      // 類型過濾（使用 PostgreSQL 陣列 overlap 操作符）
       if (types != null && types.isNotEmpty) {
-        query = query.inFilter('type', types);
+        query = query.overlaps('type', types);
       }
 
       // 排序
@@ -91,7 +91,7 @@ class ShopService {
               store_name
             )
           ''')
-          .or('name.ilike.%$query%,type.ilike.%$query%')
+          .or('name.ilike.%$query%,type.cs.{$query}')
           .order('created_at', ascending: false);
 
       // 再搜尋店家名稱

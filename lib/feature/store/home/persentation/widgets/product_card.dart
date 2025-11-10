@@ -73,7 +73,7 @@ class StoreProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    product.type,
+                    product.types.join(', '),  // 顯示所有類型，用逗號分隔
                     style: Theme.of(context).textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
