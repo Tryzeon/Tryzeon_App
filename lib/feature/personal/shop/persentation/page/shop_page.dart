@@ -111,20 +111,6 @@ class _ShopPageState extends State<ShopPage> {
     );
   }
 
-
-  Widget _buildSortingSection() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildComprehensiveSortButton(),
-        const SizedBox(width: 8),
-        _buildPriceSortButton(),
-        const SizedBox(width: 8),
-        _buildFilterButton(),
-      ],
-    );
-  }
-
   Widget _buildComprehensiveSortButton() {
     final isActive = _sortBy != 'price';
     return _buildSortButton(
@@ -368,7 +354,16 @@ class _ShopPageState extends State<ShopPage> {
                                   ),
                             ),
                             const Spacer(),
-                            _buildSortingSection(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildComprehensiveSortButton(),
+                                const SizedBox(width: 8),
+                                _buildPriceSortButton(),
+                                const SizedBox(width: 8),
+                                _buildFilterButton(),
+                              ],
+                            ),
                           ],
                         ),
                       ),
