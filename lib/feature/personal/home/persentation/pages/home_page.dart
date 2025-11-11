@@ -7,7 +7,7 @@ import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:tryzeon/shared/services/file_cache_service.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

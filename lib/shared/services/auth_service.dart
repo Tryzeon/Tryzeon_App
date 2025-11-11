@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tryzeon/shared/services/file_cache_service.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 enum UserType { personal, store }
 

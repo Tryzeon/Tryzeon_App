@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tryzeon/shared/services/file_cache_service.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class StoreProfileService {
   static final _supabase = Supabase.instance.client;
