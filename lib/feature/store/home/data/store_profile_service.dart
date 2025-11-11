@@ -17,7 +17,7 @@ class StoreProfileService {
       final response = await _supabase
           .from(_storesTable)
           .select()
-          .eq('user_id', userId)
+          .eq('store_id', userId)
           .maybeSingle();
 
       if (response == null) return null;
@@ -43,14 +43,14 @@ class StoreProfileService {
 
     try {
       final data = {
-        'user_id': userId,
+        'store_id': userId,
         'store_name': storeName,
         'address': address,
       };
 
       await _supabase
           .from(_storesTable)
-          .upsert(data, onConflict: 'user_id');
+          .upsert(data, onConflict: 'store_id');
 
       return true;
     } catch (e) {
@@ -144,19 +144,19 @@ class StoreProfileService {
 }
 
 class StoreData {
-  final String userId;
+  final String storeId;
   final String storeName;
   final String address;
 
   StoreData({
-    required this.userId,
+    required this.storeId,
     required this.storeName,
     required this.address,
   });
 
   factory StoreData.fromJson(Map<String, dynamic> json) {
     return StoreData(
-      userId: json['user_id'],
+      storeId: json['store_id'],
       storeName: json['store_name'],
       address: json['address'],
     );

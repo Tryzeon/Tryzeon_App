@@ -15,13 +15,13 @@ class ShopService {
   }) async {
     try {
       // 查詢所有商品並關聯店家資訊
-      // products.store_id = store_profile.user_id
+      // products.store_id = store_profile.store_id
       dynamic query = _supabase
           .from(_productsTable)
           .select('''
             *,
             store_profile!products_store_id_fkey(
-              user_id,
+              store_id,
               store_name
             )
           ''');
@@ -81,13 +81,13 @@ class ShopService {
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     try {
       // 先搜尋商品名稱和類型
-      // products.store_id = store_profile.user_id
+      // products.store_id = store_profile.store_id
       final productResponse = await _supabase
           .from(_productsTable)
           .select('''
             *,
             store_profile!products_store_id_fkey(
-              user_id,
+              store_id,
               store_name
             )
           ''')
@@ -100,7 +100,7 @@ class ShopService {
           .select('''
             *,
             store_profile!products_store_id_fkey(
-              user_id,
+              store_id,
               store_name
             )
           ''')
