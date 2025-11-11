@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'widgets/product_card.dart';
-import 'dialogs/sort_dialog.dart';
-import 'pages/new_product_page.dart';
-import '../../settings/presentation/settings_page.dart';
-import '../../settings/data/profile_service.dart';
-import '../data/product_service.dart';
+import 'product/persentation/widgets/product_card.dart';
+import 'product/persentation/dialogs/sort_dialog.dart';
+import 'product/persentation/pages/new_product_page.dart';
+import 'settings/presentation/settings_page.dart';
+import 'settings/data/profile_service.dart';
+import 'product/data/product_service.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 
 
@@ -25,11 +25,20 @@ class _StoreHomePageState extends State<StoreHomePage> {
   @override
   void initState() {
     super.initState();
+    _loadStoreName();
     _loadStoreData();
   }
 
-  Future<void> _loadStoreData() async {
+  Future<void> _loadStoreName() async {
     final name = await StoreProfileService.getStoreName();
+    if (mounted) {
+      setState(() {
+        storeName = name;
+      });
+    }
+  }
+
+  Future<void> _loadStoreData() async {
     final productList = await ProductService.getStoreProducts(
       sortBy: _sortBy,
       ascending: _ascending,
@@ -37,7 +46,6 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
     if (mounted) {
       setState(() {
-        storeName = name;
         products = productList;
         isLoading = false;
       });
@@ -161,7 +169,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                               builder: (context) => const StoreSettingsPage(),
                             ),
                           ).then((_) {
-                            _loadStoreData();
+                            _loadStoreName();
                           });
                         },
                       ),
