@@ -27,7 +27,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _loadStoreData() async {
     setState(() => isLoading = true);
 
-    final storeData = await StoreProfileService.getStore();
+    final storeData = await StoreProfileService.getProfileData();
     if (storeData != null) {
       setState(() {
         storeNameController.text = storeData.storeName;
@@ -41,7 +41,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _saveChanges() async {
     setState(() => isLoading = true);
 
-    final success = await StoreProfileService.upsertStore(
+    final success = await StoreProfileService.updateProfileData(
       storeName: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
     );

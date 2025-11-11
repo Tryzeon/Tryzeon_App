@@ -11,10 +11,10 @@ class StoreProfileService {
   static const _logoBucket = 'store';
 
   // SharedPreferences key
-  static const _cachedStoreDataKey = 'cached_store_data';
+  static const _cachedKey = 'cached_store_profile_data';
 
   /// 獲取店家資料
-  static Future<StoreData?> getStore({bool forceRefresh = false}) async {
+  static Future<ProfileData?> getProfileData({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
@@ -23,10 +23,10 @@ class StoreProfileService {
 
       // 讀取 cache
       if (!forceRefresh) {
-        final cachedStoreDataJson = prefs.getString(_cachedStoreDataKey);
-        if (cachedStoreDataJson != null) {
-          final Map<String, dynamic> json = jsonDecode(cachedStoreDataJson);
-          return StoreData.fromJson(json);
+        final cachedProfileDataJson = prefs.getString(_cachedKey);
+        if (cachedProfileDataJson != null) {
+          final Map<String, dynamic> json = jsonDecode(cachedProfileDataJson);
+          return ProfileData.fromJson(json);
         }
       }
 
@@ -39,12 +39,12 @@ class StoreProfileService {
 
       if (response == null) return null;
 
-      final storeData = StoreData.fromJson(response);
+      final profileData = ProfileData.fromJson(response);
 
       // 儲存到 SharedPreferences（直接覆蓋）
-      await prefs.setString(_cachedStoreDataKey, jsonEncode(storeData.toJson()));
+      await prefs.setString(_cachedKey, jsonEncode(profileData.toJson()));
 
-      return storeData;
+      return profileData;
     } catch (e) {
       return null;
     }
@@ -52,12 +52,12 @@ class StoreProfileService {
 
   /// 獲取店家名稱
   static Future<String> getStoreName({bool forceRefresh = false}) async {
-    final storeData = await getStore(forceRefresh: forceRefresh);
-    return storeData?.storeName ?? '店家';
+    final profileData = await getProfileData(forceRefresh: forceRefresh);
+    return profileData?.storeName ?? '店家';
   }
   
   /// 更新店家資料
-  static Future<bool> upsertStore({
+  static Future<bool> updateProfileData({
     required String storeName,
     required String address,
   }) async {
@@ -127,7 +127,7 @@ class StoreProfileService {
 
     try {
       // 1. 先刪除舊 Logo（本地和 Supabase）
-      await _deleteOldLogos(userId);
+      await deleteLogo(userId);
 
       // 2. 上傳到 Supabase
       final bytes = await logoFile.readAsBytes();
@@ -150,7 +150,7 @@ class StoreProfileService {
   }
 
   /// 刪除舊 Logo（Supabase 和本地）
-  static Future<void> _deleteOldLogos(String userId) async {
+  static Future<void> deleteLogo(String userId) async {
     try {
       // 刪除 Supabase 中的舊 Logo
       final files = await _supabase.storage.from(_logoBucket).list(path: '$userId/logo');
@@ -166,19 +166,19 @@ class StoreProfileService {
   }
 }
 
-class StoreData {
+class ProfileData {
   final String storeId;
   final String storeName;
   final String address;
 
-  StoreData({
+  ProfileData({
     required this.storeId,
     required this.storeName,
     required this.address,
   });
 
-  factory StoreData.fromJson(Map<String, dynamic> json) {
-    return StoreData(
+  factory ProfileData.fromJson(Map<String, dynamic> json) {
+    return ProfileData(
       storeId: json['store_id'],
       storeName: json['store_name'],
       address: json['address'],
