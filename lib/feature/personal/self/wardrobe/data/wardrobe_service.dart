@@ -65,7 +65,7 @@ class WardrobeService {
     }
   }
 
-  static Future<List<WardrobeItem>> getWardrobeItems() async {
+  static Future<List<WardrobeItem>> getWardrobeItems({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return [];
 

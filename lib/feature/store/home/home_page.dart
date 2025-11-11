@@ -17,10 +17,10 @@ class StoreHomePage extends StatefulWidget {
 
 class _StoreHomePageState extends State<StoreHomePage> {
   String storeName = '店家';
-  bool isLoading = true;
   List<Product> products = [];
   String _sortBy = 'created_at';
   bool _ascending = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -28,33 +28,39 @@ class _StoreHomePageState extends State<StoreHomePage> {
     _loadStoreData();
   }
 
+  Future<void> _loadStoreData({bool forceRefresh = false}) async {
+    await _loadStoreName(forceRefresh: forceRefresh);
+    await _loadStoreProducts(forceRefresh: forceRefresh);
+  }
+
   Future<void> _loadStoreName({bool forceRefresh = false}) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final name = await StoreProfileService.getStoreName(forceRefresh: forceRefresh);
-    if (mounted) {
-      setState(() {
-        storeName = name;
-      });
-    }
+    
+    setState(() {
+      storeName = name;
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadStoreProducts({bool forceRefresh = false}) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final productList = await ProductService.getStoreProducts(
       sortBy: _sortBy,
       ascending: _ascending,
       forceRefresh: forceRefresh,
     );
 
-    if (mounted) {
-      setState(() {
-        products = productList;
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadStoreData({bool forceRefresh = false}) async {
-    await _loadStoreName(forceRefresh: forceRefresh);
-    await _loadStoreProducts(forceRefresh: forceRefresh);
+    setState(() {
+      products = productList;
+      _isLoading = false;
+    });
   }
 
   void _handleSortChange(String newSortBy) {
@@ -183,7 +189,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
               // 內容區域
               Expanded(
-                child: isLoading
+                child: _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
                           color: Theme.of(context).colorScheme.primary,

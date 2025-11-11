@@ -27,8 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUsername();
-    _loadWardrobeItems();
+    _loadPersonalData();
   }
 
   @override
@@ -37,30 +36,40 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  Future<void> _loadUsername() async {
-    final profileResult = await UserProfileService.getUserProfile();
+  Future<void> _loadPersonalData({bool forceRefresh = false}) async {
+    await _loadUsername(forceRefresh: forceRefresh);
+    await _loadWardrobeItems(forceRefresh: forceRefresh);
+  }
+
+  Future<void> _loadUsername({bool forceRefresh = false}) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final profileResult = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
+    
     setState(() {
       if (profileResult.success && profileResult.profile != null) {
         username = profileResult.profile!.name;
+        _isLoading = false;
       }
     });
   }
 
-  Future<void> _loadWardrobeItems() async {
+  Future<void> _loadWardrobeItems({bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
 
     final categories = WardrobeService.getWardrobeTypesList();
-    final items = await WardrobeService.getWardrobeItems();
 
-    if (mounted) {
-      setState(() {
-        wardrobeItems = items;
-        wardrobeCategories = ['全部', ...categories];
-        _isLoading = false;
-      });
-    }
+    final items = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh );
+
+    setState(() {
+      wardrobeItems = items;
+      wardrobeCategories = ['全部', ...categories];
+      _isLoading = false;
+    });
   }
 
   void _showDeleteDialog(WardrobeItem item) async {
@@ -207,7 +216,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
               // 衣櫃內容
               Expanded(
-                child: _buildClothingGrid(),
+                child: RefreshIndicator(
+                  onRefresh: () => _loadPersonalData(forceRefresh: true),
+                  child: _buildClothingGrid(),
+                ),
               ),
             ],
           ),
