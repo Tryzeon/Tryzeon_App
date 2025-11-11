@@ -58,6 +58,42 @@ class StoreProfileService {
     }
   }
 
+  /// 獲取 Logo（優先從本地獲取，本地沒有才從後端拿）
+  static Future<File?> getLogo() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return null;
+
+    try {
+      // 1. 先檢查本地資料夾是否有緩存
+      final localFiles = await FileCacheService.getFiles(
+        relativePath: '$userId/logo',
+      );
+
+      if (localFiles.isNotEmpty) {
+        return localFiles.first;
+      }
+
+      // 2. 本地沒有，從 Supabase 下載
+      final files = await _supabase.storage.from(_logoBucket).list(path: '$userId/logo');
+      if (files.isEmpty) return null;
+
+      final fileName = '$userId/logo/${files.first.name}';
+      final bytes = await _supabase.storage.from(_logoBucket).download(fileName);
+
+      // 創建臨時文件並保存到本地緩存
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp_logo.jpg');
+      await tempFile.writeAsBytes(bytes);
+
+      final savedFile = await FileCacheService.saveFile(tempFile, fileName);
+      await tempFile.delete(); // 刪除臨時文件
+
+      return savedFile;
+    } catch (e) {
+      return null;
+    }
+  }
+  
   /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
   static Future<String?> uploadLogo(File logoFile) async {
     final userId = _supabase.auth.currentUser?.id;
@@ -103,42 +139,6 @@ class StoreProfileService {
       await FileCacheService.deleteFiles(relativePath: '$userId/logo');
     } catch (e) {
       // 忽略刪除錯誤
-    }
-  }
-
-  /// 獲取 Logo（優先從本地獲取，本地沒有才從後端拿）
-  static Future<File?> getLogo() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
-
-    try {
-      // 1. 先檢查本地資料夾是否有緩存
-      final localFiles = await FileCacheService.getFiles(
-        relativePath: '$userId/logo',
-      );
-
-      if (localFiles.isNotEmpty) {
-        return localFiles.first;
-      }
-
-      // 2. 本地沒有，從 Supabase 下載
-      final files = await _supabase.storage.from(_logoBucket).list(path: '$userId/logo');
-      if (files.isEmpty) return null;
-
-      final fileName = '$userId/logo/${files.first.name}';
-      final bytes = await _supabase.storage.from(_logoBucket).download(fileName);
-
-      // 創建臨時文件並保存到本地緩存
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_logo.jpg');
-      await tempFile.writeAsBytes(bytes);
-
-      final savedFile = await FileCacheService.saveFile(tempFile, fileName);
-      await tempFile.delete(); // 刪除臨時文件
-
-      return savedFile;
-    } catch (e) {
-      return null;
     }
   }
 }
