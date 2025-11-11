@@ -28,8 +28,8 @@ class _StoreHomePageState extends State<StoreHomePage> {
     _loadStoreData();
   }
 
-  Future<void> _loadStoreName() async {
-    final name = await StoreProfileService.getStoreName();
+  Future<void> _loadStoreName({bool forceRefresh = false}) async {
+    final name = await StoreProfileService.getStoreName(forceRefresh: forceRefresh);
     if (mounted) {
       setState(() {
         storeName = name;
@@ -37,10 +37,11 @@ class _StoreHomePageState extends State<StoreHomePage> {
     }
   }
 
-  Future<void> _loadStoreProducts() async {
+  Future<void> _loadStoreProducts({bool forceRefresh = false}) async {
     final productList = await ProductService.getStoreProducts(
       sortBy: _sortBy,
       ascending: _ascending,
+      forceRefresh: forceRefresh,
     );
 
     if (mounted) {
@@ -51,9 +52,9 @@ class _StoreHomePageState extends State<StoreHomePage> {
     }
   }
 
-  Future<void> _loadStoreData() async {
-    await _loadStoreName();
-    await _loadStoreProducts();
+  Future<void> _loadStoreData({bool forceRefresh = false}) async {
+    await _loadStoreName(forceRefresh: forceRefresh);
+    await _loadStoreProducts(forceRefresh: forceRefresh);
   }
 
   void _handleSortChange(String newSortBy) {
@@ -172,9 +173,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                             MaterialPageRoute(
                               builder: (context) => const StoreSettingsPage(),
                             ),
-                          ).then((_) {
-                            _loadStoreName();
-                          });
+                          );
                         },
                       ),
                     ),
@@ -191,7 +190,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: _loadStoreData,
+                        onRefresh: () => _loadStoreData(forceRefresh: true),
                         color: Theme.of(context).colorScheme.primary,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -293,7 +292,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                           final product = products[index];
                                           return StoreProductCard(
                                             product: product,
-                                            onUpdate: _loadStoreProducts,
+                                            onUpdate: () => _loadStoreProducts(forceRefresh: true),
                                           );
                                         },
                                       ),
@@ -336,8 +335,10 @@ class _StoreHomePageState extends State<StoreHomePage> {
                 MaterialPageRoute(
                   builder: (context) => const AddProductPage(),
                 ),
-              ).then((_) {
-                _loadStoreProducts();
+              ).then((success) {
+                if (success == true) {
+                  _loadStoreProducts(forceRefresh: true);
+                }
               });
             },
             customBorder: const CircleBorder(),

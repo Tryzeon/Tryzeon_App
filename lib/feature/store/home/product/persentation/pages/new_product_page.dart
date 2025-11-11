@@ -90,7 +90,7 @@ class _AddProductPageState extends State<AddProductPage> {
     });
 
     if (success) {
-      navigator.pop();
+      navigator.pop(true);
       TopNotification.show(
         context,
         message: '商品新增成功',

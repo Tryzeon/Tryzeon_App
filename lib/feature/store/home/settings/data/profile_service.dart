@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class StoreProfileService {
@@ -8,12 +10,27 @@ class StoreProfileService {
   static const _storesTable = 'store_profile';
   static const _logoBucket = 'store';
 
+  // SharedPreferences key
+  static const _cachedStoreDataKey = 'cached_store_data';
+
   /// 獲取店家資料
-  static Future<StoreData?> getStore() async {
+  static Future<StoreData?> getStore({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // 讀取 cache
+      if (!forceRefresh) {
+        final cachedStoreDataJson = prefs.getString(_cachedStoreDataKey);
+        if (cachedStoreDataJson != null) {
+          final Map<String, dynamic> json = jsonDecode(cachedStoreDataJson);
+          return StoreData.fromJson(json);
+        }
+      }
+
+      // 從後端抓取資料
       final response = await _supabase
           .from(_storesTable)
           .select()
@@ -21,15 +38,21 @@ class StoreProfileService {
           .maybeSingle();
 
       if (response == null) return null;
-      return StoreData.fromJson(response);
+
+      final storeData = StoreData.fromJson(response);
+
+      // 儲存到 SharedPreferences（直接覆蓋）
+      await prefs.setString(_cachedStoreDataKey, jsonEncode(storeData.toJson()));
+
+      return storeData;
     } catch (e) {
       return null;
     }
   }
 
   /// 獲取店家名稱
-  static Future<String> getStoreName() async {
-    final storeData = await getStore();
+  static Future<String> getStoreName({bool forceRefresh = false}) async {
+    final storeData = await getStore(forceRefresh: forceRefresh);
     return storeData?.storeName ?? '店家';
   }
   
@@ -160,5 +183,13 @@ class StoreData {
       storeName: json['store_name'],
       address: json['address'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'store_id': storeId,
+      'store_name': storeName,
+      'address': address,
+    };
   }
 }

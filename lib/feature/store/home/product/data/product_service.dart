@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/file_cache_service.dart';
 
@@ -9,27 +11,75 @@ class ProductService {
   static const _productsTable = 'products_info';
   static const _productImagesBucket = 'store';
 
+  static const _cachedProductsKey = 'cached_products';
+
   /// 獲取店家的所有商品
   static Future<List<Product>> getStoreProducts({
     String sortBy = 'created_at',
     bool ascending = false,
+    bool forceRefresh = false,
   }) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return [];
 
+      List<Product> products;
+      final prefs = await SharedPreferences.getInstance();
+
+      if (!forceRefresh) {
+        final cachedProductsJson = prefs.getString(_cachedProductsKey);
+        if (cachedProductsJson != null) {
+          final List<dynamic> jsonList = jsonDecode(cachedProductsJson);
+          products = jsonList.map((json) => Product.fromJson(json)).toList();
+
+          return _sortProducts(products, sortBy, ascending);
+        }
+      }
+
       final response = await _supabase
           .from(_productsTable)
           .select()
-          .eq('store_id', userId)
-          .order(sortBy, ascending: ascending);
+          .eq('store_id', userId);
 
-      return (response as List)
-          .map((json) => Product.fromJson(json))
-          .toList();
+      products = response.map((json) => Product.fromJson(json)).toList();
+
+      final productsJson = jsonEncode(products.map((p) => p.toJson()).toList());
+      await prefs.setString(_cachedProductsKey, productsJson);
+
+      return _sortProducts(products, sortBy, ascending);
     } catch (e) {
       return [];
     }
+  }
+
+  /// 本地排序產品
+  static List<Product> _sortProducts(List<Product> products, String sortBy, bool ascending) {
+    final sortedProducts = List<Product>.from(products);
+
+    sortedProducts.sort((a, b) {
+      int comparison;
+
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.compareTo(b.name);
+          break;
+        case 'price':
+          comparison = a.price.compareTo(b.price);
+          break;
+        case 'created_at':
+          comparison = a.createdAt!.compareTo(b.createdAt!);
+          break;
+        case 'updated_at':
+          comparison = a.updatedAt!.compareTo(b.updatedAt!);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return ascending ? comparison : -comparison;
+    });
+
+    return sortedProducts;
   }
 
   /// 獲取商品圖片（優先從本地獲取，本地沒有才從後端拿）
