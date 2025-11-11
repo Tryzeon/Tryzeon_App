@@ -7,77 +7,92 @@ import 'package:tryzeon/shared/services/file_cache_service.dart';
 
 class StoreProfileService {
   static final _supabase = Supabase.instance.client;
-  static const _storesTable = 'store_profile';
+  static const _storesProfileTable = 'store_profile';
   static const _logoBucket = 'store';
 
   // SharedPreferences key
-  static const _cachedKey = 'cached_store_profile_data';
+  static const _cachedKey = 'store_profile_cache';
 
   /// 獲取店家資料
-  static Future<ProfileData?> getProfileData({bool forceRefresh = false}) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
-
+  static Future<StoreProfileResult> getStoreProfile({bool forceRefresh = false}) async {
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return StoreProfileResult.failure('使用者未登入');
+      }
+
       final prefs = await SharedPreferences.getInstance();
 
       // 讀取 cache
       if (!forceRefresh) {
-        final cachedProfileDataJson = prefs.getString(_cachedKey);
-        if (cachedProfileDataJson != null) {
-          final Map<String, dynamic> json = jsonDecode(cachedProfileDataJson);
-          return ProfileData.fromJson(json);
+        final cachedProfile = prefs.getString(_cachedKey);
+        if (cachedProfile != null) {
+          final Map<String, dynamic> json = jsonDecode(cachedProfile);
+          final profile = StoreProfile.fromJson(json);
+          return StoreProfileResult.success(profile);
         }
       }
 
       // 從後端抓取資料
       final response = await _supabase
-          .from(_storesTable)
+          .from(_storesProfileTable)
           .select()
           .eq('store_id', userId)
           .maybeSingle();
 
-      if (response == null) return null;
+      if (response == null) {
+        return StoreProfileResult.failure('查無店家資料');
+      }
 
-      final profileData = ProfileData.fromJson(response);
+      final profile = StoreProfile.fromJson(response);
 
       // 儲存到 SharedPreferences（直接覆蓋）
-      await prefs.setString(_cachedKey, jsonEncode(profileData.toJson()));
+      await prefs.setString(_cachedKey, jsonEncode(profile.toJson()));
 
-      return profileData;
+      return StoreProfileResult.success(profile);
     } catch (e) {
-      return null;
+      return StoreProfileResult.failure('取得店家資料失敗: ${e.toString()}');
     }
   }
 
   /// 獲取店家名稱
   static Future<String> getStoreName({bool forceRefresh = false}) async {
-    final profileData = await getProfileData(forceRefresh: forceRefresh);
-    return profileData?.storeName ?? '店家';
+    final result = await getStoreProfile(forceRefresh: forceRefresh);
+    return result.profile?.storeName ?? '店家';
   }
   
   /// 更新店家資料
-  static Future<bool> updateProfileData({
+  static Future<StoreProfileResult> updateStoreProfile({
     required String storeName,
     required String address,
   }) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return false;
-
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return StoreProfileResult.failure('使用者未登入');
+      }
+
       final data = {
         'store_id': userId,
         'store_name': storeName,
         'address': address,
       };
 
-      await _supabase
-          .from(_storesTable)
-          .upsert(data, onConflict: 'store_id');
+      final response = await _supabase
+          .from(_storesProfileTable)
+          .upsert(data, onConflict: 'store_id')
+          .select()
+          .single();
 
-      return true;
+      final profile = StoreProfile.fromJson(response);
+
+      // 更新快取
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cachedKey, jsonEncode(profile.toJson()));
+
+      return StoreProfileResult.success(profile);
     } catch (e) {
-      return false;
+      return StoreProfileResult.failure('更新店家資料失敗: ${e.toString()}');
     }
   }
 
@@ -166,19 +181,19 @@ class StoreProfileService {
   }
 }
 
-class ProfileData {
+class StoreProfile {
   final String storeId;
   final String storeName;
   final String address;
 
-  ProfileData({
+  StoreProfile({
     required this.storeId,
     required this.storeName,
     required this.address,
   });
 
-  factory ProfileData.fromJson(Map<String, dynamic> json) {
-    return ProfileData(
+  factory StoreProfile.fromJson(Map<String, dynamic> json) {
+    return StoreProfile(
       storeId: json['store_id'],
       storeName: json['store_name'],
       address: json['address'],
@@ -191,5 +206,25 @@ class ProfileData {
       'store_name': storeName,
       'address': address,
     };
+  }
+}
+
+class StoreProfileResult {
+  final bool success;
+  final StoreProfile? profile;
+  final String? errorMessage;
+
+  StoreProfileResult({
+    required this.success,
+    this.profile,
+    this.errorMessage,
+  });
+
+  factory StoreProfileResult.success(StoreProfile profile) {
+    return StoreProfileResult(success: true, profile: profile);
+  }
+
+  factory StoreProfileResult.failure(String errorMessage) {
+    return StoreProfileResult(success: false, errorMessage: errorMessage);
   }
 }

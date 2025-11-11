@@ -27,11 +27,11 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _loadStoreData() async {
     setState(() => isLoading = true);
 
-    final storeData = await StoreProfileService.getProfileData();
-    if (storeData != null) {
+    final result = await StoreProfileService.getStoreProfile();
+    if (result.success) {
       setState(() {
-        storeNameController.text = storeData.storeName;
-        storeAddressController.text = storeData.address;
+        storeNameController.text = result.profile!.storeName;
+        storeAddressController.text = result.profile!.address;
       });
     }
 
@@ -41,14 +41,14 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _saveChanges() async {
     setState(() => isLoading = true);
 
-    final success = await StoreProfileService.updateProfileData(
+    final result = await StoreProfileService.updateStoreProfile(
       storeName: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
     );
 
     setState(() => isLoading = false);
 
-    if (success) {
+    if (result.success) {
       if (mounted) {
         Navigator.of(context).pop();
         TopNotification.show(
@@ -61,7 +61,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
       if (mounted) {
         TopNotification.show(
           context,
-          message: '更新失敗，請稍後再試',
+          message: result.errorMessage ?? '更新失敗，請稍後再試',
           type: NotificationType.error,
         );
       }
