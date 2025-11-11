@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import '../../data/user_profile_service.dart';
+import 'settings/data/profile_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
-import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
-import 'package:tryzeon/feature/personal/profile/persentation/dialogs/upload_clothing_dialog.dart';
-import 'package:tryzeon/feature/personal/profile/persentation/widgets/clothing_card.dart';
+import 'wardrobe/data/wardrobe_service.dart';
+import 'wardrobe/persentation/dialogs/upload_clothing_dialog.dart';
+import 'wardrobe/persentation/widgets/clothing_card.dart';
 import 'settings/settings_page.dart';
 
 

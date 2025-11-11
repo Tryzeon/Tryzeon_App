@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:tryzeon/feature/personal/profile/data/wardrobe_service.dart';
+import '../../data/wardrobe_service.dart';
 
 class ClothingCard extends StatefulWidget {
   final WardrobeItem item;

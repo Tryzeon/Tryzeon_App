@@ -6,7 +6,7 @@ import 'chat/persentation/page/chat_page.dart';
 import 'community/persentation/pages/community_page.dart';
 import 'home/persentation/pages/home_page.dart';
 import 'shop/persentation/page/shop_page.dart';
-import 'profile/persentation/pages/profile_page.dart';
+import 'self/self_page.dart';
 
 
 class PersonalEntry extends StatefulWidget {

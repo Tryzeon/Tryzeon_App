@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../data/user_profile_service.dart';
+import '../../data/profile_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class ProfileEditPage extends StatefulWidget {
