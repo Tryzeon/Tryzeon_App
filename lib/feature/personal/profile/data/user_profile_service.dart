@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfile {
-  final String id;
+  final String userId;
   final String name;
   final double? height;
   final double? weight;
@@ -14,7 +14,7 @@ class UserProfile {
   final double? sleeveLength;
 
   UserProfile({
-    required this.id,
+    required this.userId,
     required this.name,
     this.height,
     this.weight,
@@ -27,7 +27,7 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['id'] as String,
+      userId: json['user_id'] as String,
       name: json['name'] as String,
       height: json['height'] != null ? (json['height'] as num).toDouble() : null,
       weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
@@ -41,7 +41,7 @@ class UserProfile {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'user_id': userId,
       'name': name,
       'height': height,
       'weight': weight,
@@ -94,7 +94,7 @@ class UserProfileService {
       final response = await _supabase
           .from('user_profiles')
           .select()
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
 
       final profile = UserProfile.fromJson(response);
@@ -136,7 +136,7 @@ class UserProfileService {
       final response = await _supabase
           .from('user_profiles')
           .update(updateData)
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .select()
           .single();
 
