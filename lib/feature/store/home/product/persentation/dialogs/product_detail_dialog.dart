@@ -259,7 +259,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                       width: double.infinity,
                                     )
                                   : FutureBuilder<File?>(
-                                      future: FileCacheService.getFile(widget.product.imagePath),
+                                      future: CacheService.getFile(widget.product.imagePath),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasData && snapshot.data != null) {
                                           return Image.file(

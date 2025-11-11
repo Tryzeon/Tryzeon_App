@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 
 class StoreProfileService {
@@ -21,14 +19,11 @@ class StoreProfileService {
         return StoreProfileResult.failure('使用者未登入');
       }
 
-      final prefs = await SharedPreferences.getInstance();
-
       // 讀取 cache
       if (!forceRefresh) {
-        final cachedProfile = prefs.getString(_cachedKey);
-        if (cachedProfile != null) {
-          final Map<String, dynamic> json = jsonDecode(cachedProfile);
-          final profile = StoreProfile.fromJson(json);
+        final cachedData = await CacheService.loadJSON(_cachedKey);
+        if (cachedData != null) {
+          final profile = StoreProfile.fromJson(cachedData);
           return StoreProfileResult.success(profile);
         }
       }
@@ -47,7 +42,7 @@ class StoreProfileService {
       final profile = StoreProfile.fromJson(response);
 
       // 儲存到 SharedPreferences（直接覆蓋）
-      await prefs.setString(_cachedKey, jsonEncode(profile.toJson()));
+      await CacheService.saveJSON(_cachedKey, profile.toJson());
 
       return StoreProfileResult.success(profile);
     } catch (e) {
@@ -87,8 +82,7 @@ class StoreProfileService {
       final profile = StoreProfile.fromJson(response);
 
       // 更新快取
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_cachedKey, jsonEncode(profile.toJson()));
+      await CacheService.saveJSON(_cachedKey, profile.toJson());
 
       return StoreProfileResult.success(profile);
     } catch (e) {
@@ -103,7 +97,7 @@ class StoreProfileService {
 
     try {
       // 1. 先檢查本地資料夾是否有緩存
-      final localFiles = await FileCacheService.getFiles(
+      final localFiles = await CacheService.getFiles(
         relativePath: '$userId/logo',
       );
 
@@ -123,7 +117,7 @@ class StoreProfileService {
       final tempFile = File('${tempDir.path}/temp_logo.jpg');
       await tempFile.writeAsBytes(bytes);
 
-      final savedFile = await FileCacheService.saveFile(tempFile, fileName);
+      final savedFile = await CacheService.saveFile(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
       return savedFile;
@@ -156,7 +150,7 @@ class StoreProfileService {
       );
 
       // 3. 保存新的 Logo 到本地
-      final savedFile = await FileCacheService.saveFile(logoFile, fileName);
+      final savedFile = await CacheService.saveFile(logoFile, fileName);
       return savedFile.path;
     } catch (e) {
       // 上傳失敗，拋出錯誤讓上層處理
@@ -174,7 +168,7 @@ class StoreProfileService {
       }
 
       // 刪除本地舊 Logo
-      await FileCacheService.deleteFiles(relativePath: '$userId/logo');
+      await CacheService.deleteFiles(relativePath: '$userId/logo');
     } catch (e) {
       // 忽略刪除錯誤
     }

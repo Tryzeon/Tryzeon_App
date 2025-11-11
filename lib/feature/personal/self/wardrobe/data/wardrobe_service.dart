@@ -50,7 +50,7 @@ class WardrobeService {
       );
 
       // 2. 保存到本地緩存
-      await FileCacheService.saveFile(imageFile, storagePath);
+      await CacheService.saveFile(imageFile, storagePath);
 
       // 3. 新增 DB 記錄
       await _supabase.from(_wardrobeTable).insert({
@@ -93,7 +93,7 @@ class WardrobeService {
 
     try {
       // 1. 先檢查本地是否有該圖片
-      final localFile = await FileCacheService.getFile(storagePath);
+      final localFile = await CacheService.getFile(storagePath);
       if (localFile != null && await localFile.exists()) {
         return localFile;
       }
@@ -108,7 +108,7 @@ class WardrobeService {
       final tempFile = File('${tempDir.path}/temp_wardrobe_$imageName');
       await tempFile.writeAsBytes(bytes);
 
-      final savedFile = await FileCacheService.saveFile(tempFile, storagePath);
+      final savedFile = await CacheService.saveFile(tempFile, storagePath);
       await tempFile.delete();
 
       return savedFile;
@@ -132,7 +132,7 @@ class WardrobeService {
       await _supabase.storage.from(_bucket).remove([item.imageUrl]);
 
       // 3. 刪除本地快取的圖片
-      await FileCacheService.deleteFile(item.imageUrl);
+      await CacheService.deleteFile(item.imageUrl);
     } catch (e) {
       // 圖片刪除失敗不會拋出錯誤
     }

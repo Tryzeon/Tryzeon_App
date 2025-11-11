@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class UserProfileService {
   static final _supabase = Supabase.instance.client;
@@ -18,8 +17,11 @@ class UserProfileService {
       }
 
       if (!forceRefresh) {
-        final cachedProfile = await _loadFromCache();
-        if (cachedProfile != null) return UserProfileResult.success(cachedProfile);
+        final cachedData = await CacheService.loadJSON(_cacheKey);
+        if (cachedData != null) {
+          final cachedProfile = UserProfile.fromJson(cachedData);
+          return UserProfileResult.success(cachedProfile);
+        }
       }
 
       final response = await _supabase
@@ -29,7 +31,7 @@ class UserProfileService {
           .single();
 
       final profile = UserProfile.fromJson(response);
-      await _saveToCache(profile);
+      await CacheService.saveJSON(_cacheKey, profile.toJson());
       return UserProfileResult.success(profile);
     } catch (e) {
       return UserProfileResult.failure('取得個人資料失敗: ${e.toString()}');
@@ -72,36 +74,10 @@ class UserProfileService {
           .single();
 
       final profile = UserProfile.fromJson(response);
-      await _saveToCache(profile);
+      await CacheService.saveJSON(_cacheKey, profile.toJson());
       return UserProfileResult.success(profile);
     } catch (e) {
       return UserProfileResult.failure('更新個人資料失敗: ${e.toString()}');
-    }
-  }
-
-  /// 儲存到 SharedPreferences
-  static Future<void> _saveToCache(UserProfile profile) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = jsonEncode(profile.toJson());
-      await prefs.setString(_cacheKey, jsonString);
-    } catch (e) {
-      // 忽略快取錯誤
-    }
-  }
-
-  /// 從 SharedPreferences 載入
-  static Future<UserProfile?> _loadFromCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(_cacheKey);
-      if (jsonString == null) return null;
-
-      final json = jsonDecode(jsonString) as Map<String, dynamic>;
-      return UserProfile.fromJson(json);
-    } catch (e) {
-      // 快取損壞，返回 null
-      return null;
     }
   }
 }

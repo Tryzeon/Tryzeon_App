@@ -104,7 +104,7 @@ class AuthService {
 
     // 清除當前用戶的所有本地緩存
     if (userId != null) {
-      await FileCacheService.deleteFolder(userId);
+      await CacheService.deleteFolder(userId);
     }
 
     // 清除所有 SharedPreferences

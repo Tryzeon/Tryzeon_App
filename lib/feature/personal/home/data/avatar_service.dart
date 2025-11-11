@@ -20,7 +20,7 @@ class AvatarService {
       final fileName = '$userId/avatar/${files.first.name}';
 
       // 2. 檢查本地是否有緩存
-      final localFile = await FileCacheService.getFile(fileName);
+      final localFile = await CacheService.getFile(fileName);
       if (localFile != null) {
         return fileName;
       }
@@ -33,7 +33,7 @@ class AvatarService {
       final tempFile = File('${tempDir.path}/temp_avatar.jpg');
       await tempFile.writeAsBytes(bytes);
 
-      await FileCacheService.saveFile(tempFile, fileName);
+      await CacheService.saveFile(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
       return fileName;
@@ -66,7 +66,7 @@ class AvatarService {
       );
 
       // 3. 保存新的頭像到本地
-      await FileCacheService.saveFile(imageFile, fileName);
+      await CacheService.saveFile(imageFile, fileName);
       return fileName;
     } catch (e) {
       // 上傳失敗，拋出錯誤讓上層處理
@@ -84,7 +84,7 @@ class AvatarService {
       }
 
       // 刪除本地舊頭像
-      await FileCacheService.deleteFiles(relativePath: '$userId/avatar');
+      await CacheService.deleteFiles(relativePath: '$userId/avatar');
     } catch (e) {
       // 忽略刪除錯誤
     }

@@ -1,7 +1,53 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class FileCacheService {
+class CacheService {
+  /// 儲存資料到 SharedPreferences（自動進行 JSON 編碼）
+  ///
+  /// [cacheKey] 緩存的鍵
+  /// [data] 要緩存的資料
+  static Future<void> saveJSON(String cacheKey, Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = jsonEncode(data);
+      await prefs.setString(cacheKey, jsonString);
+    } catch (e) {
+      // 忽略快取錯誤
+    }
+  }
+
+  /// 從 SharedPreferences 載入資料（自動進行 JSON 解碼）
+  ///
+  /// [cacheKey] 緩存的鍵
+  ///
+  /// Returns 緩存的資料，如果不存在或解碼失敗則返回 null
+  static Future<Map<String, dynamic>?> loadJSON(String cacheKey) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(cacheKey);
+      if (jsonString == null) return null;
+
+      return jsonDecode(jsonString) as Map<String, dynamic>;
+    } catch (e) {
+      // 快取錯誤或解碼失敗，返回 null
+      return null;
+    }
+  }
+
+  /// 清除指定的緩存
+  ///
+  /// [cacheKey] 緩存的鍵
+  static Future<void> clearCache(String cacheKey) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(cacheKey);
+    } catch (e) {
+      // 忽略錯誤
+    }
+  }
+
   /// 保存檔案到指定的緩存路徑
   ///
   /// [sourceFile] 要保存的源文件
