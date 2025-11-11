@@ -23,8 +23,8 @@ class StoreProfileService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadJSON(_cachedKey);
         if (cachedData != null) {
-          final profile = StoreProfile.fromJson(cachedData);
-          return StoreProfileResult.success(profile);
+          final cachedProfile = StoreProfile.fromJson(cachedData);
+          return StoreProfileResult.success(cachedProfile);
         }
       }
 
@@ -41,7 +41,6 @@ class StoreProfileService {
 
       final profile = StoreProfile.fromJson(response);
 
-      // 儲存到 SharedPreferences（直接覆蓋）
       await CacheService.saveJSON(_cachedKey, profile.toJson());
 
       return StoreProfileResult.success(profile);
@@ -81,7 +80,6 @@ class StoreProfileService {
 
       final profile = StoreProfile.fromJson(response);
 
-      // 更新快取
       await CacheService.saveJSON(_cachedKey, profile.toJson());
 
       return StoreProfileResult.success(profile);
