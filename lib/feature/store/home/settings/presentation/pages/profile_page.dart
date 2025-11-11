@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import '../../../data/store_profile_service.dart';
+import '../../data/profile_service.dart';
 
 class StoreAccountSettingsPage extends StatefulWidget {
   const StoreAccountSettingsPage({super.key});
