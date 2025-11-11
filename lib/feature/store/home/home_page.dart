@@ -25,7 +25,6 @@ class _StoreHomePageState extends State<StoreHomePage> {
   @override
   void initState() {
     super.initState();
-    _loadStoreName();
     _loadStoreData();
   }
 
@@ -38,7 +37,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
     }
   }
 
-  Future<void> _loadStoreData() async {
+  Future<void> _loadStoreProducts() async {
     final productList = await ProductService.getStoreProducts(
       sortBy: _sortBy,
       ascending: _ascending,
@@ -52,18 +51,23 @@ class _StoreHomePageState extends State<StoreHomePage> {
     }
   }
 
+  Future<void> _loadStoreData() async {
+    await _loadStoreName();
+    await _loadStoreProducts();
+  }
+
   void _handleSortChange(String newSortBy) {
     setState(() {
       _sortBy = newSortBy;
     });
-    _loadStoreData();
+    _loadStoreProducts();
   }
 
   void _handleAscendingChange(bool value) {
     setState(() {
       _ascending = value;
     });
-    _loadStoreData();
+    _loadStoreProducts();
   }
 
   void _showSortOptions() {
@@ -186,112 +190,116 @@ class _StoreHomePageState extends State<StoreHomePage> {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       )
-                    : Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
-                            // 我的商品標題
-                            Row(
-                              children: [
-                                Container(
-                                  width: 4,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Theme.of(context).colorScheme.primary,
-                                        Theme.of(context).colorScheme.secondary,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  '我的商品',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                const Spacer(),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.sort_rounded,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                    onPressed: _showSortOptions,
-                                    tooltip: '排序',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Expanded(
-                              child: products.isEmpty
-                                  ? Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 100,
-                                            height: 100,
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              Icons.inventory_2_outlined,
-                                              size: 50,
-                                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 24),
-                                          Text(
-                                            '還沒有商品',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            '點擊右下角按鈕新增商品',
-                                            style: TextStyle(
-                                              color: Colors.grey[500],
-                                              fontSize: 14,
-                                            ),
-                                          ),
+                    : RefreshIndicator(
+                        onRefresh: _loadStoreData,
+                        color: Theme.of(context).colorScheme.primary,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              // 我的商品標題
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 4,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Theme.of(context).colorScheme.primary,
+                                          Theme.of(context).colorScheme.secondary,
                                         ],
                                       ),
-                                    )
-                                  : GridView.builder(
-                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 16,
-                                        mainAxisSpacing: 16,
-                                        childAspectRatio: 0.75,
-                                      ),
-                                      itemCount: products.length,
-                                      itemBuilder: (context, index) {
-                                        final product = products[index];
-                                        return StoreProductCard(
-                                          product: product,
-                                          onUpdate: _loadStoreData,
-                                        );
-                                      },
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
-                            ),
-                          ],
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '我的商品',
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.sort_rounded,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                      onPressed: _showSortOptions,
+                                      tooltip: '排序',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Expanded(
+                                child: products.isEmpty
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 100,
+                                              height: 100,
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.inventory_2_outlined,
+                                                size: 50,
+                                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Text(
+                                              '還沒有商品',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              '點擊右下角按鈕新增商品',
+                                              style: TextStyle(
+                                                color: Colors.grey[500],
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : GridView.builder(
+                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 16,
+                                          mainAxisSpacing: 16,
+                                          childAspectRatio: 0.75,
+                                        ),
+                                        itemCount: products.length,
+                                        itemBuilder: (context, index) {
+                                          final product = products[index];
+                                          return StoreProductCard(
+                                            product: product,
+                                            onUpdate: _loadStoreProducts,
+                                          );
+                                        },
+                                      ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
               ),
@@ -329,7 +337,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                   builder: (context) => const AddProductPage(),
                 ),
               ).then((_) {
-                _loadStoreData();
+                _loadStoreProducts();
               });
             },
             customBorder: const CircleBorder(),
