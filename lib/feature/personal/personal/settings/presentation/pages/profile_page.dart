@@ -35,6 +35,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     });
 
     final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
+    
     if (result.success) {
       final profile = result.profile!;
       _nameController.text = profile.name;
@@ -45,6 +46,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
       _hipsController.text = profile.hips?.toString() ?? '';
       _shoulderWidthController.text = profile.shoulderWidth?.toString() ?? '';
       _sleeveLengthController.text = profile.sleeveLength?.toString() ?? '';
+    } else {
+      if(mounted){
+        TopNotification.show(
+          context,
+          message: result.errorMessage ?? '載入個人資料失敗，請稍後再試',
+          type: NotificationType.error,
+        );
+      }
     }
 
     setState(() {
@@ -70,11 +79,11 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
       sleeveLength: _sleeveLengthController.text.isNotEmpty ? double.tryParse(_sleeveLengthController.text) : null,
     );
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = false;
+    });
 
+    if (mounted) {
       if (result.success) {
         Navigator.pop(context);
         TopNotification.show(
