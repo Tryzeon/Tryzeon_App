@@ -10,9 +10,11 @@ class WardrobeService {
   
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static Future<List<WardrobeItem>> getWardrobeItems({bool forceRefresh = false}) async {
+  static Future<WardrobeItemResult> getWardrobeItems({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return [];
+    if (userId == null) {
+      return WardrobeItemResult.failure('用戶未登入');
+    }
 
     try {
       // 如果不是強制刷新，先嘗試從快取讀取
@@ -27,10 +29,10 @@ class WardrobeService {
                     imageUrl: json['image_path'],
                   ))
               .toList();
-          return items;
+          return WardrobeItemResult.success(items);
         }
       }
-      
+
       // 從資料庫獲取資料
       final response = await _supabase
           .from(_wardrobeTable)
@@ -49,15 +51,17 @@ class WardrobeService {
               ))
           .toList();
 
-      return items;
+      return WardrobeItemResult.success(items);
     } catch (e) {
-      return [];
+      return WardrobeItemResult.failure(e.toString());
     }
   }
 
-  static Future<bool> uploadWardrobeItem(File imageFile, String category) async {
+  static Future<WardrobeItemResult> uploadWardrobeItem(File imageFile, String category) async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return false;
+    if (userId == null) {
+      return WardrobeItemResult.failure('用戶未登入');
+    }
 
     final categoryCode = getWardrobeTypesEnglishCode(category);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -88,16 +92,18 @@ class WardrobeService {
       // 4. 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return true;
+      return WardrobeItemResult.success([]);
     } catch (e) {
-      return false;
+      return WardrobeItemResult.failure(e.toString());
     }
   }
 
-  static Future<void> deleteWardrobeItem(WardrobeItem item) async {
+  static Future<WardrobeItemResult> deleteWardrobeItem(WardrobeItem item) async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null || item.id == null) return;
-
+    if (userId == null) {
+      return WardrobeItemResult.failure('用戶未登入');
+    }
+    
     try {
       // 1. 刪除 DB 記錄
       await _supabase
@@ -113,13 +119,14 @@ class WardrobeService {
 
       // 4. 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
+
+      return WardrobeItemResult.success([]);
     } catch (e) {
-      // 圖片刪除失敗不會拋出錯誤
+      return WardrobeItemResult.failure(e.toString());
     }
   }
 
-  static Future<File?> getWardrobeImage(String storagePath) async {
-
+  static Future<File?> loadItemImage(String storagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final localFile = await CacheService.getImage(storagePath);
@@ -188,4 +195,29 @@ class WardrobeItem {
     required this.category,
     required this.imageUrl,
   });
+
+  // 按需載入圖片，使用快取機制
+  Future<File?> loadImage() async {
+    return WardrobeService.loadItemImage(imageUrl);
+  }
+}
+
+class WardrobeItemResult {
+  final bool success;
+  final List<WardrobeItem>? items;
+  final String? errorMessage;
+
+  WardrobeItemResult({
+    required this.success,
+    this.items,
+    this.errorMessage,
+  });
+
+  factory WardrobeItemResult.success(List<WardrobeItem> items) {
+    return WardrobeItemResult(success: true, items: items);
+  }
+
+  factory WardrobeItemResult.failure(String errorMessage) {
+    return WardrobeItemResult(success: false, errorMessage: errorMessage);
+  }
 }

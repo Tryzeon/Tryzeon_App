@@ -26,7 +26,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
       _isUploading = true;
     });
 
-    final success = await WardrobeService.uploadWardrobeItem(
+    final result = await WardrobeService.uploadWardrobeItem(
       widget.image,
       _selectedCategory!,
     );
@@ -37,13 +37,12 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
 
     if (!mounted) return;
 
-    if (success) {
+    if (result.success) {
       Navigator.pop(context, true);
     } else {
-      
       TopNotification.show(
         context,
-        message: '上傳失敗，請稍後再試',
+        message: result.errorMessage ?? '上傳失敗，請稍後再試',
         type: NotificationType.error,
       );
     }

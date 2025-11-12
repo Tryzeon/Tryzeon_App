@@ -3,6 +3,7 @@ import 'dart:io';
 import 'settings/data/profile_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'wardrobe/data/wardrobe_service.dart';
 import 'wardrobe/persentation/dialogs/upload_clothing_dialog.dart';
 import 'wardrobe/persentation/widgets/clothing_card.dart';
@@ -62,14 +63,26 @@ class _PersonalPageState extends State<PersonalPage> {
     });
 
     final categories = WardrobeService.getWardrobeTypesList();
-
-    final items = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh );
+    final result = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh);
 
     setState(() {
-      wardrobeItems = items;
-      wardrobeCategories = ['全部', ...categories];
       _isLoading = false;
     });
+
+    if (result.success) {
+      setState(() {
+        wardrobeItems = result.items!;
+        wardrobeCategories = ['全部', ...categories];
+      });
+    } else {
+      if (mounted) {
+        TopNotification.show(
+          context,
+          message: result.errorMessage ?? '載入衣櫃項目失敗',
+          type: NotificationType.error,
+        );
+      }
+    }
   }
 
   void _showDeleteDialog(WardrobeItem item) async {
@@ -81,8 +94,19 @@ class _PersonalPageState extends State<PersonalPage> {
     );
 
     if (confirmed == true) {
-      await WardrobeService.deleteWardrobeItem(item);
-      await _loadWardrobeItems();
+      final result = await WardrobeService.deleteWardrobeItem(item);
+      
+      if (result.success) {
+        await _loadWardrobeItems();
+      } else {
+        if (mounted) {
+          TopNotification.show(
+            context,
+            message: result.errorMessage ?? '刪除失敗，請稍後再試',
+            type: NotificationType.error,
+          );
+        }
+      }
     }
   }
 

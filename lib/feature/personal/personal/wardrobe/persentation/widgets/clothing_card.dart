@@ -39,7 +39,7 @@ class _ClothingCardState extends State<ClothingCard> {
   }
 
   Future<void> _loadImage() async {
-    final file = await WardrobeService.getWardrobeImage(widget.item.imageUrl);
+    final file = await widget.item.loadImage();
     if (mounted) {
       setState(() {
         _imageFile = file;
