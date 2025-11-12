@@ -85,7 +85,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
     if (mounted) {
       if (result.success) {
-        Navigator.pop(context);
+        Navigator.pop(context, true);
         TopNotification.show(
           context,
           message: '個人資料已更新',
@@ -162,7 +162,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(context).pop(false),
                         padding: EdgeInsets.zero,
                       ),
                     ),

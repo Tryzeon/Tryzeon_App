@@ -13,6 +13,8 @@ class PersonalSettingsPage extends StatefulWidget {
 }
 
 class _PersonalSettingsPageState extends State<PersonalSettingsPage> {
+  bool _hasChanges = false;
+
   @override
   void initState() {
     super.initState();
@@ -92,7 +94,7 @@ class _PersonalSettingsPageState extends State<PersonalSettingsPage> {
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(context).pop(_hasChanges),
                         padding: EdgeInsets.zero,
                       ),
                     ),
@@ -124,12 +126,17 @@ class _PersonalSettingsPageState extends State<PersonalSettingsPage> {
                         title: '基本資料',
                         subtitle: '編輯您的個人資訊',
                         onTap: () async {
-                          await Navigator.push(
+                          final updated = await Navigator.push<bool>(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const PersonalProfileSettingsPage(),
                           ),
                           );
+                          if (updated == true) {
+                            setState(() {
+                              _hasChanges = true;
+                            });
+                          }
                         },
                       ),
 

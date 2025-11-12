@@ -194,13 +194,15 @@ class _PersonalPageState extends State<PersonalPage> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () async {
-                                await Navigator.push(
+                                final hasChanges = await Navigator.push<bool>(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const PersonalSettingsPage(),
                                   ),
                                 );
-                                await _loadPersonalData();
+                                if (hasChanges == true) {
+                                  await _loadPersonalData();
+                                }
                               },
                               borderRadius: BorderRadius.circular(22),
                               child: Icon(
