@@ -31,11 +31,11 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
       _selectedCategory!,
     );
 
+    if (!mounted) return;
+
     setState(() {
       _isUploading = false;
     });
-
-    if (!mounted) return;
 
     if (result.success) {
       Navigator.pop(context, true);

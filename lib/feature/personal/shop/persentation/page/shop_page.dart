@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/product_card.dart';
@@ -46,30 +47,28 @@ class _ShopPageState extends State<ShopPage> {
 
   Future<void> _loadAdImages({bool forceRefresh = false}) async {
     final response = await AdService.getAdImages(forceRefresh: forceRefresh);
-    if (mounted) {
-      setState(() {
-        adImages = response;
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      adImages = response;
+    });
   }
   
   Future<void> _loadProductTypes({bool forceRefresh = false}) async {
     final types = await ProductTypeService.getProductTypesList(forceRefresh: forceRefresh);
-    if (mounted) {
-      setState(() {
-        _productTypes = types;
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      _productTypes = types;
+    });
   }
 
   Future<void> _loadProducts() async {
-    if (!mounted) return;
-
     setState(() {
       isLoading = true;
     });
 
-    final fetchedProducts = await ShopService.getProducts(
+    final result = await ShopService.getProducts(
       sortBy: _sortBy,
       ascending: _ascending,
       minPrice: _minPrice,
@@ -80,10 +79,21 @@ class _ShopPageState extends State<ShopPage> {
     if (!mounted) return;
 
     setState(() {
-      products = fetchedProducts;
-      displayedProducts = fetchedProducts;
       isLoading = false;
     });
+
+    if (result.success) {
+      setState(() {
+        products = result.products!;
+        displayedProducts = result.products!;
+      });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入商品失敗',
+        type: NotificationType.error,
+      );
+    }
   }
 
   void _handleSortByTryonCount() {

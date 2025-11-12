@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class ShopSearchBar extends StatefulWidget {
   final List<Map<String, dynamic>> products;
@@ -24,7 +25,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
   void _searchProducts(String query) async {
     // 儲存當前的搜尋查詢
     _currentSearchQuery = query;
-    
+
     if (query.trim().isEmpty) {
       widget.onSearchResults(widget.products);
       return;
@@ -34,12 +35,21 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
 
     // 儲存當前查詢的參考，用於檢查是否為最新的搜尋
     final currentQuery = query;
-    
-    final searchResults = await ShopService.searchProducts(query);
-    
+
+    final result = await ShopService.searchProducts(query);
+
     // 只有當這是最新的搜尋請求時才更新結果
     if (currentQuery == _currentSearchQuery && mounted) {
-      widget.onSearchResults(searchResults);
+      if (result.success) {
+        widget.onSearchResults(result.products!);
+      } else {
+        widget.onSearchResults([]);
+        TopNotification.show(
+          context,
+          message: result.errorMessage ?? '搜尋失敗，請稍後再試',
+          type: NotificationType.error,
+        );
+      }
     }
   }
 

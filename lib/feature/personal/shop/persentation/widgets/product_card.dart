@@ -23,9 +23,7 @@ class _ProductCardState extends State<ProductCard> {
     final product = widget.productData['product'] as Product;
 
     // 記錄虛擬試穿點擊次數（不等待結果）
-    if (product.id != null) {
-      ShopService.incrementTryonCount(product.id!);
-    }
+    ShopService.incrementTryonCount(product.id!);
 
     final personalEntry = PersonalEntry.of(context);
     await personalEntry?.virtualTryOnFromStorage(storagePath);
@@ -44,10 +42,8 @@ class _ProductCardState extends State<ProductCard> {
           final Uri url = Uri.parse(product.purchaseLink);
           if (await canLaunchUrl(url)) {
             // 記錄購買連結點擊次數（不等待結果）
-            if (product.id != null) {
-              ShopService.incrementPurchaseClickCount(product.id!);
-            }
-
+            ShopService.incrementPurchaseClickCount(product.id!);
+            
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
             if (context.mounted) {

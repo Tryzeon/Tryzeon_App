@@ -6,7 +6,7 @@ class ShopService {
   static const _productsTable = 'products_info';
 
   /// 獲取所有商品（包含店家資訊）
-  static Future<List<Map<String, dynamic>>> getProducts({
+  static Future<ShopResult> getProducts({
     String sortBy = 'created_at',
     bool ascending = false,
     int? minPrice,
@@ -41,17 +41,19 @@ class ShopService {
       // 排序
       final response = await query.order(sortBy, ascending: ascending);
 
-      return (response as List).map((item) {
+      final products = (response as List).map((item) {
         final product = Product.fromJson(item);
         final storeInfo = item['store_profile'] as Map<String, dynamic>;
-        
+
         return {
           'product': product,
           'storeName': storeInfo['store_name']
         };
       }).toList();
+
+      return ShopResult.success(products);
     } catch (e) {
-      return [];
+      return ShopResult.failure(e.toString());
     }
   }
 
@@ -78,7 +80,7 @@ class ShopService {
   }
 
   /// 搜尋商品（包含商品名稱、類型和店家名稱）
-  static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
+  static Future<ShopResult> searchProducts(String query) async {
     try {
       // 先搜尋商品名稱和類型
       // products.store_id = store_profile.store_id
@@ -109,7 +111,7 @@ class ShopService {
 
       // 合併結果並去重
       final Map<String, Map<String, dynamic>> uniqueProducts = {};
-      
+
       // 處理商品搜尋結果
       for (final item in productResponse as List) {
         final product = Product.fromJson(item);
@@ -119,7 +121,7 @@ class ShopService {
           'storeName': storeInfo['store_name']
         };
       }
-      
+
       // 處理店家搜尋結果
       for (final item in storeResponse as List) {
         final product = Product.fromJson(item);
@@ -132,9 +134,29 @@ class ShopService {
         }
       }
 
-      return uniqueProducts.values.toList();
+      return ShopResult.success(uniqueProducts.values.toList());
     } catch (e) {
-      return [];
+      return ShopResult.failure(e.toString());
     }
+  }
+}
+
+class ShopResult {
+  final bool success;
+  final List<Map<String, dynamic>>? products;
+  final String? errorMessage;
+
+  ShopResult({
+    required this.success,
+    this.products,
+    this.errorMessage,
+  });
+
+  factory ShopResult.success(List<Map<String, dynamic>> products) {
+    return ShopResult(success: true, products: products);
+  }
+
+  factory ShopResult.failure(String errorMessage) {
+    return ShopResult(success: false, errorMessage: errorMessage);
   }
 }

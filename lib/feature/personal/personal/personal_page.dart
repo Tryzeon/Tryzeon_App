@@ -48,7 +48,8 @@ class _PersonalPageState extends State<PersonalPage> {
     });
 
     final profileResult = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
-    
+    if (!mounted) return;
+
     setState(() {
       if (profileResult.success && profileResult.profile != null) {
         username = profileResult.profile!.name;
@@ -65,6 +66,8 @@ class _PersonalPageState extends State<PersonalPage> {
     final categories = WardrobeService.getWardrobeTypesList();
     final result = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh);
 
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
@@ -75,13 +78,11 @@ class _PersonalPageState extends State<PersonalPage> {
         wardrobeCategories = ['全部', ...categories];
       });
     } else {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: result.errorMessage ?? '載入衣櫃項目失敗',
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入衣櫃項目失敗',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -93,20 +94,19 @@ class _PersonalPageState extends State<PersonalPage> {
       confirmText: '刪除',
     );
 
-    if (confirmed == true) {
-      final result = await WardrobeService.deleteWardrobeItem(item);
-      
-      if (result.success) {
-        await _loadWardrobeItems();
-      } else {
-        if (mounted) {
-          TopNotification.show(
-            context,
-            message: result.errorMessage ?? '刪除失敗，請稍後再試',
-            type: NotificationType.error,
-          );
-        }
-      }
+    if (confirmed != true || !mounted) return;
+
+    final result = await WardrobeService.deleteWardrobeItem(item);
+    if (!mounted) return;
+
+    if (result.success) {
+      await _loadWardrobeItems();
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '刪除失敗，請稍後再試',
+        type: NotificationType.error,
+      );
     }
   }
 
