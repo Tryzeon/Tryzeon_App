@@ -79,7 +79,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       });
 
       if (result.success) {
-        Navigator.pop(context, true);
+        Navigator.pop(context);
         TopNotification.show(
           context,
           message: '個人資料已更新',
