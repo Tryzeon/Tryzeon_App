@@ -6,6 +6,7 @@ import 'settings/presentation/settings_page.dart';
 import 'settings/data/profile_service.dart';
 import 'product/data/product_service.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 
 class StoreHomePage extends StatefulWidget {
@@ -51,16 +52,29 @@ class _StoreHomePageState extends State<StoreHomePage> {
       _isLoading = true;
     });
 
-    final productList = await ProductService.getProducts(
+    final result = await ProductService.getProducts(
       sortBy: _sortBy,
       ascending: _ascending,
       forceRefresh: forceRefresh,
     );
 
+    if (!mounted) return;
+
     setState(() {
-      products = productList;
       _isLoading = false;
     });
+
+    if (result.success) {
+      setState(() {
+        products = result.products!;
+      });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入商品失敗',
+        type: NotificationType.error,
+      );
+    }
   }
 
   void _handleSortChange(String newSortBy) {

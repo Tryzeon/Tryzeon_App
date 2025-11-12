@@ -72,7 +72,7 @@ class _AddProductPageState extends State<AddProductPage> {
       isLoading = true;
     });
 
-    final success = await ProductService.createProduct(
+    final result = await ProductService.createProduct(
       name: nameController.text,
       types: selectedTypes.toList(),
       price: int.parse(priceController.text),
@@ -86,7 +86,7 @@ class _AddProductPageState extends State<AddProductPage> {
       isLoading = false;
     });
 
-    if (success) {
+    if (result.success) {
       Navigator.pop(context, true);
       TopNotification.show(
         context,
@@ -96,7 +96,7 @@ class _AddProductPageState extends State<AddProductPage> {
     } else {
       TopNotification.show(
         context,
-        message: '商品新增失敗,請稍後再試',
+        message: result.errorMessage ?? '商品新增失敗,請稍後再試',
         type: NotificationType.error,
       );
     }

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
-import '../../data/product_service.dart';
 import '../dialogs/product_detail_dialog.dart';
 
 class StoreProductCard extends StatelessWidget {
@@ -44,7 +43,7 @@ class StoreProductCard extends StatelessWidget {
                     top: Radius.circular(10),
                   ),
                   child: FutureBuilder<File?>(
-                    future: ProductService.getProductImage(product.imagePath),
+                    future: product.loadImage(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData && snapshot.data != null) {
                         return Image.file(

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import '../../data/product_service.dart';
@@ -69,29 +68,27 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       isLoading = true;
     });
 
-    final success = await ProductService.deleteProduct(widget.product);
+    final result = await ProductService.deleteProduct(widget.product);
+
+    if (!mounted) return;
 
     setState(() {
       isLoading = false;
     });
 
-    if (success) {
-      if (mounted) {
-        Navigator.pop(context, true);
-        TopNotification.show(
-          context,
-          message: '商品刪除成功',
-          type: NotificationType.success,
-        );
-      }
+    if (result.success) {
+      Navigator.pop(context, true);
+      TopNotification.show(
+        context,
+        message: '商品刪除成功',
+        type: NotificationType.success,
+      );
     } else {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '商品刪除失敗，請稍後再試',
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '商品刪除失敗，請稍後再試',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -119,7 +116,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       isLoading = true;
     });
 
-    final success = await ProductService.updateProduct(
+    final result = await ProductService.updateProduct(
       productId: widget.product.id!,
       name: nameController.text,
       types: selectedTypes.toList(),  // 改為 types 傳遞陣列
@@ -129,27 +126,25 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       newImageFile: newImage
     );
 
+    if (!mounted) return;
+
     setState(() {
       isLoading = false;
     });
 
-    if (success) {
-      if (mounted) {
-        Navigator.pop(context, true);
-        TopNotification.show(
-          context,
-          message: '商品更新成功',
-          type: NotificationType.success,
-        );
-      }
+    if (result.success) {
+      Navigator.pop(context, true);
+      TopNotification.show(
+        context,
+        message: '商品更新成功',
+        type: NotificationType.success,
+      );
     } else {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '商品更新失敗，請稍後再試',
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '商品更新失敗，請稍後再試',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -259,7 +254,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                       width: double.infinity,
                                     )
                                   : FutureBuilder<File?>(
-                                      future: CacheService.getImage(widget.product.imagePath),
+                                      future: widget.product.loadImage(),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasData && snapshot.data != null) {
                                           return Image.file(

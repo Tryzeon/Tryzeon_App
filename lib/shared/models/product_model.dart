@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:tryzeon/feature/store/home/product/data/product_service.dart';
+
 class Product {
   final String? id;
   final String storeId;
@@ -24,6 +27,11 @@ class Product {
     this.tryonCount = 0,
     this.purchaseClickCount = 0,
   });
+
+  /// 按需載入圖片，使用快取機制
+  Future<File?> loadImage() async {
+    return ProductService.loadItemImage(imagePath);
+  }
 
   Map<String, dynamic> toJson() {
     return {
