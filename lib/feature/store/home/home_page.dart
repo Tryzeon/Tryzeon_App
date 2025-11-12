@@ -179,7 +179,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                             MaterialPageRoute(
                               builder: (context) => const StoreSettingsPage(),
                             ),
-                          );
+                          ).then((_) => _loadStoreData());
                         },
                       ),
                     ),

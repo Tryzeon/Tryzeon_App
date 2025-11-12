@@ -27,7 +27,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _loadStoreData() async {
     setState(() => isLoading = true);
 
-    final result = await StoreProfileService.getStoreProfile();
+    final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
     if (result.success) {
       setState(() {
         storeNameController.text = result.profile!.storeName;
