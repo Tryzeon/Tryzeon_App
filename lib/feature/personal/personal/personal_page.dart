@@ -9,14 +9,14 @@ import 'wardrobe/persentation/widgets/clothing_card.dart';
 import 'settings/settings_page.dart';
 
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class PersonalPage extends StatefulWidget {
+  const PersonalPage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<PersonalPage> createState() => _PersonalPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _PersonalPageState extends State<PersonalPage> {
   String username = '';
   List<String> wardrobeCategories = [];
   String selectedCategory = '全部';

@@ -6,7 +6,7 @@ import 'chat/persentation/page/chat_page.dart';
 import 'community/persentation/pages/community_page.dart';
 import 'home/persentation/pages/home_page.dart';
 import 'shop/persentation/page/shop_page.dart';
-import 'self/self_page.dart';
+import 'personal/personal_page.dart';
 
 
 class PersonalEntry extends StatefulWidget {
@@ -33,7 +33,7 @@ class PersonalEntryState extends State<PersonalEntry> {
       const ShopPage(),
       HomePage(key: _homePageKey),
       const ChatPage(),
-      const ProfilePage(),
+      const PersonalPage(),
     ];
     
     AuthService.saveLastLoginType(UserType.personal);
