@@ -166,13 +166,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const SettingsPage(),
                                   ),
                                 );
+                                await _loadPersonalData();
                               },
                               borderRadius: BorderRadius.circular(22),
                               child: Icon(

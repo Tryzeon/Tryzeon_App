@@ -26,15 +26,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadProfile();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadProfile() async {
     setState(() {
       _isLoading = true;
     });
 
-    final result = await UserProfileService.getUserProfile();
+    final result = await UserProfileService.getUserProfile(forceRefresh: true);
 
     if (mounted) {
       setState(() {
@@ -55,7 +55,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  Future<void> _saveProfile() async {
+  Future<void> _updateProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -351,7 +351,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: _isLoading ? null : _saveProfile,
+                              onTap: _isLoading ? null : _updateProfile,
                               borderRadius: BorderRadius.circular(16),
                               child: Center(
                                 child: _isLoading
