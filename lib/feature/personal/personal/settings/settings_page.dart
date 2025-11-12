@@ -5,14 +5,14 @@ import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'presentation/pages/profile_page.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+class PersonalSettingsPage extends StatefulWidget {
+  const PersonalSettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<PersonalSettingsPage> createState() => _PersonalSettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _PersonalSettingsPageState extends State<PersonalSettingsPage> {
   @override
   void initState() {
     super.initState();

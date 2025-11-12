@@ -173,7 +173,7 @@ class _PersonalPageState extends State<PersonalPage> {
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const SettingsPage(),
+                                    builder: (context) => const PersonalSettingsPage(),
                                   ),
                                 );
                                 await _loadPersonalData();
