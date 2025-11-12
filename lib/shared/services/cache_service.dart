@@ -86,7 +86,7 @@ class CacheService {
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   ///
   /// Returns 保存後的檔案
-  static Future<File> saveFile(File sourceFile, String filePath) async {
+  static Future<File> saveImage(File sourceFile, String filePath) async {
     final baseDir = await getApplicationDocumentsDirectory();
 
     // 分離目錄路徑和檔名
@@ -112,7 +112,7 @@ class CacheService {
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   ///
   /// Returns 找到的檔案，如果不存在則返回 null
-  static Future<File?> getFile(String filePath) async {
+  static Future<File?> getImage(String filePath) async {
     final baseDir = await getApplicationDocumentsDirectory();
     final file = File('${baseDir.path}/$filePath');
 
@@ -129,7 +129,7 @@ class CacheService {
   /// [filePattern] 要查找的檔案模式（選填）
   ///
   /// Returns 找到的檔案列表
-  static Future<List<File>> getFiles({
+  static Future<List<File>> getImages({
     required String relativePath,
     String? filePattern,
   }) async {
@@ -150,7 +150,7 @@ class CacheService {
   /// 刪除指定的單個檔案
   ///
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
-  static Future<void> deleteFile(String filePath) async {
+  static Future<void> deleteImage(String filePath) async {
     final baseDir = await getApplicationDocumentsDirectory();
     final file = File('${baseDir.path}/$filePath');
 
@@ -162,7 +162,7 @@ class CacheService {
   /// 刪除指定路徑下的所有檔案
   ///
   /// [relativePath] 相對於應用目錄的路徑（例如：'userId/avatar'）
-  static Future<void> deleteFiles({required String relativePath}) async {
+  static Future<void> deleteImages({required String relativePath}) async {
     final baseDir = await getApplicationDocumentsDirectory();
     final targetDir = Directory('${baseDir.path}/$relativePath');
 

@@ -162,7 +162,7 @@ class ProductService {
 
     try {
       // 1. 先檢查本地是否有該圖片
-      final localFile = await CacheService.getFile(filePath);
+      final localFile = await CacheService.getImage(filePath);
       if (localFile != null && await localFile.exists()) {
         return localFile;
       }
@@ -178,7 +178,7 @@ class ProductService {
       final tempFile = File('${tempDir.path}/temp_product_$imageName');
       await tempFile.writeAsBytes(bytes);
 
-      final savedFile = await CacheService.saveFile(tempFile, filePath);
+      final savedFile = await CacheService.saveImage(tempFile, filePath);
       await tempFile.delete(); // 刪除臨時文件
 
       return savedFile;
@@ -241,7 +241,7 @@ class ProductService {
       );
 
       // 保存到本地緩存
-      await CacheService.saveFile(imageFile, filePath);
+      await CacheService.saveImage(imageFile, filePath);
 
       // 返回檔案路徑
       return filePath;
@@ -261,7 +261,7 @@ class ProductService {
           .remove([filePath]);
 
       // 2. 刪除本地緩存的圖片
-      await CacheService.deleteFile(filePath);
+      await CacheService.deleteImage(filePath);
     } catch (e) {
       // 圖片刪除失敗不會拋出錯誤
     }

@@ -527,7 +527,7 @@ class HomePageState extends State<HomePage> {
     } else {
       // Load from file
       return FutureBuilder<File?>(
-        future: CacheService.getFile(image),
+        future: CacheService.getImage(image),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
             return Image.file(

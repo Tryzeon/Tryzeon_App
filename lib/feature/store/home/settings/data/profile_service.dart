@@ -93,7 +93,7 @@ class StoreProfileService {
 
     try {
       // 1. 先檢查本地資料夾是否有緩存
-      final localFiles = await CacheService.getFiles(
+      final localFiles = await CacheService.getImages(
         relativePath: '$user/logo',
       );
 
@@ -113,7 +113,7 @@ class StoreProfileService {
       final tempFile = File('${tempDir.path}/temp_logo.jpg');
       await tempFile.writeAsBytes(bytes);
 
-      final savedFile = await CacheService.saveFile(tempFile, fileName);
+      final savedFile = await CacheService.saveImage(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
       return savedFile;
@@ -146,7 +146,7 @@ class StoreProfileService {
       );
 
       // 3. 保存新的 Logo 到本地
-      final savedFile = await CacheService.saveFile(logoFile, fileName);
+      final savedFile = await CacheService.saveImage(logoFile, fileName);
       return savedFile.path;
     } catch (e) {
       // 上傳失敗，拋出錯誤讓上層處理
@@ -164,7 +164,7 @@ class StoreProfileService {
       }
 
       // 刪除本地舊 Logo
-      await CacheService.deleteFiles(relativePath: '$user/logo');
+      await CacheService.deleteImages(relativePath: '$user/logo');
     } catch (e) {
       // 忽略刪除錯誤
     }
