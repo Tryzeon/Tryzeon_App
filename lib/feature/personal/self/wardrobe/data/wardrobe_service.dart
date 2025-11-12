@@ -10,27 +10,6 @@ class WardrobeService {
   
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static const List<({String zh, String en})> _wardrobeTypes = [
-    (zh: '上衣', en: 'top'),
-    (zh: '褲子', en: 'pants'),
-    (zh: '裙子', en: 'skirt'),
-    (zh: '外套', en: 'jacket'),
-    (zh: '鞋子', en: 'shoes'),
-    (zh: '配件', en: 'accessories'),
-    (zh: '其他', en: 'others'),
-  ];
-
-  /// 獲取所有衣櫃類型（中文名稱列表）
-  static List<String> getWardrobeTypesList() {
-    return _wardrobeTypes.map((t) => t.zh).toList();
-  }
-
-  /// 根據中文名稱獲取英文代碼
-  static String getEnglishCode(String nameZh) {
-    final type = _wardrobeTypes.where((t) => t.zh == nameZh).firstOrNull;
-    return type?.en ?? nameZh;
-  }
-
   static Future<List<WardrobeItem>> getWardrobeItems({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return [];
@@ -80,7 +59,7 @@ class WardrobeService {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return false;
 
-    final categoryCode = getEnglishCode(category);
+    final categoryCode = getWardrobeTypesEnglishCode(category);
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final storagePath = '$userId/$categoryCode/$timestamp.jpg';
 
@@ -166,6 +145,35 @@ class WardrobeService {
       return null;
     }
   }
+
+  static List<String> getWardrobeTypesList() {
+    return WardrobeType.all.map((t) => t.zh).toList();
+  }
+
+  static String getWardrobeTypesEnglishCode(String nameZh) {
+    final type = WardrobeType.all.where((t) => t.zh == nameZh).firstOrNull;
+    return type?.en ?? nameZh;
+  }
+}
+
+class WardrobeType {
+  final String zh;
+  final String en;
+
+  const WardrobeType({
+    required this.zh,
+    required this.en,
+  });
+
+  static const List<WardrobeType> all = [
+    WardrobeType(zh: '上衣', en: 'top'),
+    WardrobeType(zh: '褲子', en: 'pants'),
+    WardrobeType(zh: '裙子', en: 'skirt'),
+    WardrobeType(zh: '外套', en: 'jacket'),
+    WardrobeType(zh: '鞋子', en: 'shoes'),
+    WardrobeType(zh: '配件', en: 'accessories'),
+    WardrobeType(zh: '其他', en: 'others'),
+  ];
 }
 
 class WardrobeItem {
