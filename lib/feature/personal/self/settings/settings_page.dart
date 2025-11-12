@@ -127,7 +127,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const ProfileEditPage(),
+                            builder: (context) => const PersonalProfileSettingsPage(),
                           ),
                           );
                         },

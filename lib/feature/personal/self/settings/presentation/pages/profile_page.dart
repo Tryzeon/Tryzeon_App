@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import '../../data/profile_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
-class ProfileEditPage extends StatefulWidget {
-  const ProfileEditPage({super.key});
+class PersonalProfileSettingsPage extends StatefulWidget {
+  const PersonalProfileSettingsPage({super.key});
 
   @override
-  State<ProfileEditPage> createState() => _ProfileEditPageState();
+  State<PersonalProfileSettingsPage> createState() => _PersonalProfileSettingsPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage> {
+class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _heightController = TextEditingController();
@@ -26,33 +26,30 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _loadProfile(forceRefresh: true);
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadProfile({bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
 
-    final result = await UserProfileService.getUserProfile(forceRefresh: true);
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (result.success && result.profile != null) {
-        final profile = result.profile!;
-        _nameController.text = profile.name;
-        _heightController.text = profile.height?.toString() ?? '';
-        _weightController.text = profile.weight?.toString() ?? '';
-        _chestController.text = profile.chest?.toString() ?? '';
-        _waistController.text = profile.waist?.toString() ?? '';
-        _hipsController.text = profile.hips?.toString() ?? '';
-        _shoulderWidthController.text = profile.shoulderWidth?.toString() ?? '';
-        _sleeveLengthController.text = profile.sleeveLength?.toString() ?? '';
-      }
+    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
+    if (result.success) {
+      final profile = result.profile!;
+      _nameController.text = profile.name;
+      _heightController.text = profile.height?.toString() ?? '';
+      _weightController.text = profile.weight?.toString() ?? '';
+      _chestController.text = profile.chest?.toString() ?? '';
+      _waistController.text = profile.waist?.toString() ?? '';
+      _hipsController.text = profile.hips?.toString() ?? '';
+      _shoulderWidthController.text = profile.shoulderWidth?.toString() ?? '';
+      _sleeveLengthController.text = profile.sleeveLength?.toString() ?? '';
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _updateProfile() async {
@@ -88,7 +85,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       } else {
         TopNotification.show(
           context,
-          message: result.errorMessage ?? '更新失敗',
+          message: result.errorMessage ?? '更新失敗，請稍後再試',
           type: NotificationType.error,
         );
       }

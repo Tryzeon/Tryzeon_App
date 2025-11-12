@@ -146,7 +146,7 @@ class StoreSettingsPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const StoreAccountSettingsPage(),
+                              builder: (context) => const StoreProfileSettingsPage(),
                             ),
                           );
                         },

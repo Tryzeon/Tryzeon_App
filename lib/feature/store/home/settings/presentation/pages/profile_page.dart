@@ -4,30 +4,33 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../data/profile_service.dart';
 
-class StoreAccountSettingsPage extends StatefulWidget {
-  const StoreAccountSettingsPage({super.key});
+class StoreProfileSettingsPage extends StatefulWidget {
+  const StoreProfileSettingsPage({super.key});
 
   @override
-  State<StoreAccountSettingsPage> createState() => _StoreAccountSettingsPageState();
+  State<StoreProfileSettingsPage> createState() => _StoreProfileSettingsPageState();
 }
 
-class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
+class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   File? _logoImage;
-  bool isLoading = false;
   final TextEditingController storeNameController = TextEditingController();
   final TextEditingController storeAddressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    _loadStoreData();
+    _loadProfile(forceRefresh: true);
   }
 
-  Future<void> _loadStoreData() async {
-    setState(() => isLoading = true);
+  Future<void> _loadProfile({bool forceRefresh = false}) async {
+    setState(() {
+      _isLoading = true;
+    });
 
-    final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
+    final result = await StoreProfileService.getStoreProfile(forceRefresh: forceRefresh);
     if (result.success) {
       setState(() {
         storeNameController.text = result.profile!.storeName;
@@ -35,22 +38,28 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
       });
     }
 
-    setState(() => isLoading = false);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
-  Future<void> _saveChanges() async {
-    setState(() => isLoading = true);
+  Future<void> _updateProfile() async {
+    setState(() {
+      _isLoading = true;
+    });
 
     final result = await StoreProfileService.updateStoreProfile(
       storeName: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
     );
 
-    setState(() => isLoading = false);
+    setState(() {
+      _isLoading = false;
+    });
 
     if (result.success) {
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.pop(context);
         TopNotification.show(
           context,
           message: '店家資訊已更新',
@@ -83,7 +92,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
   Future<void> _uploadLogo() async {
     if (_logoImage == null) return;
 
-    setState(() => isLoading = true);
+    setState(() => _isLoading = true);
 
     try {
       // 上傳 logo 到 storage（會自動保存到本地）
@@ -108,7 +117,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
       }
     }
 
-    setState(() => isLoading = false);
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -191,7 +200,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
 
               // 內容
               Expanded(
-                child: isLoading
+                child: _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
                           color: Theme.of(context).colorScheme.primary,
@@ -433,7 +442,7 @@ class _StoreAccountSettingsPageState extends State<StoreAccountSettingsPage> {
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: _saveChanges,
+                                  onTap: _updateProfile,
                                   borderRadius: BorderRadius.circular(16),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
