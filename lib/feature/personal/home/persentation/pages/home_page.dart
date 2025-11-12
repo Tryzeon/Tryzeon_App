@@ -68,7 +68,7 @@ class HomePageState extends State<HomePage> {
       });
 
       // Check if success
-      if (tryonResult.image != null) {
+      if (tryonResult.success) {
         setState(() {
           _tryonImages.add(tryonResult.image!);
           _currentTryonIndex = _tryonImages.length - 1;
@@ -82,7 +82,7 @@ class HomePageState extends State<HomePage> {
       } else {
         TopNotification.show(
           context,
-          message: tryonResult.error ?? '發生錯誤',
+          message: tryonResult.errorMessage ?? '發生錯誤',
           type: NotificationType.error,
         );
       }
@@ -112,7 +112,7 @@ class HomePageState extends State<HomePage> {
       });
 
       // Check if success
-      if (tryonResult.image != null) {
+      if (tryonResult.success) {
         setState(() {
           _tryonImages.add(tryonResult.image!);
           _currentTryonIndex = _tryonImages.length - 1;
@@ -124,10 +124,9 @@ class HomePageState extends State<HomePage> {
           type: NotificationType.success,
         );
       } else {
-        // Show error message from backend
         TopNotification.show(
           context,
-          message: tryonResult.error ?? '發生錯誤',
+          message: tryonResult.errorMessage ?? '發生錯誤',
           type: NotificationType.error,
         );
       }

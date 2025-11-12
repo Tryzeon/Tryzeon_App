@@ -2,16 +2,6 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class TryonResult {
-  final String? image;
-  final String? error;
-
-  TryonResult({
-    this.image,
-    this.error,
-  });
-}
-
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
@@ -37,12 +27,9 @@ class TryonService {
         'tryon',
         body: body,
       );
-      // Success case
-      return TryonResult(image: response.data['image']);
-    } on FunctionException catch (e) {
-      return TryonResult(error: e.details['error']);
+      return TryonResult.success(response.data['image']);
     } catch (e) {
-      return TryonResult(error: e.toString());
+      return TryonResult.failure(e.toString());
     }
   }
 
@@ -64,12 +51,29 @@ class TryonService {
         'tryon',
         body: body,
       );
-
-      return TryonResult(image: response.data['image']);
-    } on FunctionException catch (e) {
-      return TryonResult(error: e.details['error']);
+      return TryonResult.success(response.data['image']);
     } catch (e) {
-      return TryonResult(error: e.toString());
+      return TryonResult.failure(e.toString());
     }
+  }
+}
+
+class TryonResult {
+  final bool success;
+  final String? image;
+  final String? errorMessage;
+
+  TryonResult({
+    required this.success,
+    this.image,
+    this.errorMessage,
+  });
+
+  factory TryonResult.success(String image) {
+    return TryonResult(success: true, image: image);
+  }
+
+  factory TryonResult.failure(String errorMessage) {
+    return TryonResult(success: false, errorMessage: errorMessage);
   }
 }
