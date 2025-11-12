@@ -90,14 +90,17 @@ class _ProfilePageState extends State<ProfilePage> {
     final File? image = await ImagePickerHelper.pickImage(context);
 
     if (image != null && mounted) {
-      showDialog(
+      final result = await showDialog<bool>(
         context: context,
         builder: (context) => UploadClothingDialog(
           image: image,
           categories: WardrobeService.getWardrobeTypesList(),
-          onUpload: _loadWardrobeItems,
         ),
       );
+
+      if (result == true) {
+        await _loadWardrobeItems();
+      }
     }
   }
 

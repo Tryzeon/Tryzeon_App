@@ -6,13 +6,11 @@ import '../../data/wardrobe_service.dart';
 class UploadClothingDialog extends StatefulWidget {
   final File image;
   final List<String> categories;
-  final VoidCallback onUpload;
 
   const UploadClothingDialog({
     super.key,
     required this.image,
     required this.categories,
-    required this.onUpload,
   });
 
   @override
@@ -33,15 +31,16 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
       _selectedCategory!,
     );
 
+    setState(() {
+      _isUploading = false;
+    });
+
     if (!mounted) return;
 
     if (success) {
-      widget.onUpload();
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
-      setState(() {
-        _isUploading = false;
-      });
+      
       TopNotification.show(
         context,
         message: '上傳失敗，請稍後再試',
