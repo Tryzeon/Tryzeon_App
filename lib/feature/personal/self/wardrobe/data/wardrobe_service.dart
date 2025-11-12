@@ -7,6 +7,7 @@ class WardrobeService {
   static final _supabase = Supabase.instance.client;
   static const _wardrobeTable = 'wardrobe_items';
   static const _bucket = 'wardrobe';
+  
   static const _cacheKey = 'wardrobe_items_cache';
 
   static const List<({String zh, String en})> _wardrobeTypes = [
@@ -28,6 +29,51 @@ class WardrobeService {
   static String getEnglishCode(String nameZh) {
     final type = _wardrobeTypes.where((t) => t.zh == nameZh).firstOrNull;
     return type?.en ?? nameZh;
+  }
+
+  static Future<List<WardrobeItem>> getWardrobeItems({bool forceRefresh = false}) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return [];
+
+    try {
+      // 如果不是強制刷新，先嘗試從快取讀取
+      if (!forceRefresh) {
+        final cachedData = await CacheService.loadList(_cacheKey);
+        if (cachedData != null) {
+          final items = cachedData
+              .map((json) => WardrobeItem(
+                    id: json['id'],
+                    path: json['image_path'],
+                    category: json['category'],
+                    imageUrl: json['image_path'],
+                  ))
+              .toList();
+          return items;
+        }
+      }
+      
+      // 從資料庫獲取資料
+      final response = await _supabase
+          .from(_wardrobeTable)
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      await CacheService.saveList(_cacheKey, response);
+
+      final items = (response as List)
+          .map((json) => WardrobeItem(
+                id: json['id'],
+                path: json['image_path'],
+                category: json['category'],
+                imageUrl: json['image_path'],
+              ))
+          .toList();
+
+      return items;
+    } catch (e) {
+      return [];
+    }
   }
 
   static Future<bool> uploadWardrobeItem(File imageFile, String category) async {
@@ -69,48 +115,27 @@ class WardrobeService {
     }
   }
 
-  static Future<List<WardrobeItem>> getWardrobeItems({bool forceRefresh = false}) async {
+  static Future<void> deleteWardrobeItem(WardrobeItem item) async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return [];
+    if (userId == null || item.id == null) return;
 
     try {
-      // 如果不是強制刷新，先嘗試從快取讀取
-      if (!forceRefresh) {
-        final cachedData = await CacheService.loadList(_cacheKey);
-        if (cachedData != null) {
-          final items = cachedData
-              .map((json) => WardrobeItem(
-                    id: json['id'],
-                    path: json['image_path'],
-                    category: json['category'],
-                    imageUrl: json['image_path'],
-                  ))
-              .toList();
-          return items;
-        }
-      }
-      
-      // 從資料庫獲取資料
-      final response = await _supabase
+      // 1. 刪除 DB 記錄
+      await _supabase
           .from(_wardrobeTable)
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+          .delete()
+          .eq('id', item.id!);
 
-      await CacheService.saveList(_cacheKey, response);
-      
-      final items = (response as List)
-          .map((json) => WardrobeItem(
-                id: json['id'],
-                path: json['image_path'],
-                category: json['category'],
-                imageUrl: json['image_path'],
-              ))
-          .toList();
+      // 2. 刪除 Supabase Storage 中的圖片
+      await _supabase.storage.from(_bucket).remove([item.imageUrl]);
 
-      return items;
+      // 3. 刪除本地快取的圖片
+      await CacheService.deleteFile(item.imageUrl);
+
+      // 4. 清除快取以確保下次獲取最新資料
+      await CacheService.clearCache(_cacheKey);
     } catch (e) {
-      return [];
+      // 圖片刪除失敗不會拋出錯誤
     }
   }
 
@@ -139,30 +164,6 @@ class WardrobeService {
       return savedFile;
     } catch (e) {
       return null;
-    }
-  }
-
-  static Future<void> deleteWardrobeItem(WardrobeItem item) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null || item.id == null) return;
-
-    try {
-      // 1. 刪除 DB 記錄
-      await _supabase
-          .from(_wardrobeTable)
-          .delete()
-          .eq('id', item.id!);
-
-      // 2. 刪除 Supabase Storage 中的圖片
-      await _supabase.storage.from(_bucket).remove([item.imageUrl]);
-
-      // 3. 刪除本地快取的圖片
-      await CacheService.deleteFile(item.imageUrl);
-
-      // 4. 清除快取以確保下次獲取最新資料
-      await CacheService.clearCache(_cacheKey);
-    } catch (e) {
-      // 圖片刪除失敗不會拋出錯誤
     }
   }
 }
