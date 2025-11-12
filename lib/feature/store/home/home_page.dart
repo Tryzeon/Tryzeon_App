@@ -298,7 +298,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                           final product = products[index];
                                           return StoreProductCard(
                                             product: product,
-                                            onUpdate: () => _loadStoreProducts(forceRefresh: true),
+                                            onUpdate: _loadStoreProducts,
                                           );
                                         },
                                       ),
@@ -343,7 +343,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                 ),
               ).then((success) {
                 if (success == true) {
-                  _loadStoreProducts(forceRefresh: true);
+                  _loadStoreProducts();
                 }
               });
             },

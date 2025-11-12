@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 
@@ -11,7 +9,7 @@ class ProductService {
   static const _productsTable = 'products_info';
   static const _productImagesBucket = 'store';
 
-  static const _cachedProductsKey = 'cached_products';
+  static const _cacheKey = 'products_cache';
 
   /// 獲取店家的所有商品
   static Future<List<Product>> getStoreProducts({
@@ -23,15 +21,10 @@ class ProductService {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return [];
 
-      List<Product> products;
-      final prefs = await SharedPreferences.getInstance();
-
       if (!forceRefresh) {
-        final cachedProductsJson = prefs.getString(_cachedProductsKey);
-        if (cachedProductsJson != null) {
-          final List<dynamic> jsonList = jsonDecode(cachedProductsJson);
-          products = jsonList.map((json) => Product.fromJson(json)).toList();
-
+        final cachedData = await CacheService.loadList(_cacheKey);
+        if (cachedData != null) {
+          List<Product> products = cachedData.map((json) => Product.fromJson(json)).toList();
           return _sortProducts(products, sortBy, ascending);
         }
       }
@@ -40,12 +33,10 @@ class ProductService {
           .from(_productsTable)
           .select()
           .eq('store_id', userId);
+      
+      await CacheService.saveList(_cacheKey, response);
 
-      products = response.map((json) => Product.fromJson(json)).toList();
-
-      final productsJson = jsonEncode(products.map((p) => p.toJson()).toList());
-      await prefs.setString(_cachedProductsKey, productsJson);
-
+      List<Product> products = response.map((json) => Product.fromJson(json)).toList();
       return _sortProducts(products, sortBy, ascending);
     } catch (e) {
       return [];
@@ -144,6 +135,9 @@ class ProductService {
           .from(_productsTable)
           .insert(product.toJson());
 
+      // 清除快取以確保下次獲取最新資料
+      await CacheService.clearCache(_cacheKey);
+
       return true;
     } catch (e) {
       return false;
@@ -190,6 +184,9 @@ class ProductService {
           .update(updateData)
           .eq('id', productId);
 
+      // 清除快取以確保下次獲取最新資料
+      await CacheService.clearCache(_cacheKey);
+
       return true;
     } catch (e) {
       return false;
@@ -209,6 +206,9 @@ class ProductService {
           .from(_productsTable)
           .delete()
           .eq('id', product.id!);
+
+      // 清除快取以確保下次獲取最新資料
+      await CacheService.clearCache(_cacheKey);
 
       return true;
     } catch (e) {
