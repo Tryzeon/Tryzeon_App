@@ -51,7 +51,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
       _isLoading = true;
     });
 
-    final productList = await ProductService.getStoreProducts(
+    final productList = await ProductService.getProducts(
       sortBy: _sortBy,
       ascending: _ascending,
       forceRefresh: forceRefresh,

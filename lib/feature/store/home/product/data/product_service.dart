@@ -12,14 +12,14 @@ class ProductService {
   static const _cacheKey = 'products_cache';
 
   /// 獲取店家的所有商品
-  static Future<List<Product>> getStoreProducts({
+  static Future<List<Product>> getProducts({
     String sortBy = 'created_at',
     bool ascending = false,
     bool forceRefresh = false,
   }) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return [];
+      final user = _supabase.auth.currentUser;
+      if (user == null) return [];
 
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
@@ -32,7 +32,7 @@ class ProductService {
       final response = await _supabase
           .from(_productsTable)
           .select()
-          .eq('store_id', userId);
+          .eq('store_id', user.id);
       
       await CacheService.saveList(_cacheKey, response);
 
@@ -43,67 +43,6 @@ class ProductService {
     }
   }
 
-  /// 本地排序產品
-  static List<Product> _sortProducts(List<Product> products, String sortBy, bool ascending) {
-    final sortedProducts = List<Product>.from(products);
-
-    sortedProducts.sort((a, b) {
-      int comparison;
-
-      switch (sortBy) {
-        case 'name':
-          comparison = a.name.compareTo(b.name);
-          break;
-        case 'price':
-          comparison = a.price.compareTo(b.price);
-          break;
-        case 'created_at':
-          comparison = a.createdAt!.compareTo(b.createdAt!);
-          break;
-        case 'updated_at':
-          comparison = a.updatedAt!.compareTo(b.updatedAt!);
-          break;
-        default:
-          comparison = 0;
-      }
-
-      return ascending ? comparison : -comparison;
-    });
-
-    return sortedProducts;
-  }
-
-  /// 獲取商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<File?> getProductImage(String filePath) async {
-    if (filePath.isEmpty) return null;
-
-    try {
-      // 1. 先檢查本地是否有該圖片
-      final localFile = await CacheService.getFile(filePath);
-      if (localFile != null && await localFile.exists()) {
-        return localFile;
-      }
-
-      // 2. 本地沒有，從 Supabase 下載
-      final bytes = await _supabase.storage.from(_productImagesBucket).download(filePath);
-
-      // 從 filePath 提取檔名
-      final imageName = filePath.split('/').last;
-
-      // 創建臨時文件並保存到本地緩存
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_product_$imageName');
-      await tempFile.writeAsBytes(bytes);
-
-      final savedFile = await CacheService.saveFile(tempFile, filePath);
-      await tempFile.delete(); // 刪除臨時文件
-
-      return savedFile;
-    } catch (e) {
-      return null;
-    }
-  }
-  
   /// 創建新商品
   static Future<bool> createProduct({
     required String name,
@@ -114,15 +53,15 @@ class ProductService {
   }) async {
     try {
       // 獲取當前用戶 ID
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return false;
+      final user = _supabase.auth.currentUser;
+      if (user == null) return false;
 
       // 如果有圖片，先上傳圖片
       String filePath = await _uploadProductImage(imageFile) ?? '';
 
       // 創建商品資料
       final product = Product(
-        storeId: userId,
+        storeId: user.id,
         name: name,
         types: types,
         price: price,
@@ -217,17 +156,77 @@ class ProductService {
     }
   }
 
+  /// 獲取商品圖片（優先從本地獲取，本地沒有才從後端拿）
+  static Future<File?> getProductImage(String filePath) async {
+    if (filePath.isEmpty) return null;
+
+    try {
+      // 1. 先檢查本地是否有該圖片
+      final localFile = await CacheService.getFile(filePath);
+      if (localFile != null && await localFile.exists()) {
+        return localFile;
+      }
+
+      // 2. 本地沒有，從 Supabase 下載
+      final bytes = await _supabase.storage.from(_productImagesBucket).download(filePath);
+
+      // 從 filePath 提取檔名
+      final imageName = filePath.split('/').last;
+
+      // 創建臨時文件並保存到本地緩存
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp_product_$imageName');
+      await tempFile.writeAsBytes(bytes);
+
+      final savedFile = await CacheService.saveFile(tempFile, filePath);
+      await tempFile.delete(); // 刪除臨時文件
+
+      return savedFile;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 本地排序產品
+  static List<Product> _sortProducts(List<Product> products, String sortBy, bool ascending) {
+    final sortedProducts = List<Product>.from(products);
+
+    sortedProducts.sort((a, b) {
+      int comparison;
+
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.compareTo(b.name);
+          break;
+        case 'price':
+          comparison = a.price.compareTo(b.price);
+          break;
+        case 'created_at':
+          comparison = a.createdAt!.compareTo(b.createdAt!);
+          break;
+        case 'updated_at':
+          comparison = a.updatedAt!.compareTo(b.updatedAt!);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return ascending ? comparison : -comparison;
+    });
+
+    return sortedProducts;
+  }
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
   static Future<String?> _uploadProductImage(File imageFile) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return null;
+      final storeId = _supabase.auth.currentUser?.id;
+      if (storeId == null) return null;
 
       // 生成唯一的檔案名稱
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final imageName = '$timestamp.jpg';
-      final filePath = '$userId/products/$imageName';
+      final filePath = '$storeId/products/$imageName';
 
       final bytes = await imageFile.readAsBytes();
 
