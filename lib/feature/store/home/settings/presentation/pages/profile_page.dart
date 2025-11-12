@@ -13,6 +13,7 @@ class StoreProfileSettingsPage extends StatefulWidget {
 
 class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   File? _logoImage;
+  StoreProfile? _storeProfile;
   final TextEditingController storeNameController = TextEditingController();
   final TextEditingController storeAddressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -31,16 +32,26 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     });
 
     final result = await StoreProfileService.getStoreProfile(forceRefresh: forceRefresh);
-    if (result.success) {
-      setState(() {
-        storeNameController.text = result.profile!.storeName;
-        storeAddressController.text = result.profile!.address;
-      });
-    }
+
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
     });
+
+    if (result.success) {
+      setState(() {
+        _storeProfile = result.profile;
+        storeNameController.text = result.profile!.storeName;
+        storeAddressController.text = result.profile!.address;
+      });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入店家資料失敗',
+        type: NotificationType.error,
+      );
+    }
   }
 
   Future<void> _updateProfile() async {
@@ -53,27 +64,25 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       address: storeAddressController.text.trim(),
     );
 
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
 
     if (result.success) {
-      if (mounted) {
-        Navigator.pop(context);
-        TopNotification.show(
-          context,
-          message: '店家資訊已更新',
-          type: NotificationType.success,
-        );
-      }
+      Navigator.pop(context);
+      TopNotification.show(
+        context,
+        message: '店家資訊已更新',
+        type: NotificationType.success,
+      );
     } else {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: result.errorMessage ?? '更新失敗，請稍後再試',
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '更新失敗，請稍後再試',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -92,32 +101,39 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   Future<void> _uploadLogo() async {
     if (_logoImage == null) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      // 上傳 logo 到 storage（會自動保存到本地）
       await StoreProfileService.uploadLogo(_logoImage!);
 
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '店家Logo已更新',
-          type: NotificationType.success,
-        );
-        // 重新載入頁面以更新 Logo
-        setState(() {});
-      }
-    } catch (e) {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '上傳失敗，請稍後再試',
-          type: NotificationType.error,
-        );
-      }
-    }
+      if (!mounted) return;
 
-    setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
+
+      TopNotification.show(
+        context,
+        message: '店家Logo已更新',
+        type: NotificationType.success,
+      );
+      // 重新載入頁面以更新 Logo
+      setState(() {});
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      TopNotification.show(
+        context,
+        message: '上傳失敗: ${e.toString()}',
+        type: NotificationType.error,
+      );
+    }
   }
 
   @override
@@ -264,37 +280,63 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                 fit: BoxFit.cover,
                                               ),
                                             )
-                                          : FutureBuilder<File?>(
-                                              future: StoreProfileService.getLogo(),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                                  return CircularProgressIndicator(
-                                                    color: Theme.of(context).colorScheme.primary,
-                                                  );
-                                                }
-                                                if (snapshot.hasData && snapshot.data != null) {
-                                                  return ClipRRect(
-                                                    borderRadius: BorderRadius.circular(60),
-                                                    child: Image.file(
-                                                      snapshot.data!,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context, error, stackTrace) {
-                                                        return Icon(
-                                                          Icons.store_rounded,
-                                                          size: 50,
-                                                          color: Theme.of(context).colorScheme.primary,
-                                                        );
-                                                      },
-                                                    ),
-                                                  );
-                                                }
-                                                return Icon(
+                                          : _storeProfile == null
+                                              ? Icon(
                                                   Icons.camera_alt_rounded,
                                                   size: 50,
                                                   color: Theme.of(context).colorScheme.primary,
-                                                );
-                                              },
-                                            ),
+                                                )
+                                              : FutureBuilder<File?>(
+                                                  future: _storeProfile!.loadLogo(),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                                      return CircularProgressIndicator(
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      );
+                                                    }
+
+                                                    // 處理錯誤
+                                                    if (snapshot.hasError) {
+                                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                        if (mounted) {
+                                                          TopNotification.show(
+                                                            context,
+                                                            message: '載入Logo失敗: ${snapshot.error}',
+                                                            type: NotificationType.error,
+                                                          );
+                                                        }
+                                                      });
+                                                      return Icon(
+                                                        Icons.error_outline,
+                                                        size: 50,
+                                                        color: Colors.red[300],
+                                                      );
+                                                    }
+
+                                                    if (snapshot.hasData && snapshot.data != null) {
+                                                      return ClipRRect(
+                                                        borderRadius: BorderRadius.circular(60),
+                                                        child: Image.file(
+                                                          snapshot.data!,
+                                                          fit: BoxFit.cover,
+                                                          errorBuilder: (context, error, stackTrace) {
+                                                            return Icon(
+                                                              Icons.store_rounded,
+                                                              size: 50,
+                                                              color: Theme.of(context).colorScheme.primary,
+                                                            );
+                                                          },
+                                                        ),
+                                                      );
+                                                    }
+
+                                                    return Icon(
+                                                      Icons.camera_alt_rounded,
+                                                      size: 50,
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                    );
+                                                  },
+                                                ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
