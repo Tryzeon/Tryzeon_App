@@ -39,10 +39,9 @@ class StoreProfileService {
         return StoreProfileResult.failure('查無店家資料');
       }
 
+      await CacheService.saveJSON(_cachedKey, response);
+
       final profile = StoreProfile.fromJson(response);
-
-      await CacheService.saveJSON(_cachedKey, profile.toJson());
-
       return StoreProfileResult.success(profile);
     } catch (e) {
       return StoreProfileResult.failure('取得店家資料失敗: ${e.toString()}');
@@ -78,10 +77,9 @@ class StoreProfileService {
           .select()
           .single();
 
+      await CacheService.saveJSON(_cachedKey, response);
+
       final profile = StoreProfile.fromJson(response);
-
-      await CacheService.saveJSON(_cachedKey, profile.toJson());
-
       return StoreProfileResult.success(profile);
     } catch (e) {
       return StoreProfileResult.failure('更新店家資料失敗: ${e.toString()}');

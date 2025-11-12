@@ -30,10 +30,9 @@ class UserProfileService {
           .eq('user_id', user.id)
           .single();
 
-      final profile = UserProfile.fromJson(response);
+      await CacheService.saveJSON(_cacheKey, response);
 
-      await CacheService.saveJSON(_cacheKey, profile.toJson());
-      
+      final profile = UserProfile.fromJson(response);
       return UserProfileResult.success(profile);
     } catch (e) {
       return UserProfileResult.failure('取得個人資料失敗: ${e.toString()}');
@@ -75,10 +74,9 @@ class UserProfileService {
           .select()
           .single();
 
+      await CacheService.saveJSON(_cacheKey, response);
+
       final profile = UserProfile.fromJson(response);
-
-      await CacheService.saveJSON(_cacheKey, profile.toJson());
-
       return UserProfileResult.success(profile);
     } catch (e) {
       return UserProfileResult.failure('更新個人資料失敗: ${e.toString()}');
