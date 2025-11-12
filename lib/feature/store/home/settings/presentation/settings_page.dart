@@ -5,8 +5,15 @@ import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import '../../../../login/persentation/pages/login_page.dart';
 import '../../../../personal/personal_entry.dart';
 
-class StoreSettingsPage extends StatelessWidget {
+class StoreSettingsPage extends StatefulWidget {
   const StoreSettingsPage({super.key});
+
+  @override
+  State<StoreSettingsPage> createState() => _StoreSettingsPageState();
+}
+
+class _StoreSettingsPageState extends State<StoreSettingsPage> {
+  bool _hasChanges = false;
 
   Future<void> _switchToPersonal(BuildContext context) async {
     final confirmed = await ConfirmationDialog.show(
@@ -92,7 +99,7 @@ class StoreSettingsPage extends StatelessWidget {
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.pop(context, _hasChanges),
                         padding: EdgeInsets.zero,
                       ),
                     ),
@@ -142,13 +149,18 @@ class StoreSettingsPage extends StatelessWidget {
                             Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
                           ],
                         ),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final updated = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const StoreProfileSettingsPage(),
                             ),
                           );
+                          if (updated == true) {
+                            setState(() {
+                              _hasChanges = true;
+                            });
+                          }
                         },
                       ),
 

@@ -71,7 +71,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     });
 
     if (result.success) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
       TopNotification.show(
         context,
         message: '店家資訊已更新',
@@ -184,7 +184,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.pop(context, false),
                         padding: EdgeInsets.zero,
                       ),
                     ),

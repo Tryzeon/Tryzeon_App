@@ -162,7 +162,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
-                        onPressed: () => Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.pop(context, false),
                         padding: EdgeInsets.zero,
                       ),
                     ),

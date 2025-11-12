@@ -182,18 +182,21 @@ class _StoreHomePageState extends State<StoreHomePage> {
                         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: IconButton(
+                        child: IconButton(
                         icon: Icon(
                           Icons.settings_rounded,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final hasChanges = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const StoreSettingsPage(),
                             ),
-                          ).then((_) => _loadStoreData());
+                          );
+                          if (hasChanges == true) {
+                            await _loadStoreData();
+                          }
                         },
                       ),
                     ),

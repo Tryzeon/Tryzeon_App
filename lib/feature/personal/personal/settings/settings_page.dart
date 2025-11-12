@@ -94,7 +94,7 @@ class _PersonalSettingsPageState extends State<PersonalSettingsPage> {
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
-                        onPressed: () => Navigator.of(context).pop(_hasChanges),
+                        onPressed: () => Navigator.pop(context, _hasChanges),
                         padding: EdgeInsets.zero,
                       ),
                     ),
