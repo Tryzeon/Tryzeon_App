@@ -36,6 +36,38 @@ class CacheService {
     }
   }
 
+  /// 儲存 List 到 SharedPreferences（自動進行 JSON 編碼）
+  ///
+  /// [cacheKey] 緩存的鍵
+  /// [data] 要緩存的列表
+  static Future<void> saveList(String cacheKey, List<dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = jsonEncode(data);
+      await prefs.setString(cacheKey, jsonString);
+    } catch (e) {
+      // 忽略快取錯誤
+    }
+  }
+
+  /// 從 SharedPreferences 載入 List（自動進行 JSON 解碼）
+  ///
+  /// [cacheKey] 緩存的鍵
+  ///
+  /// Returns 緩存的列表，如果不存在或解碼失敗則返回 null
+  static Future<List<dynamic>?> loadList(String cacheKey) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(cacheKey);
+      if (jsonString == null) return null;
+
+      return jsonDecode(jsonString) as List<dynamic>;
+    } catch (e) {
+      // 快取錯誤或解碼失敗，返回 null
+      return null;
+    }
+  }
+
   /// 清除指定的緩存
   ///
   /// [cacheKey] 緩存的鍵
