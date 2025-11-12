@@ -86,22 +86,12 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _updateLogo() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _logoImage = File(image.path);
-      });
-      
-      // 上傳圖片
-      await _uploadLogo();
-    }
-  }
-
-  Future<void> _uploadLogo() async {
-    if (_logoImage == null) return;
+    if (image == null) return;
 
     setState(() {
+      _logoImage = File(image.path);
       _isLoading = true;
     });
 
@@ -255,7 +245,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   ),
                                   const SizedBox(height: 20),
                                   GestureDetector(
-                                    onTap: _pickImage,
+                                    onTap: _updateLogo,
                                     child: Container(
                                       width: 120,
                                       height: 120,
