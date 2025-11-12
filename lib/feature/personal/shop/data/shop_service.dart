@@ -57,28 +57,6 @@ class ShopService {
     }
   }
 
-  /// 增加商品的虛擬試穿點擊次數
-  static Future<void> incrementTryonCount(String productId) async {
-    try {
-      await _supabase.rpc('increment_tryon_count', params: {
-        'product_uuid': productId,
-      });
-    } catch (e) {
-      // 靜默失敗，不影響用戶體驗
-    }
-  }
-
-  /// 增加商品的購買連結點擊次數
-  static Future<void> incrementPurchaseClickCount(String productId) async {
-    try {
-      await _supabase.rpc('increment_purchase_click_count', params: {
-        'product_uuid': productId,
-      });
-    } catch (e) {
-      // 靜默失敗，不影響用戶體驗
-    }
-  }
-
   /// 搜尋商品（包含商品名稱、類型和店家名稱）
   static Future<ShopResult> searchProducts(String query) async {
     try {
@@ -137,6 +115,28 @@ class ShopService {
       return ShopResult.success(uniqueProducts.values.toList());
     } catch (e) {
       return ShopResult.failure(e.toString());
+    }
+  }
+
+  /// 增加商品的虛擬試穿點擊次數
+  static Future<void> incrementTryonCount(String productId) async {
+    try {
+      await _supabase.rpc('increment_tryon_count', params: {
+        'product_uuid': productId,
+      });
+    } catch (e) {
+      // 靜默失敗，不影響用戶體驗
+    }
+  }
+
+  /// 增加商品的購買連結點擊次數
+  static Future<void> incrementPurchaseClickCount(String productId) async {
+    try {
+      await _supabase.rpc('increment_purchase_click_count', params: {
+        'product_uuid': productId,
+      });
+    } catch (e) {
+      // 靜默失敗，不影響用戶體驗
     }
   }
 }
