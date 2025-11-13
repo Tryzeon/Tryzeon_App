@@ -95,32 +95,24 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       _isLoading = true;
     });
 
-    try {
-      await StoreProfileService.uploadLogo(_logoImage!);
+    final result = await StoreProfileService.uploadLogo(_logoImage!);
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      setState(() {
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = false;
+    });
 
+    if (result.success) {
       TopNotification.show(
         context,
         message: '店家Logo已更新',
         type: NotificationType.success,
       );
-      // 重新載入頁面以更新 Logo
-      setState(() {});
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
-
+    } else {
       TopNotification.show(
         context,
-        message: '上傳失敗: ${e.toString()}',
+        message: result.errorMessage ?? '上傳失敗',
         type: NotificationType.error,
       );
     }
@@ -276,7 +268,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                   size: 50,
                                                   color: Theme.of(context).colorScheme.primary,
                                                 )
-                                              : FutureBuilder<File?>(
+                                              : FutureBuilder(
                                                   future: _storeProfile!.loadLogo(),
                                                   builder: (context, snapshot) {
                                                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -285,29 +277,20 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                       );
                                                     }
 
-                                                    // 處理錯誤
-                                                    if (snapshot.hasError) {
-                                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                                        if (mounted) {
-                                                          TopNotification.show(
-                                                            context,
-                                                            message: '載入Logo失敗: ${snapshot.error}',
-                                                            type: NotificationType.error,
-                                                          );
-                                                        }
-                                                      });
+                                                    final result = snapshot.data;
+                                                    if (result == null || !result.success) {
                                                       return Icon(
-                                                        Icons.error_outline,
+                                                        Icons.camera_alt_rounded,
                                                         size: 50,
-                                                        color: Colors.red[300],
+                                                        color: Theme.of(context).colorScheme.primary,
                                                       );
                                                     }
 
-                                                    if (snapshot.hasData && snapshot.data != null) {
+                                                    if (result.logo != null) {
                                                       return ClipRRect(
                                                         borderRadius: BorderRadius.circular(60),
                                                         child: Image.file(
-                                                          snapshot.data!,
+                                                          result.logo!,
                                                           fit: BoxFit.cover,
                                                           errorBuilder: (context, error, stackTrace) {
                                                             return Icon(

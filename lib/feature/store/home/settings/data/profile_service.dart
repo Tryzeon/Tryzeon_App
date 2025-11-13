@@ -86,57 +86,67 @@ class StoreProfileService {
   }
 
   /// 載入 Logo（優先從本地獲取，本地沒有才從後端拿）
-  static Future<File?> loadLogo(String storeId) async {
-    // 1. 先檢查本地資料夾是否有緩存
-    final localFiles = await CacheService.getImages(
-      relativePath: '$storeId/logo',
-    );
+  static Future<StoreProfileResult> loadLogo(String storeId) async {
+    try {
+      // 1. 先檢查本地資料夾是否有緩存
+      final localFiles = await CacheService.getImages(
+        relativePath: '$storeId/logo',
+      );
 
-    if (localFiles.isNotEmpty) {
-      return localFiles.first;
+      if (localFiles.isNotEmpty) {
+        return StoreProfileResult.successWithFile(localFiles.first);
+      }
+
+      // 2. 本地沒有，從 Supabase 下載
+      final files = await _supabase.storage.from(_logoBucket).list(path: '$storeId/logo');
+      if (files.isEmpty) {
+        return StoreProfileResult.successWithFile(null);
+      }
+
+      final fileName = '$storeId/logo/${files.first.name}';
+      final bytes = await _supabase.storage.from(_logoBucket).download(fileName);
+
+      // 保存到本地緩存
+      final savedFile = await CacheService.saveImage(bytes, fileName);
+
+      return StoreProfileResult.successWithFile(savedFile);
+    } catch (e) {
+      return StoreProfileResult.failure('載入Logo失敗: ${e.toString()}');
     }
-
-    // 2. 本地沒有，從 Supabase 下載
-    final files = await _supabase.storage.from(_logoBucket).list(path: '$storeId/logo');
-    if (files.isEmpty) {
-      return null;
-    }
-
-    final fileName = '$storeId/logo/${files.first.name}';
-    final bytes = await _supabase.storage.from(_logoBucket).download(fileName);
-
-    // 保存到本地緩存
-    final savedFile = await CacheService.saveImage(bytes, fileName);
-
-    return savedFile;
   }
-  
+
   /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
-  static Future<void> uploadLogo(File logo) async {
-    final user = _supabase.auth.currentUser?.id;
-    if (user == null) {
-      throw Exception('使用者未登入');
+  static Future<StoreProfileResult> uploadLogo(File logo) async {
+    try {
+      final user = _supabase.auth.currentUser?.id;
+      if (user == null) {
+        return StoreProfileResult.failure('使用者未登入');
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '$user/logo/$timestamp.jpg';
+
+      // 1. 先刪除舊 Logo（本地和 Supabase）
+      await _deleteLogo(user);
+
+      // 2. 上傳到 Supabase
+      final bytes = await logo.readAsBytes();
+      await _supabase.storage.from(_logoBucket).uploadBinary(
+        fileName,
+        bytes,
+        fileOptions: const FileOptions(
+          contentType: 'image/jpeg',
+          upsert: false,
+        ),
+      );
+
+      // 3. 保存新的 Logo 到本地
+      final savedFile = await CacheService.saveImage(bytes, fileName);
+
+      return StoreProfileResult.successWithFile(savedFile);
+    } catch (e) {
+      return StoreProfileResult.failure('上傳Logo失敗: ${e.toString()}');
     }
-
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final fileName = '$user/logo/$timestamp.jpg';
-
-    // 1. 先刪除舊 Logo（本地和 Supabase）
-    await _deleteLogo(user);
-
-    // 2. 上傳到 Supabase
-    final bytes = await logo.readAsBytes();
-    await _supabase.storage.from(_logoBucket).uploadBinary(
-      fileName,
-      bytes,
-      fileOptions: const FileOptions(
-        contentType: 'image/jpeg',
-        upsert: false,
-      ),
-    );
-
-    // 3. 保存新的 Logo 到本地
-    await CacheService.saveImage(bytes, fileName);
   }
 
   /// 刪除舊 Logo（Supabase 和本地）
@@ -168,7 +178,7 @@ class StoreProfile {
   });
 
   /// 按需載入 Logo，使用快取機制
-  Future<File?> loadLogo() async {
+  Future<StoreProfileResult> loadLogo() async {
     return StoreProfileService.loadLogo(storeId);
   }
 
@@ -192,16 +202,22 @@ class StoreProfile {
 class StoreProfileResult {
   final bool success;
   final StoreProfile? profile;
+  final File? logo;
   final String? errorMessage;
 
   StoreProfileResult({
     required this.success,
     this.profile,
+    this.logo,
     this.errorMessage,
   });
 
   factory StoreProfileResult.success(StoreProfile profile) {
     return StoreProfileResult(success: true, profile: profile);
+  }
+
+  factory StoreProfileResult.successWithFile(File? logo) {
+    return StoreProfileResult(success: true, logo: logo);
   }
 
   factory StoreProfileResult.failure(String errorMessage) {
