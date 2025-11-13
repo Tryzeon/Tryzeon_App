@@ -83,7 +83,7 @@ class ShopService {
         'product_uuid': productId,
       });
     } catch (e) {
-      // 靜默失敗，不影響用戶體驗
+      print("Error incrementing tryon count: $e");
     }
   }
 
@@ -94,7 +94,7 @@ class ShopService {
         'product_uuid': productId,
       });
     } catch (e) {
-      // 靜默失敗，不影響用戶體驗
+      print("Error incrementing purchase click count: $e");
     }
   }
 }
