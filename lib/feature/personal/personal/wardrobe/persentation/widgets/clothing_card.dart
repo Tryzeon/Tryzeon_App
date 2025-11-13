@@ -124,7 +124,7 @@ class _ClothingCardState extends State<ClothingCard> {
                               ),
                               ),
                               child: const Center(
-                              child: Icon(Icons.error_outline, color: Colors.grey),
+                                child: Icon(Icons.error_outline, color: Colors.grey),
                               ),
                             ),
                   if (!_isLoading)
