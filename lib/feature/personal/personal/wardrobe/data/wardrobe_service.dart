@@ -125,7 +125,7 @@ class WardrobeService {
     }
   }
 
-  static Future<WardrobeItemResult> loadItemImage(String storagePath) async {
+  static Future<WardrobeItemResult> loadClothingImage(String storagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(storagePath);
@@ -188,7 +188,7 @@ class WardrobeItem {
 
   // 按需載入圖片，使用快取機制
   Future<WardrobeItemResult> loadImage() async {
-    return WardrobeService.loadItemImage(imageUrl);
+    return WardrobeService.loadClothingImage(imageUrl);
   }
 }
 
