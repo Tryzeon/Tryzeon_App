@@ -186,6 +186,7 @@ class ProductService {
 
       return savedFile;
     } catch (e) {
+      print("Error loading product image: $e");
       return null;
     }
   }
@@ -222,52 +223,44 @@ class ProductService {
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
   static Future<String?> _uploadProductImage(File imageFile) async {
-    try {
-      final storeId = _supabase.auth.currentUser?.id;
-      if (storeId == null) return null;
+    final storeId = _supabase.auth.currentUser?.id;
+    if (storeId == null) return null;
 
-      // 生成唯一的檔案名稱
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final imageName = '$timestamp.jpg';
-      final filePath = '$storeId/products/$imageName';
+    // 生成唯一的檔案名稱
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final imageName = '$timestamp.jpg';
+    final filePath = '$storeId/products/$imageName';
 
-      final bytes = await imageFile.readAsBytes();
+    final bytes = await imageFile.readAsBytes();
 
-      // 上傳到 Supabase Storage
-      await _supabase.storage.from(_productImagesBucket).uploadBinary(
-        filePath,
-        bytes,
-        fileOptions: const FileOptions(
-          contentType: 'image/jpeg',
-          upsert: false,
-        ),
-      );
+    // 上傳到 Supabase Storage
+    await _supabase.storage.from(_productImagesBucket).uploadBinary(
+      filePath,
+      bytes,
+      fileOptions: const FileOptions(
+        contentType: 'image/jpeg',
+        upsert: false,
+      ),
+    );
 
-      // 保存到本地緩存
-      await CacheService.saveImage(imageFile, filePath);
+    // 保存到本地緩存
+    await CacheService.saveImage(imageFile, filePath);
 
-      // 返回檔案路徑
-      return filePath;
-    } catch (e) {
-      rethrow;
-    }
+    // 返回檔案路徑
+    return filePath;
   }
 
   /// 刪除商品圖片（Supabase 和本地）
   static Future<void> _deleteProductImage(String filePath) async {
     if (filePath.isEmpty) return;
 
-    try {
-      // 1. 刪除 Supabase Storage 中的圖片
-      await _supabase.storage
-          .from(_productImagesBucket)
-          .remove([filePath]);
+    // 1. 刪除 Supabase Storage 中的圖片
+    await _supabase.storage
+        .from(_productImagesBucket)
+        .remove([filePath]);
 
-      // 2. 刪除本地緩存的圖片
-      await CacheService.deleteImage(filePath);
-    } catch (e) {
-      // 圖片刪除失敗不會拋出錯誤
-    }
+    // 2. 刪除本地緩存的圖片
+    await CacheService.deleteImage(filePath);
   }
 }
 
