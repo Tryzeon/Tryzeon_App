@@ -14,7 +14,7 @@ class CacheService {
       final jsonString = jsonEncode(data);
       await prefs.setString(cacheKey, jsonString);
     } catch (e) {
-      // 忽略快取錯誤
+      print("Failed to save cache for $cacheKey: ${e.toString()}");
     }
   }
 
@@ -31,7 +31,7 @@ class CacheService {
 
       return jsonDecode(jsonString) as Map<String, dynamic>;
     } catch (e) {
-      // 快取錯誤或解碼失敗，返回 null
+      print("Failed to load cache for $cacheKey: ${e.toString()}");
       return null;
     }
   }
@@ -46,7 +46,7 @@ class CacheService {
       final jsonString = jsonEncode(data);
       await prefs.setString(cacheKey, jsonString);
     } catch (e) {
-      // 忽略快取錯誤
+      print("Failed to save list cache for $cacheKey: ${e.toString()}");
     }
   }
 
@@ -63,7 +63,7 @@ class CacheService {
 
       return jsonDecode(jsonString) as List<dynamic>;
     } catch (e) {
-      // 快取錯誤或解碼失敗，返回 null
+      print("Failed to load list cache for $cacheKey: ${e.toString()}");
       return null;
     }
   }
@@ -76,7 +76,7 @@ class CacheService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(cacheKey);
     } catch (e) {
-      // 忽略錯誤
+      print("Failed to clear cache for $cacheKey: ${e.toString()}");
     }
   }
 
@@ -87,24 +87,29 @@ class CacheService {
   ///
   /// Returns 保存後的檔案
   static Future<File> saveImage(File sourceFile, String filePath) async {
-    final baseDir = await getApplicationDocumentsDirectory();
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
 
-    // 分離目錄路徑和檔名
-    final lastSlashIndex = filePath.lastIndexOf('/');
-    final dirPath = filePath.substring(0, lastSlashIndex);
+      // 分離目錄路徑和檔名
+      final lastSlashIndex = filePath.lastIndexOf('/');
+      final dirPath = filePath.substring(0, lastSlashIndex);
 
-    final targetDir = Directory('${baseDir.path}/$dirPath');
+      final targetDir = Directory('${baseDir.path}/$dirPath');
 
-    // 創建目錄（如果不存在）
-    if (!targetDir.existsSync()) {
-      await targetDir.create(recursive: true);
+      // 創建目錄（如果不存在）
+      if (!targetDir.existsSync()) {
+        await targetDir.create(recursive: true);
+      }
+
+      // 保存檔案
+      final targetPath = '${baseDir.path}/$filePath';
+      final savedFile = await sourceFile.copy(targetPath);
+      print("Cache file saved to $targetPath");
+      return savedFile;
+    } catch (e) {
+      print("Failed to save image to $filePath: ${e.toString()}");
+      rethrow;
     }
-
-    // 保存檔案
-    final targetPath = '${baseDir.path}/$filePath';
-    final savedFile = await sourceFile.copy(targetPath);
-    print("Cache file saved to $targetPath");
-    return savedFile;
   }
 
   /// 獲取指定路徑的檔案
@@ -113,14 +118,19 @@ class CacheService {
   ///
   /// Returns 找到的檔案，如果不存在則返回 null
   static Future<File?> getImage(String filePath) async {
-    final baseDir = await getApplicationDocumentsDirectory();
-    final file = File('${baseDir.path}/$filePath');
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
+      final file = File('${baseDir.path}/$filePath');
 
-    if (await file.exists()) {
-      return file;
+      if (await file.exists()) {
+        return file;
+      }
+
+      return null;
+    } catch (e) {
+      print("Failed to get image from $filePath: ${e.toString()}");
+      return null;
     }
-
-    return null;
   }
 
   /// 獲取指定路徑下所有符合模式的檔案
@@ -133,29 +143,38 @@ class CacheService {
     required String relativePath,
     String? filePattern,
   }) async {
-    final baseDir = await getApplicationDocumentsDirectory();
-    final targetDir = Directory('${baseDir.path}/$relativePath');
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
+      final targetDir = Directory('${baseDir.path}/$relativePath');
 
-    if (!targetDir.existsSync()) return [];
+      if (!targetDir.existsSync()) return [];
 
-    final files = targetDir.listSync().whereType<File>();
+      final files = targetDir.listSync().whereType<File>();
 
-    if (filePattern != null) {
-      return files.where((f) => f.path.contains(filePattern)).toList();
+      if (filePattern != null) {
+        return files.where((f) => f.path.contains(filePattern)).toList();
+      }
+
+      return files.toList();
+    } catch (e) {
+      print("Failed to get images from $relativePath: ${e.toString()}");
+      return [];
     }
-
-    return files.toList();
   }
 
   /// 刪除指定的單個檔案
   ///
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   static Future<void> deleteImage(String filePath) async {
-    final baseDir = await getApplicationDocumentsDirectory();
-    final file = File('${baseDir.path}/$filePath');
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
+      final file = File('${baseDir.path}/$filePath');
 
-    if (await file.exists()) {
-      await file.delete();
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (e) {
+      print("Failed to delete image at $filePath: ${e.toString()}");
     }
   }
 
@@ -163,14 +182,18 @@ class CacheService {
   ///
   /// [relativePath] 相對於應用目錄的路徑（例如：'userId/avatar'）
   static Future<void> deleteImages({required String relativePath}) async {
-    final baseDir = await getApplicationDocumentsDirectory();
-    final targetDir = Directory('${baseDir.path}/$relativePath');
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
+      final targetDir = Directory('${baseDir.path}/$relativePath');
 
-    if (await targetDir.exists()) {
-      final files = targetDir.listSync().whereType<File>();
-      for (final file in files) {
-        await file.delete();
+      if (await targetDir.exists()) {
+        final files = targetDir.listSync().whereType<File>();
+        for (final file in files) {
+          await file.delete();
+        }
       }
+    } catch (e) {
+      print("Failed to delete images at $relativePath: ${e.toString()}");
     }
   }
 
@@ -178,11 +201,15 @@ class CacheService {
   ///
   /// [relativePath] 相對於應用目錄的資料夾路徑（例如：'userId'）
   static Future<void> deleteFolder(String relativePath) async {
-    final baseDir = await getApplicationDocumentsDirectory();
-    final directory = Directory('${baseDir.path}/$relativePath');
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
+      final directory = Directory('${baseDir.path}/$relativePath');
 
-    if (await directory.exists()) {
-      await directory.delete(recursive: true);
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
+    } catch (e) {
+      print("Failed to delete folder at $relativePath: ${e.toString()}");
     }
   }
 }
