@@ -51,7 +51,7 @@ class _PersonalPageState extends State<PersonalPage> {
     if (!mounted) return;
 
     setState(() {
-      if (profileResult.success && profileResult.profile != null) {
+      if (profileResult.success) {
         username = profileResult.profile!.name;
         _isLoading = false;
       }
