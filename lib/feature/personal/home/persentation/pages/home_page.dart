@@ -134,12 +134,27 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadAvatar() async {
-    final path = await AvatarService.getAvatar();
-    if (mounted) {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await AvatarService.getAvatar();
+    if(!mounted) return;
+    
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result.success) {
       setState(() {
-        _avatarPath = path;
-        _isLoading = false;
+        _avatarPath = result.path;
       });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '獲取頭像失敗',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -153,30 +168,39 @@ class HomePageState extends State<HomePage> {
       _isLoading = true;
     });
 
-    try {
-      final path = await AvatarService.uploadAvatar(imageFile);
+    final result = await AvatarService.uploadAvatar(imageFile);
+    if(!mounted) return;
 
-      if (mounted) {
-        setState(() {
-          _avatarPath = path;
-          _tryonImages.clear(); // 上傳新頭像時清除試穿圖片
-          _currentTryonIndex = -1;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      // 上傳失敗，顯示錯誤訊息並恢復原本的頭像
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+    setState(() {
+      _isLoading = false;
+    });
 
-        TopNotification.show(
-          context,
-          message: '上傳失敗，請稍後再試',
-          type: NotificationType.error,
-        );
-      }
+    if(result.success) {
+      setState(() {
+        _avatarPath = result.path;
+        _tryonImages.clear();
+        _currentTryonIndex = -1;
+        _customAvatarIndex = null;
+      });
+
+      TopNotification.show(
+        context,
+        message: '頭像上傳成功',
+        type: NotificationType.success,
+      );
+    } else {
+      setState(() {
+        _avatarPath = null;
+        _tryonImages.clear();
+        _currentTryonIndex = -1;
+        _customAvatarIndex = null;
+      });
+      
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '上傳失敗，請稍後再試',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -671,7 +695,7 @@ class HomePageState extends State<HomePage> {
                                           ],
                                         ).createShader(bounds),
                                         child: const Text(
-                                          '正在努力試穿中...',
+                                          '再一下...就快好了',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 18,

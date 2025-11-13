@@ -8,21 +8,25 @@ class AvatarService {
   static const _bucket = 'avatars';
 
   /// 獲取頭像（優先從本地獲取，本地沒有才從後端拿）
-  static Future<String?> getAvatar() async {
+  static Future<AvatarResult> getAvatar() async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
+    if (userId == null) {
+      return AvatarResult.failure('用戶未登入');
+    }
 
     try {
       // 1. 先從 Supabase 查詢檔案名稱
       final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
-      if (files.isEmpty) return null;
+      if (files.isEmpty) {
+        return AvatarResult.success(null);
+      }
 
       final fileName = '$userId/avatar/${files.first.name}';
 
       // 2. 檢查本地是否有緩存
       final localFile = await CacheService.getImage(fileName);
       if (localFile != null) {
-        return fileName;
+        return AvatarResult.success(fileName);
       }
 
       // 3. 本地沒有，從 Supabase 下載
@@ -36,16 +40,18 @@ class AvatarService {
       await CacheService.saveImage(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
-      return fileName;
+      return AvatarResult.success(fileName);
     } catch (e) {
-      return null;
+      return AvatarResult.failure('獲取頭像失敗: ${e.toString()}');
     }
   }
   
   /// 上傳頭像（先上傳到後端，成功後才保存到本地）
-  static Future<String?> uploadAvatar(File imageFile) async {
+  static Future<AvatarResult> uploadAvatar(File imageFile) async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null;
+    if (userId == null) {
+      return AvatarResult.failure('用戶未登入');
+    }
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final fileName = '$userId/avatar/$timestamp.jpg';
@@ -67,26 +73,41 @@ class AvatarService {
 
       // 3. 保存新的頭像到本地
       await CacheService.saveImage(imageFile, fileName);
-      return fileName;
+      return AvatarResult.success(fileName);
     } catch (e) {
-      // 上傳失敗，拋出錯誤讓上層處理
-      rethrow;
+      return AvatarResult.failure('上傳頭像失敗: ${e.toString()}');
     }
   }
 
   /// 刪除舊頭像（Supabase 和本地）
   static Future<void> _deleteOldAvatars(String userId) async {
-    try {
-      // 刪除 Supabase 中的舊頭像
-      final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
-      if (files.isNotEmpty) {
-        await _supabase.storage.from(_bucket).remove(['$userId/avatar/${files.first.name}']);
-      }
-
-      // 刪除本地舊頭像
-      await CacheService.deleteImages(relativePath: '$userId/avatar');
-    } catch (e) {
-      // 忽略刪除錯誤
+    // 刪除 Supabase 中的舊頭像
+    final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
+    if (files.isNotEmpty) {
+      await _supabase.storage.from(_bucket).remove(['$userId/avatar/${files.first.name}']);
     }
+
+    // 刪除本地舊頭像
+    await CacheService.deleteImages(relativePath: '$userId/avatar');
+  }
+}
+
+class AvatarResult {
+  final bool success;
+  final String? path;
+  final String? errorMessage;
+
+  AvatarResult({
+    required this.success,
+    this.path,
+    this.errorMessage,
+  });
+
+  factory AvatarResult.success(String? path) {
+    return AvatarResult(success: true, path: path);
+  }
+
+  factory AvatarResult.failure(String errorMessage) {
+    return AvatarResult(success: false, errorMessage: errorMessage);
   }
 }
