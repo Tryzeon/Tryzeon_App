@@ -7,12 +7,13 @@ class ProductTypeService {
 
   static const _cacheKey = 'product_types_cache';
 
-  static Future<List<String>> getProductTypesList({bool forceRefresh = false}) async {
+  static Future<ProductTypeResult> getProductTypesList({bool forceRefresh = false}) async {
     try {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          return List<String>.from(cachedData);
+          final types = List<String>.from(cachedData);
+          return ProductTypeResult.success(types);
         }
       }
 
@@ -27,9 +28,29 @@ class ProductTypeService {
 
       await CacheService.saveList(_cacheKey, types);
 
-      return types;
+      return ProductTypeResult.success(types);
     } catch (e) {
-      return [];
+      return ProductTypeResult.failure('取得商品類型失敗: ${e.toString()}');
     }
+  }
+}
+
+class ProductTypeResult {
+  final bool success;
+  final List<String>? types;
+  final String? errorMessage;
+
+  ProductTypeResult({
+    required this.success,
+    this.types,
+    this.errorMessage,
+  });
+
+  factory ProductTypeResult.success(List<String> types) {
+    return ProductTypeResult(success: true, types: types);
+  }
+
+  factory ProductTypeResult.failure(String errorMessage) {
+    return ProductTypeResult(success: false, errorMessage: errorMessage);
   }
 }

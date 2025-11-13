@@ -38,11 +38,19 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   }
 
   Future<void> _loadProductTypes() async {
-    final types = await ProductTypeService.getProductTypesList();
-    if (mounted) {
+    final result = await ProductTypeService.getProductTypesList();
+    if (!mounted) return;
+
+    if (result.success) {
       setState(() {
-        clothingTypes = types;
+        clothingTypes = result.types!;
       });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入商品類型失敗',
+        type: NotificationType.error,
+      );
     }
   }
 

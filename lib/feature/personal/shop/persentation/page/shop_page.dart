@@ -56,12 +56,20 @@ class _ShopPageState extends State<ShopPage> {
   }
   
   Future<void> _loadProductTypes({bool forceRefresh = false}) async {
-    final types = await ProductTypeService.getProductTypesList(forceRefresh: forceRefresh);
+    final result = await ProductTypeService.getProductTypesList(forceRefresh: forceRefresh);
     if (!mounted) return;
 
-    setState(() {
-      _productTypes = types;
-    });
+    if (result.success) {
+      setState(() {
+        _productTypes = result.types!;
+      });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入商品類型失敗',
+        type: NotificationType.error,
+      );
+    }
   }
 
   Future<void> _loadProducts() async {
