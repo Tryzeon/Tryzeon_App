@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 
 class WardrobeService {
@@ -80,7 +79,7 @@ class WardrobeService {
       );
 
       // 2. 保存到本地緩存
-      await CacheService.saveImage(imageFile, storagePath);
+      await CacheService.saveImage(bytes, storagePath);
 
       // 3. 新增 DB 記錄
       await _supabase.from(_wardrobeTable).insert({
@@ -134,18 +133,9 @@ class WardrobeService {
         return localFile;
       }
 
-      // 2. 本地沒有，從 Supabase 下載
+      // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(storagePath);
-
-      final imageName = storagePath.split('/').last;
-
-      // 創建臨時文件並保存到本地緩存
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_wardrobe_$imageName');
-      await tempFile.writeAsBytes(bytes);
-
-      final savedFile = await CacheService.saveImage(tempFile, storagePath);
-      await tempFile.delete();
+      final savedFile = await CacheService.saveImage(bytes, storagePath);
 
       return savedFile;
     } catch (e) {

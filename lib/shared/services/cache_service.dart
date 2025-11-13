@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -82,11 +83,11 @@ class CacheService {
 
   /// 保存檔案到指定的緩存路徑
   ///
-  /// [sourceFile] 要保存的源文件
+  /// [bytes] 要保存的檔案數據
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   ///
   /// Returns 保存後的檔案
-  static Future<File> saveImage(File sourceFile, String filePath) async {
+  static Future<File> saveImage(Uint8List bytes, String filePath) async {
     try {
       final baseDir = await getApplicationDocumentsDirectory();
 
@@ -103,9 +104,10 @@ class CacheService {
 
       // 保存檔案
       final targetPath = '${baseDir.path}/$filePath';
-      final savedFile = await sourceFile.copy(targetPath);
-      print("Cache file saved to $targetPath");
-      return savedFile;
+      final file = File(targetPath);
+      await file.writeAsBytes(bytes);
+
+      return file;
     } catch (e) {
       print("Failed to save image to $filePath: ${e.toString()}");
       rethrow;

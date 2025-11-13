@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 
 class AvatarService {
@@ -29,16 +28,9 @@ class AvatarService {
         return AvatarResult.success(localFile);
       }
 
-      // 3. 本地沒有，從 Supabase 下載
+      // 3. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(fileName);
-
-      // 創建臨時文件並保存到本地緩存
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_avatar.jpg');
-      await tempFile.writeAsBytes(bytes);
-
-      final savedFile = await CacheService.saveImage(tempFile, fileName);
-      await tempFile.delete(); // 刪除臨時文件
+      final savedFile = await CacheService.saveImage(bytes, fileName);
 
       return AvatarResult.success(savedFile);
     } catch (e) {
@@ -72,7 +64,7 @@ class AvatarService {
       );
 
       // 3. 保存新的頭像到本地
-      final savedFile = await CacheService.saveImage(imageFile, fileName);
+      final savedFile = await CacheService.saveImage(bytes, fileName);
       return AvatarResult.success(savedFile);
     } catch (e) {
       return AvatarResult.failure('上傳頭像失敗: ${e.toString()}');

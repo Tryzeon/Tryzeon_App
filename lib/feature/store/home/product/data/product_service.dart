@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 
@@ -170,19 +169,9 @@ class ProductService {
         return localFile;
       }
 
-      // 2. 本地沒有，從 Supabase 下載
+      // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_productImagesBucket).download(filePath);
-
-      // 從 filePath 提取檔名
-      final imageName = filePath.split('/').last;
-
-      // 創建臨時文件並保存到本地緩存
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_product_$imageName');
-      await tempFile.writeAsBytes(bytes);
-
-      final savedFile = await CacheService.saveImage(tempFile, filePath);
-      await tempFile.delete(); // 刪除臨時文件
+      final savedFile = await CacheService.saveImage(bytes, filePath);
 
       return savedFile;
     } catch (e) {
@@ -244,7 +233,7 @@ class ProductService {
     );
 
     // 保存到本地緩存
-    await CacheService.saveImage(imageFile, filePath);
+    await CacheService.saveImage(bytes, filePath);
 
     // 返回檔案路徑
     return filePath;

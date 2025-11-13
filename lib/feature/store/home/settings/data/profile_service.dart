@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 
 class StoreProfileService {
@@ -106,13 +105,8 @@ class StoreProfileService {
     final fileName = '$storeId/logo/${files.first.name}';
     final bytes = await _supabase.storage.from(_logoBucket).download(fileName);
 
-    // 創建臨時文件並保存到本地緩存
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/temp_logo.jpg');
-    await tempFile.writeAsBytes(bytes);
-
-    final savedFile = await CacheService.saveImage(tempFile, fileName);
-    await tempFile.delete(); // 刪除臨時文件
+    // 保存到本地緩存
+    final savedFile = await CacheService.saveImage(bytes, fileName);
 
     return savedFile;
   }
@@ -142,7 +136,7 @@ class StoreProfileService {
     );
 
     // 3. 保存新的 Logo 到本地
-    await CacheService.saveImage(logo, fileName);
+    await CacheService.saveImage(bytes, fileName);
   }
 
   /// 刪除舊 Logo（Supabase 和本地）
