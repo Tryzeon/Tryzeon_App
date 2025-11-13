@@ -159,7 +159,7 @@ class ProductService {
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<ProductResult> loadItemImage(String filePath) async {
+  static Future<ProductResult> loadProductImage(String filePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(filePath);
@@ -175,36 +175,6 @@ class ProductService {
     } catch (e) {
       return ProductResult.failure('載入商品圖片失敗: ${e.toString()}');
     }
-  }
-
-  /// 本地排序產品
-  static List<Product> _sortProducts(List<Product> products, String sortBy, bool ascending) {
-    final sortedProducts = List<Product>.from(products);
-
-    sortedProducts.sort((a, b) {
-      int comparison;
-
-      switch (sortBy) {
-        case 'name':
-          comparison = a.name.compareTo(b.name);
-          break;
-        case 'price':
-          comparison = a.price.compareTo(b.price);
-          break;
-        case 'created_at':
-          comparison = a.createdAt!.compareTo(b.createdAt!);
-          break;
-        case 'updated_at':
-          comparison = a.updatedAt!.compareTo(b.updatedAt!);
-          break;
-        default:
-          comparison = 0;
-      }
-
-      return ascending ? comparison : -comparison;
-    });
-
-    return sortedProducts;
   }
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
@@ -247,6 +217,36 @@ class ProductService {
 
     // 2. 刪除本地緩存的圖片
     await CacheService.deleteImage(filePath);
+  }
+
+  /// 本地排序產品
+  static List<Product> _sortProducts(List<Product> products, String sortBy, bool ascending) {
+    final sortedProducts = List<Product>.from(products);
+
+    sortedProducts.sort((a, b) {
+      int comparison;
+
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.compareTo(b.name);
+          break;
+        case 'price':
+          comparison = a.price.compareTo(b.price);
+          break;
+        case 'created_at':
+          comparison = a.createdAt!.compareTo(b.createdAt!);
+          break;
+        case 'updated_at':
+          comparison = a.updatedAt!.compareTo(b.updatedAt!);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return ascending ? comparison : -comparison;
+    });
+
+    return sortedProducts;
   }
 }
 
