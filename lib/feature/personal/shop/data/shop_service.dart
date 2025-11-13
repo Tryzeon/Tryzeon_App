@@ -41,17 +41,11 @@ class ShopService {
       // 排序
       final response = await query.order(sortBy, ascending: ascending);
 
-      final products = (response as List).map((item) {
-        final product = Product.fromJson(item);
-        final storeInfo = item['store_profile'] as Map<String, dynamic>;
+      final searchResult = (response as List)
+          .map((item) => Product.fromJson(item))
+          .toList();
 
-        return {
-          'product': product,
-          'storeName': storeInfo['store_name']
-        };
-      }).toList();
-
-      return ShopResult.success(products);
+      return ShopResult.success(searchResult);
     } catch (e) {
       return ShopResult.failure(e.toString());
     }
@@ -60,59 +54,23 @@ class ShopService {
   /// 搜尋商品（包含商品名稱、類型和店家名稱）
   static Future<ShopResult> searchProducts(String query) async {
     try {
-      // 先搜尋商品名稱和類型
-      // products.store_id = store_profile.store_id
-      final productResponse = await _supabase
-          .from(_productsTable)
-          .select('''
-            *,
-            store_profile!products_store_id_fkey(
-              store_id,
-              store_name
-            )
-          ''')
-          .or('name.ilike.%$query%,type.cs.{$query}')
-          .order('created_at', ascending: false);
+      final response = await _supabase
+        .from(_productsTable)
+        .select('''
+        *,
+        store_profile!products_store_id_fkey(
+          store_id,
+          store_name
+        )
+        ''')
+        .or('name.ilike.%$query%,type.cs.{$query}')
+        .order('created_at', ascending: false);
 
-      // 再搜尋店家名稱
-      final storeResponse = await _supabase
-          .from(_productsTable)
-          .select('''
-            *,
-            store_profile!products_store_id_fkey(
-              store_id,
-              store_name
-            )
-          ''')
-          .ilike('store_profile.store_name', '%$query%')
-          .order('created_at', ascending: false);
+      final searchResult = (response as List)
+          .map((item) => Product.fromJson(item))
+          .toList();
 
-      // 合併結果並去重
-      final Map<String, Map<String, dynamic>> uniqueProducts = {};
-
-      // 處理商品搜尋結果
-      for (final item in productResponse as List) {
-        final product = Product.fromJson(item);
-        final storeInfo = item['store_profile'] as Map<String, dynamic>;
-        uniqueProducts[product.id!] = {
-          'product': product,
-          'storeName': storeInfo['store_name']
-        };
-      }
-
-      // 處理店家搜尋結果
-      for (final item in storeResponse as List) {
-        final product = Product.fromJson(item);
-        final storeInfo = item['store_profile'] as Map<String, dynamic>;
-        if (!uniqueProducts.containsKey(product.id)) {
-          uniqueProducts[product.id!] = {
-            'product': product,
-            'storeName': storeInfo['store_name']
-          };
-        }
-      }
-
-      return ShopResult.success(uniqueProducts.values.toList());
+      return ShopResult.success(searchResult);
     } catch (e) {
       return ShopResult.failure(e.toString());
     }
@@ -143,7 +101,7 @@ class ShopService {
 
 class ShopResult {
   final bool success;
-  final List<Map<String, dynamic>>? products;
+  final List<Product>? products;
   final String? errorMessage;
 
   ShopResult({
@@ -152,7 +110,7 @@ class ShopResult {
     this.errorMessage,
   });
 
-  factory ShopResult.success(List<Map<String, dynamic>> products) {
+  factory ShopResult.success(List<Product> products) {
     return ShopResult(success: true, products: products);
   }
 

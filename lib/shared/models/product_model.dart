@@ -13,6 +13,7 @@ class Product {
   final DateTime? updatedAt;
   final int tryonCount;
   final int purchaseClickCount;
+  final String? storeName;
 
   Product({
     this.id,
@@ -26,6 +27,7 @@ class Product {
     this.updatedAt,
     this.tryonCount = 0,
     this.purchaseClickCount = 0,
+    this.storeName,
   });
 
   /// 按需載入圖片，使用快取機制
@@ -62,6 +64,7 @@ class Product {
       updatedAt: DateTime.parse(json['updated_at']),
       tryonCount: json['tryon_count'] ?? 0,
       purchaseClickCount: json['purchase_click_count'] ?? 0,
+      storeName: json['store_profile']?['store_name'],
     );
   }
 }

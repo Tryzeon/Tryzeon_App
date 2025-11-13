@@ -7,11 +7,11 @@ import 'package:tryzeon/feature/personal/personal_entry.dart';
 import '../../data/shop_service.dart';
 
 class ProductCard extends StatefulWidget {
-  final Map<String, dynamic> productData;
+  final Product product;
 
   const ProductCard({
     super.key,
-    required this.productData,
+    required this.product,
   });
 
   @override
@@ -19,49 +19,53 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  Future<void> _handleTryon(BuildContext context, String storagePath) async {
-    final product = widget.productData['product'] as Product;
-
+  Future<void> _handleTryon() async {
+    final product = widget.product;
     // 記錄虛擬試穿點擊次數（不等待結果）
     ShopService.incrementTryonCount(product.id!);
 
     final personalEntry = PersonalEntry.of(context);
-    await personalEntry?.virtualTryOnFromStorage(storagePath);
+    await personalEntry?.virtualTryOnFromStorage(product.imagePath);
+  }
+
+  Future<void> _handlePurchase() async {
+    final product = widget.product;
+
+    if (product.purchaseLink.isEmpty) {
+      TopNotification.show(
+        context,
+        message: '此商品尚無購買連結',
+        type: NotificationType.info,
+      );
+      return;
+    }
+
+    final Uri url = Uri.parse(product.purchaseLink);
+    if (!await canLaunchUrl(url)) {
+      if(!mounted) return;
+      
+      TopNotification.show(
+        context,
+        message: '無法開啟購買連結',
+        type: NotificationType.error,
+      );
+      return;
+    }
+
+    // 記錄購買連結點擊次數（不等待結果）
+    ShopService.incrementPurchaseClickCount(product.id!);
+    await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
   @override
   Widget build(BuildContext context) {
-    final storeName = widget.productData['storeName'] as String;
-    final product = widget.productData['product'] as Product;
-    final storagePath = product.imagePath;
-    final imageUrl = Supabase.instance.client.storage.from('store').getPublicUrl(product.imagePath);
+    final product = widget.product;
+    final imageUrl = Supabase.instance.client.storage
+        .from('store')
+        .getPublicUrl(product.imagePath);
 
     return GestureDetector(
-      onTap: () async {
-        if (product.purchaseLink.isNotEmpty) {
-          final Uri url = Uri.parse(product.purchaseLink);
-          if (await canLaunchUrl(url)) {
-            // 記錄購買連結點擊次數（不等待結果）
-            ShopService.incrementPurchaseClickCount(product.id!);
-            
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else {
-            if (context.mounted) {
-              TopNotification.show(
-                context,
-                message: '無法開啟購買連結',
-                type: NotificationType.error,
-              );
-            }
-          }
-        } else {
-          TopNotification.show(
-            context,
-            message: '此商品尚無購買連結',
-            type: NotificationType.info,
-          );
-        }
-      },
+      onTap: _handlePurchase,
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -99,7 +103,7 @@ class _ProductCardState extends State<ProductCard> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => _handleTryon(context, storagePath),
+                        onTap: _handleTryon,
                         borderRadius: BorderRadius.circular(20),
                         child: Container(
                           padding: const EdgeInsets.all(8),
@@ -148,7 +152,7 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                   ),
                   Text(
-                    storeName,
+                    product.storeName!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey[600],
                     ),

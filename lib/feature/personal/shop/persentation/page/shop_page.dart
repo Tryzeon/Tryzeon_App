@@ -3,6 +3,7 @@ import '../../data/shop_service.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:tryzeon/shared/models/product_model.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/product_card.dart';
@@ -18,8 +19,8 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   List<String> adImages = [];
-  List<Map<String, dynamic>> products = [];
-  List<Map<String, dynamic>> displayedProducts = [];
+  List<Product> products = [];
+  List<Product> displayedProducts = [];
   bool isLoading = true;
 
   // 過濾和排序狀態
@@ -304,7 +305,6 @@ class _ShopPageState extends State<ShopPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: ShopSearchBar(
-                          products: products,
                           onSearchResults: (results) {
                             setState(() {
                               displayedProducts = results;
@@ -435,8 +435,8 @@ class _ShopPageState extends State<ShopPage> {
                               childAspectRatio: 0.7,
                             ),
                             itemBuilder: (context, index) {
-                              final productData = displayedProducts[index];
-                              return ProductCard(productData: productData);
+                              final product = displayedProducts[index];
+                              return ProductCard(product: product);
                             },
                           ),
                         ),
