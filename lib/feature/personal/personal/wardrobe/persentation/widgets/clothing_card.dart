@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../data/wardrobe_service.dart';
 
 class ClothingCard extends StatefulWidget {
@@ -31,20 +32,31 @@ class _ClothingCardState extends State<ClothingCard> {
     super.didUpdateWidget(oldWidget);
     // 當 item 改變時重新載入圖片
     if (oldWidget.item.imageUrl != widget.item.imageUrl) {
-      setState(() {
-        _isLoading = true;
-      });
       _loadImage();
     }
   }
 
   Future<void> _loadImage() async {
-    final file = await widget.item.loadImage();
-    if (mounted) {
+    setState(() {
+      _isLoading = true;
+    });
+    final result = await widget.item.loadImage();
+    if(!mounted) return;
+    
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result.success) {
       setState(() {
-        _imageFile = file;
-        _isLoading = false;
+        _imageFile = result.image;
       });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '載入圖片失敗',
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -98,18 +110,22 @@ class _ClothingCardState extends State<ClothingCard> {
                                 );
                               },
                             )
-                          : Container(
+                            : Container(
+                              width: double.infinity,
+                              height: double.infinity,
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Colors.grey[200]!,
-                                    Colors.grey[300]!,
-                                  ],
-                                ),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                Colors.grey[200]!,
+                                Colors.grey[300]!,
+                                ],
                               ),
-                              child: const Icon(Icons.error_outline, color: Colors.grey),
+                              ),
+                              child: const Center(
+                              child: Icon(Icons.error_outline, color: Colors.grey),
+                              ),
                             ),
                   if (!_isLoading)
                     // 刪除按鈕

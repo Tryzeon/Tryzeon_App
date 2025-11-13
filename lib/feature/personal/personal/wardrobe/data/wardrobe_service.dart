@@ -125,21 +125,21 @@ class WardrobeService {
     }
   }
 
-  static Future<File?> loadItemImage(String storagePath) async {
+  static Future<WardrobeItemResult> loadItemImage(String storagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final localFile = await CacheService.getImage(storagePath);
       if (localFile != null && await localFile.exists()) {
-        return localFile;
+        return WardrobeItemResult.successWithImage(localFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(storagePath);
       final savedFile = await CacheService.saveImage(bytes, storagePath);
 
-      return savedFile;
+      return WardrobeItemResult.successWithImage(savedFile);
     } catch (e) {
-      return null;
+      return WardrobeItemResult.failure('載入衣櫃圖片失敗: ${e.toString()}');
     }
   }
 
@@ -187,7 +187,7 @@ class WardrobeItem {
   });
 
   // 按需載入圖片，使用快取機制
-  Future<File?> loadImage() async {
+  Future<WardrobeItemResult> loadImage() async {
     return WardrobeService.loadItemImage(imageUrl);
   }
 }
@@ -195,16 +195,22 @@ class WardrobeItem {
 class WardrobeItemResult {
   final bool success;
   final List<WardrobeItem>? items;
+  final File? image;
   final String? errorMessage;
 
   WardrobeItemResult({
     required this.success,
     this.items,
+    this.image,
     this.errorMessage,
   });
 
   factory WardrobeItemResult.success(List<WardrobeItem> items) {
     return WardrobeItemResult(success: true, items: items);
+  }
+
+  factory WardrobeItemResult.successWithImage(File? image) {
+    return WardrobeItemResult(success: true, image: image);
   }
 
   factory WardrobeItemResult.failure(String errorMessage) {
