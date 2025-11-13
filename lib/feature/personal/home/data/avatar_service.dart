@@ -26,7 +26,7 @@ class AvatarService {
       // 2. 檢查本地是否有緩存
       final localFile = await CacheService.getImage(fileName);
       if (localFile != null) {
-        return AvatarResult.success(fileName);
+        return AvatarResult.success(localFile);
       }
 
       // 3. 本地沒有，從 Supabase 下載
@@ -37,10 +37,10 @@ class AvatarService {
       final tempFile = File('${tempDir.path}/temp_avatar.jpg');
       await tempFile.writeAsBytes(bytes);
 
-      await CacheService.saveImage(tempFile, fileName);
+      final savedFile = await CacheService.saveImage(tempFile, fileName);
       await tempFile.delete(); // 刪除臨時文件
 
-      return AvatarResult.success(fileName);
+      return AvatarResult.success(savedFile);
     } catch (e) {
       return AvatarResult.failure('獲取頭像失敗: ${e.toString()}');
     }
@@ -72,8 +72,8 @@ class AvatarService {
       );
 
       // 3. 保存新的頭像到本地
-      await CacheService.saveImage(imageFile, fileName);
-      return AvatarResult.success(fileName);
+      final savedFile = await CacheService.saveImage(imageFile, fileName);
+      return AvatarResult.success(savedFile);
     } catch (e) {
       return AvatarResult.failure('上傳頭像失敗: ${e.toString()}');
     }
@@ -94,17 +94,17 @@ class AvatarService {
 
 class AvatarResult {
   final bool success;
-  final String? path;
+  final File? file;
   final String? errorMessage;
 
   AvatarResult({
     required this.success,
-    this.path,
+    this.file,
     this.errorMessage,
   });
 
-  factory AvatarResult.success(String? path) {
-    return AvatarResult(success: true, path: path);
+  factory AvatarResult.success(File? file) {
+    return AvatarResult(success: true, file: file);
   }
 
   factory AvatarResult.failure(String errorMessage) {

@@ -17,7 +17,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  String? _avatarPath;
+  File? _avatarFile;
   final List<String> _tryonImages = []; // 試穿後的圖片列表
   int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
   bool _isLoading = true;
@@ -31,7 +31,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> virtualTryOnFromLocal() async {
     // Check if avatar is available
-    if (_avatarPath == null) {
+    if (_avatarFile == null) {
       TopNotification.show(
         context,
         message: '請先上傳您的照片',
@@ -140,14 +140,14 @@ class HomePageState extends State<HomePage> {
 
     final result = await AvatarService.getAvatar();
     if(!mounted) return;
-    
+
     setState(() {
       _isLoading = false;
     });
 
     if (result.success) {
       setState(() {
-        _avatarPath = result.path;
+        _avatarFile = result.file;
       });
     } else {
       TopNotification.show(
@@ -177,7 +177,7 @@ class HomePageState extends State<HomePage> {
 
     if(result.success) {
       setState(() {
-        _avatarPath = result.path;
+        _avatarFile = result.file;
         _tryonImages.clear();
         _currentTryonIndex = -1;
         _customAvatarIndex = null;
@@ -190,12 +190,12 @@ class HomePageState extends State<HomePage> {
       );
     } else {
       setState(() {
-        _avatarPath = null;
+        _avatarFile = null;
         _tryonImages.clear();
         _currentTryonIndex = -1;
         _customAvatarIndex = null;
       });
-      
+
       TopNotification.show(
         context,
         message: result.errorMessage ?? '上傳失敗，請稍後再試',
@@ -216,12 +216,6 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  String? get _currentDisplayUrl {
-    if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonImages.length) {
-      return _tryonImages[_currentTryonIndex];
-    }
-    return _avatarPath;
-  }
 
   Future<void> _downloadCurrentImage() async {
     try {
@@ -528,18 +522,11 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAvatarImage(String? image) {
-    if (image == null) {
-      // No image - show default
-      return Image.asset(
-        'assets/images/profile/default.png',
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else if (image.startsWith('data:image')) {
-      // Base64 data URL (tryon results)
-      final base64String = image.split(',')[1];
+  Widget _buildAvatarImage() {
+    // 如果有試穿圖片，顯示試穿圖片
+    if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonImages.length) {
+      final base64Url = _tryonImages[_currentTryonIndex];
+      final base64String = base64Url.split(',')[1];
       final bytes = base64Decode(base64String);
       return Image.memory(
         bytes,
@@ -547,25 +534,27 @@ class HomePageState extends State<HomePage> {
         height: double.infinity,
         fit: BoxFit.cover,
       );
-    } else {
-      // Load from file
-      return FutureBuilder<File?>(
-        future: CacheService.getImage(image),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
-            return Image.file(
-              snapshot.data!,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.image_not_supported),
-            );
-          }
-          return Center(child: CircularProgressIndicator());
-        }
+    }
+
+    // 沒有試穿圖片，顯示原始頭像
+    if (_avatarFile != null) {
+      return Image.file(
+        _avatarFile!,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+          const Icon(Icons.image_not_supported),
       );
     }
+
+    // 沒有頭像，顯示預設圖片
+    return Image.asset(
+      'assets/images/profile/default.png',
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+    );
   }
 
   @override
@@ -663,7 +652,7 @@ class HomePageState extends State<HomePage> {
                         child: Stack(
                           children: [
                             // 主要圖片
-                            _buildAvatarImage(_currentDisplayUrl),
+                            _buildAvatarImage(),
 
                             // 載入遮罩
                             if (_isLoading)
