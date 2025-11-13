@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../dialogs/product_detail_dialog.dart';
 
 class StoreProductCard extends StatelessWidget {
@@ -42,15 +42,28 @@ class StoreProductCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(10),
                   ),
-                  child: FutureBuilder<File?>(
+                  child: FutureBuilder(
                     future: product.loadImage(),
                     builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data != null) {
+                      final result = snapshot.data;
+                      if (result != null && result.success && result.image != null) {
                         return Image.file(
-                          snapshot.data!,
+                          result.image!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.image_not_supported),
+                        );
+                      }
+                      if (result != null && !result.success) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          TopNotification.show(
+                            context,
+                            message: result.errorMessage ?? '載入圖片失敗',
+                            type: NotificationType.error,
+                          );
+                        });
+                        return const Center(
+                          child: Icon(Icons.error_outline, color: Colors.grey),
                         );
                       }
                       return const Center(child: CircularProgressIndicator());

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:tryzeon/feature/store/home/product/data/product_service.dart';
 
 class Product {
@@ -31,7 +30,7 @@ class Product {
   });
 
   /// 按需載入圖片，使用快取機制
-  Future<File?> loadImage() async {
+  Future<ProductResult> loadImage() async {
     return ProductService.loadItemImage(imagePath);
   }
 

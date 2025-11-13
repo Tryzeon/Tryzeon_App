@@ -253,12 +253,13 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                       fit: BoxFit.contain,
                                       width: double.infinity,
                                     )
-                                  : FutureBuilder<File?>(
+                                  : FutureBuilder(
                                       future: widget.product.loadImage(),
                                       builder: (context, snapshot) {
-                                        if (snapshot.hasData && snapshot.data != null) {
+                                        final result = snapshot.data;
+                                        if (result != null && result.success) {
                                           return Image.file(
-                                            snapshot.data!,
+                                            result.image!,
                                             fit: BoxFit.contain,
                                             width: double.infinity,
                                             errorBuilder: (context, error, stackTrace) =>
@@ -269,6 +270,23 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                     color: Colors.grey[400],
                                                   ),
                                                 ),
+                                          );
+                                        }
+                                        if (result != null && !result.success) {
+                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            if (mounted) {
+                                              TopNotification.show(
+                                                context,
+                                                message: result.errorMessage ?? '載入圖片失敗',
+                                                type: NotificationType.error,
+                                              );
+                                            }
+                                          });
+                                          return Center(
+                                            child: Icon(
+                                              Icons.error_outline,
+                                              color: Colors.grey,
+                                            ),
                                           );
                                         }
                                         return Center(

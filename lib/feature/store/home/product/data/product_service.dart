@@ -159,24 +159,21 @@ class ProductService {
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<File?> loadItemImage(String filePath) async {
-    if (filePath.isEmpty) return null;
-
+  static Future<ProductResult> loadItemImage(String filePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final localFile = await CacheService.getImage(filePath);
       if (localFile != null && await localFile.exists()) {
-        return localFile;
+        return ProductResult.successWithImage(localFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_productImagesBucket).download(filePath);
       final savedFile = await CacheService.saveImage(bytes, filePath);
 
-      return savedFile;
+      return ProductResult.successWithImage(savedFile);
     } catch (e) {
-      print("Error loading product image: $e");
-      return null;
+      return ProductResult.failure('載入商品圖片失敗: ${e.toString()}');
     }
   }
 
@@ -256,16 +253,22 @@ class ProductService {
 class ProductResult {
   final bool success;
   final List<Product>? products;
+  final File? image;
   final String? errorMessage;
 
   ProductResult({
     required this.success,
     this.products,
+    this.image,
     this.errorMessage,
   });
 
   factory ProductResult.success([List<Product>? products]) {
     return ProductResult(success: true, products: products);
+  }
+
+  factory ProductResult.successWithImage(File? image) {
+    return ProductResult(success: true, image: image);
   }
 
   factory ProductResult.failure(String errorMessage) {
