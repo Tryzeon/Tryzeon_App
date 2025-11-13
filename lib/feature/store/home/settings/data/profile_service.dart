@@ -122,7 +122,7 @@ class StoreProfileService {
     final fileName = '$user/logo/$timestamp.jpg';
 
     // 1. 先刪除舊 Logo（本地和 Supabase）
-    await deleteLogo(user);
+    await _deleteLogo(user);
 
     // 2. 上傳到 Supabase
     final bytes = await logo.readAsBytes();
@@ -140,7 +140,7 @@ class StoreProfileService {
   }
 
   /// 刪除舊 Logo（Supabase 和本地）
-  static Future<void> deleteLogo(String user) async {
+  static Future<void> _deleteLogo(String user) async {
     try {
       // 刪除 Supabase 中的舊 Logo
       final files = await _supabase.storage.from(_logoBucket).list(path: '$user/logo');
