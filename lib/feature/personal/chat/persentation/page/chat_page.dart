@@ -316,37 +316,33 @@ class _ChatPageState extends State<ChatPage> {
         isUser: false,
       ));
     });
+    
     scrollToBottom();
 
-    try {
-      // 使用 ChatService 獲取 LLM 建議
-      final recommendationText = await ChatService.getLLMRecommendation(answers);
+    // 使用 ChatService 獲取 LLM 建議
+    final result = await ChatService.getLLMRecommendation(answers);
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      // Remove loading message
-      setState(() {
-        messages.removeLast();
-        isLoadingRecommendation = false;
-      });
+    // Remove loading message
+    setState(() {
+      messages.removeLast();
+      isLoadingRecommendation = false;
+    });
 
+    if (result.success) {
       // Add LLM response
       setState(() {
         messages.add(ChatMessage(
-          text: recommendationText,
+          text: result.text!,
           isUser: false,
         ));
       });
-
-    } catch (e) {
-      if (!mounted) return;
-
-      // Remove loading message and show error
+    } else {
+      // Show error message
       setState(() {
-        messages.removeLast();
-        isLoadingRecommendation = false;
         messages.add(ChatMessage(
-          text: '抱歉，發生錯誤：${e.toString()}',
+          text: '抱歉，${result.errorMessage ?? '發生未知錯誤'}',
           isUser: false,
         ));
       });
