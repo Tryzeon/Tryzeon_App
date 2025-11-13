@@ -23,9 +23,9 @@ class AvatarService {
       final fileName = '$userId/avatar/${files.first.name}';
 
       // 2. 檢查本地是否有緩存
-      final localFile = await CacheService.getImage(fileName);
-      if (localFile != null) {
-        return AvatarResult.success(localFile);
+      final cachedFile = await CacheService.getImage(fileName);
+      if (cachedFile != null) {
+        return AvatarResult.success(cachedFile);
       }
 
       // 3. 本地沒有，從 Supabase 下載並保存到本地緩存

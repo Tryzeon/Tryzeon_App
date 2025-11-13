@@ -162,9 +162,9 @@ class ProductService {
   static Future<ProductResult> loadItemImage(String filePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
-      final localFile = await CacheService.getImage(filePath);
-      if (localFile != null && await localFile.exists()) {
-        return ProductResult.successWithImage(localFile);
+      final cachedFile = await CacheService.getImage(filePath);
+      if (cachedFile != null && await cachedFile.exists()) {
+        return ProductResult.successWithImage(cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存

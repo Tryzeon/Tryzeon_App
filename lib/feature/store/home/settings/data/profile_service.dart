@@ -89,12 +89,12 @@ class StoreProfileService {
   static Future<StoreProfileResult> loadLogo(String storeId) async {
     try {
       // 1. 先檢查本地資料夾是否有緩存
-      final localFiles = await CacheService.getImages(
+      final cachedFiles = await CacheService.getImages(
         relativePath: '$storeId/logo',
       );
 
-      if (localFiles.isNotEmpty) {
-        return StoreProfileResult.successWithFile(localFiles.first);
+      if (cachedFiles.isNotEmpty) {
+        return StoreProfileResult.successWithFile(cachedFiles.first);
       }
 
       // 2. 本地沒有，從 Supabase 下載

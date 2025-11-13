@@ -128,9 +128,9 @@ class WardrobeService {
   static Future<WardrobeItemResult> loadItemImage(String storagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
-      final localFile = await CacheService.getImage(storagePath);
-      if (localFile != null && await localFile.exists()) {
-        return WardrobeItemResult.successWithImage(localFile);
+      final cachedFile = await CacheService.getImage(storagePath);
+      if (cachedFile != null && await cachedFile.exists()) {
+        return WardrobeItemResult.successWithImage(cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
