@@ -14,7 +14,13 @@ class AvatarService {
     }
 
     try {
-      // 1. 先從 Supabase 查詢檔案名稱
+      // 1. 檢查本地是否有緩存
+      final cachedFiles = await CacheService.getImages(relativePath: '$userId/avatar');
+      if (cachedFiles.isNotEmpty) {
+        return AvatarResult.success(cachedFiles.first);
+      }
+
+      // 2. 從 Supabase 查詢檔案名稱
       final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
       if (files.isEmpty) {
         return AvatarResult.success(null);
@@ -22,13 +28,7 @@ class AvatarService {
 
       final fileName = '$userId/avatar/${files.first.name}';
 
-      // 2. 檢查本地是否有緩存
-      final cachedFile = await CacheService.getImage(fileName);
-      if (cachedFile != null) {
-        return AvatarResult.success(cachedFile);
-      }
-
-      // 3. 本地沒有，從 Supabase 下載並保存到本地緩存
+      // 3. 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(fileName);
       final savedFile = await CacheService.saveImage(bytes, fileName);
 
