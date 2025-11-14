@@ -69,7 +69,7 @@ class HomePageState extends State<HomePage> {
       // Check if success
       if (tryonResult.success) {
         setState(() {
-          _tryonImages.add(tryonResult.image!);
+          _tryonImages.add(tryonResult.data!);
           _currentTryonIndex = _tryonImages.length - 1;
         });
 
@@ -113,7 +113,7 @@ class HomePageState extends State<HomePage> {
       // Check if success
       if (tryonResult.success) {
         setState(() {
-          _tryonImages.add(tryonResult.image!);
+          _tryonImages.add(tryonResult.data!);
           _currentTryonIndex = _tryonImages.length - 1;
         });
 
@@ -146,9 +146,9 @@ class HomePageState extends State<HomePage> {
 
     if (result.success) {
       setState(() {
-        _avatarFile = result.file;
+        _avatarFile = result.data;
       });
-    } else {
+    } else{
       TopNotification.show(
         context,
         message: result.errorMessage ?? '獲取頭像失敗',
@@ -176,7 +176,7 @@ class HomePageState extends State<HomePage> {
 
     if(result.success) {
       setState(() {
-        _avatarFile = result.file;
+        _avatarFile = result.data;
         _tryonImages.clear();
         _currentTryonIndex = -1;
         _customAvatarIndex = null;

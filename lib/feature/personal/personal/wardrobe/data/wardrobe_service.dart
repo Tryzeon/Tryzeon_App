@@ -1,18 +1,19 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class WardrobeService {
   static final _supabase = Supabase.instance.client;
   static const _wardrobeTable = 'wardrobe_items';
   static const _bucket = 'wardrobe';
-  
+
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static Future<ClothingResult> getClothing({bool forceRefresh = false}) async {
+  static Future<Result<List<Clothing>>> getClothing({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return ClothingResult.failure('用戶未登入');
+      return Result.failure('用戶未登入');
     }
 
     try {
@@ -21,7 +22,7 @@ class WardrobeService {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
           final clothing = cachedData.map((json) => Clothing.fromJson(json)).toList();
-          return ClothingResult.success(clothing);
+          return Result.success(data: clothing);
         }
       }
 
@@ -36,16 +37,16 @@ class WardrobeService {
 
       final clothing = (response as List).map((json) => Clothing.fromJson(json)).toList();
 
-      return ClothingResult.success(clothing);
+      return Result.success(data: clothing);
     } catch (e) {
-      return ClothingResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
-  static Future<ClothingResult> uploadClothing(File imageFile, String category) async {
+  static Future<Result<List<Clothing>>> uploadClothing(File imageFile, String category) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return ClothingResult.failure('用戶未登入');
+      return Result.failure('用戶未登入');
     }
 
     final categoryCode = getWardrobeTypesEnglishCode(category);
@@ -77,18 +78,18 @@ class WardrobeService {
       // 4. 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return ClothingResult.success([]);
+      return Result.success();
     } catch (e) {
-      return ClothingResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
-  static Future<ClothingResult> deleteClothing(Clothing item) async {
+  static Future<Result<List<Clothing>>> deleteClothing(Clothing item) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return ClothingResult.failure('用戶未登入');
+      return Result.failure('用戶未登入');
     }
-    
+
     try {
       // 1. 刪除 DB 記錄
       await _supabase
@@ -105,27 +106,27 @@ class WardrobeService {
       // 4. 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return ClothingResult.success([]);
+      return Result.success();
     } catch (e) {
-      return ClothingResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
-  static Future<ClothingResult> loadClothingImage(String storagePath) async {
+  static Future<Result<File>> loadClothingImage(String storagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(storagePath);
       if (cachedFile != null && await cachedFile.exists()) {
-        return ClothingResult.successWithImage(cachedFile);
+        return Result.success(file: cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(storagePath);
       final savedFile = await CacheService.saveImage(bytes, storagePath);
 
-      return ClothingResult.successWithImage(savedFile);
+      return Result.success(file: savedFile);
     } catch (e) {
-      return ClothingResult.failure('載入衣櫃圖片失敗: ${e.toString()}');
+      return Result.failure('載入衣櫃圖片失敗: ${e.toString()}');
     }
   }
 
@@ -171,7 +172,7 @@ class Clothing {
   });
 
   // 按需載入圖片，使用快取機制
-  Future<ClothingResult> loadImage() async {
+  Future<Result<File>> loadImage() async {
     return WardrobeService.loadClothingImage(imagePath);
   }
 
@@ -181,31 +182,5 @@ class Clothing {
       imagePath: json['image_path'],
       category: json['category'],
     );
-  }
-}
-
-class ClothingResult {
-  final bool success;
-  final List<Clothing>? clothing;
-  final File? image;
-  final String? errorMessage;
-
-  ClothingResult({
-    required this.success,
-    this.clothing,
-    this.image,
-    this.errorMessage,
-  });
-
-  factory ClothingResult.success(List<Clothing> clothing) {
-    return ClothingResult(success: true, clothing: clothing);
-  }
-
-  factory ClothingResult.successWithImage(File? image) {
-    return ClothingResult(success: true, image: image);
-  }
-
-  factory ClothingResult.failure(String errorMessage) {
-    return ClothingResult(success: false, errorMessage: errorMessage);
   }
 }

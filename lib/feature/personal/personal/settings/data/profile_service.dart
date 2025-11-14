@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class UserProfileService {
   static final _supabase = Supabase.instance.client;
@@ -9,18 +10,18 @@ class UserProfileService {
   static const _cacheKey = 'user_profile_cache';
 
   /// 取得使用者個人資料
-  static Future<UserProfileResult> getUserProfile({bool forceRefresh = false}) async {
+  static Future<Result<UserProfile>> getUserProfile({bool forceRefresh = false}) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return UserProfileResult.failure('使用者未登入');
+        return Result.failure('使用者未登入');
       }
 
       if (!forceRefresh) {
         final cachedData = await CacheService.loadJSON(_cacheKey);
         if (cachedData != null) {
           final cachedProfile = UserProfile.fromJson(cachedData);
-          return UserProfileResult.success(cachedProfile);
+          return Result.success(data: cachedProfile);
         }
       }
 
@@ -33,14 +34,14 @@ class UserProfileService {
       await CacheService.saveJSON(_cacheKey, response);
 
       final profile = UserProfile.fromJson(response);
-      return UserProfileResult.success(profile);
+      return Result.success(data: profile);
     } catch (e) {
-      return UserProfileResult.failure('取得個人資料失敗: ${e.toString()}');
+      return Result.failure('取得個人資料失敗: ${e.toString()}');
     }
   }
 
   /// 更新使用者個人資料
-  static Future<UserProfileResult> updateUserProfile({
+  static Future<Result<UserProfile>> updateUserProfile({
     String? name,
     double? height,
     double? weight,
@@ -53,7 +54,7 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return UserProfileResult.failure('使用者未登入');
+        return Result.failure('使用者未登入');
       }
 
       final updateData = <String, dynamic>{};
@@ -77,9 +78,9 @@ class UserProfileService {
       await CacheService.saveJSON(_cacheKey, response);
 
       final profile = UserProfile.fromJson(response);
-      return UserProfileResult.success(profile);
+      return Result.success(data: profile);
     } catch (e) {
-      return UserProfileResult.failure('更新個人資料失敗: ${e.toString()}');
+      return Result.failure('更新個人資料失敗: ${e.toString()}');
     }
   }
 }
@@ -133,25 +134,5 @@ class UserProfile {
       'shoulder_width': shoulderWidth,
       'sleeve_length': sleeveLength,
     };
-  }
-}
-
-class UserProfileResult {
-  final bool success;
-  final UserProfile? profile;
-  final String? errorMessage;
-
-  UserProfileResult({
-    required this.success,
-    this.profile,
-    this.errorMessage,
-  });
-
-  factory UserProfileResult.success(UserProfile profile) {
-    return UserProfileResult(success: true, profile: profile);
-  }
-
-  factory UserProfileResult.failure(String errorMessage) {
-    return UserProfileResult(success: false, errorMessage: errorMessage);
   }
 }

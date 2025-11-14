@@ -1,29 +1,30 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class AvatarService {
   static final _supabase = Supabase.instance.client;
   static const _bucket = 'avatars';
 
   /// 獲取頭像（優先從本地獲取，本地沒有才從後端拿）
-  static Future<AvatarResult> getAvatar() async {
+  static Future<Result<File>> getAvatar() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return AvatarResult.failure('用戶未登入');
+      return Result.failure('用戶未登入');
     }
 
     try {
       // 1. 檢查本地是否有緩存
       final cachedFiles = await CacheService.getImages(relativePath: '$userId/avatar');
       if (cachedFiles.isNotEmpty) {
-        return AvatarResult.success(cachedFiles.first);
+        return Result.success(data: cachedFiles.first);
       }
 
       // 2. 從 Supabase 查詢檔案名稱
       final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
       if (files.isEmpty) {
-        return AvatarResult.success(null);
+        return Result.success();
       }
 
       final fileName = '$userId/avatar/${files.first.name}';
@@ -32,17 +33,17 @@ class AvatarService {
       final bytes = await _supabase.storage.from(_bucket).download(fileName);
       final savedFile = await CacheService.saveImage(bytes, fileName);
 
-      return AvatarResult.success(savedFile);
+      return Result.success(data: savedFile);
     } catch (e) {
-      return AvatarResult.failure('獲取頭像失敗: ${e.toString()}');
+      return Result.failure('獲取頭像失敗: ${e.toString()}');
     }
   }
-  
+
   /// 上傳頭像（先上傳到後端，成功後才保存到本地）
-  static Future<AvatarResult> uploadAvatar(File imageFile) async {
+  static Future<Result<File>> uploadAvatar(File imageFile) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return AvatarResult.failure('用戶未登入');
+      return Result.failure('用戶未登入');
     }
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -65,9 +66,9 @@ class AvatarService {
 
       // 3. 保存新的頭像到本地
       final savedFile = await CacheService.saveImage(bytes, fileName);
-      return AvatarResult.success(savedFile);
+      return Result.success(data: savedFile);
     } catch (e) {
-      return AvatarResult.failure('上傳頭像失敗: ${e.toString()}');
+      return Result.failure('上傳頭像失敗: ${e.toString()}');
     }
   }
 
@@ -81,25 +82,5 @@ class AvatarService {
 
     // 刪除本地舊頭像
     await CacheService.deleteImages(relativePath: '$userId/avatar');
-  }
-}
-
-class AvatarResult {
-  final bool success;
-  final File? file;
-  final String? errorMessage;
-
-  AvatarResult({
-    required this.success,
-    this.file,
-    this.errorMessage,
-  });
-
-  factory AvatarResult.success(File? file) {
-    return AvatarResult(success: true, file: file);
-  }
-
-  factory AvatarResult.failure(String errorMessage) {
-    return AvatarResult(success: false, errorMessage: errorMessage);
   }
 }

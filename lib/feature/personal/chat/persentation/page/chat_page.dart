@@ -334,7 +334,7 @@ class _ChatPageState extends State<ChatPage> {
       // Add LLM response
       setState(() {
         messages.add(ChatMessage(
-          text: result.text!,
+          text: result.data!,
           isUser: false,
         ));
       });

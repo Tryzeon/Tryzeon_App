@@ -61,7 +61,7 @@ class _ShopPageState extends State<ShopPage> {
 
     if (result.success) {
       setState(() {
-        _productTypes = result.types!;
+        _productTypes = result.data!;
       });
     } else {
       TopNotification.show(
@@ -93,8 +93,8 @@ class _ShopPageState extends State<ShopPage> {
 
     if (result.success) {
       setState(() {
-        products = result.products!;
-        displayedProducts = result.products!;
+        products = result.data!;
+        displayedProducts = result.data!;
       });
     } else {
       TopNotification.show(

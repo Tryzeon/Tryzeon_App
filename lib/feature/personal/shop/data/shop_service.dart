@@ -1,12 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products_info';
 
   /// 獲取所有商品（包含店家資訊）
-  static Future<ShopResult> getProducts({
+  static Future<Result<List<Product>>> getProducts({
     String sortBy = 'created_at',
     bool ascending = false,
     int? minPrice,
@@ -45,14 +46,14 @@ class ShopService {
           .map((item) => Product.fromJson(item))
           .toList();
 
-      return ShopResult.success(searchResult);
+      return Result.success(data: searchResult);
     } catch (e) {
-      return ShopResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
   /// 搜尋商品（包含商品名稱、類型和店家名稱）
-  static Future<ShopResult> searchProducts(String query) async {
+  static Future<Result<List<Product>>> searchProducts(String query) async {
     try {
       final response = await _supabase
         .from(_productsTable)
@@ -70,9 +71,9 @@ class ShopService {
           .map((item) => Product.fromJson(item))
           .toList();
 
-      return ShopResult.success(searchResult);
+      return Result.success(data: searchResult);
     } catch (e) {
-      return ShopResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
@@ -96,25 +97,5 @@ class ShopService {
     } catch (e) {
       print("Error incrementing purchase click count: $e");
     }
-  }
-}
-
-class ShopResult {
-  final bool success;
-  final List<Product>? products;
-  final String? errorMessage;
-
-  ShopResult({
-    required this.success,
-    this.products,
-    this.errorMessage,
-  });
-
-  factory ShopResult.success(List<Product> products) {
-    return ShopResult(success: true, products: products);
-  }
-
-  factory ShopResult.failure(String errorMessage) {
-    return ShopResult(success: false, errorMessage: errorMessage);
   }
 }

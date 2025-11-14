@@ -36,7 +36,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
     if (result.success) {
       setState(() {
-        clothingTypes = result.types!;
+        clothingTypes = result.data!;
       });
     } else {
       TopNotification.show(

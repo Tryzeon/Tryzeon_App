@@ -43,7 +43,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
     if (result.success) {
       setState(() {
-        clothingTypes = result.types!;
+        clothingTypes = result.data!;
       });
     } else {
       TopNotification.show(
@@ -267,7 +267,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                         final result = snapshot.data;
                                         if (result != null && result.success) {
                                           return Image.file(
-                                            result.image!,
+                                            result.file!,
                                             fit: BoxFit.contain,
                                             width: double.infinity,
                                             errorBuilder: (context, error, stackTrace) =>

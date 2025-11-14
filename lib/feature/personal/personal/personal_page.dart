@@ -52,7 +52,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     setState(() {
       if (profileResult.success) {
-        username = profileResult.profile!.name;
+        username = profileResult.data!.name;
         _isLoading = false;
       }
     });
@@ -74,7 +74,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (result.success) {
       setState(() {
-        clothing = result.clothing!;
+        clothing = result.data!;
         wardrobeCategories = ['全部', ...categories];
       });
     } else {

@@ -41,9 +41,9 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
     if (result.success) {
       setState(() {
-        _storeProfile = result.profile;
-        storeNameController.text = result.profile!.storeName;
-        storeAddressController.text = result.profile!.address;
+        _storeProfile = result.data;
+        storeNameController.text = result.data!.storeName;
+        storeAddressController.text = result.data!.address;
       });
     } else {
       TopNotification.show(
@@ -286,11 +286,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                       );
                                                     }
 
-                                                    if (result.logo != null) {
+                                                    if (result.file != null) {
                                                       return ClipRRect(
                                                         borderRadius: BorderRadius.circular(60),
                                                         child: Image.file(
-                                                          result.logo!,
+                                                          result.file!,
                                                           fit: BoxFit.cover,
                                                           errorBuilder: (context, error, stackTrace) {
                                                             return Icon(

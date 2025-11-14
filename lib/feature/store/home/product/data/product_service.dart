@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product_model.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class ProductService {
   static final _supabase = Supabase.instance.client;
@@ -11,7 +12,7 @@ class ProductService {
   static const _cacheKey = 'products_cache';
 
   /// 獲取店家的所有商品
-  static Future<ProductResult> getProducts({
+  static Future<Result<List<Product>>> getProducts({
     String sortBy = 'created_at',
     bool ascending = false,
     bool forceRefresh = false,
@@ -19,14 +20,14 @@ class ProductService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return ProductResult.failure('用戶未登入');
+        return Result.failure('用戶未登入');
       }
 
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
           List<Product> products = cachedData.map((json) => Product.fromJson(json)).toList();
-          return ProductResult.success(_sortProducts(products, sortBy, ascending));
+          return Result.success(data: _sortProducts(products, sortBy, ascending));
         }
       }
 
@@ -38,14 +39,14 @@ class ProductService {
       await CacheService.saveList(_cacheKey, response);
 
       List<Product> products = response.map((json) => Product.fromJson(json)).toList();
-      return ProductResult.success(_sortProducts(products, sortBy, ascending));
+      return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
-      return ProductResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
   /// 創建新商品
-  static Future<ProductResult> createProduct({
+  static Future<Result<List<Product>>> createProduct({
     required String name,
     required List<String> types,
     required int price,
@@ -56,7 +57,7 @@ class ProductService {
       // 獲取當前用戶 ID
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return ProductResult.failure('用戶未登入');
+        return Result.failure('用戶未登入');
       }
 
       // 如果有圖片，先上傳圖片
@@ -80,14 +81,14 @@ class ProductService {
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return ProductResult.success();
+      return Result.success();
     } catch (e) {
-      return ProductResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
   /// 更新商品
-  static Future<ProductResult> updateProduct({
+  static Future<Result<List<Product>>> updateProduct({
     required String productId,
     required String name,
     required List<String> types,
@@ -129,14 +130,14 @@ class ProductService {
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return ProductResult.success();
+      return Result.success();
     } catch (e) {
-      return ProductResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
   /// 刪除商品
-  static Future<ProductResult> deleteProduct(Product product) async {
+  static Future<Result<List<Product>>> deleteProduct(Product product) async {
     try {
       // 刪除圖片（Supabase Storage 和本地）
       if (product.imagePath.isNotEmpty) {
@@ -152,28 +153,28 @@ class ProductService {
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return ProductResult.success();
+      return Result.success();
     } catch (e) {
-      return ProductResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<ProductResult> loadProductImage(String filePath) async {
+  static Future<Result<File>> loadProductImage(String filePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(filePath);
       if (cachedFile != null && await cachedFile.exists()) {
-        return ProductResult.successWithImage(cachedFile);
+        return Result.success(file: cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_productImagesBucket).download(filePath);
       final savedFile = await CacheService.saveImage(bytes, filePath);
 
-      return ProductResult.successWithImage(savedFile);
+      return Result.success(file: savedFile);
     } catch (e) {
-      return ProductResult.failure('載入商品圖片失敗: ${e.toString()}');
+      return Result.failure('載入商品圖片失敗: ${e.toString()}');
     }
   }
 
@@ -247,31 +248,5 @@ class ProductService {
     });
 
     return sortedProducts;
-  }
-}
-
-class ProductResult {
-  final bool success;
-  final List<Product>? products;
-  final File? image;
-  final String? errorMessage;
-
-  ProductResult({
-    required this.success,
-    this.products,
-    this.image,
-    this.errorMessage,
-  });
-
-  factory ProductResult.success([List<Product>? products]) {
-    return ProductResult(success: true, products: products);
-  }
-
-  factory ProductResult.successWithImage(File? image) {
-    return ProductResult(success: true, image: image);
-  }
-
-  factory ProductResult.failure(String errorMessage) {
-    return ProductResult(success: false, errorMessage: errorMessage);
   }
 }

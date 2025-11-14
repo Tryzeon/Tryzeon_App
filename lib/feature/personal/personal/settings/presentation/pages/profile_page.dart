@@ -37,7 +37,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
     
     if (result.success) {
-      final profile = result.profile!;
+      final profile = result.data!;
       _nameController.text = profile.name;
       _heightController.text = profile.height?.toString() ?? '';
       _weightController.text = profile.weight?.toString() ?? '';

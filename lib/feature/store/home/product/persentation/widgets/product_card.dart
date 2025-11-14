@@ -46,9 +46,9 @@ class StoreProductCard extends StatelessWidget {
                     future: product.loadImage(),
                     builder: (context, snapshot) {
                       final result = snapshot.data;
-                      if (result != null && result.success && result.image != null) {
+                      if (result != null && result.success && result.file != null) {
                         return Image.file(
-                          result.image!,
+                          result.file!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.image_not_supported),

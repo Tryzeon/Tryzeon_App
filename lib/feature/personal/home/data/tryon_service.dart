@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
-  static Future<TryonResult> tryon(
+  static Future<Result<String>> tryon(
     File clothingImage, {
     String? avatarBase64,
   }) async {
@@ -27,13 +28,13 @@ class TryonService {
         'tryon',
         body: body,
       );
-      return TryonResult.success(response.data['image']);
+      return Result.success(data: response.data['image']);
     } catch (e) {
-      return TryonResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
   }
 
-  static Future<TryonResult> tryonFromStorage(
+  static Future<Result<String>> tryonFromStorage(
     String storagePath, {
     String? avatarBase64,
   }) async {
@@ -51,29 +52,9 @@ class TryonService {
         'tryon',
         body: body,
       );
-      return TryonResult.success(response.data['image']);
+      return Result.success(data: response.data['image']);
     } catch (e) {
-      return TryonResult.failure(e.toString());
+      return Result.failure(e.toString());
     }
-  }
-}
-
-class TryonResult {
-  final bool success;
-  final String? image;
-  final String? errorMessage;
-
-  TryonResult({
-    required this.success,
-    this.image,
-    this.errorMessage,
-  });
-
-  factory TryonResult.success(String image) {
-    return TryonResult(success: true, image: image);
-  }
-
-  factory TryonResult.failure(String errorMessage) {
-    return TryonResult(success: false, errorMessage: errorMessage);
   }
 }

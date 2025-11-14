@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 class StoreProfileService {
   static final _supabase = Supabase.instance.client;
@@ -11,11 +12,11 @@ class StoreProfileService {
   static const _cachedKey = 'store_profile_cache';
 
   /// 獲取店家資料
-  static Future<StoreProfileResult> getStoreProfile({bool forceRefresh = false}) async {
+  static Future<Result<StoreProfile>> getStoreProfile({bool forceRefresh = false}) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return StoreProfileResult.failure('使用者未登入');
+        return Result.failure('使用者未登入');
       }
 
       // 讀取 cache
@@ -23,7 +24,7 @@ class StoreProfileService {
         final cachedData = await CacheService.loadJSON(_cachedKey);
         if (cachedData != null) {
           final cachedProfile = StoreProfile.fromJson(cachedData);
-          return StoreProfileResult.success(cachedProfile);
+          return Result.success(data: cachedProfile);
         }
       }
 
@@ -35,33 +36,33 @@ class StoreProfileService {
           .maybeSingle();
 
       if (response == null) {
-        return StoreProfileResult.failure('查無店家資料');
+        return Result.failure('查無店家資料');
       }
 
       await CacheService.saveJSON(_cachedKey, response);
 
       final profile = StoreProfile.fromJson(response);
-      return StoreProfileResult.success(profile);
+      return Result.success(data: profile);
     } catch (e) {
-      return StoreProfileResult.failure('取得店家資料失敗: ${e.toString()}');
+      return Result.failure('取得店家資料失敗: ${e.toString()}');
     }
   }
 
   /// 獲取店家名稱
   static Future<String> getStoreName({bool forceRefresh = false}) async {
     final result = await getStoreProfile(forceRefresh: forceRefresh);
-    return result.profile?.storeName ?? '店家';
+    return result.data?.storeName ?? '店家';
   }
   
   /// 更新店家資料
-  static Future<StoreProfileResult> updateStoreProfile({
+  static Future<Result<StoreProfile>> updateStoreProfile({
     required String storeName,
     required String address,
   }) async {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
-        return StoreProfileResult.failure('使用者未登入');
+        return Result.failure('使用者未登入');
       }
 
       final data = {
@@ -79,14 +80,14 @@ class StoreProfileService {
       await CacheService.saveJSON(_cachedKey, response);
 
       final profile = StoreProfile.fromJson(response);
-      return StoreProfileResult.success(profile);
+      return Result.success(data: profile);
     } catch (e) {
-      return StoreProfileResult.failure('更新店家資料失敗: ${e.toString()}');
+      return Result.failure('更新店家資料失敗: ${e.toString()}');
     }
   }
 
   /// 載入 Logo（優先從本地獲取，本地沒有才從後端拿）
-  static Future<StoreProfileResult> loadLogo(String storeId) async {
+  static Future<Result<File>> loadLogo(String storeId) async {
     try {
       // 1. 先檢查本地資料夾是否有緩存
       final cachedFiles = await CacheService.getImages(
@@ -94,13 +95,13 @@ class StoreProfileService {
       );
 
       if (cachedFiles.isNotEmpty) {
-        return StoreProfileResult.successWithFile(cachedFiles.first);
+        return Result.success(file: cachedFiles.first);
       }
 
       // 2. 本地沒有，從 Supabase 下載
       final files = await _supabase.storage.from(_logoBucket).list(path: '$storeId/logo');
       if (files.isEmpty) {
-        return StoreProfileResult.successWithFile(null);
+        return Result.success();
       }
 
       final fileName = '$storeId/logo/${files.first.name}';
@@ -109,18 +110,18 @@ class StoreProfileService {
       // 保存到本地緩存
       final savedFile = await CacheService.saveImage(bytes, fileName);
 
-      return StoreProfileResult.successWithFile(savedFile);
+      return Result.success(file: savedFile);
     } catch (e) {
-      return StoreProfileResult.failure('載入Logo失敗: ${e.toString()}');
+      return Result.failure('載入Logo失敗: ${e.toString()}');
     }
   }
 
   /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
-  static Future<StoreProfileResult> uploadLogo(File logo) async {
+  static Future<Result<File>> uploadLogo(File logo) async {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
-        return StoreProfileResult.failure('使用者未登入');
+        return Result.failure('使用者未登入');
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -143,9 +144,9 @@ class StoreProfileService {
       // 3. 保存新的 Logo 到本地
       final savedFile = await CacheService.saveImage(bytes, fileName);
 
-      return StoreProfileResult.successWithFile(savedFile);
+      return Result.success(file: savedFile);
     } catch (e) {
-      return StoreProfileResult.failure('上傳Logo失敗: ${e.toString()}');
+      return Result.failure('上傳Logo失敗: ${e.toString()}');
     }
   }
 
@@ -178,7 +179,7 @@ class StoreProfile {
   });
 
   /// 按需載入 Logo，使用快取機制
-  Future<StoreProfileResult> loadLogo() async {
+  Future<Result<File>> loadLogo() async {
     return StoreProfileService.loadLogo(storeId);
   }
 
@@ -196,31 +197,5 @@ class StoreProfile {
       'store_name': storeName,
       'address': address,
     };
-  }
-}
-
-class StoreProfileResult {
-  final bool success;
-  final StoreProfile? profile;
-  final File? logo;
-  final String? errorMessage;
-
-  StoreProfileResult({
-    required this.success,
-    this.profile,
-    this.logo,
-    this.errorMessage,
-  });
-
-  factory StoreProfileResult.success(StoreProfile profile) {
-    return StoreProfileResult(success: true, profile: profile);
-  }
-
-  factory StoreProfileResult.successWithFile(File? logo) {
-    return StoreProfileResult(success: true, logo: logo);
-  }
-
-  factory StoreProfileResult.failure(String errorMessage) {
-    return StoreProfileResult(success: false, errorMessage: errorMessage);
   }
 }

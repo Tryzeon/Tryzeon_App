@@ -66,7 +66,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
     if (result.success) {
       setState(() {
-        products = result.products!;
+        products = result.data!;
       });
     } else {
       TopNotification.show(

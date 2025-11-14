@@ -50,7 +50,7 @@ class _ClothingCardState extends State<ClothingCard> {
 
     if (result.success) {
       setState(() {
-        _imageFile = result.image;
+        _imageFile = result.file;
       });
     } else {
       TopNotification.show(

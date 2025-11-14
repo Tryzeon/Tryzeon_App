@@ -27,7 +27,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
     if(!mounted) return;
 
     if (result.success) {
-      widget.onSearchResults(result.products!);
+      widget.onSearchResults(result.data!);
     } else {
       widget.onSearchResults([]);
       TopNotification.show(

@@ -1,28 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/models/result.dart';
 
 enum UserType { personal, store }
-
-class AuthResult {
-  final bool success;
-  final User? user;
-  final String? errorMessage;
-
-  AuthResult({
-    required this.success,
-    this.user,
-    this.errorMessage,
-  });
-
-  factory AuthResult.success(User user) {
-    return AuthResult(success: true, user: user);
-  }
-
-  factory AuthResult.failure(String errorMessage) {
-    return AuthResult(success: false, errorMessage: errorMessage);
-  }
-}
 
 class AuthService {
   static final _supabase = Supabase.instance.client;
@@ -47,7 +28,7 @@ class AuthService {
   }
 
   /// 通用第三方登入
-  static Future<AuthResult> signInWithProvider({
+  static Future<Result<User>> signInWithProvider({
     required String provider,
     required UserType userType,
   }) async {
@@ -65,7 +46,7 @@ class AuthService {
           oauthProvider = OAuthProvider.apple;
           break;
         default:
-          return AuthResult.failure('不支援的登入方式：$provider');
+          return Result.failure('不支援的登入方式：$provider');
       }
 
       final success = await _supabase.auth.signInWithOAuth(
@@ -75,7 +56,7 @@ class AuthService {
       );
 
       if (!success) {
-        return AuthResult.failure('$provider 登入失敗，請稍後再試');
+        return Result.failure('$provider 登入失敗，請稍後再試');
       }
 
       // 等待認證狀態變化
@@ -84,17 +65,17 @@ class AuthService {
           .then((state) => state.session?.user);
 
       if (user == null) {
-        return AuthResult.failure('$provider 登入失敗：無法取得用戶資訊');
+        return Result.failure('$provider 登入失敗：無法取得用戶資訊');
       }
 
       // 儲存登入類型
       await saveLastLoginType(userType);
 
-      return AuthResult.success(user);
+      return Result.success(data: user);
     } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
+      return Result.failure(e.message);
     } catch (e) {
-      return AuthResult.failure('$provider 登入失敗：${e.toString()}');
+      return Result.failure('$provider 登入失敗：${e.toString()}');
     }
   }
 
