@@ -36,7 +36,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
     final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
     
-    if (result.success) {
+    if (result.isSuccess) {
       final profile = result.data!;
       _nameController.text = profile.name;
       _heightController.text = profile.height?.toString() ?? '';
@@ -84,7 +84,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     });
 
     if (mounted) {
-      if (result.success) {
+      if (result.isSuccess) {
         Navigator.pop(context, true);
         TopNotification.show(
           context,

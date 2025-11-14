@@ -34,7 +34,7 @@ class _AddProductPageState extends State<AddProductPage> {
     final result = await ProductTypeService.getProductTypesList();
     if (!mounted) return;
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         clothingTypes = result.data!;
       });
@@ -94,7 +94,7 @@ class _AddProductPageState extends State<AddProductPage> {
       isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       Navigator.pop(context, true);
       TopNotification.show(
         context,

@@ -37,7 +37,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
       _isUploading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       Navigator.pop(context, true);
     } else {
       TopNotification.show(

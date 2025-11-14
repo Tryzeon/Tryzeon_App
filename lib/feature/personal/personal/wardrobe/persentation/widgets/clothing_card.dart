@@ -48,7 +48,7 @@ class _ClothingCardState extends State<ClothingCard> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         _imageFile = result.file;
       });

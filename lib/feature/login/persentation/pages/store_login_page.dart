@@ -27,12 +27,12 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
       userType: UserType.store,
     );
 
-    if (result.success && mounted) {
+    if (result.isSuccess && mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const StoreEntry()),
       );
-    } else if (!result.success) {
+    } else if (!result.isSuccess) {
       _showError(result.errorMessage ?? '$provider 登入失敗');
     }
   }

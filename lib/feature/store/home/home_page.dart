@@ -64,7 +64,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         products = result.data!;
       });

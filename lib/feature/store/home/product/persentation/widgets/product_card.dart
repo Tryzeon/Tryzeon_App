@@ -46,7 +46,7 @@ class StoreProductCard extends StatelessWidget {
                     future: product.loadImage(),
                     builder: (context, snapshot) {
                       final result = snapshot.data;
-                      if (result != null && result.success && result.file != null) {
+                      if (result != null && result.isSuccess && result.file != null) {
                         return Image.file(
                           result.file!,
                           fit: BoxFit.cover,
@@ -54,7 +54,7 @@ class StoreProductCard extends StatelessWidget {
                               const Icon(Icons.image_not_supported),
                         );
                       }
-                      if (result != null && !result.success) {
+                      if (result != null && !result.isSuccess) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           TopNotification.show(
                             context,

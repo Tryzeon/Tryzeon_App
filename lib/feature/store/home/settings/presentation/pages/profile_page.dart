@@ -39,7 +39,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         _storeProfile = result.data;
         storeNameController.text = result.data!.storeName;
@@ -70,7 +70,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       Navigator.pop(context, true);
       TopNotification.show(
         context,
@@ -103,7 +103,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       TopNotification.show(
         context,
         message: '店家Logo已更新',
@@ -278,7 +278,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                     }
 
                                                     final result = snapshot.data;
-                                                    if (result == null || !result.success) {
+                                                    if (result == null || !result.isSuccess) {
                                                       return Icon(
                                                         Icons.camera_alt_rounded,
                                                         size: 50,

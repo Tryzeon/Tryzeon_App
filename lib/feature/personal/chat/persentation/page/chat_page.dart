@@ -330,7 +330,7 @@ class _ChatPageState extends State<ChatPage> {
       isLoadingRecommendation = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       // Add LLM response
       setState(() {
         messages.add(ChatMessage(

@@ -27,12 +27,12 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> {
       userType: UserType.personal,
     );
 
-    if (result.success && mounted) {
+    if (result.isSuccess && mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const PersonalEntry()),
       );
-    } else if (!result.success) {
+    } else if (!result.isSuccess) {
       _showError(result.errorMessage ?? '$provider 登入失敗');
     }
   }

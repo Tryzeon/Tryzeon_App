@@ -56,7 +56,7 @@ class HomePageState extends State<HomePage> {
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
-    final tryonResult = await TryonService.tryon(
+    final result = await TryonService.tryon(
       clothingImage,
       avatarBase64: customAvatarBase64,
     );
@@ -67,9 +67,9 @@ class HomePageState extends State<HomePage> {
       });
 
       // Check if success
-      if (tryonResult.success) {
+      if (result.isSuccess) {
         setState(() {
-          _tryonImages.add(tryonResult.data!);
+          _tryonImages.add(result.data!);
           _currentTryonIndex = _tryonImages.length - 1;
         });
 
@@ -81,7 +81,7 @@ class HomePageState extends State<HomePage> {
       } else {
         TopNotification.show(
           context,
-          message: tryonResult.errorMessage ?? '發生錯誤',
+          message: result.errorMessage ?? '發生錯誤',
           type: NotificationType.error,
         );
       }
@@ -100,7 +100,7 @@ class HomePageState extends State<HomePage> {
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
-    final tryonResult = await TryonService.tryonFromStorage(
+    final result = await TryonService.tryonFromStorage(
       storagePath,
       avatarBase64: customAvatarBase64,
     );
@@ -111,9 +111,9 @@ class HomePageState extends State<HomePage> {
       });
 
       // Check if success
-      if (tryonResult.success) {
+      if (result.isSuccess) {
         setState(() {
-          _tryonImages.add(tryonResult.data!);
+          _tryonImages.add(result.data!);
           _currentTryonIndex = _tryonImages.length - 1;
         });
 
@@ -125,7 +125,7 @@ class HomePageState extends State<HomePage> {
       } else {
         TopNotification.show(
           context,
-          message: tryonResult.errorMessage ?? '發生錯誤',
+          message: result.errorMessage ?? '發生錯誤',
           type: NotificationType.error,
         );
       }
@@ -144,7 +144,7 @@ class HomePageState extends State<HomePage> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         _avatarFile = result.data;
       });
@@ -174,7 +174,7 @@ class HomePageState extends State<HomePage> {
       _isLoading = false;
     });
 
-    if(result.success) {
+    if(result.isSuccess) {
       setState(() {
         _avatarFile = result.data;
         _tryonImages.clear();

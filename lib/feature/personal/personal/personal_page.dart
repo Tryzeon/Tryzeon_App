@@ -47,12 +47,12 @@ class _PersonalPageState extends State<PersonalPage> {
       _isLoading = true;
     });
 
-    final profileResult = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
+    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
     if (!mounted) return;
 
     setState(() {
-      if (profileResult.success) {
-        username = profileResult.data!.name;
+      if (result.isSuccess) {
+        username = result.data!.name;
         _isLoading = false;
       }
     });
@@ -72,7 +72,7 @@ class _PersonalPageState extends State<PersonalPage> {
       _isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         clothing = result.data!;
         wardrobeCategories = ['全部', ...categories];
@@ -99,7 +99,7 @@ class _PersonalPageState extends State<PersonalPage> {
     final result = await WardrobeService.deleteClothing(item);
     if (!mounted) return;
 
-    if (result.success) {
+    if (result.isSuccess) {
       await _loadWardrobeItems();
     } else {
       TopNotification.show(

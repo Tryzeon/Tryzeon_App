@@ -27,7 +27,7 @@ class _StoreEntryState extends State<StoreEntry> {
   Future<void> _checkStoreInfo() async {
     final result = await StoreProfileService.getStoreProfile();
     setState(() {
-      _needsOnboarding = (!result.success || result.data == null);
+      _needsOnboarding = (!result.isSuccess || result.data == null);
       _isChecking = false;
     });
   }

@@ -26,7 +26,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
     final result = await ShopService.searchProducts(query);
     if(!mounted) return;
 
-    if (result.success) {
+    if (result.isSuccess) {
       widget.onSearchResults(result.data!);
     } else {
       widget.onSearchResults([]);

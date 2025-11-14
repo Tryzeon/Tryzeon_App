@@ -59,7 +59,7 @@ class _ShopPageState extends State<ShopPage> {
     final result = await ProductTypeService.getProductTypesList(forceRefresh: forceRefresh);
     if (!mounted) return;
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         _productTypes = result.data!;
       });
@@ -91,7 +91,7 @@ class _ShopPageState extends State<ShopPage> {
       isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         products = result.data!;
         displayedProducts = result.data!;

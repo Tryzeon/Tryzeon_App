@@ -1,13 +1,13 @@
 import 'dart:io';
 
 class Result<T> {
-  final bool success;
+  final bool isSuccess;
   final T? data;
   final File? file;
   final String? errorMessage;
 
   Result({
-    required this.success,
+    required this.isSuccess,
     this.data,
     this.file,
     this.errorMessage,
@@ -15,7 +15,7 @@ class Result<T> {
 
   factory Result.success({T? data, File? file}) {
     return Result(
-      success: true,
+      isSuccess: true,
       data: data,
       file: file,
     );
@@ -23,7 +23,7 @@ class Result<T> {
 
   factory Result.failure(String message) {
     return Result(
-      success: false,
+      isSuccess: false,
       errorMessage: message,
     );
   }

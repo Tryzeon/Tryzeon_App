@@ -41,7 +41,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     final result = await ProductTypeService.getProductTypesList();
     if (!mounted) return;
 
-    if (result.success) {
+    if (result.isSuccess) {
       setState(() {
         clothingTypes = result.data!;
       });
@@ -84,7 +84,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       Navigator.pop(context, true);
       TopNotification.show(
         context,
@@ -140,7 +140,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       isLoading = false;
     });
 
-    if (result.success) {
+    if (result.isSuccess) {
       Navigator.pop(context, true);
       TopNotification.show(
         context,
@@ -265,7 +265,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                       future: widget.product.loadImage(),
                                       builder: (context, snapshot) {
                                         final result = snapshot.data;
-                                        if (result != null && result.success) {
+                                        if (result != null && result.isSuccess) {
                                           return Image.file(
                                             result.file!,
                                             fit: BoxFit.contain,
@@ -280,7 +280,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                 ),
                                           );
                                         }
-                                        if (result != null && !result.success) {
+                                        if (result != null && !result.isSuccess) {
                                           WidgetsBinding.instance.addPostFrameCallback((_) {
                                             if (mounted) {
                                               TopNotification.show(
