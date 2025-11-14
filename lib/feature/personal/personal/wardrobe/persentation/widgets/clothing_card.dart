@@ -4,7 +4,7 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../data/wardrobe_service.dart';
 
 class ClothingCard extends StatefulWidget {
-  final WardrobeItem item;
+  final Clothing item;
   final VoidCallback onDelete;
 
   const ClothingCard({
@@ -31,7 +31,7 @@ class _ClothingCardState extends State<ClothingCard> {
   void didUpdateWidget(ClothingCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     // 當 item 改變時重新載入圖片
-    if (oldWidget.item.imageUrl != widget.item.imageUrl) {
+    if (oldWidget.item.imagePath != widget.item.imagePath) {
       _loadImage();
     }
   }
@@ -40,6 +40,7 @@ class _ClothingCardState extends State<ClothingCard> {
     setState(() {
       _isLoading = true;
     });
+    
     final result = await widget.item.loadImage();
     if(!mounted) return;
     

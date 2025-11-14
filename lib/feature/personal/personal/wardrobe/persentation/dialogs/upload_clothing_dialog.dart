@@ -26,7 +26,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
       _isUploading = true;
     });
 
-    final result = await WardrobeService.uploadWardrobeItem(
+    final result = await WardrobeService.uploadClothing(
       widget.image,
       _selectedCategory!,
     );

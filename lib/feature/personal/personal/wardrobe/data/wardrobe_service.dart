@@ -9,10 +9,10 @@ class WardrobeService {
   
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static Future<WardrobeItemResult> getWardrobeItems({bool forceRefresh = false}) async {
+  static Future<ClothingResult> getClothing({bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return WardrobeItemResult.failure('用戶未登入');
+      return ClothingResult.failure('用戶未登入');
     }
 
     try {
@@ -20,15 +20,8 @@ class WardrobeService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          final items = cachedData
-              .map((json) => WardrobeItem(
-                    id: json['id'],
-                    path: json['image_path'],
-                    category: json['category'],
-                    imageUrl: json['image_path'],
-                  ))
-              .toList();
-          return WardrobeItemResult.success(items);
+          final clothing = cachedData.map((json) => Clothing.fromJson(json)).toList();
+          return ClothingResult.success(clothing);
         }
       }
 
@@ -41,25 +34,18 @@ class WardrobeService {
 
       await CacheService.saveList(_cacheKey, response);
 
-      final items = (response as List)
-          .map((json) => WardrobeItem(
-                id: json['id'],
-                path: json['image_path'],
-                category: json['category'],
-                imageUrl: json['image_path'],
-              ))
-          .toList();
+      final clothing = (response as List).map((json) => Clothing.fromJson(json)).toList();
 
-      return WardrobeItemResult.success(items);
+      return ClothingResult.success(clothing);
     } catch (e) {
-      return WardrobeItemResult.failure(e.toString());
+      return ClothingResult.failure(e.toString());
     }
   }
 
-  static Future<WardrobeItemResult> uploadWardrobeItem(File imageFile, String category) async {
+  static Future<ClothingResult> uploadClothing(File imageFile, String category) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return WardrobeItemResult.failure('用戶未登入');
+      return ClothingResult.failure('用戶未登入');
     }
 
     final categoryCode = getWardrobeTypesEnglishCode(category);
@@ -91,16 +77,16 @@ class WardrobeService {
       // 4. 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return WardrobeItemResult.success([]);
+      return ClothingResult.success([]);
     } catch (e) {
-      return WardrobeItemResult.failure(e.toString());
+      return ClothingResult.failure(e.toString());
     }
   }
 
-  static Future<WardrobeItemResult> deleteWardrobeItem(WardrobeItem item) async {
+  static Future<ClothingResult> deleteClothing(Clothing item) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return WardrobeItemResult.failure('用戶未登入');
+      return ClothingResult.failure('用戶未登入');
     }
     
     try {
@@ -111,109 +97,115 @@ class WardrobeService {
           .eq('id', item.id!);
 
       // 2. 刪除 Supabase Storage 中的圖片
-      await _supabase.storage.from(_bucket).remove([item.imageUrl]);
+      await _supabase.storage.from(_bucket).remove([item.imagePath]);
 
       // 3. 刪除本地快取的圖片
-      await CacheService.deleteImage(item.imageUrl);
+      await CacheService.deleteImage(item.imagePath);
 
       // 4. 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
 
-      return WardrobeItemResult.success([]);
+      return ClothingResult.success([]);
     } catch (e) {
-      return WardrobeItemResult.failure(e.toString());
+      return ClothingResult.failure(e.toString());
     }
   }
 
-  static Future<WardrobeItemResult> loadClothingImage(String storagePath) async {
+  static Future<ClothingResult> loadClothingImage(String storagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(storagePath);
       if (cachedFile != null && await cachedFile.exists()) {
-        return WardrobeItemResult.successWithImage(cachedFile);
+        return ClothingResult.successWithImage(cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(storagePath);
       final savedFile = await CacheService.saveImage(bytes, storagePath);
 
-      return WardrobeItemResult.successWithImage(savedFile);
+      return ClothingResult.successWithImage(savedFile);
     } catch (e) {
-      return WardrobeItemResult.failure('載入衣櫃圖片失敗: ${e.toString()}');
+      return ClothingResult.failure('載入衣櫃圖片失敗: ${e.toString()}');
     }
   }
 
   static List<String> getWardrobeTypesList() {
-    return WardrobeType.all.map((t) => t.zh).toList();
+    return ClothingType.all.map((t) => t.zh).toList();
   }
 
   static String getWardrobeTypesEnglishCode(String nameZh) {
-    final type = WardrobeType.all.where((t) => t.zh == nameZh).firstOrNull;
+    final type = ClothingType.all.where((t) => t.zh == nameZh).firstOrNull;
     return type?.en ?? nameZh;
   }
 }
 
-class WardrobeType {
+class ClothingType {
   final String zh;
   final String en;
 
-  const WardrobeType({
+  const ClothingType({
     required this.zh,
     required this.en,
   });
 
-  static const List<WardrobeType> all = [
-    WardrobeType(zh: '上衣', en: 'top'),
-    WardrobeType(zh: '褲子', en: 'pants'),
-    WardrobeType(zh: '裙子', en: 'skirt'),
-    WardrobeType(zh: '外套', en: 'jacket'),
-    WardrobeType(zh: '鞋子', en: 'shoes'),
-    WardrobeType(zh: '配件', en: 'accessories'),
-    WardrobeType(zh: '其他', en: 'others'),
+  static const List<ClothingType> all = [
+    ClothingType(zh: '上衣', en: 'top'),
+    ClothingType(zh: '褲子', en: 'pants'),
+    ClothingType(zh: '裙子', en: 'skirt'),
+    ClothingType(zh: '外套', en: 'jacket'),
+    ClothingType(zh: '鞋子', en: 'shoes'),
+    ClothingType(zh: '配件', en: 'accessories'),
+    ClothingType(zh: '其他', en: 'others'),
   ];
 }
 
-class WardrobeItem {
+class Clothing {
   final String? id;
-  final String path;
+  final String imagePath;
   final String category;
-  final String imageUrl;
 
-  WardrobeItem({
+  Clothing({
     this.id,
-    required this.path,
+    required this.imagePath,
     required this.category,
-    required this.imageUrl,
   });
 
   // 按需載入圖片，使用快取機制
-  Future<WardrobeItemResult> loadImage() async {
-    return WardrobeService.loadClothingImage(imageUrl);
+  Future<ClothingResult> loadImage() async {
+    return WardrobeService.loadClothingImage(imagePath);
+  }
+
+  factory Clothing.fromJson(Map<String, dynamic> json) {
+    return Clothing(
+      id: json['id'],
+      imagePath: json['image_path'],
+      category: json['category'],
+    );
   }
 }
 
-class WardrobeItemResult {
+class ClothingResult {
   final bool success;
-  final List<WardrobeItem>? items;
+  final List<Clothing>? clothing;
   final File? image;
   final String? errorMessage;
 
-  WardrobeItemResult({
+  ClothingResult({
     required this.success,
-    this.items,
+    this.clothing,
     this.image,
     this.errorMessage,
   });
 
-  factory WardrobeItemResult.success(List<WardrobeItem> items) {
-    return WardrobeItemResult(success: true, items: items);
+  factory ClothingResult.success(List<Clothing> clothing) {
+    return ClothingResult(success: true, clothing: clothing);
   }
 
-  factory WardrobeItemResult.successWithImage(File? image) {
-    return WardrobeItemResult(success: true, image: image);
+  factory ClothingResult.successWithImage(File? image) {
+    return ClothingResult(success: true, image: image);
   }
 
-  factory WardrobeItemResult.failure(String errorMessage) {
-    return WardrobeItemResult(success: false, errorMessage: errorMessage);
+  factory ClothingResult.failure(String errorMessage) {
+    return ClothingResult(success: false, errorMessage: errorMessage);
   }
 }

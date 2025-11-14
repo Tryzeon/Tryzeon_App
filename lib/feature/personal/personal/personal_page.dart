@@ -21,7 +21,7 @@ class _PersonalPageState extends State<PersonalPage> {
   String username = '';
   List<String> wardrobeCategories = [];
   String selectedCategory = '全部';
-  List<WardrobeItem> wardrobeItems = [];
+  List<Clothing> clothing = [];
   final ScrollController _categoryScrollController = ScrollController();
   bool _isLoading = true;
 
@@ -64,7 +64,7 @@ class _PersonalPageState extends State<PersonalPage> {
     });
 
     final categories = WardrobeService.getWardrobeTypesList();
-    final result = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh);
+    final result = await WardrobeService.getClothing(forceRefresh: forceRefresh);
 
     if (!mounted) return;
 
@@ -74,7 +74,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (result.success) {
       setState(() {
-        wardrobeItems = result.items!;
+        clothing = result.clothing!;
         wardrobeCategories = ['全部', ...categories];
       });
     } else {
@@ -86,7 +86,7 @@ class _PersonalPageState extends State<PersonalPage> {
     }
   }
 
-  void _showDeleteDialog(WardrobeItem item) async {
+  void _showDeleteDialog(Clothing item) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
       title: '刪除衣物',
@@ -96,7 +96,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (confirmed != true || !mounted) return;
 
-    final result = await WardrobeService.deleteWardrobeItem(item);
+    final result = await WardrobeService.deleteClothing(item);
     if (!mounted) return;
 
     if (result.success) {
@@ -373,11 +373,11 @@ class _PersonalPageState extends State<PersonalPage> {
       );
     }
 
-    final filteredItems = selectedCategory == '全部'
-        ? wardrobeItems
-        : wardrobeItems.where((item) => item.category == selectedCategory).toList();
+    final filteredClothing = selectedCategory == '全部'
+        ? clothing
+        : clothing.where((item) => item.category == selectedCategory).toList();
 
-    if (filteredItems.isEmpty) {
+    if (filteredClothing.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -424,11 +424,11 @@ class _PersonalPageState extends State<PersonalPage> {
           mainAxisSpacing: 16,
           childAspectRatio: 0.7,
         ),
-        itemCount: filteredItems.length,
+        itemCount: filteredClothing.length,
         itemBuilder: (context, index) {
           return ClothingCard(
-            item: filteredItems[index],
-            onDelete: () => _showDeleteDialog(filteredItems[index]),
+            item: filteredClothing[index],
+            onDelete: () => _showDeleteDialog(filteredClothing[index]),
           );
         },
       );
