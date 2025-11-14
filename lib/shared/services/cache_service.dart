@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class CacheService {
   /// 儲存資料到 SharedPreferences（自動進行 JSON 編碼）
@@ -15,7 +16,7 @@ class CacheService {
       final jsonString = jsonEncode(data);
       await prefs.setString(cacheKey, jsonString);
     } catch (e) {
-      print("Failed to save cache for $cacheKey: ${e.toString()}");
+      AppLogger.error("Failed to save cache for $cacheKey", e);
     }
   }
 
@@ -32,7 +33,7 @@ class CacheService {
 
       return jsonDecode(jsonString) as Map<String, dynamic>;
     } catch (e) {
-      print("Failed to load cache for $cacheKey: ${e.toString()}");
+      AppLogger.error("Failed to load cache for $cacheKey", e);
       return null;
     }
   }
@@ -47,7 +48,7 @@ class CacheService {
       final jsonString = jsonEncode(data);
       await prefs.setString(cacheKey, jsonString);
     } catch (e) {
-      print("Failed to save list cache for $cacheKey: ${e.toString()}");
+      AppLogger.error("Failed to save list cache for $cacheKey", e);
     }
   }
 
@@ -64,7 +65,7 @@ class CacheService {
 
       return jsonDecode(jsonString) as List<dynamic>;
     } catch (e) {
-      print("Failed to load list cache for $cacheKey: ${e.toString()}");
+      AppLogger.error("Failed to load list cache for $cacheKey", e);
       return null;
     }
   }
@@ -77,7 +78,7 @@ class CacheService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(cacheKey);
     } catch (e) {
-      print("Failed to clear cache for $cacheKey: ${e.toString()}");
+      AppLogger.error("Failed to clear cache for $cacheKey", e);
     }
   }
 
@@ -109,7 +110,7 @@ class CacheService {
 
       return file;
     } catch (e) {
-      print("Failed to save image to $filePath: ${e.toString()}");
+      AppLogger.error("Failed to save image to $filePath", e);
       rethrow;
     }
   }
@@ -130,7 +131,7 @@ class CacheService {
 
       return null;
     } catch (e) {
-      print("Failed to get image from $filePath: ${e.toString()}");
+      AppLogger.error("Failed to get image from $filePath", e);
       return null;
     }
   }
@@ -159,7 +160,7 @@ class CacheService {
 
       return files.toList();
     } catch (e) {
-      print("Failed to get images from $relativePath: ${e.toString()}");
+      AppLogger.error("Failed to get images from $relativePath", e);
       return [];
     }
   }
@@ -176,7 +177,7 @@ class CacheService {
         await file.delete();
       }
     } catch (e) {
-      print("Failed to delete image at $filePath: ${e.toString()}");
+      AppLogger.error("Failed to delete image at $filePath", e);
     }
   }
 
@@ -195,7 +196,7 @@ class CacheService {
         }
       }
     } catch (e) {
-      print("Failed to delete images at $relativePath: ${e.toString()}");
+      AppLogger.error("Failed to delete images at $relativePath", e);
     }
   }
 
@@ -211,7 +212,7 @@ class CacheService {
         await directory.delete(recursive: true);
       }
     } catch (e) {
-      print("Failed to delete folder at $relativePath: ${e.toString()}");
+      AppLogger.error("Failed to delete folder at $relativePath", e);
     }
   }
 }

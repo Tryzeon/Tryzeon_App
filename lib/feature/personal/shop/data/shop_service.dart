@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
@@ -84,7 +85,7 @@ class ShopService {
         'product_uuid': productId,
       });
     } catch (e) {
-      print("Error incrementing tryon count: $e");
+      AppLogger.error("Error incrementing tryon count", e);
     }
   }
 
@@ -95,7 +96,7 @@ class ShopService {
         'product_uuid': productId,
       });
     } catch (e) {
-      print("Error incrementing purchase click count: $e");
+      AppLogger.error("Error incrementing purchase click count", e);
     }
   }
 }
