@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/shop_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/models/product.dart';
 
 class ShopSearchBar extends StatefulWidget {
   final ValueChanged<List<Product>> onSearchResults;

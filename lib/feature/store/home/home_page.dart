@@ -5,7 +5,7 @@ import 'product/persentation/pages/new_product_page.dart';
 import 'settings/presentation/settings_page.dart';
 import 'settings/data/profile_service.dart';
 import 'product/data/product_service.dart';
-import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 

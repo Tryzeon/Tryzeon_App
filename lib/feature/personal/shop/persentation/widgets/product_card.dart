@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 import '../../data/shop_service.dart';

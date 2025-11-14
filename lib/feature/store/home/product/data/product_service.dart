@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/product_model.dart';
+import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
 
