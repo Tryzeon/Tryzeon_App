@@ -78,19 +78,25 @@ class AuthService {
   }
 
   /// 登出
-  static Future<void> signOut() async {
-    final userId = _supabase.auth.currentUser?.id;
+  static Future<Result<void>> signOut() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
 
-    // 清除當前用戶的所有本地緩存
-    if (userId != null) {
-      await CacheService.deleteFolder(userId);
+      // 清除當前用戶的所有本地緩存
+      if (userId != null) {
+        await CacheService.deleteFolder(userId);
+      }
+
+      // 清除所有 SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // 執行 Supabase 登出
+      await _supabase.auth.signOut();
+
+      return Result.success();
+    } catch (e) {
+      return Result.failure('登出失敗', error: e);
     }
-
-    // 清除所有 SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-
-    // 執行 Supabase 登出
-    await _supabase.auth.signOut();
   }
 }
