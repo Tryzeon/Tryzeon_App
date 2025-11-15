@@ -30,7 +30,7 @@ class ChatService {
         return Result.failure('無法獲取 LLM 回應');
       }
     } catch (e) {
-      return Result.failure('獲取穿搭建議失敗: ${e.toString()}');
+      return Result.failure('獲取穿搭建議失敗', error: e);
     }
   }
 

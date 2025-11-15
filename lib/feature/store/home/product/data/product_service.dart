@@ -41,7 +41,7 @@ class ProductService {
       List<Product> products = response.map((json) => Product.fromJson(json)).toList();
       return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('獲取商品列表失敗', error: e);
     }
   }
 
@@ -83,7 +83,7 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('創建商品失敗', error: e);
     }
   }
 
@@ -132,7 +132,7 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('更新商品失敗', error: e);
     }
   }
 
@@ -155,7 +155,7 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('刪除商品失敗', error: e);
     }
   }
 
@@ -174,7 +174,7 @@ class ProductService {
 
       return Result.success(file: savedFile);
     } catch (e) {
-      return Result.failure('載入商品圖片失敗: ${e.toString()}');
+      return Result.failure('載入商品圖片失敗', error: e);
     }
   }
 

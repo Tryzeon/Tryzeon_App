@@ -72,10 +72,8 @@ class AuthService {
       await saveLastLoginType(userType);
 
       return Result.success(data: user);
-    } on AuthException catch (e) {
-      return Result.failure(e.message);
     } catch (e) {
-      return Result.failure('$provider 登入失敗：${e.toString()}');
+      return Result.failure('$provider 登入失敗', error: e);
     }
   }
 

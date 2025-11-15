@@ -39,7 +39,7 @@ class WardrobeService {
 
       return Result.success(data: clothing);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('獲取衣櫃列表失敗', error: e);
     }
   }
 
@@ -80,7 +80,7 @@ class WardrobeService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('上傳衣物失敗', error: e);
     }
   }
 
@@ -108,7 +108,7 @@ class WardrobeService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('刪除衣物失敗', error: e);
     }
   }
 
@@ -126,7 +126,7 @@ class WardrobeService {
 
       return Result.success(file: savedFile);
     } catch (e) {
-      return Result.failure('載入衣櫃圖片失敗: ${e.toString()}');
+      return Result.failure('載入衣櫃圖片失敗', error: e);
     }
   }
 

@@ -31,7 +31,7 @@ class ProductTypeService {
 
       return Result.success(data: types);
     } catch (e) {
-      return Result.failure('取得商品類型失敗: ${e.toString()}');
+      return Result.failure('取得商品類型失敗', error: e);
     }
   }
 }

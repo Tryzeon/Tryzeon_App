@@ -36,7 +36,7 @@ class UserProfileService {
       final profile = UserProfile.fromJson(response);
       return Result.success(data: profile);
     } catch (e) {
-      return Result.failure('取得個人資料失敗: ${e.toString()}');
+      return Result.failure('取得個人資料失敗', error: e);
     }
   }
 
@@ -80,7 +80,7 @@ class UserProfileService {
       final profile = UserProfile.fromJson(response);
       return Result.success(data: profile);
     } catch (e) {
-      return Result.failure('更新個人資料失敗: ${e.toString()}');
+      return Result.failure('更新個人資料失敗', error: e);
     }
   }
 }

@@ -30,7 +30,7 @@ class TryonService {
       );
       return Result.success(data: response.data['image']);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('虛擬試穿失敗', error: e);
     }
   }
 
@@ -54,7 +54,7 @@ class TryonService {
       );
       return Result.success(data: response.data['image']);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('虛擬試穿失敗', error: e);
     }
   }
 }

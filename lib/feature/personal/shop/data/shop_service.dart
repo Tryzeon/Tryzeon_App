@@ -49,7 +49,7 @@ class ShopService {
 
       return Result.success(data: searchResult);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('獲取商品列表失敗', error: e);
     }
   }
 
@@ -74,7 +74,7 @@ class ShopService {
 
       return Result.success(data: searchResult);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure('搜尋商品失敗', error: e);
     }
   }
 

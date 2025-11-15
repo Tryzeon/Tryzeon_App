@@ -44,7 +44,7 @@ class StoreProfileService {
       final profile = StoreProfile.fromJson(response);
       return Result.success(data: profile);
     } catch (e) {
-      return Result.failure('取得店家資料失敗: ${e.toString()}');
+      return Result.failure('取得店家資料失敗', error: e);
     }
   }
 
@@ -82,7 +82,7 @@ class StoreProfileService {
       final profile = StoreProfile.fromJson(response);
       return Result.success(data: profile);
     } catch (e) {
-      return Result.failure('更新店家資料失敗: ${e.toString()}');
+      return Result.failure('更新店家資料失敗', error: e);
     }
   }
 
@@ -112,7 +112,7 @@ class StoreProfileService {
 
       return Result.success(file: savedFile);
     } catch (e) {
-      return Result.failure('載入Logo失敗: ${e.toString()}');
+      return Result.failure('載入Logo失敗', error: e);
     }
   }
 
@@ -146,7 +146,7 @@ class StoreProfileService {
 
       return Result.success(file: savedFile);
     } catch (e) {
-      return Result.failure('上傳Logo失敗: ${e.toString()}');
+      return Result.failure('上傳Logo失敗', error: e);
     }
   }
 

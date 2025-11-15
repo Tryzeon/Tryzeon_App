@@ -35,7 +35,7 @@ class AvatarService {
 
       return Result.success(data: savedFile);
     } catch (e) {
-      return Result.failure('獲取頭像失敗: ${e.toString()}');
+      return Result.failure('獲取頭像失敗', error: e);
     }
   }
 
@@ -68,7 +68,7 @@ class AvatarService {
       final savedFile = await CacheService.saveImage(bytes, fileName);
       return Result.success(data: savedFile);
     } catch (e) {
-      return Result.failure('上傳頭像失敗: ${e.toString()}');
+      return Result.failure('上傳頭像失敗', error: e);
     }
   }
 
