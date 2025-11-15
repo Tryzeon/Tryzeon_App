@@ -85,6 +85,14 @@ class _ProductCardState extends State<ProductCard> {
                             imageUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              );
+                            },
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
                                   color: Colors.grey[300],
