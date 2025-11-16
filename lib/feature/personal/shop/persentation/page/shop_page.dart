@@ -19,7 +19,6 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   List<String> adImages = [];
-  List<Product> products = [];
   List<Product> displayedProducts = [];
   bool isLoading = true;
 
@@ -28,7 +27,8 @@ class _ShopPageState extends State<ShopPage> {
   bool _ascending = false;
   int? _minPrice;
   int? _maxPrice;
-  
+  String? _searchQuery;
+
   // 商品類型列表
   List<String> _productTypes = [];
   final Set<String> _selectedTypes = {};
@@ -73,11 +73,10 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   Future<void> _loadProducts() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     final result = await ShopService.getProducts(
+      searchQuery: _searchQuery,
       sortBy: _sortBy,
       ascending: _ascending,
       minPrice: _minPrice,
@@ -87,16 +86,13 @@ class _ShopPageState extends State<ShopPage> {
 
     if (!mounted) return;
 
-    setState(() {
-      isLoading = false;
-    });
-
     if (result.isSuccess) {
       setState(() {
-        products = result.data!;
         displayedProducts = result.data!;
+        isLoading = false;
       });
     } else {
+      setState(() => isLoading = false);
       TopNotification.show(
         context,
         message: result.errorMessage ?? '載入商品失敗',
@@ -106,13 +102,12 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   void _handleSortByTryonCount() {
-    if (_sortBy != 'tryon_count') {
-      setState(() {
-        _sortBy = 'tryon_count';
-        _ascending = false;
-      });
-      _loadProducts();
-    }
+    if (_sortBy == 'tryon_count') return;
+    setState(() {
+      _sortBy = 'tryon_count';
+      _ascending = false;
+    });
+    _loadProducts();
   }
 
   void _handleSortByPrice() {
@@ -313,16 +308,9 @@ class _ShopPageState extends State<ShopPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: ShopSearchBar(
-                          onSearchResults: (results) {
-                            setState(() {
-                              displayedProducts = results;
-                              isLoading = false;
-                            });
-                          },
-                          onSearchStart: () {
-                            setState(() {
-                              isLoading = true;
-                            });
+                          onSearch: (query) {
+                            setState(() => _searchQuery = query.isEmpty ? null : query);
+                            return _loadProducts();
                           },
                         ),
                       ),
@@ -339,13 +327,9 @@ class _ShopPageState extends State<ShopPage> {
                         productTypes: _productTypes,
                         selectedTypes: _selectedTypes,
                         onTypeToggle: (type) {
-                          setState(() {
-                            if (_selectedTypes.contains(type)) {
-                              _selectedTypes.remove(type);
-                            } else {
-                              _selectedTypes.add(type);
-                            }
-                          });
+                          setState(() => _selectedTypes.contains(type)
+                              ? _selectedTypes.remove(type)
+                              : _selectedTypes.add(type));
                           _loadProducts();
                         },
                       ),

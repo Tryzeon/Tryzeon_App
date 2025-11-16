@@ -9,6 +9,7 @@ class ShopService {
 
   /// 獲取所有商品（包含店家資訊）
   static Future<Result<List<Product>>> getProducts({
+    String? searchQuery,
     String sortBy = 'created_at',
     bool ascending = false,
     int? minPrice,
@@ -27,6 +28,11 @@ class ShopService {
               store_name
             )
           ''');
+
+      // 搜尋過濾（商品名稱或類型）
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        query = query.or('name.ilike.%$searchQuery%,type.cs.{$searchQuery}');
+      }
 
       // 價格區間過濾
       if (minPrice != null) {
@@ -50,31 +56,6 @@ class ShopService {
       return Result.success(data: searchResult);
     } catch (e) {
       return Result.failure('獲取商品列表失敗', error: e);
-    }
-  }
-
-  /// 搜尋商品（包含商品名稱、類型和店家名稱）
-  static Future<Result<List<Product>>> searchProducts(String query) async {
-    try {
-      final response = await _supabase
-        .from(_productsTable)
-        .select('''
-        *,
-        store_profile!products_store_id_fkey(
-          store_id,
-          store_name
-        )
-        ''')
-        .or('name.ilike.%$query%,type.cs.{$query}')
-        .order('created_at', ascending: false);
-
-      final searchResult = (response as List)
-          .map((item) => Product.fromJson(item))
-          .toList();
-
-      return Result.success(data: searchResult);
-    } catch (e) {
-      return Result.failure('搜尋商品失敗', error: e);
     }
   }
 
