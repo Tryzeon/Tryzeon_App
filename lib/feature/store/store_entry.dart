@@ -69,6 +69,7 @@ class _StoreEntryState extends State<StoreEntry> {
         canPop: false, // 防止返回
         child: StoreOnboardingPage(
           onComplete: _onOnboardingComplete,
+          onRefresh: _checkStoreInfo,
         ),
       );
     }

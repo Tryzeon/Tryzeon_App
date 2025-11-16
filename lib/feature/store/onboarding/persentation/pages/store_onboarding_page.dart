@@ -8,8 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class StoreOnboardingPage extends StatefulWidget {
   final VoidCallback? onComplete;
+  final Future<void> Function()? onRefresh;
 
-  const StoreOnboardingPage({super.key, this.onComplete});
+  const StoreOnboardingPage({super.key, this.onComplete, this.onRefresh});
 
   @override
   State<StoreOnboardingPage> createState() => _StoreOnboardingPageState();
@@ -176,12 +177,15 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
 
               // 內容區域
               Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                child: RefreshIndicator(
+                  onRefresh: widget.onRefresh ?? () async {},
+                  child: Center(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
@@ -376,7 +380,8 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                             ],
                           ),
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
