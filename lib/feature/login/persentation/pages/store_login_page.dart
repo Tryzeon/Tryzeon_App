@@ -11,7 +11,30 @@ class StoreLoginPage extends StatefulWidget {
   State<StoreLoginPage> createState() => _StoreLoginPageState();
 }
 
-class _StoreLoginPageState extends State<StoreLoginPage> {
+class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObserver {
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_isLoading) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   void _showError(String message) {
     if (!mounted) return;
     TopNotification.show(
@@ -22,10 +45,16 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
   }
 
   Future<void> _handleSignIn(String provider) async {
+    setState(() => _isLoading = true);
+
     final result = await AuthService.signInWithProvider(
       provider: provider,
       userType: UserType.store,
     );
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
 
     if (result.isSuccess && mounted) {
       Navigator.pushReplacement(
@@ -42,70 +71,83 @@ class _StoreLoginPageState extends State<StoreLoginPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.surface,
-              Color.alphaBlend(
-                Colors.white.withValues(alpha: 0.2),
-                Theme.of(context).colorScheme.surface,
-              ),
-              Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                Theme.of(context).colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: screenHeight * 0.05),
-
-                // 返回按鈕
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-                      padding: const EdgeInsets.all(12),
-                    ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface,
+                  Color.alphaBlend(
+                    Colors.white.withValues(alpha: 0.2),
+                    Theme.of(context).colorScheme.surface,
                   ),
+                  Color.alphaBlend(
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    Theme.of(context).colorScheme.surface,
+                  ),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: screenHeight * 0.05),
+
+                    // 返回按鈕
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                          padding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.05),
+
+                    // Logo與標題區域
+                    _buildHeader(context),
+
+                    const Spacer(),
+
+                    // Google 登入按鈕
+                    _buildLoginButton('Google', () => _handleSignIn('Google')),
+
+                    const SizedBox(height: 16),
+
+                    // Facebook 登入按鈕
+                    _buildLoginButton('Facebook', () => _handleSignIn('Facebook')),
+
+                    const SizedBox(height: 16),
+
+                    // Apple 登入按鈕
+                    _buildLoginButton('Apple', () => _handleSignIn('Apple')),
+
+                    SizedBox(height: screenHeight * 0.1),
+                  ],
                 ),
-
-                SizedBox(height: screenHeight * 0.05),
-
-                // Logo與標題區域
-                _buildHeader(context),
-
-                const Spacer(),
-
-                // Google 登入按鈕
-                _buildLoginButton('Google', () => _handleSignIn('Google')),
-
-                const SizedBox(height: 16),
-
-                // Facebook 登入按鈕
-                _buildLoginButton('Facebook', () => _handleSignIn('Facebook')),
-
-                const SizedBox(height: 16),
-
-                // Apple 登入按鈕
-                _buildLoginButton('Apple', () => _handleSignIn('Apple')),
-
-                SizedBox(height: screenHeight * 0.1),
-              ],
+              ),
             ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

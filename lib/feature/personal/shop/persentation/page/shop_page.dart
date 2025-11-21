@@ -73,7 +73,9 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   Future<void> _loadProducts() async {
-    setState(() => isLoading = true);
+    if (mounted) {
+      setState(() => isLoading = true);
+    }
 
     final result = await ShopService.getProducts(
       searchQuery: _searchQuery,

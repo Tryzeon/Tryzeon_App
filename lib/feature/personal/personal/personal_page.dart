@@ -43,9 +43,11 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   Future<void> _loadUsername({bool forceRefresh = false}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
     if (!mounted) return;
@@ -59,9 +61,11 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   Future<void> _loadWardrobeItems({bool forceRefresh = false}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     final categories = WardrobeService.getWardrobeTypesList();
     final result = await WardrobeService.getClothing(forceRefresh: forceRefresh);
