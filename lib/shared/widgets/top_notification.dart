@@ -12,13 +12,18 @@ class TopNotification {
     BuildContext context, {
     required String message,
     NotificationType type = NotificationType.info,
-    Duration duration = const Duration(seconds: 3),
   }) {
+    final duration = type == NotificationType.error
+        ? const Duration(seconds: 10)
+        : const Duration(seconds: 3);
+
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
+    final GlobalKey<_TopNotificationWidgetState> key = GlobalKey();
 
     overlayEntry = OverlayEntry(
       builder: (context) => _TopNotificationWidget(
+        key: key,
         message: message,
         type: type,
         onDismiss: () => overlayEntry.remove(),
@@ -28,9 +33,9 @@ class TopNotification {
     overlay.insert(overlayEntry);
 
     // 自動移除
-    Future.delayed(duration, () {
-      if (overlayEntry.mounted) {
-        overlayEntry.remove();
+    Future.delayed(duration, () async {
+      if (overlayEntry.mounted && key.currentState != null) {
+        await key.currentState!._dismiss();
       }
     });
   }
@@ -42,6 +47,7 @@ class _TopNotificationWidget extends StatefulWidget {
   final VoidCallback onDismiss;
 
   const _TopNotificationWidget({
+    super.key,
     required this.message,
     required this.type,
     required this.onDismiss,
@@ -56,6 +62,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  double _dragOffset = 0.0;
 
   @override
   void initState() {
@@ -90,39 +97,24 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
     super.dispose();
   }
 
-  void _dismiss() async {
+  Future<void> _dismiss() async {
     await _controller.reverse();
     widget.onDismiss();
   }
 
-  Color _getBackgroundColor(BuildContext context) {
-    switch (widget.type) {
-      case NotificationType.success:
-        return const Color(0xFF10B981);
-      case NotificationType.error:
-        return const Color(0xFFEF4444);
-      case NotificationType.warning:
-        return const Color(0xFFF59E0B);
-      case NotificationType.info:
-        return const Color(0xFF3B82F6);
-    }
-  }
-
-  IconData _getIcon() {
-    switch (widget.type) {
-      case NotificationType.success:
-        return Icons.check_circle;
-      case NotificationType.error:
-        return Icons.cancel;
-      case NotificationType.warning:
-        return Icons.warning;
-      case NotificationType.info:
-        return Icons.info;
-    }
+  (Color, IconData) _getStyle() {
+    return switch (widget.type) {
+      NotificationType.success => (const Color(0xFF10B981), Icons.check_circle),
+      NotificationType.error => (const Color(0xFFEF4444), Icons.cancel),
+      NotificationType.warning => (const Color(0xFFF59E0B), Icons.warning),
+      NotificationType.info => (const Color(0xFF3B82F6), Icons.info),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final (color, icon) = _getStyle();
+
     return Positioned(
       top: 0,
       left: 0,
@@ -132,14 +124,24 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: GestureDetector(
-                onVerticalDragEnd: (details) {
-                  if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
-                    _dismiss();
-                  }
-                },
+            child: Transform.translate(
+              offset: Offset(0, _dragOffset),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    setState(() {
+                      _dragOffset += details.delta.dy;
+                      if (_dragOffset > 0) _dragOffset = 0;
+                    });
+                  },
+                  onVerticalDragEnd: (details) {
+                    if (_dragOffset < -50 || (details.primaryVelocity != null && details.primaryVelocity! < -300)) {
+                      _dismiss();
+                    } else {
+                      setState(() => _dragOffset = 0);
+                    }
+                  },
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -159,22 +161,13 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                       child: IntrinsicHeight(
                         child: Row(
                           children: [
-                            // 左側彩色條
-                            Container(
-                              width: 4,
-                              color: _getBackgroundColor(context),
-                            ),
-                            // 內容區域
+                            Container(width: 4, color: color),
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                padding: const EdgeInsets.all(16),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      _getIcon(),
-                                      color: _getBackgroundColor(context),
-                                      size: 24,
-                                    ),
+                                    Icon(icon, color: color, size: 24),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
@@ -204,6 +197,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ),
               ),
