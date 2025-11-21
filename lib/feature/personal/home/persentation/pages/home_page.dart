@@ -6,7 +6,7 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import '../../data/tryon_service.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -223,26 +223,17 @@ class HomePageState extends State<HomePage> {
       final imageBytes = base64Decode(base64String);
 
       // 儲存到相簿
-      final result = await ImageGallerySaver.saveImage(
+      await Gal.putImageBytes(
         imageBytes,
-        quality: 100,
         name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
       );
 
       if (mounted) {
-        if (result != null && result['isSuccess'] == true) {
-          TopNotification.show(
-            context,
-            message: '照片已儲存到相簿',
-            type: NotificationType.success,
-          );
-        } else {
-          TopNotification.show(
-            context,
-            message: '儲存失敗，請稍後再試',
-            type: NotificationType.error,
-          );
-        }
+        TopNotification.show(
+          context,
+          message: '照片已儲存到相簿',
+          type: NotificationType.success,
+        );
       }
     } catch (e) {
       if (mounted) {

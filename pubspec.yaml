@@ -46,8 +46,8 @@ dependencies:
   url_launcher: ^6.2.1
   path_provider: ^2.1.1
   shared_preferences: ^2.2.2
-  image_gallery_saver: ^2.0.3
   logger: ^2.6.2
+  gal: ^2.3.2
 
 dev_dependencies:
   flutter_test:
