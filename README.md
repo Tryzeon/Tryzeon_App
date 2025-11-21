@@ -50,6 +50,12 @@ flutter devices  # List available devices
 flutter run -d <device-id>
 ```
 
+### 5. Build the Application
+build apk file for Android
+```bash
+flutter build apk 
+```
+
 ## File Storage Location
 
 ### Avatars: 
