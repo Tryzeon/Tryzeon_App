@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
@@ -19,7 +20,7 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   File? _avatarFile;
-  final List<String> _tryonImages = []; // 試穿後的圖片列表
+  final List<Uint8List> _tryonImages = []; // 試穿後的圖片列表（已解碼的 bytes）
   int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
   bool _isLoading = true;
   int? _customAvatarIndex; // 記錄哪張試穿照片被設為自訂 avatar
@@ -44,11 +45,10 @@ class HomePageState extends State<HomePage> {
       return;
     }
 
-    // 如果有自訂 avatar，取得其 base64
+    // 如果有自訂 avatar，轉換為 base64
     String? customAvatarBase64;
     if (_customAvatarIndex != null) {
-      final avatarUrl = _tryonImages[_customAvatarIndex!];
-      customAvatarBase64 = avatarUrl.split(',')[1];
+      customAvatarBase64 = base64Encode(_tryonImages[_customAvatarIndex!]);
     }
 
     setState(() {
@@ -68,8 +68,12 @@ class HomePageState extends State<HomePage> {
 
       // Check if success
       if (result.isSuccess) {
+        // 解碼 base64 並儲存為 bytes
+        final base64String = result.data!.split(',')[1];
+        final imageBytes = base64Decode(base64String);
+
         setState(() {
-          _tryonImages.add(result.data!);
+          _tryonImages.add(imageBytes);
           _currentTryonIndex = _tryonImages.length - 1;
         });
 
@@ -187,9 +191,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _downloadCurrentImage() async {
     try {
-      final base64Url = _tryonImages[_currentTryonIndex];
-      final base64String = base64Url.split(',')[1];
-      final imageBytes = base64Decode(base64String);
+      final imageBytes = _tryonImages[_currentTryonIndex];
 
       // 儲存到相簿
       await Gal.putImageBytes(
@@ -479,11 +481,8 @@ class HomePageState extends State<HomePage> {
   Widget _buildAvatarImage() {
     // 如果有試穿圖片，顯示試穿圖片
     if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonImages.length) {
-      final base64Url = _tryonImages[_currentTryonIndex];
-      final base64String = base64Url.split(',')[1];
-      final bytes = base64Decode(base64String);
       return Image.memory(
-        bytes,
+        _tryonImages[_currentTryonIndex],
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
