@@ -56,6 +56,12 @@ build apk file for Android
 flutter build apk 
 ```
 
+## Linter
+```bash
+dart fix --apply
+dart format .
+```
+
 ## File Storage Location
 
 ### Avatars: 

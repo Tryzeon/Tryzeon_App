@@ -21,8 +21,46 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # Imports & Ordering (Strict)
+    directives_ordering: true
+    always_use_package_imports: false
+    
+    # Style & Formatting
+    prefer_single_quotes: true
+    always_declare_return_types: true
+    prefer_final_locals: true
+    prefer_final_parameters: true
+    avoid_multiple_declarations_per_line: true
+    eol_at_end_of_file: true
+    
+    # Class & OOP
+    sort_constructors_first: true
+    sort_unnamed_constructors_first: true
+    avoid_setters_without_getters: true
+    avoid_returning_this: true
+    use_setters_to_change_properties: true
+    
+    # Flutter Specific
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    sort_child_properties_last: true
+    use_build_context_synchronously: true
+    use_key_in_widget_constructors: true
+    sized_box_for_whitespace: true
+    
+    # Error Prevention & Best Practices
+    unnecessary_this: true
+    avoid_print: true
+    avoid_empty_else: true
+    cancel_subscriptions: true
+    close_sinks: true
+    avoid_void_async: true
+    unnecessary_await_in_return: true
+    unnecessary_lambdas: true
+    unnecessary_parenthesis: true
+    unnecessary_raw_strings: true
+    avoid_unused_constructor_parameters: true
+    cast_nullable_to_non_nullable: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
