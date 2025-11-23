@@ -11,18 +11,22 @@ class AvatarService {
   static Future<Result<File>> getAvatar() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return Result.failure('用戶未登入');
+      return Result.failure('請重新登入');
     }
 
     try {
       // 1. 檢查本地是否有緩存
-      final cachedFiles = await CacheService.getImages(relativePath: '$userId/avatar');
+      final cachedFiles = await CacheService.getImages(
+        relativePath: '$userId/avatar',
+      );
       if (cachedFiles.isNotEmpty) {
         return Result.success(data: cachedFiles.first);
       }
 
       // 2. 從 Supabase 查詢檔案名稱
-      final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
+      final files = await _supabase.storage
+          .from(_bucket)
+          .list(path: '$userId/avatar');
       if (files.isEmpty) {
         return Result.success();
       }
@@ -43,7 +47,7 @@ class AvatarService {
   static Future<Result<File>> uploadAvatar(File imageFile) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return Result.failure('用戶未登入');
+      return Result.failure('請重新登入');
     }
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -55,14 +59,16 @@ class AvatarService {
 
       // 2. 上傳到 Supabase
       final bytes = await imageFile.readAsBytes();
-      await _supabase.storage.from(_bucket).uploadBinary(
-        fileName,
-        bytes,
-        fileOptions: const FileOptions(
-          contentType: 'image/jpeg',
-          upsert: false,
-        ),
-      );
+      await _supabase.storage
+          .from(_bucket)
+          .uploadBinary(
+            fileName,
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
 
       // 3. 保存新的頭像到本地
       final savedFile = await CacheService.saveImage(bytes, fileName);
@@ -75,9 +81,13 @@ class AvatarService {
   /// 刪除舊頭像（Supabase 和本地）
   static Future<void> _deleteOldAvatars(String userId) async {
     // 刪除 Supabase 中的舊頭像
-    final files = await _supabase.storage.from(_bucket).list(path: '$userId/avatar');
+    final files = await _supabase.storage
+        .from(_bucket)
+        .list(path: '$userId/avatar');
     if (files.isNotEmpty) {
-      await _supabase.storage.from(_bucket).remove(['$userId/avatar/${files.first.name}']);
+      await _supabase.storage.from(_bucket).remove([
+        '$userId/avatar/${files.first.name}',
+      ]);
     }
 
     // 刪除本地舊頭像

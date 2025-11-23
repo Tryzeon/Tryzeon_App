@@ -10,10 +10,12 @@ class WardrobeService {
 
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static Future<Result<List<Clothing>>> getClothing({bool forceRefresh = false}) async {
+  static Future<Result<List<Clothing>>> getClothing({
+    bool forceRefresh = false,
+  }) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return Result.failure('用戶未登入');
+      return Result.failure('請重新登入');
     }
 
     try {
@@ -21,7 +23,9 @@ class WardrobeService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          final clothing = cachedData.map((json) => Clothing.fromJson(json)).toList();
+          final clothing = cachedData
+              .map((json) => Clothing.fromJson(json))
+              .toList();
           return Result.success(data: clothing);
         }
       }
@@ -35,7 +39,9 @@ class WardrobeService {
 
       await CacheService.saveList(_cacheKey, response);
 
-      final clothing = (response as List).map((json) => Clothing.fromJson(json)).toList();
+      final clothing = (response as List)
+          .map((json) => Clothing.fromJson(json))
+          .toList();
 
       return Result.success(data: clothing);
     } catch (e) {
@@ -43,10 +49,13 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<List<Clothing>>> uploadClothing(File imageFile, String category) async {
+  static Future<Result<List<Clothing>>> uploadClothing(
+    File imageFile,
+    String category,
+  ) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return Result.failure('用戶未登入');
+      return Result.failure('請重新登入');
     }
 
     final categoryCode = getWardrobeTypesEnglishCode(category);
@@ -56,14 +65,16 @@ class WardrobeService {
     try {
       // 1. 上傳圖片到 Supabase Storage
       final bytes = await imageFile.readAsBytes();
-      await _supabase.storage.from(_bucket).uploadBinary(
-        storagePath,
-        bytes,
-        fileOptions: const FileOptions(
-          contentType: 'image/jpeg',
-          upsert: false,
-        ),
-      );
+      await _supabase.storage
+          .from(_bucket)
+          .uploadBinary(
+            storagePath,
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
 
       // 2. 保存到本地緩存
       await CacheService.saveImage(bytes, storagePath);
@@ -87,15 +98,12 @@ class WardrobeService {
   static Future<Result<List<Clothing>>> deleteClothing(Clothing item) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      return Result.failure('用戶未登入');
+      return Result.failure('請重新登入');
     }
 
     try {
       // 1. 刪除 DB 記錄
-      await _supabase
-          .from(_wardrobeTable)
-          .delete()
-          .eq('id', item.id!);
+      await _supabase.from(_wardrobeTable).delete().eq('id', item.id!);
 
       // 2. 刪除 Supabase Storage 中的圖片
       await _supabase.storage.from(_bucket).remove([item.imagePath]);
@@ -144,10 +152,7 @@ class ClothingType {
   final String zh;
   final String en;
 
-  const ClothingType({
-    required this.zh,
-    required this.en,
-  });
+  const ClothingType({required this.zh, required this.en});
 
   static const List<ClothingType> all = [
     ClothingType(zh: '上衣', en: 'top'),
@@ -165,11 +170,7 @@ class Clothing {
   final String imagePath;
   final String category;
 
-  Clothing({
-    this.id,
-    required this.imagePath,
-    required this.category,
-  });
+  Clothing({this.id, required this.imagePath, required this.category});
 
   // 按需載入圖片，使用快取機制
   Future<Result<File>> loadImage() async {

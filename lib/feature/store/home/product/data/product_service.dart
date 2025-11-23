@@ -20,14 +20,18 @@ class ProductService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('用戶未登入');
+        return Result.failure('請重新登入');
       }
 
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          List<Product> products = cachedData.map((json) => Product.fromJson(json)).toList();
-          return Result.success(data: _sortProducts(products, sortBy, ascending));
+          List<Product> products = cachedData
+              .map((json) => Product.fromJson(json))
+              .toList();
+          return Result.success(
+            data: _sortProducts(products, sortBy, ascending),
+          );
         }
       }
 
@@ -38,7 +42,9 @@ class ProductService {
 
       await CacheService.saveList(_cacheKey, response);
 
-      List<Product> products = response.map((json) => Product.fromJson(json)).toList();
+      List<Product> products = response
+          .map((json) => Product.fromJson(json))
+          .toList();
       return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
       return Result.failure('獲取商品列表失敗', error: e);
@@ -57,7 +63,7 @@ class ProductService {
       // 獲取當前用戶 ID
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('用戶未登入');
+        return Result.failure('請重新登入');
       }
 
       // 如果有圖片，先上傳圖片
@@ -74,9 +80,7 @@ class ProductService {
       );
 
       // 插入到資料庫
-      await _supabase
-          .from(_productsTable)
-          .insert(product.toJson());
+      await _supabase.from(_productsTable).insert(product.toJson());
 
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
@@ -95,7 +99,7 @@ class ProductService {
     required int price,
     required String purchaseLink,
     required String currentFilePath,
-    File? newImageFile
+    File? newImageFile,
   }) async {
     try {
       String? filePath = currentFilePath;
@@ -145,10 +149,7 @@ class ProductService {
       }
 
       // 刪除商品資料
-      await _supabase
-          .from(_productsTable)
-          .delete()
-          .eq('id', product.id!);
+      await _supabase.from(_productsTable).delete().eq('id', product.id!);
 
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
@@ -169,7 +170,9 @@ class ProductService {
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
-      final bytes = await _supabase.storage.from(_productImagesBucket).download(filePath);
+      final bytes = await _supabase.storage
+          .from(_productImagesBucket)
+          .download(filePath);
       final savedFile = await CacheService.saveImage(bytes, filePath);
 
       return Result.success(file: savedFile);
@@ -191,14 +194,16 @@ class ProductService {
     final bytes = await imageFile.readAsBytes();
 
     // 上傳到 Supabase Storage
-    await _supabase.storage.from(_productImagesBucket).uploadBinary(
-      filePath,
-      bytes,
-      fileOptions: const FileOptions(
-        contentType: 'image/jpeg',
-        upsert: false,
-      ),
-    );
+    await _supabase.storage
+        .from(_productImagesBucket)
+        .uploadBinary(
+          filePath,
+          bytes,
+          fileOptions: const FileOptions(
+            contentType: 'image/jpeg',
+            upsert: false,
+          ),
+        );
 
     // 保存到本地緩存
     await CacheService.saveImage(bytes, filePath);
@@ -212,16 +217,18 @@ class ProductService {
     if (filePath.isEmpty) return;
 
     // 1. 刪除 Supabase Storage 中的圖片
-    await _supabase.storage
-        .from(_productImagesBucket)
-        .remove([filePath]);
+    await _supabase.storage.from(_productImagesBucket).remove([filePath]);
 
     // 2. 刪除本地緩存的圖片
     await CacheService.deleteImage(filePath);
   }
 
   /// 本地排序產品
-  static List<Product> _sortProducts(List<Product> products, String sortBy, bool ascending) {
+  static List<Product> _sortProducts(
+    List<Product> products,
+    String sortBy,
+    bool ascending,
+  ) {
     final sortedProducts = List<Product>.from(products);
 
     sortedProducts.sort((a, b) {
