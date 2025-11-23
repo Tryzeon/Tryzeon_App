@@ -31,6 +31,15 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> tryOnFromLocal() async {
+    if (_avatarFile == null) {
+      TopNotification.show(
+        context,
+        message: '請先上傳您的照片',
+        type: NotificationType.warning,
+      );
+      return;
+    }
+
     final File? clothingImage = await ImagePickerHelper.pickImage(context);
     if (clothingImage == null) return;
 
