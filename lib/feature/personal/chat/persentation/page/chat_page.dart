@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../data/chat_service.dart';
 
 // Question data structure
@@ -322,14 +323,11 @@ class _ChatPageState extends State<ChatPage> {
       });
     } else {
       // Show error message
-      setState(() {
-        messages.add(
-          ChatMessage(
-            text: '抱歉，${result.errorMessage ?? '發生未知錯誤'}',
-            isUser: false,
-          ),
-        );
-      });
+      TopNotification.show(
+        context,
+        message: result.errorMessage ?? '獲取 LLM 回應失敗',
+        type: NotificationType.error,
+      );
     }
 
     scrollToBottom();
