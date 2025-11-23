@@ -1,13 +1,10 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
-class AdBanner extends StatefulWidget {
-  final List<String> adImages;
+import 'package:flutter/material.dart';
 
-  const AdBanner({
-    super.key,
-    required this.adImages,
-  });
+class AdBanner extends StatefulWidget {
+  const AdBanner({super.key, required this.adImages});
+  final List<String> adImages;
 
   @override
   State<AdBanner> createState() => _AdBannerState();
@@ -25,7 +22,7 @@ class _AdBannerState extends State<AdBanner> {
     _pageController = PageController(initialPage: _currentPage);
 
     // 自動輪播邏輯
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (final Timer timer) {
       if (_currentPage < widget.adImages.length - 1) {
         _currentPage++;
       } else {
@@ -48,13 +45,13 @@ class _AdBannerState extends State<AdBanner> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return SizedBox(
       height: 180,
       child: PageView.builder(
         controller: _pageController,
         itemCount: widget.adImages.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (final context, final index) {
           return GestureDetector(
             onTap: () {
               // TODO: 點擊廣告導向詳情頁或外部連結

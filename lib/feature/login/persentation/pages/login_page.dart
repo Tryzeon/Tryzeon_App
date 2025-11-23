@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'store_login_page.dart';
+
 import 'personal_login_page.dart';
+import 'store_login_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -34,13 +35,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       curve: Curves.easeIn,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _fadeController.forward();
     _slideController.forward();
@@ -56,23 +54,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   void _navigateToPersonalLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const PersonalLoginPage(),
-      ),
+      MaterialPageRoute(builder: (final context) => const PersonalLoginPage()),
     );
   }
 
   void _navigateToStoreLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const StoreLoginPage(),
-      ),
+      MaterialPageRoute(builder: (final context) => const StoreLoginPage()),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -172,7 +166,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(final BuildContext context) {
     return Column(
       children: [
         // Logo圖示
@@ -191,13 +185,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: Icon(
+          child: const Icon(
             Icons.checkroom_rounded,
             size: 48,
             color: Colors.white,
@@ -207,7 +203,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
         // 標題
         ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
+          shaderCallback: (final bounds) => LinearGradient(
             colors: [
               Theme.of(context).colorScheme.primary,
               Theme.of(context).colorScheme.secondary,
@@ -216,9 +212,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           child: Text(
             'Tryzeon',
             style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.5,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -228,8 +224,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         Text(
           '請選擇您的身份',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                letterSpacing: 0.5,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
+            letterSpacing: 0.5,
           ),
           textAlign: TextAlign.center,
         ),
@@ -238,25 +236,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   Widget _buildLoginOptionCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Gradient gradient,
-    required VoidCallback onTap,
-    required int delay,
+    required final BuildContext context,
+    required final IconData icon,
+    required final String title,
+    required final String subtitle,
+    required final Gradient gradient,
+    required final VoidCallback onTap,
+    required final int delay,
   }) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 400 + delay),
       curve: Curves.easeOutBack,
-      builder: (context, value, child) {
+      builder: (final context, final value, final child) {
         return Transform.scale(
           scale: value,
-          child: Opacity(
-            opacity: value.clamp(0.0, 1.0),
-            child: child,
-          ),
+          child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
         );
       },
       child: _GlassCard(
@@ -274,11 +269,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Icon(
-                  icon,
-                  size: 36,
-                  color: Colors.white,
-                ),
+                child: Icon(icon, size: 36, color: Colors.white),
               ),
               const SizedBox(width: 24),
 
@@ -289,18 +280,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
-                      ),
+                          ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            letterSpacing: 0.3,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ],
@@ -322,21 +314,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 }
 
 class _GlassCard extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onTap;
-  final Gradient gradient;
-
   const _GlassCard({
     required this.child,
     required this.onTap,
     required this.gradient,
   });
+  final Widget child;
+  final VoidCallback onTap;
+  final Gradient gradient;
 
   @override
   State<_GlassCard> createState() => _GlassCardState();
 }
 
-class _GlassCardState extends State<_GlassCard> with SingleTickerProviderStateMixin {
+class _GlassCardState extends State<_GlassCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
 
@@ -359,7 +351,7 @@ class _GlassCardState extends State<_GlassCard> with SingleTickerProviderStateMi
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ScaleTransition(
       scale: _scaleAnimation,
       child: GestureDetector(
@@ -386,11 +378,7 @@ class _GlassCardState extends State<_GlassCard> with SingleTickerProviderStateMi
             child: Stack(
               children: [
                 // 玻璃效果背景
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _GlassPainter(),
-                  ),
-                ),
+                Positioned.fill(child: CustomPaint(painter: _GlassPainter())),
 
                 // 內容
                 widget.child,
@@ -405,7 +393,7 @@ class _GlassCardState extends State<_GlassCard> with SingleTickerProviderStateMi
 
 class _GlassPainter extends CustomPainter {
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(final Canvas canvas, final Size size) {
     final paint = Paint()
       ..color = Colors.white.withValues(alpha: 0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
@@ -433,5 +421,5 @@ class _GlassPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant final CustomPainter oldDelegate) => false;
 }

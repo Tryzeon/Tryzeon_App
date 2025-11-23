@@ -1,7 +1,8 @@
 import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class AvatarService {
   static final _supabase = Supabase.instance.client;
@@ -44,7 +45,7 @@ class AvatarService {
   }
 
   /// 上傳頭像（先上傳到後端，成功後才保存到本地）
-  static Future<Result<File>> uploadAvatar(File imageFile) async {
+  static Future<Result<File>> uploadAvatar(final File imageFile) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
       return Result.failure('請重新登入');
@@ -79,7 +80,7 @@ class AvatarService {
   }
 
   /// 刪除舊頭像（Supabase 和本地）
-  static Future<void> _deleteOldAvatars(String userId) async {
+  static Future<void> _deleteOldAvatars(final String userId) async {
     // 刪除 Supabase 中的舊頭像
     final files = await _supabase.storage
         .from(_bucket)

@@ -8,7 +8,8 @@ class StoreProfileSettingsPage extends StatefulWidget {
   const StoreProfileSettingsPage({super.key});
 
   @override
-  State<StoreProfileSettingsPage> createState() => _StoreProfileSettingsPageState();
+  State<StoreProfileSettingsPage> createState() =>
+      _StoreProfileSettingsPageState();
 }
 
 class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
@@ -26,12 +27,14 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     _loadProfile(forceRefresh: true);
   }
 
-  Future<void> _loadProfile({bool forceRefresh = false}) async {
+  Future<void> _loadProfile({final bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
 
-    final result = await StoreProfileService.getStoreProfile(forceRefresh: forceRefresh);
+    final result = await StoreProfileService.getStoreProfile(
+      forceRefresh: forceRefresh,
+    );
 
     if (!mounted) return;
 
@@ -119,7 +122,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -157,7 +160,9 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
@@ -244,72 +249,106 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.1),
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .secondary
+                                                .withValues(alpha: 0.1),
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(60),
                                         border: Border.all(
-                                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withValues(alpha: 0.3),
                                           width: 2,
                                         ),
                                       ),
                                       child: _logoImage != null
                                           ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(60),
+                                              borderRadius:
+                                                  BorderRadius.circular(60),
                                               child: Image.file(
                                                 _logoImage!,
                                                 fit: BoxFit.cover,
                                               ),
                                             )
                                           : _storeProfile == null
-                                              ? Icon(
-                                                  Icons.camera_alt_rounded,
-                                                  size: 50,
-                                                  color: Theme.of(context).colorScheme.primary,
-                                                )
-                                              : FutureBuilder(
-                                                  future: _storeProfile!.loadLogo(),
-                                                  builder: (context, snapshot) {
-                                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                                      return CircularProgressIndicator(
-                                                        color: Theme.of(context).colorScheme.primary,
-                                                      );
-                                                    }
+                                          ? Icon(
+                                              Icons.camera_alt_rounded,
+                                              size: 50,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            )
+                                          : FutureBuilder(
+                                              future: _storeProfile!.loadLogo(),
+                                              builder: (final context, final snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return CircularProgressIndicator(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                                  );
+                                                }
 
-                                                    final result = snapshot.data;
-                                                    if (result == null || !result.isSuccess) {
-                                                      return Icon(
-                                                        Icons.camera_alt_rounded,
-                                                        size: 50,
-                                                        color: Theme.of(context).colorScheme.primary,
-                                                      );
-                                                    }
+                                                final result = snapshot.data;
+                                                if (result == null ||
+                                                    !result.isSuccess) {
+                                                  return Icon(
+                                                    Icons.camera_alt_rounded,
+                                                    size: 50,
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                                  );
+                                                }
 
-                                                    if (result.file != null) {
-                                                      return ClipRRect(
-                                                        borderRadius: BorderRadius.circular(60),
-                                                        child: Image.file(
-                                                          result.file!,
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder: (context, error, stackTrace) {
+                                                if (result.file != null) {
+                                                  return ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          60,
+                                                        ),
+                                                    child: Image.file(
+                                                      result.file!,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (
+                                                            final context,
+                                                            final error,
+                                                            final stackTrace,
+                                                          ) {
                                                             return Icon(
-                                                              Icons.store_rounded,
+                                                              Icons
+                                                                  .store_rounded,
                                                               size: 50,
-                                                              color: Theme.of(context).colorScheme.primary,
+                                                              color:
+                                                                  Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .colorScheme
+                                                                      .primary,
                                                             );
                                                           },
-                                                        ),
-                                                      );
-                                                    }
+                                                    ),
+                                                  );
+                                                }
 
-                                                    return Icon(
-                                                      Icons.camera_alt_rounded,
-                                                      size: 50,
-                                                      color: Theme.of(context).colorScheme.primary,
-                                                    );
-                                                  },
-                                                ),
+                                                return Icon(
+                                                  Icons.camera_alt_rounded,
+                                                  size: 50,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                );
+                                              },
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -368,20 +407,28 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       ),
                                       prefixIcon: Icon(
                                         Icons.store_rounded,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: Colors.grey[300]!),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey[300]!,
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: Colors.grey[300]!),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey[300]!,
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                           width: 2,
                                         ),
                                       ),
@@ -407,20 +454,28 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       ),
                                       prefixIcon: Icon(
                                         Icons.location_on_rounded,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: Colors.grey[300]!),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey[300]!,
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: Colors.grey[300]!),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey[300]!,
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                           width: 2,
                                         ),
                                       ),
@@ -448,7 +503,8 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 15,
                                     offset: const Offset(0, 8),
                                   ),
@@ -459,9 +515,9 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                 child: InkWell(
                                   onTap: _updateProfile,
                                   borderRadius: BorderRadius.circular(16),
-                                  child: Row(
+                                  child: const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
+                                    children: [
                                       Icon(
                                         Icons.save_rounded,
                                         color: Colors.white,

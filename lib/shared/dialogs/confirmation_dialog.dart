@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
 class ConfirmationDialog extends StatelessWidget {
-  final String? title;
-  final String content;
-  final String cancelText;
-  final String confirmText;
-
   const ConfirmationDialog({
     super.key,
     this.title,
@@ -13,9 +8,13 @@ class ConfirmationDialog extends StatelessWidget {
     this.cancelText = '取消',
     this.confirmText = '確定',
   });
+  final String? title;
+  final String content;
+  final String cancelText;
+  final String confirmText;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Dialog(
@@ -25,11 +24,8 @@ class ConfirmationDialog extends StatelessWidget {
         tween: Tween(begin: 0.8, end: 1.0),
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
-        builder: (context, scale, child) {
-          return Transform.scale(
-            scale: scale,
-            child: child,
-          );
+        builder: (final context, final scale, final child) {
+          return Transform.scale(scale: scale, child: child);
         },
         child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
@@ -117,8 +113,12 @@ class ConfirmationDialog extends StatelessWidget {
                           child: TextButton(
                             onPressed: () => Navigator.pop(context, false),
                             style: TextButton.styleFrom(
-                              foregroundColor: colorScheme.onSurface.withValues(alpha: 0.7),
-                              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                              foregroundColor: colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
+                              backgroundColor: colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.3),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -145,7 +145,9 @@ class ConfirmationDialog extends StatelessWidget {
                             backgroundColor: colorScheme.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shadowColor: colorScheme.primary.withValues(alpha: 0.4),
+                            shadowColor: colorScheme.primary.withValues(
+                              alpha: 0.4,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -173,16 +175,16 @@ class ConfirmationDialog extends StatelessWidget {
 
   /// 顯示確認對話框
   static Future<bool?> show({
-    required BuildContext context,
-    String? title,
-    required String content,
-    String cancelText = '取消',
-    String confirmText = '確定',
+    required final BuildContext context,
+    final String? title,
+    required final String content,
+    final String cancelText = '取消',
+    final String confirmText = '確定',
   }) {
     return showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
-      builder: (context) => ConfirmationDialog(
+      builder: (final context) => ConfirmationDialog(
         title: title,
         content: content,
         cancelText: cancelText,

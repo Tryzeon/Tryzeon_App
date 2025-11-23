@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'pages/profile_page.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/pages/base_settings_page.dart';
+
 import '../../../../personal/personal_entry.dart';
+import 'pages/profile_page.dart';
 
 class StoreSettingsPage extends BaseSettingsPage {
   const StoreSettingsPage({super.key});
@@ -53,8 +54,8 @@ class _StoreSettingsPageState extends BaseSettingsPageState<StoreSettingsPage> {
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const PersonalEntry()),
-        (route) => false,
+        MaterialPageRoute(builder: (final context) => const PersonalEntry()),
+        (final route) => false,
       );
     }
   }
@@ -63,7 +64,7 @@ class _StoreSettingsPageState extends BaseSettingsPageState<StoreSettingsPage> {
     final updated = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => const StoreProfileSettingsPage(),
+        builder: (final context) => const StoreProfileSettingsPage(),
       ),
     );
     if (updated == true) {

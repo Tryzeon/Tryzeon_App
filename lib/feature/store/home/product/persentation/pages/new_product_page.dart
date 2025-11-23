@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:tryzeon/shared/services/product_type_service.dart';
+
 import '../../data/product_service.dart';
 
 class AddProductPage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
   // 衣服種類選項
   List<String> clothingTypes = [];
-  Set<String> selectedTypes = {};  // 改為 Set 支援多選
+  Set<String> selectedTypes = {}; // 改為 Set 支援多選
 
   @override
   void initState() {
@@ -111,7 +112,7 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -504,9 +505,9 @@ class _AddProductPageState extends State<AddProductPage> {
                                       strokeWidth: 2.5,
                                     ),
                                   )
-                                : Row(
+                                : const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
+                                    children: [
                                       Icon(
                                         Icons.add_rounded,
                                         color: Colors.white,
@@ -561,10 +562,7 @@ class _AddProductPageState extends State<AddProductPage> {
             const SizedBox(width: 8),
             Text(
               '(可多選)',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ],
         ),
@@ -580,12 +578,12 @@ class _AddProductPageState extends State<AddProductPage> {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: clothingTypes.map((type) {
+            children: clothingTypes.map((final type) {
               final isSelected = selectedTypes.contains(type);
               return FilterChip(
                 label: Text(type),
                 selected: isSelected,
-                onSelected: (selected) {
+                onSelected: (final selected) {
                   setState(() {
                     if (selected) {
                       selectedTypes.add(type);
@@ -601,7 +599,10 @@ class _AddProductPageState extends State<AddProductPage> {
                   color: isSelected ? Colors.white : Colors.black87,
                   fontSize: 13,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(

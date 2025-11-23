@@ -1,28 +1,29 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'dart:io';
 
 class ImagePickerHelper {
   static final ImagePicker _picker = ImagePicker();
 
   static Future<File?> pickImage(
-    BuildContext context, {
-    File? currentImage,
-    double maxWidth = 1080,
-    double maxHeight = 1920,
-    int imageQuality = 85,
-    String title = '選擇圖片來源',
-    String galleryText = '從相簿選擇',
-    String cameraText = '拍攝新照片',
-    Color iconColor = Colors.brown,
+    final BuildContext context, {
+    final File? currentImage,
+    final double maxWidth = 1080,
+    final double maxHeight = 1920,
+    final int imageQuality = 85,
+    final String title = '選擇圖片來源',
+    final String galleryText = '從相簿選擇',
+    final String cameraText = '拍攝新照片',
+    final Color iconColor = Colors.brown,
   }) async {
     final ImageSource? source = await showModalBottomSheet<ImageSource?>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (BuildContext context) {
+      builder: (final BuildContext context) {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
@@ -63,7 +64,7 @@ class ImagePickerHelper {
           maxHeight: maxHeight,
           imageQuality: imageQuality,
         );
-        
+
         if (pickedFile != null) {
           return File(pickedFile.path);
         }
@@ -77,7 +78,7 @@ class ImagePickerHelper {
         }
       }
     }
-    
+
     // User cancelled or no image selected
     return currentImage;
   }

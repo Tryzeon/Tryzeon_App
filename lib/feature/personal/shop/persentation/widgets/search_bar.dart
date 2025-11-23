@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ShopSearchBar extends StatefulWidget {
+  const ShopSearchBar({super.key, required this.onSearch});
   final Future<void> Function(String query) onSearch;
-
-  const ShopSearchBar({
-    super.key,
-    required this.onSearch,
-  });
 
   @override
   State<ShopSearchBar> createState() => _ShopSearchBarState();
@@ -22,7 +18,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return Row(
@@ -56,7 +52,9 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                     : IconButton(
                         icon: Icon(
                           Icons.clear,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                         onPressed: () {
                           _controller.clear();
@@ -75,7 +73,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                   vertical: 14,
                 ),
               ),
-              onChanged: (value) => setState(() {}),
+              onChanged: (final value) => setState(() {}),
               onSubmitted: widget.onSearch,
             ),
           ),

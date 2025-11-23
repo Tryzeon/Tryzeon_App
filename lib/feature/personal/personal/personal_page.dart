@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
-import 'settings/data/profile_service.dart';
+
+import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+
+import 'settings/data/profile_service.dart';
+import 'settings/settings_page.dart';
 import 'wardrobe/data/wardrobe_service.dart';
 import 'wardrobe/persentation/dialogs/upload_clothing_dialog.dart';
 import 'wardrobe/persentation/widgets/clothing_card.dart';
-import 'settings/settings_page.dart';
-
 
 class PersonalPage extends StatefulWidget {
   const PersonalPage({super.key});
@@ -37,19 +38,21 @@ class _PersonalPageState extends State<PersonalPage> {
     super.dispose();
   }
 
-  Future<void> _loadPersonalData({bool forceRefresh = false}) async {
+  Future<void> _loadPersonalData({final bool forceRefresh = false}) async {
     await _loadUsername(forceRefresh: forceRefresh);
     await _loadWardrobeItems(forceRefresh: forceRefresh);
   }
 
-  Future<void> _loadUsername({bool forceRefresh = false}) async {
+  Future<void> _loadUsername({final bool forceRefresh = false}) async {
     if (mounted) {
       setState(() {
         _isLoading = true;
       });
     }
 
-    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
+    final result = await UserProfileService.getUserProfile(
+      forceRefresh: forceRefresh,
+    );
     if (!mounted) return;
 
     setState(() {
@@ -60,7 +63,7 @@ class _PersonalPageState extends State<PersonalPage> {
     });
   }
 
-  Future<void> _loadWardrobeItems({bool forceRefresh = false}) async {
+  Future<void> _loadWardrobeItems({final bool forceRefresh = false}) async {
     if (mounted) {
       setState(() {
         _isLoading = true;
@@ -68,7 +71,9 @@ class _PersonalPageState extends State<PersonalPage> {
     }
 
     final categories = WardrobeService.getWardrobeTypesList();
-    final result = await WardrobeService.getClothing(forceRefresh: forceRefresh);
+    final result = await WardrobeService.getClothing(
+      forceRefresh: forceRefresh,
+    );
 
     if (!mounted) return;
 
@@ -90,7 +95,7 @@ class _PersonalPageState extends State<PersonalPage> {
     }
   }
 
-  void _showDeleteDialog(Clothing item) async {
+  Future<void> _showDeleteDialog(final Clothing item) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
       title: '刪除衣物',
@@ -114,13 +119,13 @@ class _PersonalPageState extends State<PersonalPage> {
     }
   }
 
-  void _showUploadDialog() async {
+  Future<void> _showUploadDialog() async {
     final File? image = await ImagePickerHelper.pickImage(context);
 
     if (image != null && mounted) {
       final result = await showDialog<bool>(
         context: context,
-        builder: (context) => UploadClothingDialog(
+        builder: (final context) => UploadClothingDialog(
           image: image,
           categories: WardrobeService.getWardrobeTypesList(),
         ),
@@ -133,7 +138,7 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -163,7 +168,7 @@ class _PersonalPageState extends State<PersonalPage> {
                       children: [
                         // 使用者名稱
                         ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
+                          shaderCallback: (final bounds) => LinearGradient(
                             colors: [
                               Theme.of(context).colorScheme.primary,
                               Theme.of(context).colorScheme.secondary,
@@ -201,7 +206,8 @@ class _PersonalPageState extends State<PersonalPage> {
                                 final hasChanges = await Navigator.push<bool>(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const PersonalSettingsPage(),
+                                    builder: (final context) =>
+                                        const PersonalSettingsPage(),
                                   ),
                                 );
                                 if (hasChanges == true) {
@@ -225,7 +231,10 @@ class _PersonalPageState extends State<PersonalPage> {
 
               // 我的衣櫃標題
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Icon(
@@ -274,7 +283,9 @@ class _PersonalPageState extends State<PersonalPage> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -307,7 +318,7 @@ class _PersonalPageState extends State<PersonalPage> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: wardrobeCategories.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (final context, final index) {
           final category = wardrobeCategories[index];
           final isSelected = selectedCategory == category;
           return _buildCategoryChip(category, isSelected);
@@ -316,7 +327,7 @@ class _PersonalPageState extends State<PersonalPage> {
     );
   }
 
-  Widget _buildCategoryChip(String category, bool isSelected) {
+  Widget _buildCategoryChip(final String category, final bool isSelected) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
@@ -333,7 +344,9 @@ class _PersonalPageState extends State<PersonalPage> {
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -379,7 +392,9 @@ class _PersonalPageState extends State<PersonalPage> {
 
     final filteredClothing = selectedCategory == '全部'
         ? clothing
-        : clothing.where((item) => item.category == selectedCategory).toList();
+        : clothing
+              .where((final item) => item.category == selectedCategory)
+              .toList();
 
     if (filteredClothing.isEmpty) {
       return Center(
@@ -390,13 +405,17 @@ class _PersonalPageState extends State<PersonalPage> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.checkroom_rounded,
                 size: 50,
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -411,10 +430,7 @@ class _PersonalPageState extends State<PersonalPage> {
             const SizedBox(height: 8),
             Text(
               '點擊右下角按鈕新增衣物',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
           ],
         ),
@@ -429,7 +445,7 @@ class _PersonalPageState extends State<PersonalPage> {
           childAspectRatio: 0.7,
         ),
         itemCount: filteredClothing.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (final context, final index) {
           return ClothingCard(
             item: filteredClothing[index],
             onDelete: () => _showDeleteDialog(filteredClothing[index]),
@@ -439,4 +455,3 @@ class _PersonalPageState extends State<PersonalPage> {
     }
   }
 }
-

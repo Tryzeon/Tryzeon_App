@@ -4,22 +4,21 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../dialogs/product_detail_dialog.dart';
 
 class StoreProductCard extends StatelessWidget {
-  final Product product;
-  final VoidCallback onUpdate;
-
   const StoreProductCard({
     super.key,
     required this.product,
     required this.onUpdate,
   });
+  final Product product;
+  final VoidCallback onUpdate;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return GestureDetector(
       onTap: () async {
         final result = await showDialog<bool>(
           context: context,
-          builder: (context) => ProductDetailDialog(product: product),
+          builder: (final context) => ProductDetailDialog(product: product),
         );
         if (result == true) {
           onUpdate();
@@ -33,10 +32,8 @@ class StoreProductCard extends StatelessWidget {
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(10),
-                  ),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(
@@ -44,14 +41,17 @@ class StoreProductCard extends StatelessWidget {
                   ),
                   child: FutureBuilder(
                     future: product.loadImage(),
-                    builder: (context, snapshot) {
+                    builder: (final context, final snapshot) {
                       final result = snapshot.data;
-                      if (result != null && result.isSuccess && result.file != null) {
+                      if (result != null &&
+                          result.isSuccess &&
+                          result.file != null) {
                         return Image.file(
                           result.file!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported),
+                          errorBuilder:
+                              (final context, final error, final stackTrace) =>
+                                  const Icon(Icons.image_not_supported),
                         );
                       }
                       if (result != null && !result.isSuccess) {
@@ -85,7 +85,7 @@ class StoreProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    product.types.join(', '),  // 顯示所有類型，用逗號分隔
+                    product.types.join(', '), // 顯示所有類型，用逗號分隔
                     style: Theme.of(context).textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -101,7 +101,11 @@ class StoreProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.auto_awesome, size: 14, color: Colors.grey),
+                      const Icon(
+                        Icons.auto_awesome,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${product.tryonCount}',

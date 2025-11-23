@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../data/shop_service.dart';
-import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:tryzeon/shared/models/product.dart';
-import '../widgets/ad_banner.dart';
-import '../widgets/search_bar.dart';
-import '../widgets/product_card.dart';
-import '../widgets/type_filter.dart';
+import 'package:tryzeon/shared/services/product_type_service.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
+
+import '../../data/shop_service.dart';
 import '../dialogs/filter_dialog.dart';
+import '../widgets/ad_banner.dart';
+import '../widgets/product_card.dart';
+import '../widgets/search_bar.dart';
+import '../widgets/type_filter.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -40,13 +41,13 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   /// 初始化所有資料
-  Future<void> _initializeData({bool forceRefresh = false}) async {
+  Future<void> _initializeData({final bool forceRefresh = false}) async {
     await _loadAdImages(forceRefresh: forceRefresh);
     await _loadProductTypes(forceRefresh: forceRefresh);
     await _loadProducts();
   }
 
-  Future<void> _loadAdImages({bool forceRefresh = false}) async {
+  Future<void> _loadAdImages({final bool forceRefresh = false}) async {
     final response = await AdService.getAdImages(forceRefresh: forceRefresh);
     if (!mounted) return;
 
@@ -54,9 +55,11 @@ class _ShopPageState extends State<ShopPage> {
       adImages = response;
     });
   }
-  
-  Future<void> _loadProductTypes({bool forceRefresh = false}) async {
-    final result = await ProductTypeService.getProductTypesList(forceRefresh: forceRefresh);
+
+  Future<void> _loadProductTypes({final bool forceRefresh = false}) async {
+    final result = await ProductTypeService.getProductTypesList(
+      forceRefresh: forceRefresh,
+    );
     if (!mounted) return;
 
     if (result.isSuccess) {
@@ -125,7 +128,7 @@ class _ShopPageState extends State<ShopPage> {
       context: context,
       minPrice: _minPrice,
       maxPrice: _maxPrice,
-      onApply: (minPrice, maxPrice) {
+      onApply: (final minPrice, final maxPrice) {
         setState(() {
           _minPrice = minPrice;
           _maxPrice = maxPrice;
@@ -156,10 +159,10 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   Widget _buildSortButton({
-    required String label,
-    required IconData icon,
-    required bool isActive,
-    required VoidCallback onTap,
+    required final String label,
+    required final IconData icon,
+    required final bool isActive,
+    required final VoidCallback onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -228,7 +231,7 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -304,141 +307,146 @@ class _ShopPageState extends State<ShopPage> {
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 🔍 搜尋欄
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ShopSearchBar(
-                          onSearch: (query) {
-                            setState(() => _searchQuery = query.isEmpty ? null : query);
-                            return _loadProducts();
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // 📢 廣告輪播
-                      AdBanner(adImages: adImages),
-
-                      const SizedBox(height: 24),
-
-                      // 商品類型篩選標籤
-                      ProductTypeFilter(
-                        productTypes: _productTypes,
-                        selectedTypes: _selectedTypes,
-                        onTypeToggle: (type) {
-                          setState(() => _selectedTypes.contains(type)
-                              ? _selectedTypes.remove(type)
-                              : _selectedTypes.add(type));
-                          _loadProducts();
-                        },
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // 推薦商品標題
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 4,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Theme.of(context).colorScheme.primary,
-                                    Theme.of(context).colorScheme.secondary,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '推薦商品',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const Spacer(),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildComprehensiveSortButton(),
-                                const SizedBox(width: 8),
-                                _buildPriceSortButton(),
-                                const SizedBox(width: 8),
-                                _buildFilterButton(),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // 商品 Grid（可滾動）
-                      if (isLoading)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(48.0),
-                            child: CircularProgressIndicator(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        )
-                      else if (displayedProducts.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(48.0),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 64,
-                                  color: Colors.grey[300],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  '目前沒有商品符合搜尋條件',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 🔍 搜尋欄
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: displayedProducts.length,
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              childAspectRatio: 0.7,
-                            ),
-                            itemBuilder: (context, index) {
-                              final product = displayedProducts[index];
-                              return ProductCard(product: product);
+                          child: ShopSearchBar(
+                            onSearch: (final query) {
+                              setState(
+                                () =>
+                                    _searchQuery = query.isEmpty ? null : query,
+                              );
+                              return _loadProducts();
                             },
                           ),
                         ),
 
-                      const SizedBox(height: 32),
-                    ],
+                        const SizedBox(height: 20),
+
+                        // 📢 廣告輪播
+                        AdBanner(adImages: adImages),
+
+                        const SizedBox(height: 24),
+
+                        // 商品類型篩選標籤
+                        ProductTypeFilter(
+                          productTypes: _productTypes,
+                          selectedTypes: _selectedTypes,
+                          onTypeToggle: (final type) {
+                            setState(
+                              () => _selectedTypes.contains(type)
+                                  ? _selectedTypes.remove(type)
+                                  : _selectedTypes.add(type),
+                            );
+                            _loadProducts();
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // 推薦商品標題
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.secondary,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '推薦商品',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const Spacer(),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildComprehensiveSortButton(),
+                                  const SizedBox(width: 8),
+                                  _buildPriceSortButton(),
+                                  const SizedBox(width: 8),
+                                  _buildFilterButton(),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // 商品 Grid（可滾動）
+                        if (isLoading)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(48.0),
+                              child: CircularProgressIndicator(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          )
+                        else if (displayedProducts.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(48.0),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.shopping_bag_outlined,
+                                    size: 64,
+                                    color: Colors.grey[300],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '目前沒有商品符合搜尋條件',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: displayedProducts.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 16,
+                                    crossAxisSpacing: 16,
+                                    childAspectRatio: 0.7,
+                                  ),
+                              itemBuilder: (final context, final index) {
+                                final product = displayedProducts[index];
+                                return ProductCard(product: product);
+                              },
+                            ),
+                          ),
+
+                        const SizedBox(height: 32),
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ),
             ],

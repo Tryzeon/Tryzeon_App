@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:tryzeon/feature/personal/personal_entry.dart';
 
 class PersonalLoginPage extends StatefulWidget {
   const PersonalLoginPage({super.key});
@@ -11,7 +11,8 @@ class PersonalLoginPage extends StatefulWidget {
   State<PersonalLoginPage> createState() => _PersonalLoginPageState();
 }
 
-class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindingObserver {
+class _PersonalLoginPageState extends State<PersonalLoginPage>
+    with WidgetsBindingObserver {
   bool _isLoading = false;
 
   @override
@@ -27,7 +28,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(final AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       if (_isLoading) {
         setState(() => _isLoading = false);
@@ -35,7 +36,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
     }
   }
 
-  void _showError(String message) {
+  void _showError(final String message) {
     if (!mounted) return;
     TopNotification.show(
       context,
@@ -44,7 +45,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
     );
   }
 
-  Future<void> _handleSignIn(String provider) async {
+  Future<void> _handleSignIn(final String provider) async {
     setState(() => _isLoading = true);
 
     final result = await AuthService.signInWithProvider(
@@ -59,7 +60,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
     if (result.isSuccess && mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PersonalEntry()),
+        MaterialPageRoute(builder: (final context) => const PersonalEntry()),
       );
     } else if (!result.isSuccess) {
       _showError(result.errorMessage ?? '$provider 登入失敗');
@@ -67,7 +68,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -85,7 +86,9 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
                     Theme.of(context).colorScheme.surface,
                   ),
                   Color.alphaBlend(
-                    Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                    Theme.of(
+                      context,
+                    ).colorScheme.secondary.withValues(alpha: 0.1),
                     Theme.of(context).colorScheme.surface,
                   ),
                 ],
@@ -106,7 +109,9 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.arrow_back_ios_rounded),
                         style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surface.withValues(alpha: 0.8),
                           padding: const EdgeInsets.all(12),
                         ),
                       ),
@@ -125,7 +130,10 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
                     const SizedBox(height: 16),
 
                     // Facebook 登入按鈕
-                    _buildLoginButton('Facebook', () => _handleSignIn('Facebook')),
+                    _buildLoginButton(
+                      'Facebook',
+                      () => _handleSignIn('Facebook'),
+                    ),
 
                     const SizedBox(height: 16),
 
@@ -142,9 +150,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
             Container(
               color: Colors.black.withValues(alpha: 0.5),
               child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
         ],
@@ -152,7 +158,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(final BuildContext context) {
     return Column(
       children: [
         // Logo圖示
@@ -171,7 +177,9 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.secondary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -187,7 +195,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
 
         // 標題
         ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
+          shaderCallback: (final bounds) => LinearGradient(
             colors: [
               Theme.of(context).colorScheme.secondary,
               Theme.of(context).colorScheme.primary,
@@ -196,9 +204,9 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
           child: Text(
             '歡迎回來!',
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
@@ -208,8 +216,10 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
         Text(
           '開始體驗虛擬試穿服務',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                letterSpacing: 0.5,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
+            letterSpacing: 0.5,
           ),
           textAlign: TextAlign.center,
         ),
@@ -217,21 +227,20 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
     );
   }
 
-  Widget _buildLoginButton(String provider, VoidCallback onTap) {
+  Widget _buildLoginButton(final String provider, final VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            Colors.white.withValues(alpha: 0.95),
-          ],
+          colors: [Colors.white, Colors.white.withValues(alpha: 0.95)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+            color: Theme.of(
+              context,
+            ).colorScheme.secondary.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -256,9 +265,9 @@ class _PersonalLoginPageState extends State<PersonalLoginPage> with WidgetsBindi
                 Text(
                   '使用 $provider 登入',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],

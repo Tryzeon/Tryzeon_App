@@ -1,17 +1,18 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+
 import '../../data/wardrobe_service.dart';
 
 class UploadClothingDialog extends StatefulWidget {
-  final File image;
-  final List<String> categories;
-
   const UploadClothingDialog({
     super.key,
     required this.image,
     required this.categories,
   });
+  final File image;
+  final List<String> categories;
 
   @override
   State<UploadClothingDialog> createState() => _UploadClothingDialogState();
@@ -49,12 +50,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Dialog(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -101,12 +100,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    '取消',
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                    ),
-                  ),
+                  child: Text('取消', style: TextStyle(color: Colors.grey[700])),
                 ),
                 const SizedBox(width: 12),
                 Container(
@@ -119,11 +113,15 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                             ],
                           )
                         : null,
-                    color: _selectedCategory == null || _isUploading ? Colors.grey[300] : null,
+                    color: _selectedCategory == null || _isUploading
+                        ? Colors.grey[300]
+                        : null,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ElevatedButton(
-                    onPressed: _selectedCategory != null && !_isUploading ? _handleUpload : null,
+                    onPressed: _selectedCategory != null && !_isUploading
+                        ? _handleUpload
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       foregroundColor: Colors.white,
@@ -184,7 +182,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: widget.categories.map((category) {
+          children: widget.categories.map((final category) {
             final isSelected = _selectedCategory == category;
             return Container(
               decoration: BoxDecoration(
@@ -209,12 +207,17 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     child: Text(
                       category,
                       style: TextStyle(
                         color: isSelected ? Colors.white : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         fontSize: 14,
                       ),
                     ),

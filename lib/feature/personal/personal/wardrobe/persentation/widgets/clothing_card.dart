@@ -1,17 +1,14 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+
 import '../../data/wardrobe_service.dart';
 
 class ClothingCard extends StatefulWidget {
+  const ClothingCard({super.key, required this.item, required this.onDelete});
   final Clothing item;
   final VoidCallback onDelete;
-
-  const ClothingCard({
-    super.key,
-    required this.item,
-    required this.onDelete,
-  });
 
   @override
   State<ClothingCard> createState() => _ClothingCardState();
@@ -28,7 +25,7 @@ class _ClothingCardState extends State<ClothingCard> {
   }
 
   @override
-  void didUpdateWidget(ClothingCard oldWidget) {
+  void didUpdateWidget(final ClothingCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     // 當 item 改變時重新載入圖片
     if (oldWidget.item.imagePath != widget.item.imagePath) {
@@ -40,10 +37,10 @@ class _ClothingCardState extends State<ClothingCard> {
     setState(() {
       _isLoading = true;
     });
-    
+
     final result = await widget.item.loadImage();
-    if(!mounted) return;
-    
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
@@ -62,7 +59,7 @@ class _ClothingCardState extends State<ClothingCard> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -80,7 +77,9 @@ class _ClothingCardState extends State<ClothingCard> {
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               child: Stack(
                 children: [
                   _isLoading
@@ -90,12 +89,13 @@ class _ClothingCardState extends State<ClothingCard> {
                           ),
                         )
                       : _imageFile != null
-                          ? Image.file(
-                              _imageFile!,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              errorBuilder: (context, error, stackTrace) {
+                      ? Image.file(
+                          _imageFile!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder:
+                              (final context, final error, final stackTrace) {
                                 return Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
@@ -107,27 +107,30 @@ class _ClothingCardState extends State<ClothingCard> {
                                       ],
                                     ),
                                   ),
-                                  child: const Icon(Icons.error_outline, color: Colors.grey),
+                                  child: const Icon(
+                                    Icons.error_outline,
+                                    color: Colors.grey,
+                                  ),
                                 );
                               },
-                            )
-                            : Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                Colors.grey[200]!,
-                                Colors.grey[300]!,
-                                ],
-                              ),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.error_outline, color: Colors.grey),
-                              ),
+                        )
+                      : Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.grey[200]!, Colors.grey[300]!],
                             ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.error_outline,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
                   if (!_isLoading)
                     // 刪除按鈕
                     Positioned(
@@ -139,7 +142,10 @@ class _ClothingCardState extends State<ClothingCard> {
                           onTap: widget.onDelete,
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12),
@@ -162,12 +168,19 @@ class _ClothingCardState extends State<ClothingCard> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                        Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        Theme.of(
+                          context,
+                        ).colorScheme.secondary.withValues(alpha: 0.1),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),

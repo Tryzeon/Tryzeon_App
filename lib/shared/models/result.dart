@@ -3,31 +3,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class Result<T> {
-  final bool isSuccess;
-  final T? data;
-  final File? file;
-  final String? errorMessage;
+  Result({required this.isSuccess, this.data, this.file, this.errorMessage});
 
-  Result({
-    required this.isSuccess,
-    this.data,
-    this.file,
-    this.errorMessage,
-  });
-
-  factory Result.success({T? data, File? file}) {
-    return Result(
-      isSuccess: true,
-      data: data,
-      file: file,
-    );
+  factory Result.success({final T? data, final File? file}) {
+    return Result(isSuccess: true, data: data, file: file);
   }
 
-  factory Result.failure(String title, {dynamic error}) {
+  factory Result.failure(final String title, {final dynamic error}) {
     String message = title;
 
     if (error != null) {
-      String errorMessage = "";
+      String errorMessage = '';
       if (error is FunctionException) {
         errorMessage = (error.details as Map<String, dynamic>?)?['message'];
       } else if (error is AuthException) {
@@ -44,9 +30,11 @@ class Result<T> {
       message = '$title: $errorMessage';
     }
 
-    return Result(
-      isSuccess: false,
-      errorMessage: message,
-    );
+    return Result(isSuccess: false, errorMessage: message);
   }
+  
+  final bool isSuccess;
+  final T? data;
+  final File? file;
+  final String? errorMessage;
 }

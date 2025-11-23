@@ -1,7 +1,8 @@
 import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class WardrobeService {
   static final _supabase = Supabase.instance.client;
@@ -11,7 +12,7 @@ class WardrobeService {
   static const _cacheKey = 'wardrobe_items_cache';
 
   static Future<Result<List<Clothing>>> getClothing({
-    bool forceRefresh = false,
+    final bool forceRefresh = false,
   }) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -24,7 +25,7 @@ class WardrobeService {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
           final clothing = cachedData
-              .map((json) => Clothing.fromJson(json))
+              .map((final json) => Clothing.fromJson(json))
               .toList();
           return Result.success(data: clothing);
         }
@@ -40,7 +41,7 @@ class WardrobeService {
       await CacheService.saveList(_cacheKey, response);
 
       final clothing = (response as List)
-          .map((json) => Clothing.fromJson(json))
+          .map((final json) => Clothing.fromJson(json))
           .toList();
 
       return Result.success(data: clothing);
@@ -50,8 +51,8 @@ class WardrobeService {
   }
 
   static Future<Result<List<Clothing>>> uploadClothing(
-    File imageFile,
-    String category,
+    final File imageFile,
+    final String category,
   ) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -95,7 +96,9 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<List<Clothing>>> deleteClothing(Clothing item) async {
+  static Future<Result<List<Clothing>>> deleteClothing(
+    final Clothing item,
+  ) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
       return Result.failure('請重新登入');
@@ -120,7 +123,9 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<File>> loadClothingImage(String storagePath) async {
+  static Future<Result<File>> loadClothingImage(
+    final String storagePath,
+  ) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(storagePath);
@@ -139,20 +144,21 @@ class WardrobeService {
   }
 
   static List<String> getWardrobeTypesList() {
-    return ClothingType.all.map((t) => t.zh).toList();
+    return ClothingType.all.map((final t) => t.zh).toList();
   }
 
-  static String getWardrobeTypesEnglishCode(String nameZh) {
-    final type = ClothingType.all.where((t) => t.zh == nameZh).firstOrNull;
+  static String getWardrobeTypesEnglishCode(final String nameZh) {
+    final type = ClothingType.all
+        .where((final t) => t.zh == nameZh)
+        .firstOrNull;
     return type?.en ?? nameZh;
   }
 }
 
 class ClothingType {
+  const ClothingType({required this.zh, required this.en});
   final String zh;
   final String en;
-
-  const ClothingType({required this.zh, required this.en});
 
   static const List<ClothingType> all = [
     ClothingType(zh: '上衣', en: 'top'),
@@ -166,22 +172,22 @@ class ClothingType {
 }
 
 class Clothing {
-  final String? id;
-  final String imagePath;
-  final String category;
-
   Clothing({this.id, required this.imagePath, required this.category});
 
-  // 按需載入圖片，使用快取機制
-  Future<Result<File>> loadImage() async {
-    return WardrobeService.loadClothingImage(imagePath);
-  }
-
-  factory Clothing.fromJson(Map<String, dynamic> json) {
+  factory Clothing.fromJson(final Map<String, dynamic> json) {
     return Clothing(
       id: json['id'],
       imagePath: json['image_path'],
       category: json['category'],
     );
+  }
+  
+  final String? id;
+  final String imagePath;
+  final String category;
+
+  // 按需載入圖片，使用快取機制
+  Future<Result<File>> loadImage() async {
+    return WardrobeService.loadClothingImage(imagePath);
   }
 }

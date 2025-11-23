@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'product/persentation/widgets/product_card.dart';
-import 'product/persentation/dialogs/sort_dialog.dart';
-import 'product/persentation/pages/new_product_page.dart';
-import 'settings/presentation/settings_page.dart';
-import 'settings/data/profile_service.dart';
-import 'product/data/product_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
+import 'product/data/product_service.dart';
+import 'product/persentation/dialogs/sort_dialog.dart';
+import 'product/persentation/pages/new_product_page.dart';
+import 'product/persentation/widgets/product_card.dart';
+import 'settings/data/profile_service.dart';
+import 'settings/presentation/settings_page.dart';
 
 class StoreHomePage extends StatefulWidget {
   const StoreHomePage({super.key});
@@ -29,25 +29,27 @@ class _StoreHomePageState extends State<StoreHomePage> {
     _loadStoreData();
   }
 
-  Future<void> _loadStoreData({bool forceRefresh = false}) async {
+  Future<void> _loadStoreData({final bool forceRefresh = false}) async {
     await _loadStoreName(forceRefresh: forceRefresh);
     await _loadStoreProducts(forceRefresh: forceRefresh);
   }
 
-  Future<void> _loadStoreName({bool forceRefresh = false}) async {
+  Future<void> _loadStoreName({final bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
 
-    final name = await StoreProfileService.getStoreName(forceRefresh: forceRefresh);
-    
+    final name = await StoreProfileService.getStoreName(
+      forceRefresh: forceRefresh,
+    );
+
     setState(() {
       storeName = name;
       _isLoading = false;
     });
   }
 
-  Future<void> _loadStoreProducts({bool forceRefresh = false}) async {
+  Future<void> _loadStoreProducts({final bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
@@ -77,14 +79,14 @@ class _StoreHomePageState extends State<StoreHomePage> {
     }
   }
 
-  void _handleSortChange(String newSortBy) {
+  void _handleSortChange(final String newSortBy) {
     setState(() {
       _sortBy = newSortBy;
     });
     _loadStoreProducts();
   }
 
-  void _handleAscendingChange(bool value) {
+  void _handleAscendingChange(final bool value) {
     setState(() {
       _ascending = value;
     });
@@ -101,9 +103,8 @@ class _StoreHomePageState extends State<StoreHomePage> {
     );
   }
 
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -179,10 +180,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                        child: IconButton(
+                      child: IconButton(
                         icon: Icon(
                           Icons.settings_rounded,
                           color: Theme.of(context).colorScheme.primary,
@@ -191,7 +194,8 @@ class _StoreHomePageState extends State<StoreHomePage> {
                           final hasChanges = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const StoreSettingsPage(),
+                              builder: (final context) =>
+                                  const StoreSettingsPage(),
                             ),
                           );
                           if (hasChanges == true) {
@@ -233,7 +237,9 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                         end: Alignment.bottomCenter,
                                         colors: [
                                           Theme.of(context).colorScheme.primary,
-                                          Theme.of(context).colorScheme.secondary,
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
                                         ],
                                       ),
                                       borderRadius: BorderRadius.circular(2),
@@ -242,20 +248,26 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                   const SizedBox(width: 12),
                                   Text(
                                     '我的商品',
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   const Spacer(),
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: IconButton(
                                       icon: Icon(
                                         Icons.sort_rounded,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       ),
                                       onPressed: _showSortOptions,
                                       tooltip: '排序',
@@ -268,19 +280,26 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                 child: products.isEmpty
                                     ? Center(
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Container(
                                               width: 100,
                                               height: 100,
                                               decoration: BoxDecoration(
-                                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withValues(alpha: 0.1),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
                                                 Icons.inventory_2_outlined,
                                                 size: 50,
-                                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withValues(alpha: 0.5),
                                               ),
                                             ),
                                             const SizedBox(height: 24),
@@ -304,20 +323,22 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                         ),
                                       )
                                     : GridView.builder(
-                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
-                                          crossAxisSpacing: 16,
-                                          mainAxisSpacing: 16,
-                                          childAspectRatio: 0.75,
-                                        ),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 2,
+                                              crossAxisSpacing: 16,
+                                              mainAxisSpacing: 16,
+                                              childAspectRatio: 0.75,
+                                            ),
                                         itemCount: products.length,
-                                        itemBuilder: (context, index) {
-                                          final product = products[index];
-                                          return StoreProductCard(
-                                            product: product,
-                                            onUpdate: _loadStoreProducts,
-                                          );
-                                        },
+                                        itemBuilder:
+                                            (final context, final index) {
+                                              final product = products[index];
+                                              return StoreProductCard(
+                                                product: product,
+                                                onUpdate: _loadStoreProducts,
+                                              );
+                                            },
                                       ),
                               ),
                             ],
@@ -342,7 +363,9 @@ class _StoreHomePageState extends State<StoreHomePage> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -356,9 +379,9 @@ class _StoreHomePageState extends State<StoreHomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AddProductPage(),
+                  builder: (final context) => const AddProductPage(),
                 ),
-              ).then((success) {
+              ).then((final success) {
                 if (success == true) {
                   _loadStoreProducts();
                 }

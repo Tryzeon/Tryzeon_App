@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'home/settings/data/profile_service.dart';
-import 'home/home_page.dart';
-import 'onboarding/persentation/pages/store_onboarding_page.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+
+import 'home/home_page.dart';
+import 'home/settings/data/profile_service.dart';
+import 'onboarding/persentation/pages/store_onboarding_page.dart';
 
 /// 店家入口 - 負責判斷是否需要 onboarding
 class StoreEntry extends StatefulWidget {
@@ -21,13 +22,15 @@ class _StoreEntryState extends State<StoreEntry> {
   void initState() {
     super.initState();
     _checkStoreInfo();
-    
+
     AuthService.saveLastLoginType(UserType.store);
   }
 
   Future<void> _checkStoreInfo() async {
-    final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
-    if(!mounted) return;
+    final result = await StoreProfileService.getStoreProfile(
+      forceRefresh: true,
+    );
+    if (!mounted) return;
 
     setState(() {
       _isChecking = false;
@@ -38,7 +41,7 @@ class _StoreEntryState extends State<StoreEntry> {
         _needsOnboarding = false;
       });
     } else {
-      if(result.errorMessage == '查無店家資料') return;
+      if (result.errorMessage == '查無店家資料') return;
 
       TopNotification.show(
         context,
@@ -55,13 +58,9 @@ class _StoreEntryState extends State<StoreEntry> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (_isChecking) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_needsOnboarding) {

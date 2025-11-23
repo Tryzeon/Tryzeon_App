@@ -4,7 +4,7 @@ class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -43,7 +43,9 @@ class CommunityPage extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
@@ -59,7 +61,7 @@ class CommunityPage extends StatelessWidget {
 
             // 標題
             ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
+              shaderCallback: (final bounds) => LinearGradient(
                 colors: [
                   Theme.of(context).colorScheme.primary,
                   Theme.of(context).colorScheme.secondary,
@@ -82,7 +84,9 @@ class CommunityPage extends StatelessWidget {
               '稍後推出，敬請期待',
               style: TextStyle(
                 fontSize: 18,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
                 letterSpacing: 0.5,
               ),
             ),
@@ -137,10 +141,10 @@ class CommunityPage extends StatelessWidget {
   }
 
   Widget _buildFeatureItem({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
+    required final BuildContext context,
+    required final IconData icon,
+    required final String title,
+    required final String subtitle,
   }) {
     return Row(
       children: [
@@ -148,7 +152,9 @@ class CommunityPage extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
+            color: Theme.of(
+              context,
+            ).colorScheme.tertiary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: Theme.of(context).colorScheme.tertiary),
@@ -167,10 +173,7 @@ class CommunityPage extends StatelessWidget {
               ),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               ),
             ],
           ),

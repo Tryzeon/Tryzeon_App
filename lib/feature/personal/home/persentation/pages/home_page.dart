@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
+import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
+
 import '../../data/tryon_service.dart';
-import 'package:gal/gal.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,9 +41,7 @@ class HomePageState extends State<HomePage> {
       return;
     }
 
-    final File? clothingImage = await ImagePickerHelper.pickImage(
-      context,
-    );
+    final File? clothingImage = await ImagePickerHelper.pickImage(context);
 
     if (clothingImage == null) return;
 
@@ -88,14 +88,15 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> virtualTryOnFromStorage(String storagePath) async {
+  Future<void> virtualTryOnFromStorage(final String storagePath) async {
     setState(() {
       _isLoading = true;
     });
 
     // 如果有自訂 avatar，取得其 base64
     String? customAvatarBase64;
-    if (_customAvatarIndex != null && _customAvatarIndex! < _tryonImages.length) {
+    if (_customAvatarIndex != null &&
+        _customAvatarIndex! < _tryonImages.length) {
       final avatarUrl = _tryonImages[_customAvatarIndex!];
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
@@ -138,7 +139,7 @@ class HomePageState extends State<HomePage> {
     });
 
     final result = await AvatarService.getAvatar();
-    if(!mounted) return;
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
@@ -148,7 +149,7 @@ class HomePageState extends State<HomePage> {
       setState(() {
         _avatarFile = result.data;
       });
-    } else{
+    } else {
       TopNotification.show(
         context,
         message: result.errorMessage ?? '獲取頭像失敗',
@@ -158,9 +159,7 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _uploadAvatar() async {
-    final File? imageFile = await ImagePickerHelper.pickImage(
-      context,
-    );
+    final File? imageFile = await ImagePickerHelper.pickImage(context);
     if (imageFile == null) return;
 
     setState(() {
@@ -168,13 +167,13 @@ class HomePageState extends State<HomePage> {
     });
 
     final result = await AvatarService.uploadAvatar(imageFile);
-    if(!mounted) return;
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
     });
 
-    if(result.isSuccess) {
+    if (result.isSuccess) {
       setState(() {
         _avatarFile = result.data;
         _tryonImages.clear();
@@ -214,7 +213,6 @@ class HomePageState extends State<HomePage> {
       _currentTryonIndex++;
     });
   }
-
 
   Future<void> _downloadCurrentImage() async {
     try {
@@ -294,7 +292,8 @@ class HomePageState extends State<HomePage> {
         // 如果刪除的照片是自訂 avatar，清除設定
         if (_customAvatarIndex == deletedIndex) {
           _customAvatarIndex = null;
-        } else if (_customAvatarIndex != null && _customAvatarIndex! > deletedIndex) {
+        } else if (_customAvatarIndex != null &&
+            _customAvatarIndex! > deletedIndex) {
           // 如果自訂 avatar 在刪除照片之後，索引需要 -1
           _customAvatarIndex = _customAvatarIndex! - 1;
         }
@@ -331,7 +330,7 @@ class HomePageState extends State<HomePage> {
             showModalBottomSheet(
               context: context,
               backgroundColor: Colors.transparent,
-              builder: (context) => Container(
+              builder: (final context) => Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -409,10 +408,10 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _buildOptionButton({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
+    required final String title,
+    required final String subtitle,
+    required final IconData icon,
+    required final VoidCallback onTap,
   }) {
     return ListTile(
       leading: Container(
@@ -421,17 +420,9 @@ class HomePageState extends State<HomePage> {
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          icon,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        child: Icon(icon, color: Theme.of(context).colorScheme.primary),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle),
       onTap: onTap,
     );
@@ -475,7 +466,9 @@ class HomePageState extends State<HomePage> {
           _buildNavButton(
             icon: Icons.arrow_forward_ios_rounded,
             isEnabled: _currentTryonIndex < _tryonImages.length - 1,
-            onTap: _currentTryonIndex < _tryonImages.length - 1 ? _nextTryon : null,
+            onTap: _currentTryonIndex < _tryonImages.length - 1
+                ? _nextTryon
+                : null,
           ),
         ],
       ),
@@ -483,9 +476,9 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _buildNavButton({
-    required IconData icon,
-    required bool isEnabled,
-    required VoidCallback? onTap,
+    required final IconData icon,
+    required final bool isEnabled,
+    required final VoidCallback? onTap,
   }) {
     return Material(
       color: Colors.transparent,
@@ -533,8 +526,8 @@ class HomePageState extends State<HomePage> {
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-          const Icon(Icons.image_not_supported),
+        errorBuilder: (final context, final error, final stackTrace) =>
+            const Icon(Icons.image_not_supported),
       );
     }
 
@@ -553,7 +546,7 @@ class HomePageState extends State<HomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -575,12 +568,15 @@ class HomePageState extends State<HomePage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 16.0,
+            ),
             child: Column(
               children: [
                 // 標題
                 ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
+                  shaderCallback: (final bounds) => LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
                       Theme.of(context).colorScheme.secondary,
@@ -630,7 +626,9 @@ class HomePageState extends State<HomePage> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.15),
                             spreadRadius: 0,
                             blurRadius: 30,
                             offset: const Offset(0, 10),
@@ -662,17 +660,20 @@ class HomePageState extends State<HomePage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       CircularProgressIndicator(
-                                        color: Theme.of(context).colorScheme.secondary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.secondary,
                                         strokeWidth: 3,
                                       ),
                                       const SizedBox(height: 16),
                                       ShaderMask(
-                                        shaderCallback: (bounds) => const LinearGradient(
-                                          colors: [
-                                            Colors.white,
-                                            Color(0xFFE0E0E0),
-                                          ],
-                                        ).createShader(bounds),
+                                        shaderCallback: (final bounds) =>
+                                            const LinearGradient(
+                                              colors: [
+                                                Colors.white,
+                                                Color(0xFFE0E0E0),
+                                              ],
+                                            ).createShader(bounds),
                                         child: const Text(
                                           '再一下...就快好了',
                                           style: TextStyle(
@@ -717,7 +718,9 @@ class HomePageState extends State<HomePage> {
                             end: Alignment.bottomRight,
                             colors: [
                               Theme.of(context).colorScheme.secondary,
-                              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
+                              Theme.of(
+                                context,
+                              ).colorScheme.secondary.withValues(alpha: 0.8),
                             ],
                           ),
                     borderRadius: BorderRadius.circular(16),
@@ -725,7 +728,9 @@ class HomePageState extends State<HomePage> {
                         ? []
                         : [
                             BoxShadow(
-                              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.secondary.withValues(alpha: 0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
@@ -736,7 +741,7 @@ class HomePageState extends State<HomePage> {
                     child: InkWell(
                       onTap: _isLoading ? null : virtualTryOnFromLocal,
                       borderRadius: BorderRadius.circular(16),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
@@ -744,10 +749,10 @@ class HomePageState extends State<HomePage> {
                             color: Colors.white,
                             size: 24,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Text(
                             '虛擬試穿',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

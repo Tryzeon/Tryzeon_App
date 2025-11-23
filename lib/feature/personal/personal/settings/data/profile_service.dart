@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class UserProfileService {
   static final _supabase = Supabase.instance.client;
@@ -10,7 +10,9 @@ class UserProfileService {
   static const _cacheKey = 'user_profile_cache';
 
   /// 取得使用者個人資料
-  static Future<Result<UserProfile>> getUserProfile({bool forceRefresh = false}) async {
+  static Future<Result<UserProfile>> getUserProfile({
+    final bool forceRefresh = false,
+  }) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
@@ -42,14 +44,14 @@ class UserProfileService {
 
   /// 更新使用者個人資料
   static Future<Result<UserProfile>> updateUserProfile({
-    String? name,
-    double? height,
-    double? weight,
-    double? chest,
-    double? waist,
-    double? hips,
-    double? shoulderWidth,
-    double? sleeveLength,
+    final String? name,
+    final double? height,
+    final double? weight,
+    final double? chest,
+    final double? waist,
+    final double? hips,
+    final double? shoulderWidth,
+    final double? sleeveLength,
   }) async {
     try {
       final user = _supabase.auth.currentUser;
@@ -86,16 +88,6 @@ class UserProfileService {
 }
 
 class UserProfile {
-  final String userId;
-  final String name;
-  final double? height;
-  final double? weight;
-  final double? chest;
-  final double? waist;
-  final double? hips;
-  final double? shoulderWidth;
-  final double? sleeveLength;
-
   UserProfile({
     required this.userId,
     required this.name,
@@ -108,19 +100,36 @@ class UserProfile {
     this.sleeveLength,
   });
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
+  factory UserProfile.fromJson(final Map<String, dynamic> json) {
     return UserProfile(
       userId: json['user_id'] as String,
       name: json['name'] as String,
-      height: json['height'] != null ? (json['height'] as num).toDouble() : null,
-      weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+      height: json['height'] != null
+          ? (json['height'] as num).toDouble()
+          : null,
+      weight: json['weight'] != null
+          ? (json['weight'] as num).toDouble()
+          : null,
       chest: json['chest'] != null ? (json['chest'] as num).toDouble() : null,
       waist: json['waist'] != null ? (json['waist'] as num).toDouble() : null,
       hips: json['hips'] != null ? (json['hips'] as num).toDouble() : null,
-      shoulderWidth: json['shoulder_width'] != null ? (json['shoulder_width'] as num).toDouble() : null,
-      sleeveLength: json['sleeve_length'] != null ? (json['sleeve_length'] as num).toDouble() : null,
+      shoulderWidth: json['shoulder_width'] != null
+          ? (json['shoulder_width'] as num).toDouble()
+          : null,
+      sleeveLength: json['sleeve_length'] != null
+          ? (json['sleeve_length'] as num).toDouble()
+          : null,
     );
   }
+  final String userId;
+  final String name;
+  final double? height;
+  final double? weight;
+  final double? chest;
+  final double? waist;
+  final double? hips;
+  final double? shoulderWidth;
+  final double? sleeveLength;
 
   Map<String, dynamic> toJson() {
     return {

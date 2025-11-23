@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../data/profile_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+
+import '../../data/profile_service.dart';
 
 class PersonalProfileSettingsPage extends StatefulWidget {
   const PersonalProfileSettingsPage({super.key});
 
   @override
-  State<PersonalProfileSettingsPage> createState() => _PersonalProfileSettingsPageState();
+  State<PersonalProfileSettingsPage> createState() =>
+      _PersonalProfileSettingsPageState();
 }
 
-class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPage> {
+class _PersonalProfileSettingsPageState
+    extends State<PersonalProfileSettingsPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _heightController = TextEditingController();
@@ -29,13 +32,15 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     _loadProfile(forceRefresh: true);
   }
 
-  Future<void> _loadProfile({bool forceRefresh = false}) async {
+  Future<void> _loadProfile({final bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
 
-    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
-    
+    final result = await UserProfileService.getUserProfile(
+      forceRefresh: forceRefresh,
+    );
+
     if (result.isSuccess) {
       final profile = result.data!;
       _nameController.text = profile.name;
@@ -47,7 +52,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
       _shoulderWidthController.text = profile.shoulderWidth?.toString() ?? '';
       _sleeveLengthController.text = profile.sleeveLength?.toString() ?? '';
     } else {
-      if(mounted){
+      if (mounted) {
         TopNotification.show(
           context,
           message: result.errorMessage ?? '載入個人資料失敗，請稍後再試',
@@ -70,13 +75,27 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
     final result = await UserProfileService.updateUserProfile(
       name: _nameController.text,
-      height: _heightController.text.isNotEmpty ? double.tryParse(_heightController.text) : null,
-      weight: _weightController.text.isNotEmpty ? double.tryParse(_weightController.text) : null,
-      chest: _chestController.text.isNotEmpty ? double.tryParse(_chestController.text) : null,
-      waist: _waistController.text.isNotEmpty ? double.tryParse(_waistController.text) : null,
-      hips: _hipsController.text.isNotEmpty ? double.tryParse(_hipsController.text) : null,
-      shoulderWidth: _shoulderWidthController.text.isNotEmpty ? double.tryParse(_shoulderWidthController.text) : null,
-      sleeveLength: _sleeveLengthController.text.isNotEmpty ? double.tryParse(_sleeveLengthController.text) : null,
+      height: _heightController.text.isNotEmpty
+          ? double.tryParse(_heightController.text)
+          : null,
+      weight: _weightController.text.isNotEmpty
+          ? double.tryParse(_weightController.text)
+          : null,
+      chest: _chestController.text.isNotEmpty
+          ? double.tryParse(_chestController.text)
+          : null,
+      waist: _waistController.text.isNotEmpty
+          ? double.tryParse(_waistController.text)
+          : null,
+      hips: _hipsController.text.isNotEmpty
+          ? double.tryParse(_hipsController.text)
+          : null,
+      shoulderWidth: _shoulderWidthController.text.isNotEmpty
+          ? double.tryParse(_shoulderWidthController.text)
+          : null,
+      sleeveLength: _sleeveLengthController.text.isNotEmpty
+          ? double.tryParse(_sleeveLengthController.text)
+          : null,
     );
 
     setState(() {
@@ -115,7 +134,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -153,7 +172,9 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
@@ -213,7 +234,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                               controller: _nameController,
                               label: '姓名',
                               icon: Icons.person_outline_rounded,
-                              validator: (value) {
+                              validator: (final value) {
                                 if (value == null || value.isEmpty) {
                                   return '請輸入姓名';
                                 }
@@ -237,9 +258,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                     controller: _heightController,
                                     label: '身高 (cm)',
                                     icon: Icons.height_rounded,
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -249,9 +275,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                     controller: _weightController,
                                     label: '體重 (kg)',
                                     icon: Icons.monitor_weight_outlined,
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -265,9 +296,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                     controller: _chestController,
                                     label: '胸圍 (cm)',
                                     icon: Icons.accessibility_rounded,
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -277,9 +313,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                     controller: _waistController,
                                     label: '腰圍 (cm)',
                                     icon: Icons.accessibility_rounded,
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -293,9 +334,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                     controller: _hipsController,
                                     label: '臀圍 (cm)',
                                     icon: Icons.accessibility_rounded,
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -305,9 +351,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                     controller: _shoulderWidthController,
                                     label: '肩寬 (cm)',
                                     icon: Icons.accessibility_rounded,
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -318,9 +369,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                               controller: _sleeveLengthController,
                               label: '袖長 (cm)',
                               icon: Icons.accessibility_rounded,
-                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*'),
+                                ),
                               ],
                             ),
                           ],
@@ -335,7 +391,10 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                           decoration: BoxDecoration(
                             gradient: _isLoading
                                 ? LinearGradient(
-                                    colors: [Colors.grey[300]!, Colors.grey[400]!],
+                                    colors: [
+                                      Colors.grey[300]!,
+                                      Colors.grey[400]!,
+                                    ],
                                   )
                                 : LinearGradient(
                                     colors: [
@@ -348,7 +407,10 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                 ? []
                                 : [
                                     BoxShadow(
-                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.3),
                                       blurRadius: 15,
                                       offset: const Offset(0, 8),
                                     ),
@@ -369,16 +431,17 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                           strokeWidth: 2.5,
                                         ),
                                       )
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                    : const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.save_rounded,
                                             color: Colors.white,
                                             size: 24,
                                           ),
-                                          const SizedBox(width: 8),
-                                          const Text(
+                                          SizedBox(width: 8),
+                                          Text(
                                             '儲存',
                                             style: TextStyle(
                                               color: Colors.white,
@@ -406,10 +469,10 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
   }
 
   Widget _buildSectionCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required List<Widget> children,
+    required final BuildContext context,
+    required final IconData icon,
+    required final String title,
+    required final List<Widget> children,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -436,8 +499,12 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                      Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.1),
+                      Theme.of(
+                        context,
+                      ).colorScheme.secondary.withValues(alpha: 0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -467,31 +534,22 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
   }
 
   Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
+    required final TextEditingController controller,
+    required final String label,
+    required final IconData icon,
+    final TextInputType? keyboardType,
+    final List<TextInputFormatter>? inputFormatters,
+    final String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      style: const TextStyle(
-        fontSize: 16,
-        color: Colors.black87,
-      ),
+      style: const TextStyle(fontSize: 16, color: Colors.black87),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        labelStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
+        prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey[300]!),

@@ -1,21 +1,21 @@
 import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class ProductService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products_info';
   static const _productImagesBucket = 'store';
-
   static const _cacheKey = 'products_cache';
 
   /// 獲取店家的所有商品
   static Future<Result<List<Product>>> getProducts({
-    String sortBy = 'created_at',
-    bool ascending = false,
-    bool forceRefresh = false,
+    final String sortBy = 'created_at',
+    final bool ascending = false,
+    final bool forceRefresh = false,
   }) async {
     try {
       final user = _supabase.auth.currentUser;
@@ -26,8 +26,8 @@ class ProductService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          List<Product> products = cachedData
-              .map((json) => Product.fromJson(json))
+          final List<Product> products = cachedData
+              .map((final json) => Product.fromJson(json))
               .toList();
           return Result.success(
             data: _sortProducts(products, sortBy, ascending),
@@ -42,9 +42,7 @@ class ProductService {
 
       await CacheService.saveList(_cacheKey, response);
 
-      List<Product> products = response
-          .map((json) => Product.fromJson(json))
-          .toList();
+      final List<Product> products = response.map(Product.fromJson).toList();
       return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
       return Result.failure('獲取商品列表失敗', error: e);
@@ -53,11 +51,11 @@ class ProductService {
 
   /// 創建新商品
   static Future<Result<List<Product>>> createProduct({
-    required String name,
-    required List<String> types,
-    required int price,
-    required String purchaseLink,
-    required File imageFile,
+    required final String name,
+    required final List<String> types,
+    required final int price,
+    required final String purchaseLink,
+    required final File imageFile,
   }) async {
     try {
       // 獲取當前用戶 ID
@@ -67,7 +65,7 @@ class ProductService {
       }
 
       // 如果有圖片，先上傳圖片
-      String filePath = await _uploadProductImage(imageFile) ?? '';
+      final String filePath = await _uploadProductImage(imageFile) ?? '';
 
       // 創建商品資料
       final product = Product(
@@ -93,13 +91,13 @@ class ProductService {
 
   /// 更新商品
   static Future<Result<List<Product>>> updateProduct({
-    required String productId,
-    required String name,
-    required List<String> types,
-    required int price,
-    required String purchaseLink,
-    required String currentFilePath,
-    File? newImageFile,
+    required final String productId,
+    required final String name,
+    required final List<String> types,
+    required final int price,
+    required final String purchaseLink,
+    required final String currentFilePath,
+    final File? newImageFile,
   }) async {
     try {
       String? filePath = currentFilePath;
@@ -141,7 +139,9 @@ class ProductService {
   }
 
   /// 刪除商品
-  static Future<Result<List<Product>>> deleteProduct(Product product) async {
+  static Future<Result<List<Product>>> deleteProduct(
+    final Product product,
+  ) async {
     try {
       // 刪除圖片（Supabase Storage 和本地）
       if (product.imagePath.isNotEmpty) {
@@ -161,7 +161,7 @@ class ProductService {
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File>> loadProductImage(String filePath) async {
+  static Future<Result<File>> loadProductImage(final String filePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(filePath);
@@ -182,7 +182,7 @@ class ProductService {
   }
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
-  static Future<String?> _uploadProductImage(File imageFile) async {
+  static Future<String?> _uploadProductImage(final File imageFile) async {
     final storeId = _supabase.auth.currentUser?.id;
     if (storeId == null) return null;
 
@@ -213,7 +213,7 @@ class ProductService {
   }
 
   /// 刪除商品圖片（Supabase 和本地）
-  static Future<void> _deleteProductImage(String filePath) async {
+  static Future<void> _deleteProductImage(final String filePath) async {
     if (filePath.isEmpty) return;
 
     // 1. 刪除 Supabase Storage 中的圖片
@@ -225,13 +225,13 @@ class ProductService {
 
   /// 本地排序產品
   static List<Product> _sortProducts(
-    List<Product> products,
-    String sortBy,
-    bool ascending,
+    final List<Product> products,
+    final String sortBy,
+    final bool ascending,
   ) {
     final sortedProducts = List<Product>.from(products);
 
-    sortedProducts.sort((a, b) {
+    sortedProducts.sort((final a, final b) {
       int comparison;
 
       switch (sortBy) {

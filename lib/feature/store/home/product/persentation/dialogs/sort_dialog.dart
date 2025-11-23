@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 
 class SortOptionsDialog {
-  final BuildContext context;
-  final String sortBy;
-  final bool ascending;
-  final Function(String) onSortChange;
-  final Function(bool) onAscendingChange;
-
   SortOptionsDialog({
     required this.context,
     required this.sortBy,
@@ -18,7 +12,7 @@ class SortOptionsDialog {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (BuildContext context) {
+      builder: (final BuildContext context) {
         return _SortOptionsDialogContent(
           sortBy: sortBy,
           ascending: ascending,
@@ -28,23 +22,28 @@ class SortOptionsDialog {
       },
     );
   }
-}
-
-class _SortOptionsDialogContent extends StatefulWidget {
+  final BuildContext context;
   final String sortBy;
   final bool ascending;
   final Function(String) onSortChange;
   final Function(bool) onAscendingChange;
+}
 
+class _SortOptionsDialogContent extends StatefulWidget {
   const _SortOptionsDialogContent({
     required this.sortBy,
     required this.ascending,
     required this.onSortChange,
     required this.onAscendingChange,
   });
+  final String sortBy;
+  final bool ascending;
+  final Function(String) onSortChange;
+  final Function(bool) onAscendingChange;
 
   @override
-  State<_SortOptionsDialogContent> createState() => _SortOptionsDialogContentState();
+  State<_SortOptionsDialogContent> createState() =>
+      _SortOptionsDialogContentState();
 }
 
 class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
@@ -58,14 +57,14 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
     _ascending = widget.ascending;
   }
 
-  void _handleSortChange(String newValue) {
+  void _handleSortChange(final String newValue) {
     setState(() {
       _sortBy = newValue;
     });
     widget.onSortChange(newValue);
   }
 
-  void _handleAscendingChange(bool value) {
+  void _handleAscendingChange(final bool value) {
     setState(() {
       _ascending = value;
     });
@@ -73,7 +72,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -104,7 +103,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(final BuildContext context) {
     return Row(
       children: [
         Container(
@@ -119,11 +118,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
             ),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(
-            Icons.sort_rounded,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: const Icon(Icons.sort_rounded, color: Colors.white, size: 24),
         ),
         const SizedBox(width: 12),
         const Text(
@@ -138,7 +133,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
     );
   }
 
-  Widget _buildSortOptions(BuildContext context) {
+  Widget _buildSortOptions(final BuildContext context) {
     final options = [
       {'label': '價格', 'value': 'price'},
       {'label': '建立時間', 'value': 'created_at'},
@@ -149,13 +144,13 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
 
     return RadioGroup<String>(
       groupValue: _sortBy,
-      onChanged: (String? newValue) {
+      onChanged: (final String? newValue) {
         if (newValue != null) {
           _handleSortChange(newValue);
         }
       },
       child: Column(
-        children: options.map((option) {
+        children: options.map((final option) {
           final label = option['label']!;
           final value = option['value']!;
           final isSelected = _sortBy == value;
@@ -166,8 +161,12 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
               gradient: isSelected
                   ? LinearGradient(
                       colors: [
-                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                        Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        Theme.of(
+                          context,
+                        ).colorScheme.secondary.withValues(alpha: 0.1),
                       ],
                     )
                   : null,
@@ -186,13 +185,17 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
                 title: Text(
                   label,
                   style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    color: isSelected ? Theme.of(context).colorScheme.primary : Colors.black87,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.black87,
                   ),
                 ),
                 leading: Radio<String>(
                   value: value,
-                  fillColor: WidgetStateProperty.resolveWith((states) {
+                  fillColor: WidgetStateProperty.resolveWith((final states) {
                     if (states.contains(WidgetState.selected)) {
                       return Theme.of(context).colorScheme.primary;
                     }
@@ -207,7 +210,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
     );
   }
 
-  Widget _buildAscendingSwitch(BuildContext context) {
+  Widget _buildAscendingSwitch(final BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -221,10 +224,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
       child: SwitchListTile(
         title: const Text(
           '遞增排序',
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87),
         ),
         value: _ascending,
         activeTrackColor: Theme.of(context).colorScheme.primary,

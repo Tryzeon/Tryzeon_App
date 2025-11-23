@@ -11,7 +11,8 @@ class PersonalSettingsPage extends BaseSettingsPage {
   BaseSettingsPageState createState() => _PersonalSettingsPageState();
 }
 
-class _PersonalSettingsPageState extends BaseSettingsPageState<PersonalSettingsPage> {
+class _PersonalSettingsPageState
+    extends BaseSettingsPageState<PersonalSettingsPage> {
   @override
   List<SettingsMenuItem> buildMenuItems() {
     return [
@@ -41,8 +42,8 @@ class _PersonalSettingsPageState extends BaseSettingsPageState<PersonalSettingsP
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const StoreEntry()),
-        (route) => false,
+        MaterialPageRoute(builder: (final context) => const StoreEntry()),
+        (final route) => false,
       );
     }
   }
@@ -51,7 +52,7 @@ class _PersonalSettingsPageState extends BaseSettingsPageState<PersonalSettingsP
     final updated = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => const PersonalProfileSettingsPage(),
+        builder: (final context) => const PersonalProfileSettingsPage(),
       ),
     );
     if (updated == true) {

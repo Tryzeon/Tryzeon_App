@@ -1,16 +1,17 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
+
+import 'package:flutter/material.dart';
+import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
-import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
+import 'package:tryzeon/shared/widgets/top_notification.dart';
+
 import '../../data/product_service.dart';
 
 class ProductDetailDialog extends StatefulWidget {
-  final Product product;
-
   const ProductDetailDialog({super.key, required this.product});
+  final Product product;
 
   @override
   State<ProductDetailDialog> createState() => _ProductDetailDialogState();
@@ -25,14 +26,18 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
   // 衣服種類選項
   List<String> clothingTypes = [];
-  Set<String> selectedTypes = {}; 
+  Set<String> selectedTypes = {};
 
   @override
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.product.name);
-    priceController = TextEditingController(text: widget.product.price.toString());
-    purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
+    priceController = TextEditingController(
+      text: widget.product.price.toString(),
+    );
+    purchaseLinkController = TextEditingController(
+      text: widget.product.purchaseLink,
+    );
     selectedTypes = Set<String>.from(widget.product.types);
     _loadProductTypes();
   }
@@ -127,11 +132,11 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     final result = await ProductService.updateProduct(
       productId: widget.product.id!,
       name: nameController.text,
-      types: selectedTypes.toList(),  // 改為 types 傳遞陣列
+      types: selectedTypes.toList(), // 改為 types 傳遞陣列
       price: price,
       purchaseLink: purchaseLinkController.text,
       currentFilePath: widget.product.imagePath,
-      newImageFile: newImage
+      newImageFile: newImage,
     );
 
     if (!mounted) return;
@@ -157,12 +162,15 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
-        constraints: BoxConstraints(maxWidth: 500, maxHeight: MediaQuery.of(context).size.height * 0.9),
+        constraints: BoxConstraints(
+          maxWidth: 500,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -193,13 +201,17 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                     child: Text(
                       '商品資訊',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.5,
-                          ),
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, color: Colors.grey[700], size: 22),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Colors.grey[700],
+                      size: 22,
+                    ),
                     onPressed: _deleteProduct,
                     tooltip: '刪除',
                     style: IconButton.styleFrom(
@@ -233,7 +245,9 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                     // 圖片區域
                     GestureDetector(
                       onTap: () async {
-                        final image = await ImagePickerHelper.pickImage(context);
+                        final image = await ImagePickerHelper.pickImage(
+                          context,
+                        );
                         if (image != null) {
                           setState(() {
                             newImage = image;
@@ -263,15 +277,20 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                     )
                                   : FutureBuilder(
                                       future: widget.product.loadImage(),
-                                      builder: (context, snapshot) {
+                                      builder: (final context, final snapshot) {
                                         final result = snapshot.data;
-                                        if (result != null && result.isSuccess) {
+                                        if (result != null &&
+                                            result.isSuccess) {
                                           return Image.file(
                                             result.file!,
                                             fit: BoxFit.contain,
                                             width: double.infinity,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                Center(
+                                            errorBuilder:
+                                                (
+                                                  final context,
+                                                  final error,
+                                                  final stackTrace,
+                                                ) => Center(
                                                   child: Icon(
                                                     Icons.image_outlined,
                                                     size: 48,
@@ -280,17 +299,22 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                 ),
                                           );
                                         }
-                                        if (result != null && !result.isSuccess) {
-                                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                                            if (mounted) {
-                                              TopNotification.show(
-                                                context,
-                                                message: result.errorMessage ?? '載入圖片失敗',
-                                                type: NotificationType.error,
-                                              );
-                                            }
-                                          });
-                                          return Center(
+                                        if (result != null &&
+                                            !result.isSuccess) {
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                                if (mounted) {
+                                                  TopNotification.show(
+                                                    context,
+                                                    message:
+                                                        result.errorMessage ??
+                                                        '載入圖片失敗',
+                                                    type:
+                                                        NotificationType.error,
+                                                  );
+                                                }
+                                              });
+                                          return const Center(
                                             child: Icon(
                                               Icons.error_outline,
                                               color: Colors.grey,
@@ -376,7 +400,9 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -400,11 +426,11 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   }
 
   Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType? keyboardType,
-    String? hintText,
+    required final TextEditingController controller,
+    required final String label,
+    required final IconData icon,
+    final TextInputType? keyboardType,
+    final String? hintText,
   }) {
     return TextField(
       controller: controller,
@@ -429,7 +455,10 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.black87, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }
@@ -453,10 +482,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
             const SizedBox(width: 8),
             Text(
               '(可多選)',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ],
         ),
@@ -472,12 +498,12 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: clothingTypes.map((type) {
+            children: clothingTypes.map((final type) {
               final isSelected = selectedTypes.contains(type);
               return FilterChip(
                 label: Text(type),
                 selected: isSelected,
-                onSelected: (selected) {
+                onSelected: (final selected) {
                   setState(() {
                     if (selected) {
                       selectedTypes.add(type);
@@ -493,7 +519,10 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                   color: isSelected ? Colors.white : Colors.black87,
                   fontSize: 13,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(

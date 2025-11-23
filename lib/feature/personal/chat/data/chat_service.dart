@@ -3,9 +3,12 @@ import 'package:tryzeon/shared/models/result.dart';
 
 class ChatService {
   static final _supabase = Supabase.instance.client;
-  static Future<Result<String>> getLLMRecommendation(Map<String, String> answers) async {
+  static Future<Result<String>> getLLMRecommendation(
+    final Map<String, String> answers,
+  ) async {
     try {
-      final userRequirement = '''
+      final userRequirement =
+          '''
 - 時間：${answers['when'] ?? ''}
 - 地點：${answers['where'] ?? ''}
 - 對象：${answers['who'] ?? ''}
@@ -16,9 +19,7 @@ class ChatService {
 
       final res = await _supabase.functions.invoke(
         'chat',
-        body: {
-          'userRequirement': userRequirement
-        },
+        body: {'userRequirement': userRequirement},
       );
 
       if (res.data != null) {
@@ -30,5 +31,4 @@ class ChatService {
       return Result.failure('獲取穿搭建議失敗', error: e);
     }
   }
-
 }

@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class ProductTypeService {
   static final _supabase = Supabase.instance.client;
@@ -8,7 +8,9 @@ class ProductTypeService {
 
   static const _cacheKey = 'product_types_cache';
 
-  static Future<Result<List<String>>> getProductTypesList({bool forceRefresh = false}) async {
+  static Future<Result<List<String>>> getProductTypesList({
+    final bool forceRefresh = false,
+  }) async {
     try {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
@@ -24,7 +26,7 @@ class ProductTypeService {
           .order('priority', ascending: true);
 
       final types = (response as List)
-          .map((item) => item['name_zh'] as String)
+          .map((final item) => item['name_zh'] as String)
           .toList();
 
       await CacheService.saveList(_cacheKey, types);

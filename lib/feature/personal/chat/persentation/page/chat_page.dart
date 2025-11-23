@@ -5,40 +5,32 @@ import '../../data/chat_service.dart';
 
 // Question data structure
 class Question {
-  final String id;
-  final String text;
-  final List<String> quickReplies;
-
   const Question({
     required this.id,
     required this.text,
     required this.quickReplies,
   });
+  final String id;
+  final String text;
+  final List<String> quickReplies;
 }
 
 // ChatMessage model
 class ChatMessage {
+  ChatMessage({required this.text, required this.isUser, this.questionId});
   final String text;
   final bool isUser;
   final String? questionId;
-
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    this.questionId,
-  });
 }
-
 
 // ChatBubble widget
 class ChatBubble extends StatelessWidget {
+  const ChatBubble({super.key, required this.message, this.child});
   final ChatMessage message;
   final Widget? child;
 
-  const ChatBubble({super.key, required this.message, this.child});
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final isUser = message.isUser;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -63,8 +55,12 @@ class ChatBubble extends StatelessWidget {
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
-            bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(4),
-            bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(20),
+            bottomLeft: isUser
+                ? const Radius.circular(20)
+                : const Radius.circular(4),
+            bottomRight: isUser
+                ? const Radius.circular(4)
+                : const Radius.circular(20),
           ),
           boxShadow: [
             BoxShadow(
@@ -139,8 +135,6 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
-
-
 // Q&A configuration
 class QAConfig {
   static const List<Question> questions = [
@@ -179,17 +173,12 @@ class QAConfig {
 
 // Quick reply button widget
 class QuickReplyButton extends StatelessWidget {
+  const QuickReplyButton({super.key, required this.text, required this.onTap});
   final String text;
   final VoidCallback onTap;
 
-  const QuickReplyButton({
-    super.key,
-    required this.text,
-    required this.onTap,
-  });
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Container(
@@ -250,10 +239,7 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     // Add greeting message first
-    messages.add(ChatMessage(
-      text: '你好，今天想怎麼穿呢？',
-      isUser: false,
-    ));
+    messages.add(ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false));
     // Start Q&A after a short delay
     Future.delayed(const Duration(milliseconds: 1000), () {
       if (mounted) {
@@ -266,11 +252,13 @@ class _ChatPageState extends State<ChatPage> {
     if (currentQuestionIndex < QAConfig.questions.length) {
       final question = QAConfig.questions[currentQuestionIndex];
       setState(() {
-        messages.add(ChatMessage(
-          text: question.text,
-          isUser: false,
-          questionId: question.id,
-        ));
+        messages.add(
+          ChatMessage(
+            text: question.text,
+            isUser: false,
+            questionId: question.id,
+          ),
+        );
         isWaitingForAnswer = true;
       });
       scrollToBottom();
@@ -279,7 +267,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _handleAnswer(String answer, String questionId) {
+  void _handleAnswer(final String answer, final String questionId) {
     if (!isWaitingForAnswer) return;
 
     setState(() {
@@ -301,22 +289,19 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       isWaitingForAnswer = false;
     });
-    
+
     // Call LLM API directly without showing summary
     _getLLMRecommendation();
   }
-  
+
   Future<void> _getLLMRecommendation() async {
     if (!mounted) return;
 
     setState(() {
       isLoadingRecommendation = true;
-      messages.add(ChatMessage(
-        text: '正在尋求穿搭大神...',
-        isUser: false,
-      ));
+      messages.add(ChatMessage(text: '正在尋求穿搭大神...', isUser: false));
     });
-    
+
     scrollToBottom();
 
     // 使用 ChatService 獲取 LLM 建議
@@ -333,25 +318,24 @@ class _ChatPageState extends State<ChatPage> {
     if (result.isSuccess) {
       // Add LLM response
       setState(() {
-        messages.add(ChatMessage(
-          text: result.data!,
-          isUser: false,
-        ));
+        messages.add(ChatMessage(text: result.data!, isUser: false));
       });
     } else {
       // Show error message
       setState(() {
-        messages.add(ChatMessage(
-          text: '抱歉，${result.errorMessage ?? '發生未知錯誤'}',
-          isUser: false,
-        ));
+        messages.add(
+          ChatMessage(
+            text: '抱歉，${result.errorMessage ?? '發生未知錯誤'}',
+            isUser: false,
+          ),
+        );
       });
     }
 
     scrollToBottom();
   }
 
-  void sendMessage(String text) {
+  void sendMessage(final String text) {
     if (text.trim().isEmpty || !isWaitingForAnswer) return;
 
     final currentQuestion = currentQuestionIndex < QAConfig.questions.length
@@ -361,12 +345,13 @@ class _ChatPageState extends State<ChatPage> {
     if (currentQuestion != null) {
       _handleAnswer(text, currentQuestion.id);
     }
-    
+
     controller.clear();
   }
 
   Widget _buildQuickReplies() {
-    if (!isWaitingForAnswer || currentQuestionIndex >= QAConfig.questions.length) {
+    if (!isWaitingForAnswer ||
+        currentQuestionIndex >= QAConfig.questions.length) {
       return const SizedBox.shrink();
     }
 
@@ -378,10 +363,12 @@ class _ChatPageState extends State<ChatPage> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: currentQuestion.quickReplies
-            .map((reply) => QuickReplyButton(
-                  text: reply,
-                  onTap: () => _handleAnswer(reply, currentQuestion.id),
-                ))
+            .map(
+              (final reply) => QuickReplyButton(
+                text: reply,
+                onTap: () => _handleAnswer(reply, currentQuestion.id),
+              ),
+            )
             .toList(),
       ),
     );
@@ -408,10 +395,7 @@ class _ChatPageState extends State<ChatPage> {
       isLoadingRecommendation = false;
 
       // Add greeting message
-      messages.add(ChatMessage(
-        text: '你好，今天想怎麼穿呢？',
-        isUser: false,
-      ));
+      messages.add(ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false));
     });
 
     // Start Q&A after a short delay
@@ -423,7 +407,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -444,7 +428,10 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               // 自訂 AppBar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -521,9 +508,12 @@ class _ChatPageState extends State<ChatPage> {
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 12,
+                  ),
                   itemCount: messages.length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (final context, final index) {
                     return ChatBubble(message: messages[index]);
                   },
                 ),
@@ -536,7 +526,10 @@ class _ChatPageState extends State<ChatPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(28),
@@ -568,7 +561,7 @@ class _ChatPageState extends State<ChatPage> {
                                 vertical: 12,
                               ),
                             ),
-                            onSubmitted: (text) => sendMessage(text),
+                            onSubmitted: sendMessage,
                             enabled: !isLoadingRecommendation,
                           ),
                         ),
@@ -591,7 +584,9 @@ class _ChatPageState extends State<ChatPage> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: isLoadingRecommendation ? null : () => sendMessage(controller.text),
+                            onTap: isLoadingRecommendation
+                                ? null
+                                : () => sendMessage(controller.text),
                             borderRadius: BorderRadius.circular(24),
                             child: const Icon(
                               Icons.send_rounded,
@@ -613,4 +608,3 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 }
-

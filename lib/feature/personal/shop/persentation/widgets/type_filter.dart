@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 
 class ProductTypeFilter extends StatelessWidget {
-  final List<String> productTypes;
-  final Set<String> selectedTypes;
-  final Function(String) onTypeToggle;
-
   const ProductTypeFilter({
     super.key,
     required this.productTypes,
     required this.selectedTypes,
     required this.onTypeToggle,
   });
+  final List<String> productTypes;
+  final Set<String> selectedTypes;
+  final Function(String) onTypeToggle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Wrap(
           spacing: 15,
           runSpacing: 12,
-          children: productTypes.map((type) {
+          children: productTypes.map((final type) {
             final isSelected = selectedTypes.contains(type);
             return GestureDetector(
               onTap: () => onTypeToggle(type),
@@ -64,7 +63,9 @@ class ProductTypeFilter extends StatelessWidget {
                     type,
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                       color: isSelected
                           ? Theme.of(context).colorScheme.primary
                           : Colors.black,

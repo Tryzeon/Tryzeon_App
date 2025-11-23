@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 
-enum NotificationType {
-  success,
-  error,
-  info,
-  warning,
-}
+enum NotificationType { success, error, info, warning }
 
 class TopNotification {
   static void show(
-    BuildContext context, {
-    required String message,
-    NotificationType type = NotificationType.info,
+    final BuildContext context, {
+    required final String message,
+    final NotificationType type = NotificationType.info,
   }) {
     final duration = type == NotificationType.error
         ? const Duration(seconds: 10)
@@ -22,7 +17,7 @@ class TopNotification {
     final GlobalKey<_TopNotificationWidgetState> key = GlobalKey();
 
     overlayEntry = OverlayEntry(
-      builder: (context) => _TopNotificationWidget(
+      builder: (final context) => _TopNotificationWidget(
         key: key,
         message: message,
         type: type,
@@ -42,16 +37,15 @@ class TopNotification {
 }
 
 class _TopNotificationWidget extends StatefulWidget {
-  final String message;
-  final NotificationType type;
-  final VoidCallback onDismiss;
-
   const _TopNotificationWidget({
     super.key,
     required this.message,
     required this.type,
     required this.onDismiss,
   });
+  final String message;
+  final NotificationType type;
+  final VoidCallback onDismiss;
 
   @override
   State<_TopNotificationWidget> createState() => _TopNotificationWidgetState();
@@ -75,18 +69,12 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
   }
@@ -112,7 +100,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final (color, icon) = _getStyle();
 
     return Positioned(
@@ -129,75 +117,77 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: GestureDetector(
-                  onVerticalDragUpdate: (details) {
+                  onVerticalDragUpdate: (final details) {
                     setState(() {
                       _dragOffset += details.delta.dy;
                       if (_dragOffset > 0) _dragOffset = 0;
                     });
                   },
-                  onVerticalDragEnd: (details) {
-                    if (_dragOffset < -50 || (details.primaryVelocity != null && details.primaryVelocity! < -300)) {
+                  onVerticalDragEnd: (final details) {
+                    if (_dragOffset < -50 ||
+                        (details.primaryVelocity != null &&
+                            details.primaryVelocity! < -300)) {
                       _dismiss();
                     } else {
                       setState(() => _dragOffset = 0);
                     }
                   },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: IntrinsicHeight(
-                        child: Row(
-                          children: [
-                            Container(width: 4, color: color),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    Icon(icon, color: color, size: 24),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        widget.message,
-                                        style: TextStyle(
-                                          color: Colors.grey[900],
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.4,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 30,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              Container(width: 4, color: color),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      Icon(icon, color: color, size: 24),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          widget.message,
+                                          style: TextStyle(
+                                            color: Colors.grey[900],
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.4,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    GestureDetector(
-                                      onTap: _dismiss,
-                                      child: Icon(
-                                        Icons.close,
-                                        color: Colors.grey[400],
-                                        size: 20,
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: _dismiss,
+                                        child: Icon(
+                                          Icons.close,
+                                          color: Colors.grey[400],
+                                          size: 20,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   ),
                 ),
               ),

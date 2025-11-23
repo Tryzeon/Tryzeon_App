@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:tryzeon/feature/personal/personal_entry.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../data/shop_service.dart';
 
 class ProductCard extends StatefulWidget {
+  const ProductCard({super.key, required this.product});
   final Product product;
-
-  const ProductCard({
-    super.key,
-    required this.product,
-  });
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -42,8 +39,8 @@ class _ProductCardState extends State<ProductCard> {
 
     final Uri url = Uri.parse(product.purchaseLink);
     if (!await canLaunchUrl(url)) {
-      if(!mounted) return;
-      
+      if (!mounted) return;
+
       TopNotification.show(
         context,
         message: '無法開啟購買連結',
@@ -58,7 +55,7 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final product = widget.product;
     final imageUrl = Supabase.instance.client.storage
         .from('store')
@@ -85,16 +82,27 @@ class _ProductCardState extends State<ProductCard> {
                             imageUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
+                            loadingBuilder:
+                                (
+                                  final context,
+                                  final child,
+                                  final loadingProgress,
+                                ) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                  );
+                                },
+                            errorBuilder:
+                                (
+                                  final context,
+                                  final error,
+                                  final stackTrace,
+                                ) => Container(
                                   color: Colors.grey[300],
                                   child: const Icon(Icons.image_not_supported),
                                 ),
@@ -120,7 +128,9 @@ class _ProductCardState extends State<ProductCard> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -161,9 +171,9 @@ class _ProductCardState extends State<ProductCard> {
                   ),
                   Text(
                     product.storeName!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

@@ -9,19 +9,17 @@ class ShopService {
 
   /// 獲取所有商品（包含店家資訊）
   static Future<Result<List<Product>>> getProducts({
-    String? searchQuery,
-    String sortBy = 'created_at',
-    bool ascending = false,
-    int? minPrice,
-    int? maxPrice,
-    List<String>? types,
+    final String? searchQuery,
+    final String sortBy = 'created_at',
+    final bool ascending = false,
+    final int? minPrice,
+    final int? maxPrice,
+    final List<String>? types,
   }) async {
     try {
       // 查詢所有商品並關聯店家資訊
       // products.store_id = store_profile.store_id
-      dynamic query = _supabase
-          .from(_productsTable)
-          .select('''
+      dynamic query = _supabase.from(_productsTable).select('''
             *,
             store_profile!products_store_id_fkey(
               store_id,
@@ -50,7 +48,7 @@ class ShopService {
       final response = await query.order(sortBy, ascending: ascending);
 
       final searchResult = (response as List)
-          .map((item) => Product.fromJson(item))
+          .map((final item) => Product.fromJson(item))
           .toList();
 
       return Result.success(data: searchResult);
@@ -60,24 +58,28 @@ class ShopService {
   }
 
   /// 增加商品的虛擬試穿點擊次數
-  static Future<void> incrementTryonCount(String productId) async {
+  static Future<void> incrementTryonCount(final String productId) async {
     try {
-      await _supabase.rpc('increment_tryon_count', params: {
-        'product_uuid': productId,
-      });
+      await _supabase.rpc(
+        'increment_tryon_count',
+        params: {'product_uuid': productId},
+      );
     } catch (e) {
-      AppLogger.error("Error incrementing tryon count", e);
+      AppLogger.error('Error incrementing tryon count', e);
     }
   }
 
   /// 增加商品的購買連結點擊次數
-  static Future<void> incrementPurchaseClickCount(String productId) async {
+  static Future<void> incrementPurchaseClickCount(
+    final String productId,
+  ) async {
     try {
-      await _supabase.rpc('increment_purchase_click_count', params: {
-        'product_uuid': productId,
-      });
+      await _supabase.rpc(
+        'increment_purchase_click_count',
+        params: {'product_uuid': productId},
+      );
     } catch (e) {
-      AppLogger.error("Error incrementing purchase click count", e);
+      AppLogger.error('Error incrementing purchase click count', e);
     }
   }
 }

@@ -3,11 +3,6 @@ import 'package:flutter/material.dart';
 const double kMaxPrice = 3000;
 
 class FilterDialog {
-  final BuildContext context;
-  final int? minPrice;
-  final int? maxPrice;
-  final Function(int? minPrice, int? maxPrice) onApply;
-
   FilterDialog({
     required this.context,
     this.minPrice,
@@ -18,7 +13,7 @@ class FilterDialog {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
+      builder: (final BuildContext context) {
         return _FilterDialogContent(
           minPrice: minPrice,
           maxPrice: maxPrice,
@@ -27,18 +22,21 @@ class FilterDialog {
       },
     );
   }
-}
-
-class _FilterDialogContent extends StatefulWidget {
+  final BuildContext context;
   final int? minPrice;
   final int? maxPrice;
   final Function(int? minPrice, int? maxPrice) onApply;
+}
 
+class _FilterDialogContent extends StatefulWidget {
   const _FilterDialogContent({
     this.minPrice,
     this.maxPrice,
     required this.onApply,
   });
+  final int? minPrice;
+  final int? maxPrice;
+  final Function(int? minPrice, int? maxPrice) onApply;
 
   @override
   State<_FilterDialogContent> createState() => _FilterDialogContentState();
@@ -75,7 +73,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -150,8 +148,8 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                 ),
                 Text(
                   _priceRange.end.round() >= kMaxPrice
-                    ? '\$${kMaxPrice.round()}+'
-                    : '\$${_priceRange.end.round()}',
+                      ? '\$${kMaxPrice.round()}+'
+                      : '\$${_priceRange.end.round()}',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -163,9 +161,13 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: Theme.of(context).colorScheme.primary,
-                inactiveTrackColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                inactiveTrackColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.2),
                 thumbColor: Theme.of(context).colorScheme.primary,
-                overlayColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                overlayColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.2),
                 trackHeight: 4,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
@@ -175,11 +177,13 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                 min: 0,
                 max: kMaxPrice,
                 divisions: 100,
-                onChanged: (RangeValues values) {
+                onChanged: (final RangeValues values) {
                   setState(() {
                     _priceRange = values;
                     _minPrice = values.start.round();
-                    _maxPrice = values.end >= kMaxPrice ? null : values.end.round();
+                    _maxPrice = values.end >= kMaxPrice
+                        ? null
+                        : values.end.round();
                   });
                 },
               ),
@@ -233,7 +237,9 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
