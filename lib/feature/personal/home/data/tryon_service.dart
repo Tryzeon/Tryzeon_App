@@ -1,46 +1,19 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
-  static Future<Result<String>> tryon(
-    final File clothingImage, {
+  static Future<Result<String>> tryon({
     final String? avatarBase64,
+    final String? clothingBase64,
+    final String? storagePath,
   }) async {
     try {
-      // Convert clothing image to base64
-      final clothingBytes = await clothingImage.readAsBytes();
-      final clothingBase64 = base64Encode(clothingBytes);
-
-      final body = {'clothing_image': clothingBase64};
-
-      // 如果有自訂的 avatar base64，加入到 body
-      if (avatarBase64 != null) {
-        body['avatar_image'] = avatarBase64;
-      }
-
-      final response = await _supabase.functions.invoke('tryon', body: body);
-      return Result.success(data: response.data['image']);
-    } catch (e) {
-      return Result.failure('虛擬試穿失敗', error: e);
-    }
-  }
-
-  static Future<Result<String>> tryonFromStorage(
-    final String storagePath, {
-    final String? avatarBase64,
-  }) async {
-    try {
-      final body = {'product_image_url': storagePath};
-
-      // 如果有自訂的 avatar base64，加入到 body
-      if (avatarBase64 != null) {
-        body['avatar_image'] = avatarBase64;
-      }
+      final Map<String, dynamic> body = {};
+      body['avatarBase64'] = avatarBase64;
+      body['clothingBase64'] = clothingBase64;
+      body['storagePath'] = storagePath;
 
       final response = await _supabase.functions.invoke('tryon', body: body);
       return Result.success(data: response.data['image']);

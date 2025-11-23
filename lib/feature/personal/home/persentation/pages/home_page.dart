@@ -31,19 +31,11 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> tryOnFromLocal() async {
-    // Check if avatar is available
-    if (_avatarFile == null) {
-      TopNotification.show(
-        context,
-        message: '請先上傳您的照片',
-        type: NotificationType.warning,
-      );
-      return;
-    }
-
     final File? clothingImage = await ImagePickerHelper.pickImage(context);
-
     if (clothingImage == null) return;
+
+    final clothingBytes = await clothingImage.readAsBytes();
+    final clothingBase64 = base64Encode(clothingBytes);
 
     setState(() {
       _isLoading = true;
@@ -57,7 +49,7 @@ class HomePageState extends State<HomePage> {
     }
 
     final result = await TryonService.tryon(
-      clothingImage,
+      clothingBase64: clothingBase64,
       avatarBase64: customAvatarBase64,
     );
 
@@ -89,6 +81,15 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> tryOnFromStorage(final String storagePath) async {
+    if (_avatarFile == null) {
+      TopNotification.show(
+        context,
+        message: '請先上傳您的照片',
+        type: NotificationType.warning,
+      );
+      return;
+    }
+    
     setState(() {
       _isLoading = true;
     });
@@ -101,8 +102,8 @@ class HomePageState extends State<HomePage> {
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
-    final result = await TryonService.tryonFromStorage(
-      storagePath,
+    final result = await TryonService.tryon(
+      storagePath: storagePath,
       avatarBase64: customAvatarBase64,
     );
 

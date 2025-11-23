@@ -65,11 +65,12 @@ Deno.serve(async (req) => {
     if (updateError) throw updateError;
 
     const body = await req.json();
-    const { avatar_image, clothing_image, product_image_url } = body;
+    const { avatarBase64, clothingBase64, storagePath } = body;
 
-    let avatarBase64;
-    if (avatar_image) {
-      avatarBase64 = avatar_image;
+    var avatarImage, clothingImage;
+    
+    if(avatarBase64){
+      avatarImage = avatarBase64;
     } else {
       const { data: files, error: listError } = await supabase.storage
         .from("avatars")
@@ -83,27 +84,26 @@ Deno.serve(async (req) => {
       if (downloadError) throw downloadError;
 
       const buf = new Uint8Array(await avatarData.arrayBuffer());
-      avatarBase64 = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
+      avatarImage = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
     }
 
-    let ClothingBase64 = null;
-    if (clothing_image) {
-      ClothingBase64 = clothing_image;
-    } else if (product_image_url) {
+    if (clothingBase64) {
+      clothingImage = clothingBase64;
+    } else {
       let bucket;
-      if (product_image_url.includes('wardrobe')) {
+      if (storagePath.includes('wardrobe')) {
         bucket = 'wardrobe';
-      } else if (product_image_url.includes('product')) {
+      } else if (storagePath.includes('product')) {
         bucket = 'store';
       } else {
-        throw new Error(`Cannot determine bucket from path: ${product_image_url}`);
+        throw new Error(`Cannot determine bucket from path: ${storagePath}`);
       }
 
-      const { data: clothingData, error: downloadError } = await supabase.storage.from(bucket).download(product_image_url);
+      const { data: clothingData, error: downloadError } = await supabase.storage.from(bucket).download(storagePath);
       if (downloadError) throw downloadError;
 
       const buf = new Uint8Array(await clothingData.arrayBuffer());
-      ClothingBase64 = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
+      clothingImage = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
     }
 
     const model = genAI.getGenerativeModel({
@@ -127,13 +127,13 @@ Deno.serve(async (req) => {
         },
         {
           inlineData: {
-            data: avatarBase64,
+            data: avatarImage,
             mimeType: "image/jpeg"
           }
         },
         {
           inlineData: {
-            data: ClothingBase64,
+            data: clothingImage,
             mimeType: "image/jpeg"
           }
         }
