@@ -80,7 +80,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> tryOnFromStorage(final String storagePath) async {
+  Future<void> tryOnFromStorage(final String clothingPath) async {
     if (_avatarFile == null) {
       TopNotification.show(
         context,
@@ -89,7 +89,7 @@ class HomePageState extends State<HomePage> {
       );
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -103,7 +103,7 @@ class HomePageState extends State<HomePage> {
     }
 
     final result = await TryonService.tryon(
-      storagePath: storagePath,
+      clothingPath: clothingPath,
       avatarBase64: customAvatarBase64,
     );
 

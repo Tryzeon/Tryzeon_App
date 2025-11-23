@@ -65,11 +65,11 @@ Deno.serve(async (req) => {
     if (updateError) throw updateError;
 
     const body = await req.json();
-    const { avatarBase64, clothingBase64, storagePath } = body;
+    const { avatarBase64, clothingBase64, clothingPath } = body;
 
     var avatarImage, clothingImage;
-    
-    if(avatarBase64){
+
+    if (avatarBase64) {
       avatarImage = avatarBase64;
     } else {
       const { data: files, error: listError } = await supabase.storage
@@ -91,15 +91,15 @@ Deno.serve(async (req) => {
       clothingImage = clothingBase64;
     } else {
       let bucket;
-      if (storagePath.includes('wardrobe')) {
+      if (clothingPath.includes('wardrobe')) {
         bucket = 'wardrobe';
-      } else if (storagePath.includes('product')) {
+      } else if (clothingPath.includes('product')) {
         bucket = 'store';
       } else {
-        throw new Error(`Cannot determine bucket from path: ${storagePath}`);
+        throw new Error(`Cannot determine bucket from path: ${clothingPath}`);
       }
 
-      const { data: clothingData, error: downloadError } = await supabase.storage.from(bucket).download(storagePath);
+      const { data: clothingData, error: downloadError } = await supabase.storage.from(bucket).download(clothingPath);
       if (downloadError) throw downloadError;
 
       const buf = new Uint8Array(await clothingData.arrayBuffer());
