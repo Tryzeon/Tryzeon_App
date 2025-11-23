@@ -30,7 +30,7 @@ class HomePageState extends State<HomePage> {
     _loadAvatar();
   }
 
-  Future<void> virtualTryOnFromLocal() async {
+  Future<void> tryOnFromLocal() async {
     // Check if avatar is available
     if (_avatarFile == null) {
       TopNotification.show(
@@ -88,7 +88,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> virtualTryOnFromStorage(final String storagePath) async {
+  Future<void> tryOnFromStorage(final String storagePath) async {
     setState(() {
       _isLoading = true;
     });
@@ -739,7 +739,7 @@ class HomePageState extends State<HomePage> {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: _isLoading ? null : virtualTryOnFromLocal,
+                      onTap: _isLoading ? null : tryOnFromLocal,
                       borderRadius: BorderRadius.circular(16),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,

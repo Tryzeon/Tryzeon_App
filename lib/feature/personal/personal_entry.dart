@@ -45,14 +45,14 @@ class PersonalEntryState extends State<PersonalEntry> {
     });
   }
 
-  Future<void> virtualTryOnFromStorage(final String storagePath) async {
+  Future<void> tryOnFromStorage(final String storagePath) async {
     // 切換到 HomePage
     setState(() {
       _selectedIndex = 2;
     });
 
     // 呼叫 HomePage 的試穿方法
-    await _homePageKey.currentState?.virtualTryOnFromStorage(storagePath);
+    await _homePageKey.currentState?.tryOnFromStorage(storagePath);
   }
 
   @override

@@ -22,7 +22,7 @@ class _ProductCardState extends State<ProductCard> {
     ShopService.incrementTryonCount(product.id!);
 
     final personalEntry = PersonalEntry.of(context);
-    await personalEntry?.virtualTryOnFromStorage(product.imagePath);
+    await personalEntry?.tryOnFromStorage(product.imagePath);
   }
 
   Future<void> _handlePurchase() async {
