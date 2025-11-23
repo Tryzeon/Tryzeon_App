@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class Result<T> {
   final bool isSuccess;
@@ -22,27 +23,30 @@ class Result<T> {
     );
   }
 
-  factory Result.failure(String message, {dynamic error}) {
-    String errorMessage;
+  factory Result.failure(String title, {dynamic error}) {
+    String message = title;
 
-    // 如果有 error，檢查其類型
     if (error != null) {
-      if (error is SocketException) {
-        errorMessage = '無法連接網路，請檢查網路連線';
-      } else if (error.toString().contains('TimeoutException')) {
-        errorMessage = '連線逾時，請稍後再試';
+      String errorMessage = "";
+      if (error is FunctionException) {
+        errorMessage = (error.details as Map<String, dynamic>?)?['message'];
       } else if (error is AuthException) {
         errorMessage = error.message;
+      } else if (error is StorageException) {
+        errorMessage = error.message;
+      } else if (error is SocketException) {
+        errorMessage = '發生錯誤，請檢查網路連接或稍後再試。';
       } else {
-        errorMessage = '$message: ${error.toString()}';
+        errorMessage = '發生錯誤，請稍後再試。';
+        AppLogger.error('$title: ${error.toString()}');
       }
-    } else {
-      errorMessage = message;
+
+      message = '$title: $errorMessage';
     }
 
     return Result(
       isSuccess: false,
-      errorMessage: errorMessage,
+      errorMessage: message,
     );
   }
 }
