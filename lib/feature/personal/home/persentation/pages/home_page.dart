@@ -30,7 +30,11 @@ class HomePageState extends State<HomePage> {
     _loadAvatar();
   }
 
-  Future<void> tryOnFromLocal() async {
+  /// 核心試穿邏輯 - 處理本地檔案或儲存路徑的試穿
+  Future<void> _performTryOn({
+    final String? clothingBase64,
+    final String? clothingPath,
+  }) async {
     if (_avatarFile == null) {
       TopNotification.show(
         context,
@@ -40,16 +44,6 @@ class HomePageState extends State<HomePage> {
       return;
     }
 
-    final File? clothingImage = await ImagePickerHelper.pickImage(context);
-    if (clothingImage == null) return;
-
-    final clothingBytes = await clothingImage.readAsBytes();
-    final clothingBase64 = base64Encode(clothingBytes);
-
-    setState(() {
-      _isLoading = true;
-    });
-
     // 如果有自訂 avatar，取得其 base64
     String? customAvatarBase64;
     if (_customAvatarIndex != null) {
@@ -57,9 +51,14 @@ class HomePageState extends State<HomePage> {
       customAvatarBase64 = avatarUrl.split(',')[1];
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     final result = await TryonService.tryon(
-      clothingBase64: clothingBase64,
       avatarBase64: customAvatarBase64,
+      clothingBase64: clothingBase64,
+      clothingPath: clothingPath,
     );
 
     if (mounted) {
@@ -89,58 +88,20 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  /// 從本地選擇衣服進行試穿
+  Future<void> tryOnFromLocal() async {
+    final File? clothingImage = await ImagePickerHelper.pickImage(context);
+    if (clothingImage == null) return;
+
+    final clothingBytes = await clothingImage.readAsBytes();
+    final clothingBase64 = base64Encode(clothingBytes);
+
+    await _performTryOn(clothingBase64: clothingBase64);
+  }
+
+  /// 從儲存路徑進行試穿
   Future<void> tryOnFromStorage(final String clothingPath) async {
-    if (_avatarFile == null) {
-      TopNotification.show(
-        context,
-        message: '請先上傳您的照片',
-        type: NotificationType.warning,
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // 如果有自訂 avatar，取得其 base64
-    String? customAvatarBase64;
-    if (_customAvatarIndex != null &&
-        _customAvatarIndex! < _tryonImages.length) {
-      final avatarUrl = _tryonImages[_customAvatarIndex!];
-      customAvatarBase64 = avatarUrl.split(',')[1];
-    }
-
-    final result = await TryonService.tryon(
-      clothingPath: clothingPath,
-      avatarBase64: customAvatarBase64,
-    );
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Check if success
-      if (result.isSuccess) {
-        setState(() {
-          _tryonImages.add(result.data!);
-          _currentTryonIndex = _tryonImages.length - 1;
-        });
-
-        TopNotification.show(
-          context,
-          message: '試穿成功！',
-          type: NotificationType.success,
-        );
-      } else {
-        TopNotification.show(
-          context,
-          message: result.errorMessage ?? '發生錯誤',
-          type: NotificationType.error,
-        );
-      }
-    }
+    await _performTryOn(clothingPath: clothingPath);
   }
 
   Future<void> _loadAvatar() async {
