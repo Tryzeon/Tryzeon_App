@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:tryzeon/feature/store/home/product/data/product_service.dart';
+import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/models/result.dart';
 
 class Product {

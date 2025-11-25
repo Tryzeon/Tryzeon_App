@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
-import 'home/home_page.dart';
-import 'home/settings/data/profile_service.dart';
+import 'home/persentation/pages/home_page.dart';
+import 'home/persentation/pages/settings/data/profile_service.dart';
 import 'onboarding/persentation/pages/store_onboarding_page.dart';
 
 /// 店家入口 - 負責判斷是否需要 onboarding
