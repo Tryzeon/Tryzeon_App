@@ -52,8 +52,9 @@ class WardrobeService {
 
   static Future<Result<List<Clothing>>> uploadClothing(
     final File imageFile,
-    final String category,
-  ) async {
+    final String category, {
+    final List<String> tags = const [],
+  }) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
       return Result.failure('請重新登入');
@@ -85,6 +86,7 @@ class WardrobeService {
         'user_id': userId,
         'category': category,
         'image_path': storagePath,
+        'tags': tags,
       });
 
       // 4. 清除快取以確保下次獲取最新資料
@@ -172,19 +174,37 @@ class ClothingType {
 }
 
 class Clothing {
-  Clothing({this.id, required this.imagePath, required this.category});
+  Clothing({
+    this.id,
+    required this.imagePath,
+    required this.category,
+    this.tags = const [],
+  });
 
   factory Clothing.fromJson(final Map<String, dynamic> json) {
     return Clothing(
       id: json['id'],
       imagePath: json['image_path'],
       category: json['category'],
+      tags: json['tags'] != null
+          ? List<String>.from(json['tags'] as List)
+          : [],
     );
   }
 
   final String? id;
   final String imagePath;
   final String category;
+  final List<String> tags;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'image_path': imagePath,
+      'category': category,
+      'tags': tags,
+    };
+  }
 
   // 按需載入圖片，使用快取機制
   Future<Result<File>> loadImage() async {
