@@ -194,7 +194,7 @@ class StoreProfile {
       address: json['address'],
     );
   }
-  
+
   final String storeId;
   final String storeName;
   final String address;

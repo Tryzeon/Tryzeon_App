@@ -32,7 +32,7 @@ class Result<T> {
 
     return Result(isSuccess: false, errorMessage: message);
   }
-  
+
   final bool isSuccess;
   final T? data;
   final File? file;

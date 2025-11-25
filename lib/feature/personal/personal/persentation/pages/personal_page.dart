@@ -5,11 +5,11 @@ import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
-import 'settings/data/profile_service.dart';
-import 'settings/presentation/pages/settings_page.dart';
 import '../../data/wardrobe_service.dart';
 import '../dialogs/upload_clothing_dialog.dart';
 import '../widgets/clothing_card.dart';
+import 'settings/data/profile_service.dart';
+import 'settings/presentation/pages/settings_page.dart';
 
 class PersonalPage extends StatefulWidget {
   const PersonalPage({super.key});

@@ -4,8 +4,8 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../../data/product_service.dart';
 import '../dialogs/sort_dialog.dart';
-import 'new_product_page.dart';
 import '../widgets/product_card.dart';
+import 'new_product_page.dart';
 import 'settings/data/profile_service.dart';
 import 'settings/presentation/pages/settings_page.dart';
 

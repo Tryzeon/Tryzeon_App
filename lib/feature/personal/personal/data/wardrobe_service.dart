@@ -181,7 +181,7 @@ class Clothing {
       category: json['category'],
     );
   }
-  
+
   final String? id;
   final String imagePath;
   final String category;
