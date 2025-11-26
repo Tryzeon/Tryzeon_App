@@ -279,7 +279,7 @@ class _ShopPageState extends State<ShopPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '商店',
+                            '試衣間',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
