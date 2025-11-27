@@ -68,8 +68,11 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Dialog(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: SingleChildScrollView(
         child: Padding(
@@ -84,26 +87,22 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                     height: 48,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.secondary,
-                        ],
+                        colors: [colorScheme.primary, colorScheme.secondary],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.cloud_upload_outlined,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 24,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
+                  Text(
                     '上傳衣物',
-                    style: TextStyle(
-                      fontSize: 20,
+                    style: textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -120,7 +119,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('取消', style: TextStyle(color: Colors.grey[700])),
+                    child: Text(
+                      '取消',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Container(
@@ -128,13 +130,13 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                       gradient: _selectedCategory != null && !_isUploading
                           ? LinearGradient(
                               colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
+                                colorScheme.primary,
+                                colorScheme.secondary,
                               ],
                             )
                           : null,
                       color: _selectedCategory == null || _isUploading
-                          ? Colors.grey[300]
+                          ? colorScheme.surfaceContainerHighest
                           : null,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -144,7 +146,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
+                        foregroundColor: colorScheme.onPrimary,
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
@@ -152,12 +154,12 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                         ),
                       ),
                       child: _isUploading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: colorScheme.onPrimary,
                               ),
                             )
                           : const Text('上傳'),
@@ -173,11 +175,12 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
   }
 
   Widget _buildImagePreview() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 200,
       height: 200,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ClipRRect(
@@ -188,15 +191,18 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
   }
 
   Widget _buildCategorySelector() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '選擇類別',
-          style: TextStyle(
+          style: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: Colors.black87,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -209,13 +215,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
               decoration: BoxDecoration(
                 gradient: isSelected
                     ? LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.secondary,
-                        ],
+                        colors: [colorScheme.primary, colorScheme.secondary],
                       )
                     : null,
-                color: isSelected ? null : Colors.grey[200],
+                color: isSelected ? null : colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Material(
@@ -234,8 +237,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                     ),
                     child: Text(
                       category,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black87,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.normal,
@@ -275,25 +280,28 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
   }
 
   Widget _buildTagSelector() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               '選擇標籤',
-              style: TextStyle(
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: Colors.black87,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               '(可選)',
-              style: TextStyle(
+              style: textTheme.bodySmall?.copyWith(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -308,10 +316,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
               return Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
+                    colors: [colorScheme.primary, colorScheme.secondary],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -330,16 +335,16 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                         children: [
                           Text(
                             tag,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onPrimary,
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(
+                          Icon(
                             Icons.close,
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                             size: 14,
                           ),
                         ],
@@ -362,10 +367,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
             children: [
               Text(
                 category,
-                style: TextStyle(
+                style: textTheme.labelLarge?.copyWith(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 8),
@@ -379,24 +384,15 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                       gradient: isSelected
                           ? LinearGradient(
                               colors: [
-                                Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.2),
-                                Theme.of(context)
-                                    .colorScheme
-                                    .secondary
-                                    .withValues(alpha: 0.2),
+                                colorScheme.primary.withValues(alpha: 0.2),
+                                colorScheme.secondary.withValues(alpha: 0.2),
                               ],
                             )
                           : null,
-                      color: isSelected ? null : Colors.grey[200],
+                      color: isSelected ? null : colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(16),
                       border: isSelected
-                          ? Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 1.5,
-                            )
+                          ? Border.all(color: colorScheme.primary, width: 1.5)
                           : null,
                     ),
                     child: Material(
@@ -411,10 +407,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                           ),
                           child: Text(
                             tag,
-                            style: TextStyle(
+                            style: textTheme.bodySmall?.copyWith(
                               color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Colors.black87,
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurface,
                               fontWeight: isSelected
                                   ? FontWeight.w600
                                   : FontWeight.normal,
@@ -434,10 +430,10 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
         // 自訂 tag 輸入框 (移到最下面)
         Text(
           '自訂標籤',
-          style: TextStyle(
+          style: textTheme.labelLarge?.copyWith(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 8),
@@ -448,9 +444,9 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                 controller: _customTagController,
                 decoration: InputDecoration(
                   hintText: '輸入自訂標籤',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
                   filled: true,
-                  fillColor: Colors.grey[100],
+                  fillColor: colorScheme.surfaceContainer,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -467,10 +463,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.secondary,
-                  ],
+                  colors: [colorScheme.primary, colorScheme.secondary],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -479,11 +472,11 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
                 child: InkWell(
                   onTap: _addCustomTag,
                   borderRadius: BorderRadius.circular(12),
-                  child: const Padding(
-                    padding: EdgeInsets.all(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
                     child: Icon(
                       Icons.add,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 20,
                     ),
                   ),

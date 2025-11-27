@@ -13,6 +13,9 @@ class ProductTypeFilter extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -34,26 +37,23 @@ class ProductTypeFilter extends StatelessWidget {
                       gradient: isSelected
                           ? LinearGradient(
                               colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
+                                colorScheme.primary,
+                                colorScheme.secondary,
                               ],
                             )
                           : null,
-                      color: isSelected ? null : Colors.grey[200],
+                      color: isSelected ? null : colorScheme.surfaceContainer,
                       border: isSelected
-                          ? Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2,
-                            )
+                          ? Border.all(color: colorScheme.primary, width: 2)
                           : null,
                     ),
                     child: Center(
                       child: Text(
                         type.substring(0, 1),
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : Colors.grey[700],
+                        style: textTheme.headlineMedium?.copyWith(
+                          color: isSelected
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -61,14 +61,13 @@ class ProductTypeFilter extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     type,
-                    style: TextStyle(
-                      fontSize: 15,
+                    style: textTheme.bodyLarge?.copyWith(
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.normal,
                       color: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.black,
+                          ? colorScheme.primary
+                          : colorScheme.onSurface,
                     ),
                   ),
                 ],

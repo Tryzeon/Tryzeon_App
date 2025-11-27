@@ -123,6 +123,9 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -130,10 +133,10 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.05),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -145,7 +148,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -160,15 +163,13 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.arrow_back_ios_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                           size: 20,
                         ),
                         onPressed: () => Navigator.pop(context, false),
@@ -180,18 +181,20 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             '帳號設定',
-                            style: TextStyle(
+                            style: textTheme.titleLarge?.copyWith(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             '管理您的店家資訊',
-                            style: TextStyle(
+                            style: textTheme.bodyMedium?.copyWith(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                         ],
@@ -206,7 +209,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                 child: _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                         ),
                       )
                     : SingleChildScrollView(
@@ -218,7 +221,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
@@ -232,12 +235,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Text(
+                                  Text(
                                     '店家 Logo',
-                                    style: TextStyle(
+                                    style: textTheme.titleMedium?.copyWith(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
                                     ),
                                   ),
                                   const SizedBox(height: 20),
@@ -249,22 +251,19 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                                .withValues(alpha: 0.1),
-                                            Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                                .withValues(alpha: 0.1),
+                                            colorScheme.primary.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            colorScheme.secondary.withValues(
+                                              alpha: 0.1,
+                                            ),
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(60),
                                         border: Border.all(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withValues(alpha: 0.3),
+                                          color: colorScheme.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
                                           width: 2,
                                         ),
                                       ),
@@ -281,9 +280,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                           ? Icon(
                                               Icons.camera_alt_rounded,
                                               size: 50,
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.primary,
+                                              color: colorScheme.primary,
                                             )
                                           : FutureBuilder(
                                               future: _storeProfile!.loadLogo(),
@@ -291,9 +288,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                 if (snapshot.connectionState ==
                                                     ConnectionState.waiting) {
                                                   return CircularProgressIndicator(
-                                                    color: Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary,
+                                                    color: colorScheme.primary,
                                                   );
                                                 }
 
@@ -303,9 +298,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                   return Icon(
                                                     Icons.camera_alt_rounded,
                                                     size: 50,
-                                                    color: Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary,
+                                                    color: colorScheme.primary,
                                                   );
                                                 }
 
@@ -328,12 +321,8 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                               Icons
                                                                   .store_rounded,
                                                               size: 50,
-                                                              color:
-                                                                  Theme.of(
-                                                                        context,
-                                                                      )
-                                                                      .colorScheme
-                                                                      .primary,
+                                                              color: colorScheme
+                                                                  .primary,
                                                             );
                                                           },
                                                     ),
@@ -343,9 +332,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                 return Icon(
                                                   Icons.camera_alt_rounded,
                                                   size: 50,
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary,
+                                                  color: colorScheme.primary,
                                                 );
                                               },
                                             ),
@@ -354,8 +341,10 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   const SizedBox(height: 12),
                                   Text(
                                     '點擊上傳店家 Logo',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
+                                      ),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -368,7 +357,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                             // 資訊卡片
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
@@ -382,12 +371,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     '店家資訊',
-                                    style: TextStyle(
+                                    style: textTheme.titleMedium?.copyWith(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
                                     ),
                                   ),
                                   const SizedBox(height: 20),
@@ -395,45 +383,47 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   // 店家名稱
                                   TextField(
                                     controller: storeNameController,
-                                    style: const TextStyle(
+                                    style: textTheme.bodyMedium?.copyWith(
                                       fontSize: 16,
-                                      color: Colors.black87,
                                     ),
                                     decoration: InputDecoration(
                                       labelText: '店家名稱',
-                                      labelStyle: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
+                                      labelStyle: textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                          ),
                                       prefixIcon: Icon(
                                         Icons.store_rounded,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
+                                        color: colorScheme.primary,
                                       ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
+                                          color: colorScheme.outline.withValues(
+                                            alpha: 0.3,
+                                          ),
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
+                                          color: colorScheme.outline.withValues(
+                                            alpha: 0.3,
+                                          ),
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
+                                          color: colorScheme.primary,
                                           width: 2,
                                         ),
                                       ),
                                       filled: true,
-                                      fillColor: Colors.grey[50],
+                                      fillColor:
+                                          colorScheme.surfaceContainerLow,
                                     ),
                                   ),
 
@@ -442,45 +432,47 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   // 店家地址
                                   TextField(
                                     controller: storeAddressController,
-                                    style: const TextStyle(
+                                    style: textTheme.bodyMedium?.copyWith(
                                       fontSize: 16,
-                                      color: Colors.black87,
                                     ),
                                     decoration: InputDecoration(
                                       labelText: '店家地址',
-                                      labelStyle: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
+                                      labelStyle: textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                          ),
                                       prefixIcon: Icon(
                                         Icons.location_on_rounded,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
+                                        color: colorScheme.primary,
                                       ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
+                                          color: colorScheme.outline.withValues(
+                                            alpha: 0.3,
+                                          ),
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Colors.grey[300]!,
+                                          color: colorScheme.outline.withValues(
+                                            alpha: 0.3,
+                                          ),
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
+                                          color: colorScheme.primary,
                                           width: 2,
                                         ),
                                       ),
                                       filled: true,
-                                      fillColor: Colors.grey[50],
+                                      fillColor:
+                                          colorScheme.surfaceContainerLow,
                                     ),
                                   ),
                                 ],
@@ -496,15 +488,16 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    Theme.of(context).colorScheme.primary,
-                                    Theme.of(context).colorScheme.secondary,
+                                    colorScheme.primary,
+                                    colorScheme.secondary,
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.3),
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.3,
+                                    ),
                                     blurRadius: 15,
                                     offset: const Offset(0, 8),
                                   ),
@@ -515,19 +508,19 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                 child: InkWell(
                                   onTap: _updateProfile,
                                   borderRadius: BorderRadius.circular(16),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.save_rounded,
-                                        color: Colors.white,
+                                        color: colorScheme.onPrimary,
                                         size: 24,
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       Text(
                                         '儲存',
-                                        style: TextStyle(
-                                          color: Colors.white,
+                                        style: textTheme.titleMedium?.copyWith(
+                                          color: colorScheme.onPrimary,
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                           letterSpacing: 0.5,

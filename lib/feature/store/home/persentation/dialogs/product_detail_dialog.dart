@@ -163,6 +163,9 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
@@ -172,7 +175,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
           maxHeight: MediaQuery.of(context).size.height * 0.9,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -189,7 +192,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
             Container(
               padding: const EdgeInsets.fromLTRB(24, 24, 16, 16),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: colorScheme.surfaceContainer,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -197,36 +200,32 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      '商品資訊',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
+                  Expanded(child: Text('商品資訊', style: textTheme.titleLarge)),
                   IconButton(
                     icon: Icon(
                       Icons.delete_outline,
-                      color: Colors.grey[700],
+                      color: colorScheme.onSurfaceVariant,
                       size: 22,
                     ),
                     onPressed: _deleteProduct,
                     tooltip: '刪除',
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: colorScheme.surface,
                       padding: const EdgeInsets.all(8),
                       minimumSize: const Size(40, 40),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.close, color: Colors.grey[700], size: 22),
+                    icon: Icon(
+                      Icons.close,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 22,
+                    ),
                     onPressed: () => Navigator.pop(context),
                     tooltip: '關閉',
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: colorScheme.surface,
                       padding: const EdgeInsets.all(8),
                       minimumSize: const Size(40, 40),
                     ),
@@ -258,10 +257,10 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                         height: 180,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: colorScheme.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Colors.grey[300]!,
+                            color: colorScheme.outlineVariant,
                             width: 1,
                           ),
                         ),
@@ -294,7 +293,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                   child: Icon(
                                                     Icons.image_outlined,
                                                     size: 48,
-                                                    color: Colors.grey[400],
+                                                    color: colorScheme.outline,
                                                   ),
                                                 ),
                                           );
@@ -314,16 +313,16 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                   );
                                                 }
                                               });
-                                          return const Center(
+                                          return Center(
                                             child: Icon(
                                               Icons.error_outline,
-                                              color: Colors.grey,
+                                              color: colorScheme.error,
                                             ),
                                           );
                                         }
                                         return Center(
                                           child: CircularProgressIndicator(
-                                            color: Colors.grey[400],
+                                            color: colorScheme.outline,
                                             strokeWidth: 2,
                                           ),
                                         );
@@ -336,12 +335,12 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Colors.black87,
+                                  color: colorScheme.inverseSurface,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.edit_outlined,
-                                  color: Colors.white,
+                                  color: colorScheme.onInverseSurface,
                                   size: 18,
                                 ),
                               ),
@@ -387,30 +386,28 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _updateProduct,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black87,
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    colorScheme.onPrimary,
                                   ),
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 '儲存變更',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5,
+                                style: textTheme.titleSmall?.copyWith(
+                                  color: colorScheme.onPrimary,
                                 ),
                               ),
                       ),
@@ -432,28 +429,31 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     final TextInputType? keyboardType,
     final String? hintText,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 15),
+      style: textTheme.bodyLarge,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
-        labelStyle: TextStyle(color: Colors.grey[700], fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.grey[600], size: 20),
+        labelStyle: textTheme.bodyMedium,
+        prefixIcon: Icon(icon, color: colorScheme.outline, size: 20),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: colorScheme.surfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black87, width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -464,26 +464,19 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   }
 
   Widget _buildTypeSelector() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(Icons.category_outlined, color: Colors.grey[600], size: 20),
+            Icon(Icons.category_outlined, color: colorScheme.outline, size: 20),
             const SizedBox(width: 8),
-            Text(
-              '商品類型',
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text('商品類型', style: textTheme.bodyMedium),
             const SizedBox(width: 8),
-            Text(
-              '(可多選)',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
+            Text('(可多選)', style: textTheme.bodySmall),
           ],
         ),
         const SizedBox(height: 12),
@@ -491,9 +484,9 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Wrap(
             spacing: 8,
@@ -512,12 +505,13 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                     }
                   });
                 },
-                backgroundColor: Colors.white,
-                selectedColor: Colors.black87,
-                checkmarkColor: Colors.white,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 13,
+                backgroundColor: colorScheme.surface,
+                selectedColor: colorScheme.primary,
+                checkmarkColor: colorScheme.onPrimary,
+                labelStyle: textTheme.bodyMedium?.copyWith(
+                  color: isSelected
+                      ? colorScheme.onPrimary
+                      : colorScheme.onSurface,
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -526,7 +520,9 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
-                    color: isSelected ? Colors.black87 : Colors.grey[300]!,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.outlineVariant,
                   ),
                 ),
               );

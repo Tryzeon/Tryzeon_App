@@ -70,6 +70,9 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -77,10 +80,10 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.02),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.02),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -92,7 +95,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -108,49 +111,35 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                       height: 48,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
+                          colors: [colorScheme.primary, colorScheme.secondary],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.description_rounded,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         size: 24,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '店家註冊',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '開始您的店家之旅',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
+                          Text('店家註冊', style: textTheme.headlineMedium),
+                          Text('開始您的店家之旅', style: textTheme.bodySmall),
                         ],
                       ),
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.person_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                         ),
                         onPressed: _switchToPersonalAccount,
                         tooltip: '切換回個人帳號',
@@ -159,15 +148,13 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                     const SizedBox(width: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.logout_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                         ),
                         onPressed: _handleLogout,
                         tooltip: '登出',
@@ -191,7 +178,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -210,23 +197,24 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.amber.shade400,
-                                        Colors.amber.shade600,
+                                        colorScheme.tertiary,
+                                        colorScheme.tertiary.withValues(
+                                          alpha: 0.8,
+                                        ),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.edit_document,
-                                    color: Colors.white,
+                                    color: colorScheme.onPrimary,
                                     size: 28,
                                   ),
                                 ),
                                 const SizedBox(height: 20),
                                 Text(
                                   '立即加入店家清單',
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                  style: textTheme.headlineLarge,
                                   textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 24),
@@ -236,17 +224,16 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Theme.of(context).colorScheme.primary,
-                                        Theme.of(context).colorScheme.secondary,
+                                        colorScheme.primary,
+                                        colorScheme.secondary,
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withValues(alpha: 0.3),
+                                        color: colorScheme.primary.withValues(
+                                          alpha: 0.3,
+                                        ),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       ),
@@ -257,8 +244,8 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     child: InkWell(
                                       onTap: _openForm,
                                       borderRadius: BorderRadius.circular(16),
-                                      child: const Padding(
-                                        padding: EdgeInsets.symmetric(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: 32,
                                           vertical: 16,
                                         ),
@@ -268,17 +255,17 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                           children: [
                                             Icon(
                                               Icons.open_in_new_rounded,
-                                              color: Colors.white,
+                                              color: colorScheme.onPrimary,
                                               size: 24,
                                             ),
-                                            SizedBox(width: 12),
+                                            const SizedBox(width: 12),
                                             Text(
                                               '開啟申請表單',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              style: textTheme.titleSmall
+                                                  ?.copyWith(
+                                                    color:
+                                                        colorScheme.onPrimary,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -293,10 +280,14 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.shade50,
+                                    color: colorScheme.error.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.red.shade200,
+                                      color: colorScheme.error.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       width: 1.5,
                                     ),
                                   ),
@@ -305,16 +296,14 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     children: [
                                       Icon(
                                         Icons.warning_rounded,
-                                        color: Colors.red.shade700,
+                                        color: colorScheme.error,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         '必須使用相同 Gmail',
-                                        style: TextStyle(
-                                          color: Colors.red.shade700,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                        style: textTheme.labelMedium?.copyWith(
+                                          color: colorScheme.error,
                                         ),
                                       ),
                                     ],
@@ -330,7 +319,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -348,15 +337,17 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.blue.shade400,
-                                        Colors.blue.shade600,
+                                        colorScheme.primary.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        colorScheme.primary,
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.info_rounded,
-                                    color: Colors.white,
+                                    color: colorScheme.onPrimary,
                                     size: 24,
                                   ),
                                 ),
@@ -368,18 +359,12 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     children: [
                                       Text(
                                         '審核時間',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                        style: textTheme.titleMedium,
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         '填寫完表單後，請稍等 7-14 個工作天進行審核',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
+                                        style: textTheme.bodySmall?.copyWith(
                                           fontSize: 13,
                                         ),
                                       ),

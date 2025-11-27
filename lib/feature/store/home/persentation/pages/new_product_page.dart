@@ -113,6 +113,9 @@ class _AddProductPageState extends State<AddProductPage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -120,10 +123,10 @@ class _AddProductPageState extends State<AddProductPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.05),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -135,7 +138,7 @@ class _AddProductPageState extends State<AddProductPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -150,15 +153,13 @@ class _AddProductPageState extends State<AddProductPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.arrow_back_ios_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                           size: 20,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -170,20 +171,8 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '新增商品',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '新增商品到您的店家',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
+                          Text('新增商品', style: textTheme.headlineMedium),
+                          Text('新增商品到您的店家', style: textTheme.bodySmall),
                         ],
                       ),
                     ),
@@ -199,7 +188,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // 圖片上傳卡片
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -213,14 +202,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '商品圖片',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
+                          Text('商品圖片', style: textTheme.titleSmall),
                           const SizedBox(height: 12),
                           GestureDetector(
                             onTap: () async {
@@ -239,17 +221,17 @@ class _AddProductPageState extends State<AddProductPage> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.1),
-                                    Theme.of(context).colorScheme.secondary
-                                        .withValues(alpha: 0.1),
+                                    colorScheme.primary.withValues(alpha: 0.1),
+                                    colorScheme.secondary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withValues(alpha: 0.3),
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   width: 2,
                                 ),
                               ),
@@ -261,19 +243,13 @@ class _AddProductPageState extends State<AddProductPage> {
                                         Icon(
                                           Icons.add_photo_alternate_rounded,
                                           size: 40,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
+                                          color: colorScheme.primary,
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
                                           '點擊選擇圖片',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                            fontWeight: FontWeight.w500,
+                                          style: textTheme.labelLarge?.copyWith(
+                                            color: colorScheme.primary,
                                           ),
                                         ),
                                       ],
@@ -298,7 +274,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // 商品資訊卡片
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -312,54 +288,45 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '商品資訊',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
+                          Text('商品資訊', style: textTheme.titleSmall),
                           const SizedBox(height: 16),
 
                           // 商品名稱
                           TextField(
                             controller: nameController,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
+                            style: textTheme.bodyLarge,
                             decoration: InputDecoration(
                               labelText: '商品名稱',
-                              labelStyle: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
+                              labelStyle: textTheme.bodyMedium,
                               prefixIcon: Icon(
                                 Icons.shopping_bag_outlined,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: colorScheme.primary,
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: colorScheme.primary,
                                   width: 2,
                                 ),
                               ),
                               filled: true,
-                              fillColor: Colors.grey[50],
+                              fillColor: colorScheme.surfaceContainer,
                             ),
                           ),
 
@@ -373,41 +340,39 @@ class _AddProductPageState extends State<AddProductPage> {
                           // 價格
                           TextField(
                             controller: priceController,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
+                            style: textTheme.bodyLarge,
                             decoration: InputDecoration(
                               labelText: '價格',
-                              labelStyle: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
+                              labelStyle: textTheme.bodyMedium,
                               prefixIcon: Icon(
                                 Icons.attach_money_rounded,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: colorScheme.primary,
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: colorScheme.primary,
                                   width: 2,
                                 ),
                               ),
                               filled: true,
-                              fillColor: Colors.grey[50],
+                              fillColor: colorScheme.surfaceContainer,
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -417,42 +382,40 @@ class _AddProductPageState extends State<AddProductPage> {
                           // 購買連結
                           TextField(
                             controller: purchaseLinkController,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
+                            style: textTheme.bodyLarge,
                             decoration: InputDecoration(
                               labelText: '購買連結',
                               hintText: 'https://...',
-                              labelStyle: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
+                              labelStyle: textTheme.bodyMedium,
                               prefixIcon: Icon(
                                 Icons.link_rounded,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: colorScheme.primary,
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: colorScheme.primary,
                                   width: 2,
                                 ),
                               ),
                               filled: true,
-                              fillColor: Colors.grey[50],
+                              fillColor: colorScheme.surfaceContainer,
                             ),
                             keyboardType: TextInputType.url,
                           ),
@@ -469,12 +432,15 @@ class _AddProductPageState extends State<AddProductPage> {
                       decoration: BoxDecoration(
                         gradient: isLoading
                             ? LinearGradient(
-                                colors: [Colors.grey[300]!, Colors.grey[400]!],
+                                colors: [
+                                  colorScheme.outline,
+                                  colorScheme.outlineVariant,
+                                ],
                               )
                             : LinearGradient(
                                 colors: [
-                                  Theme.of(context).colorScheme.primary,
-                                  Theme.of(context).colorScheme.secondary,
+                                  colorScheme.primary,
+                                  colorScheme.secondary,
                                 ],
                               ),
                         borderRadius: BorderRadius.circular(16),
@@ -482,9 +448,9 @@ class _AddProductPageState extends State<AddProductPage> {
                             ? []
                             : [
                                 BoxShadow(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withValues(alpha: 0.3),
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 15,
                                   offset: const Offset(0, 8),
                                 ),
@@ -497,30 +463,27 @@ class _AddProductPageState extends State<AddProductPage> {
                           borderRadius: BorderRadius.circular(16),
                           child: Center(
                             child: isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 24,
                                     height: 24,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: colorScheme.onPrimary,
                                       strokeWidth: 2.5,
                                     ),
                                   )
-                                : const Row(
+                                : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.add_rounded,
-                                        color: Colors.white,
+                                        color: colorScheme.onPrimary,
                                         size: 24,
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: 8),
                                       Text(
                                         '新增商品',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
+                                        style: textTheme.titleMedium?.copyWith(
+                                          color: colorScheme.onPrimary,
                                         ),
                                       ),
                                     ],
@@ -540,30 +503,24 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   Widget _buildTypeSelector() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(
-              Icons.category_rounded,
-              color: Theme.of(context).colorScheme.primary,
-              size: 20,
-            ),
+            Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
             const SizedBox(width: 8),
             Text(
               '商品類型',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
+              style: textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              '(可多選)',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
+            Text('(可多選)', style: textTheme.bodySmall),
           ],
         ),
         const SizedBox(height: 12),
@@ -571,9 +528,11 @@ class _AddProductPageState extends State<AddProductPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: 0.3),
+            ),
           ),
           child: Wrap(
             spacing: 8,
@@ -592,12 +551,13 @@ class _AddProductPageState extends State<AddProductPage> {
                     }
                   });
                 },
-                backgroundColor: Colors.white,
-                selectedColor: Theme.of(context).colorScheme.primary,
-                checkmarkColor: Colors.white,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 13,
+                backgroundColor: colorScheme.surface,
+                selectedColor: colorScheme.primary,
+                checkmarkColor: colorScheme.onPrimary,
+                labelStyle: textTheme.labelLarge?.copyWith(
+                  color: isSelected
+                      ? colorScheme.onPrimary
+                      : colorScheme.onSurface,
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -607,8 +567,8 @@ class _AddProductPageState extends State<AddProductPage> {
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
                     color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey[300]!,
+                        ? colorScheme.primary
+                        : colorScheme.outline.withValues(alpha: 0.3),
                   ),
                 ),
               );

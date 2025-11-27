@@ -20,13 +20,15 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Row(
       children: [
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -38,23 +40,19 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
             ),
             child: TextField(
               controller: _controller,
+              style: textTheme.bodyMedium,
               decoration: InputDecoration(
                 hintText: '搜尋品牌或商品',
-                hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                hintStyle: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: theme.colorScheme.primary,
-                ),
+                prefixIcon: Icon(Icons.search, color: colorScheme.primary),
                 suffixIcon: _controller.text.isEmpty
                     ? null
                     : IconButton(
                         icon: Icon(
                           Icons.clear,
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
-                          ),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                         onPressed: () {
                           _controller.clear();
@@ -67,7 +65,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surface,
+                fillColor: colorScheme.surface,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 14,
@@ -81,7 +79,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
         const SizedBox(width: 12),
         Container(
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary,
+            color: colorScheme.primary,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -103,7 +101,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                 ),
                 child: Icon(
                   Icons.search,
-                  color: theme.colorScheme.onPrimary,
+                  color: colorScheme.onPrimary,
                   size: 22,
                 ),
               ),

@@ -139,6 +139,9 @@ class _PersonalPageState extends State<PersonalPage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -146,10 +149,10 @@ class _PersonalPageState extends State<PersonalPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.05),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -170,14 +173,13 @@ class _PersonalPageState extends State<PersonalPage> {
                         ShaderMask(
                           shaderCallback: (final bounds) => LinearGradient(
                             colors: [
-                              Theme.of(context).colorScheme.primary,
-                              Theme.of(context).colorScheme.secondary,
+                              colorScheme.primary,
+                              colorScheme.secondary,
                             ],
                           ).createShader(bounds),
                           child: Text(
                             '您好, $username',
-                            style: const TextStyle(
-                              fontSize: 24,
+                            style: textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               letterSpacing: 0.5,
@@ -189,7 +191,7 @@ class _PersonalPageState extends State<PersonalPage> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: colorScheme.surfaceContainer,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -217,7 +219,7 @@ class _PersonalPageState extends State<PersonalPage> {
                               borderRadius: BorderRadius.circular(22),
                               child: Icon(
                                 Icons.settings_rounded,
-                                color: Colors.grey[700],
+                                color: colorScheme.onSurface,
                                 size: 20,
                               ),
                             ),
@@ -239,14 +241,13 @@ class _PersonalPageState extends State<PersonalPage> {
                   children: [
                     Icon(
                       Icons.checkroom_rounded,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: colorScheme.primary,
                       size: 24,
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       '我的衣櫃',
-                      style: TextStyle(
-                        fontSize: 20,
+                      style: textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -275,17 +276,12 @@ class _PersonalPageState extends State<PersonalPage> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
-              ],
+              colors: [colorScheme.primary, colorScheme.secondary],
             ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.4),
+                color: colorScheme.primary.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -297,10 +293,14 @@ class _PersonalPageState extends State<PersonalPage> {
             child: InkWell(
               onTap: _showUploadDialog,
               customBorder: const CircleBorder(),
-              child: const SizedBox(
+              child: SizedBox(
                 width: 56,
                 height: 56,
-                child: Icon(Icons.add_rounded, color: Colors.white, size: 28),
+                child: Icon(
+                  Icons.add_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 28,
+                ),
               ),
             ),
           ),
@@ -328,25 +328,23 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   Widget _buildCategoryChip(final String category, final bool isSelected) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
         gradient: isSelected
             ? LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.secondary,
-                ],
+                colors: [colorScheme.primary, colorScheme.secondary],
               )
             : null,
-        color: isSelected ? null : Colors.grey[200],
+        color: isSelected ? null : colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(20),
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.3),
+                  color: colorScheme.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -367,8 +365,10 @@ class _PersonalPageState extends State<PersonalPage> {
             child: Center(
               child: Text(
                 category,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: isSelected
+                      ? colorScheme.onPrimary
+                      : colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   fontSize: 14,
                   height: 1.0,
@@ -382,11 +382,12 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   Widget _buildClothingGrid() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     if (_isLoading) {
       return Center(
-        child: CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        child: CircularProgressIndicator(color: colorScheme.primary),
       );
     }
 
@@ -405,24 +406,20 @@ class _PersonalPageState extends State<PersonalPage> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.checkroom_rounded,
                 size: 50,
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.5),
+                color: colorScheme.primary.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 24),
             Text(
               selectedCategory == '全部' ? '衣櫃是空的' : '此類別沒有衣物',
-              style: TextStyle(
-                color: Colors.grey[600],
+              style: textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -430,7 +427,10 @@ class _PersonalPageState extends State<PersonalPage> {
             const SizedBox(height: 8),
             Text(
               '點擊右下角按鈕新增衣物',
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                fontSize: 14,
+              ),
             ),
           ],
         ),

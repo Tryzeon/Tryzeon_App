@@ -164,11 +164,14 @@ class _ShopPageState extends State<ShopPage> {
     required final bool isActive,
     required final VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: BoxDecoration(
         color: isActive
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            ? colorScheme.primary
+            : colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Material(
@@ -183,19 +186,16 @@ class _ShopPageState extends State<ShopPage> {
               children: [
                 Icon(
                   icon,
-                  color: isActive
-                      ? Colors.white
-                      : Theme.of(context).colorScheme.primary,
+                  color: isActive ? colorScheme.onPrimary : colorScheme.primary,
                   size: 18,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: textTheme.labelLarge?.copyWith(
                     color: isActive
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.primary,
-                    fontSize: 14,
+                        ? colorScheme.onPrimary
+                        : colorScheme.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -232,6 +232,9 @@ class _ShopPageState extends State<ShopPage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -239,10 +242,10 @@ class _ShopPageState extends State<ShopPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.02),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.02),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -260,16 +263,13 @@ class _ShopPageState extends State<ShopPage> {
                       height: 48,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
+                          colors: [colorScheme.primary, colorScheme.secondary],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.shopping_bag_outlined,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         size: 24,
                       ),
                     ),
@@ -278,18 +278,20 @@ class _ShopPageState extends State<ShopPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             '試衣間',
-                            style: TextStyle(
+                            style: textTheme.titleLarge?.copyWith(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             '發現時尚新品',
-                            style: TextStyle(
+                            style: textTheme.bodyMedium?.copyWith(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                         ],
@@ -303,7 +305,7 @@ class _ShopPageState extends State<ShopPage> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => _initializeData(forceRefresh: true),
-                  color: Theme.of(context).colorScheme.primary,
+                  color: colorScheme.primary,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Column(
@@ -359,8 +361,8 @@ class _ShopPageState extends State<ShopPage> {
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
                                     colors: [
-                                      Theme.of(context).colorScheme.primary,
-                                      Theme.of(context).colorScheme.secondary,
+                                      colorScheme.primary,
+                                      colorScheme.secondary,
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(2),
@@ -369,8 +371,9 @@ class _ShopPageState extends State<ShopPage> {
                               const SizedBox(width: 12),
                               Text(
                                 '推薦商品',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.bold),
+                                style: textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const Spacer(),
                               Row(
@@ -395,7 +398,7 @@ class _ShopPageState extends State<ShopPage> {
                             child: Padding(
                               padding: const EdgeInsets.all(48.0),
                               child: CircularProgressIndicator(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: colorScheme.primary,
                               ),
                             ),
                           )
@@ -408,14 +411,14 @@ class _ShopPageState extends State<ShopPage> {
                                   Icon(
                                     Icons.shopping_bag_outlined,
                                     size: 64,
-                                    color: Colors.grey[300],
+                                    color: colorScheme.outlineVariant,
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     '目前沒有商品符合搜尋條件',
-                                    style: TextStyle(
+                                    style: textTheme.bodyMedium?.copyWith(
                                       fontSize: 16,
-                                      color: Colors.grey[600],
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],

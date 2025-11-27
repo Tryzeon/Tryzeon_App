@@ -126,6 +126,9 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
   }
 
   Widget _buildAppBar(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -134,15 +137,13 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios_rounded,
-                color: Theme.of(context).colorScheme.primary,
+                color: colorScheme.primary,
                 size: 20,
               ),
               onPressed: () => Navigator.pop(context, _hasChanges),
@@ -150,11 +151,9 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
             ),
           ),
           const SizedBox(width: 12),
-          const Text(
+          Text(
             '設定',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+            style: textTheme.displaySmall?.copyWith(
               letterSpacing: 0.5,
             ),
           ),
@@ -171,9 +170,12 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
     required final VoidCallback onTap,
     final Gradient? gradient,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -200,19 +202,15 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
                         gradient ??
                         LinearGradient(
                           colors: [
-                            Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.1),
-                            Theme.of(
-                              context,
-                            ).colorScheme.secondary.withValues(alpha: 0.1),
+                            colorScheme.primary.withValues(alpha: 0.1),
+                            colorScheme.secondary.withValues(alpha: 0.1),
                           ],
                         ),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
                     icon,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: colorScheme.primary,
                     size: 28,
                   ),
                 ),
@@ -223,22 +221,22 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: textTheme.titleSmall,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: textTheme.bodySmall?.copyWith(
+                          fontSize: 13, // Keep original size
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Colors.grey[400],
+                  color: colorScheme.outline,
                   size: 18,
                 ),
               ],
@@ -250,11 +248,14 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
   }
 
   Widget _buildLogoutButton(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       width: double.infinity,
       height: 56,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.red, width: 2),
+        border: Border.all(color: colorScheme.error, width: 2),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
@@ -262,17 +263,15 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
         child: InkWell(
           onTap: () => handleSignOut(context),
           borderRadius: BorderRadius.circular(16),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.logout_rounded, color: Colors.red, size: 24),
-              SizedBox(width: 8),
+              Icon(Icons.logout_rounded, color: colorScheme.error, size: 24),
+              const SizedBox(width: 8),
               Text(
                 '登出',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                style: textTheme.titleSmall?.copyWith(
+                  color: colorScheme.error,
                 ),
               ),
             ],

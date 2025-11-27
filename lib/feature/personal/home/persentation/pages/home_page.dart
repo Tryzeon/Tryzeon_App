@@ -517,6 +517,9 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -524,14 +527,14 @@ class HomePageState extends State<HomePage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.secondary.withValues(alpha: 0.05),
+                colorScheme.surface,
               ),
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.1),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -547,10 +550,7 @@ class HomePageState extends State<HomePage> {
                 // 標題
                 ShaderMask(
                   shaderCallback: (final bounds) => LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
+                    colors: [colorScheme.primary, colorScheme.secondary],
                   ).createShader(bounds),
                   child: const Text(
                     'Tryzeon',
@@ -590,15 +590,13 @@ class HomePageState extends State<HomePage> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white,
-                            Colors.white.withValues(alpha: 0.9),
+                            colorScheme.surface,
+                            colorScheme.surface.withValues(alpha: 0.9),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.15),
+                            color: colorScheme.primary.withValues(alpha: 0.15),
                             spreadRadius: 0,
                             blurRadius: 30,
                             offset: const Offset(0, 10),
@@ -630,18 +628,16 @@ class HomePageState extends State<HomePage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       CircularProgressIndicator(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.secondary,
+                                        color: colorScheme.secondary,
                                         strokeWidth: 3,
                                       ),
                                       const SizedBox(height: 16),
                                       ShaderMask(
                                         shaderCallback: (final bounds) =>
-                                            const LinearGradient(
+                                            LinearGradient(
                                               colors: [
                                                 Colors.white,
-                                                Color(0xFFE0E0E0),
+                                                colorScheme.surfaceContainer,
                                               ],
                                             ).createShader(bounds),
                                         child: const Text(
@@ -681,16 +677,17 @@ class HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     gradient: _isLoading
                         ? LinearGradient(
-                            colors: [Colors.grey[300]!, Colors.grey[400]!],
+                            colors: [
+                              colorScheme.surfaceContainer,
+                              colorScheme.surfaceContainerHigh,
+                            ],
                           )
                         : LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Theme.of(context).colorScheme.secondary,
-                              Theme.of(
-                                context,
-                              ).colorScheme.secondary.withValues(alpha: 0.8),
+                              colorScheme.secondary,
+                              colorScheme.secondary.withValues(alpha: 0.8),
                             ],
                           ),
                     borderRadius: BorderRadius.circular(16),
@@ -698,9 +695,9 @@ class HomePageState extends State<HomePage> {
                         ? []
                         : [
                             BoxShadow(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.secondary.withValues(alpha: 0.3),
+                              color: colorScheme.secondary.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
@@ -711,21 +708,19 @@ class HomePageState extends State<HomePage> {
                     child: InkWell(
                       onTap: _isLoading ? null : tryOnFromLocal,
                       borderRadius: BorderRadius.circular(16),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.auto_awesome_rounded,
-                            color: Colors.white,
+                            color: colorScheme.onSecondary,
                             size: 24,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             '虛擬試穿',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                            style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onSecondary,
                               letterSpacing: 0.5,
                             ),
                           ),

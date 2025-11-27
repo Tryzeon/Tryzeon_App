@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomizeScaffold extends StatelessWidget {
-  const CustomizeScaffold({
-    super.key,
-    required this.body,
-  });
+  const CustomizeScaffold({super.key, required this.body});
 
   final Widget body;
 

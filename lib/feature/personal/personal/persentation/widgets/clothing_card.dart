@@ -60,9 +60,12 @@ class _ClothingCardState extends State<ClothingCard> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -85,7 +88,7 @@ class _ClothingCardState extends State<ClothingCard> {
                   _isLoading
                       ? Center(
                           child: CircularProgressIndicator(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: colorScheme.primary,
                           ),
                         )
                       : _imageFile != null
@@ -102,14 +105,14 @@ class _ClothingCardState extends State<ClothingCard> {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        Colors.grey[200]!,
-                                        Colors.grey[300]!,
+                                        colorScheme.surfaceContainerLow,
+                                        colorScheme.surfaceContainerHigh,
                                       ],
                                     ),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.error_outline,
-                                    color: Colors.grey,
+                                    color: colorScheme.outline,
                                   ),
                                 );
                               },
@@ -121,13 +124,16 @@ class _ClothingCardState extends State<ClothingCard> {
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [Colors.grey[200]!, Colors.grey[300]!],
+                              colors: [
+                                colorScheme.surfaceContainerLow,
+                                colorScheme.surfaceContainerHigh,
+                              ],
                             ),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.error_outline,
-                              color: Colors.grey,
+                              color: colorScheme.outline,
                             ),
                           ),
                         ),
@@ -178,22 +184,16 @@ class _ClothingCardState extends State<ClothingCard> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.1),
-                            Theme.of(
-                              context,
-                            ).colorScheme.secondary.withValues(alpha: 0.1),
+                            colorScheme.primary.withValues(alpha: 0.1),
+                            colorScheme.secondary.withValues(alpha: 0.1),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         widget.item.category,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.primary,
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.primary,
                         ),
                       ),
                     ),
@@ -211,16 +211,10 @@ class _ClothingCardState extends State<ClothingCard> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          tag,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[700],
-                          ),
-                        ),
+                        child: Text(tag, style: textTheme.bodySmall),
                       );
                     }).toList(),
                   ),

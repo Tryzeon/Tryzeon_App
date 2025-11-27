@@ -14,6 +14,9 @@ class StoreProductCard extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return GestureDetector(
       onTap: () async {
         final result = await showDialog<bool>(
@@ -62,8 +65,11 @@ class StoreProductCard extends StatelessWidget {
                             type: NotificationType.error,
                           );
                         });
-                        return const Center(
-                          child: Icon(Icons.error_outline, color: Colors.grey),
+                        return Center(
+                          child: Icon(
+                            Icons.error_outline,
+                            color: colorScheme.error,
+                          ),
                         );
                       }
                       return const Center(child: CircularProgressIndicator());
@@ -79,44 +85,44 @@ class StoreProductCard extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: textTheme.titleSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     product.types.join(', '), // 顯示所有類型，用逗號分隔
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '\$${product.price}',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.auto_awesome,
                         size: 14,
-                        color: Colors.grey,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '${product.tryonCount}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text('${product.tryonCount}', style: textTheme.bodySmall),
                       const SizedBox(width: 12),
-                      const Icon(Icons.link, size: 14, color: Colors.grey),
+                      Icon(
+                        Icons.link,
+                        size: 14,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${product.purchaseClickCount}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: textTheme.bodySmall,
                       ),
                     ],
                   ),

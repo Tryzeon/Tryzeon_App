@@ -71,6 +71,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
   @override
   Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return CustomizeScaffold(
       body: Stack(
@@ -89,7 +90,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: colorScheme.surface,
                       padding: const EdgeInsets.all(12),
                       elevation: 2,
                       shadowColor: Colors.black12,
@@ -118,8 +119,8 @@ class _StoreLoginPageState extends State<StoreLoginPage>
           if (_isLoading)
             Container(
               color: Colors.black.withValues(alpha: 0.5),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
+              child: Center(
+                child: CircularProgressIndicator(color: colorScheme.onPrimary),
               ),
             ),
         ],
@@ -129,6 +130,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
 
   Widget _buildHeader(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
         // Logo Icon
@@ -136,9 +138,9 @@ class _StoreLoginPageState extends State<StoreLoginPage>
           width: 88,
           height: 88,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white, width: 4),
+            border: Border.all(color: colorScheme.surface, width: 4),
             boxShadow: [
               BoxShadow(
                 color: colorScheme.primary.withValues(alpha: 0.2),
@@ -158,8 +160,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
         // Title
         Text(
           'Welcome Back!',
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: textTheme.displaySmall?.copyWith(
             color: colorScheme.primary,
             letterSpacing: -0.5,
           ),
@@ -169,8 +170,8 @@ class _StoreLoginPageState extends State<StoreLoginPage>
 
         Text(
           'Start managing your store',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.grey[600],
+          style: textTheme.titleMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
             letterSpacing: 0.2,
           ),
           textAlign: TextAlign.center,
@@ -180,13 +181,16 @@ class _StoreLoginPageState extends State<StoreLoginPage>
   }
 
   Widget _buildLoginButton(final String provider, final VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -208,13 +212,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
                   width: 24,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Continue with $provider',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text('Continue with $provider', style: textTheme.titleMedium),
               ],
             ),
           ),

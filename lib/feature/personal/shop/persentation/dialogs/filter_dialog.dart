@@ -74,13 +74,16 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
@@ -99,75 +102,50 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                   height: 48,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.secondary,
-                      ],
+                      colors: [colorScheme.primary, colorScheme.secondary],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.tune_rounded,
-                    color: Colors.white,
+                    color: colorScheme.onPrimary,
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  '篩選條件',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
+                Text('篩選條件', style: textTheme.titleLarge),
               ],
             ),
             const SizedBox(height: 24),
 
             // 價格範圍
-            const Text(
-              '價格範圍',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
+            Text('價格範圍', style: textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '\$${_priceRange.start.round()}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.primary,
                   ),
                 ),
                 Text(
                   _priceRange.end.round() >= kMaxPrice
                       ? '\$${kMaxPrice.round()}+'
                       : '\$${_priceRange.end.round()}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.primary,
                   ),
                 ),
               ],
             ),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Theme.of(context).colorScheme.primary,
-                inactiveTrackColor: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.2),
-                thumbColor: Theme.of(context).colorScheme.primary,
-                overlayColor: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.2),
+                activeTrackColor: colorScheme.primary,
+                inactiveTrackColor: colorScheme.primary.withValues(alpha: 0.2),
+                thumbColor: colorScheme.primary,
+                overlayColor: colorScheme.primary.withValues(alpha: 0.2),
                 trackHeight: 4,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
@@ -198,10 +176,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                   child: Container(
                     height: 48,
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
+                      border: Border.all(color: colorScheme.primary, width: 2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Material(
@@ -212,10 +187,8 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                         child: Center(
                           child: Text(
                             '清除',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                            style: textTheme.titleSmall?.copyWith(
+                              color: colorScheme.primary,
                             ),
                           ),
                         ),
@@ -229,17 +202,12 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                     height: 48,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.secondary,
-                        ],
+                        colors: [colorScheme.primary, colorScheme.secondary],
                       ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
+                          color: colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -250,13 +218,11 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                       child: InkWell(
                         onTap: _applyFilters,
                         borderRadius: BorderRadius.circular(12),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             '套用',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                            style: textTheme.titleSmall?.copyWith(
+                              color: colorScheme.onPrimary,
                             ),
                           ),
                         ),

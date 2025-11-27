@@ -130,6 +130,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   Widget _buildHeader(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       children: [
         // Logo Container
@@ -137,7 +139,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
@@ -146,7 +148,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 offset: const Offset(0, 10),
               ),
             ],
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(color: colorScheme.surface, width: 2),
           ),
           child: Icon(
             Icons.checkroom_rounded,
@@ -159,7 +161,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         // Title
         Text(
           'Tryzeon',
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+          style: textTheme.displayLarge?.copyWith(
             color: colorScheme.primary,
             letterSpacing: -1.0, // Tighter spacing for display font
           ),
@@ -169,8 +171,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
         Text(
           'Choose your identity',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.grey[600],
+          style: textTheme.titleMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,
@@ -188,6 +190,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     required final VoidCallback onTap,
     required final int delay,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 400 + delay),
@@ -206,9 +211,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.7), // Glassy
+              color: colorScheme.surface.withValues(alpha: 0.7), // Glassy
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(color: colorScheme.surface, width: 2),
               boxShadow: [
                 BoxShadow(
                   color: color.withValues(alpha: 0.15),
@@ -236,21 +241,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                      ),
+                      Text(title, style: textTheme.headlineSmall),
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
+                      Text(subtitle, style: textTheme.bodyMedium),
                     ],
                   ),
                 ),

@@ -186,9 +186,7 @@ class Clothing {
       id: json['id'],
       imagePath: json['image_path'],
       category: json['category'],
-      tags: json['tags'] != null
-          ? List<String>.from(json['tags'] as List)
-          : [],
+      tags: json['tags'] != null ? List<String>.from(json['tags'] as List) : [],
     );
   }
 

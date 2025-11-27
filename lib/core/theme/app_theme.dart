@@ -32,42 +32,80 @@ class AppTheme {
         displayLarge: GoogleFonts.spaceGrotesk(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: baseColorScheme.onSurface,
         ),
         displayMedium: GoogleFonts.spaceGrotesk(
           fontSize: 28,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: baseColorScheme.onSurface,
         ),
         displaySmall: GoogleFonts.spaceGrotesk(
           fontSize: 24,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: baseColorScheme.onSurface,
+        ),
+        headlineLarge: GoogleFonts.spaceGrotesk(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: baseColorScheme.onSurface,
         ),
         headlineMedium: GoogleFonts.spaceGrotesk(
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: Colors.black87,
+          color: baseColorScheme.onSurface,
+        ),
+        headlineSmall: GoogleFonts.spaceGrotesk(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: baseColorScheme.onSurface,
         ),
         titleLarge: GoogleFonts.outfit(
           fontSize: 22,
           fontWeight: FontWeight.w600,
-          color: Colors.black87,
+          color: baseColorScheme.onSurface,
+        ),
+        titleMedium: GoogleFonts.outfit(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: baseColorScheme.onSurface,
+        ),
+        titleSmall: GoogleFonts.outfit(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: baseColorScheme.onSurface,
         ),
         bodyLarge: GoogleFonts.outfit(
           fontSize: 16,
           fontWeight: FontWeight.normal,
-          color: Colors.black87,
+          color: baseColorScheme.onSurface,
         ),
         bodyMedium: GoogleFonts.outfit(
           fontSize: 14,
           fontWeight: FontWeight.normal,
-          color: Colors.black54,
+          color: baseColorScheme.onSurfaceVariant,
+        ),
+        bodySmall: GoogleFonts.outfit(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: baseColorScheme.onSurfaceVariant,
         ),
         labelLarge: GoogleFonts.outfit(
           fontSize: 14,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,
+          color: baseColorScheme.onSurface,
+        ),
+        labelMedium: GoogleFonts.outfit(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+          color: baseColorScheme.onSurface,
+        ),
+        labelSmall: GoogleFonts.outfit(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+          color: baseColorScheme.onSurface,
         ),
       ),
     );

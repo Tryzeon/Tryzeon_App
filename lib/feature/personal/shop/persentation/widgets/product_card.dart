@@ -60,6 +60,8 @@ class _ProductCardState extends State<ProductCard> {
     final imageUrl = Supabase.instance.client.storage
         .from('store')
         .getPublicUrl(product.imagePath);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
       onTap: _handlePurchase,
@@ -91,9 +93,7 @@ class _ProductCardState extends State<ProductCard> {
                                   if (loadingProgress == null) return child;
                                   return Center(
                                     child: CircularProgressIndicator(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
+                                      color: colorScheme.primary,
                                     ),
                                   );
                                 },
@@ -103,12 +103,12 @@ class _ProductCardState extends State<ProductCard> {
                                   final error,
                                   final stackTrace,
                                 ) => Container(
-                                  color: Colors.grey[300],
+                                  color: colorScheme.surfaceContainer,
                                   child: const Icon(Icons.image_not_supported),
                                 ),
                           )
                         : Container(
-                            color: Colors.grey[300],
+                            color: colorScheme.surfaceContainer,
                             child: const Icon(Icons.image),
                           ),
                   ),
@@ -124,21 +124,21 @@ class _ProductCardState extends State<ProductCard> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: colorScheme.primary,
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withValues(alpha: 0.4),
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.4,
+                                ),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.auto_awesome,
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                             size: 20,
                           ),
                         ),
@@ -155,25 +155,22 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Text(
                     product.name,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '\$${product.price}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w600,
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
                     ),
                   ),
                   Text(
                     product.storeName!,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

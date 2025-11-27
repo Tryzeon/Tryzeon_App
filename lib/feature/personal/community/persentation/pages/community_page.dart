@@ -5,20 +5,23 @@ class CommunityPage extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).colorScheme.surface,
+            colorScheme.surface,
             Color.alphaBlend(
-              Colors.white.withValues(alpha: 0.2),
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface.withValues(alpha: 0.2),
+              colorScheme.surface,
             ),
             Color.alphaBlend(
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-              Theme.of(context).colorScheme.surface,
+              colorScheme.primary.withValues(alpha: 0.1),
+              colorScheme.surface,
             ),
           ],
         ),
@@ -35,26 +38,21 @@ class CommunityPage extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.secondary,
-                  ],
+                  colors: [colorScheme.primary, colorScheme.secondary],
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.3),
+                    color: colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.people_outline_rounded,
                 size: 60,
-                color: Colors.white,
+                color: colorScheme.onPrimary,
               ),
             ),
             const SizedBox(height: 32),
@@ -62,16 +60,11 @@ class CommunityPage extends StatelessWidget {
             // 標題
             ShaderMask(
               shaderCallback: (final bounds) => LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.secondary,
-                ],
+                colors: [colorScheme.primary, colorScheme.secondary],
               ).createShader(bounds),
-              child: const Text(
+              child: Text(
                 '社群功能',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                style: textTheme.displaySmall?.copyWith(
                   color: Colors.white,
                   letterSpacing: 1.5,
                 ),
@@ -82,11 +75,8 @@ class CommunityPage extends StatelessWidget {
             // 副標題
             Text(
               '稍後推出，敬請期待',
-              style: TextStyle(
-                fontSize: 18,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              style: textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 letterSpacing: 0.5,
               ),
             ),
@@ -98,7 +88,7 @@ class CommunityPage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: colorScheme.surface.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -146,34 +136,32 @@ class CommunityPage extends StatelessWidget {
     required final String title,
     required final String subtitle,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       children: [
         Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.tertiary.withValues(alpha: 0.1),
+            color: colorScheme.tertiary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Theme.of(context).colorScheme.tertiary),
+          child: Icon(icon, color: colorScheme.tertiary),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(title, style: textTheme.titleSmall),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),

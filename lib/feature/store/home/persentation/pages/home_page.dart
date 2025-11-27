@@ -105,6 +105,9 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -112,10 +115,10 @@ class _StoreHomePageState extends State<StoreHomePage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.02),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.02),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -127,7 +130,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -143,16 +146,13 @@ class _StoreHomePageState extends State<StoreHomePage> {
                       height: 48,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
+                          colors: [colorScheme.primary, colorScheme.secondary],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.store_rounded,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         size: 24,
                       ),
                     ),
@@ -161,18 +161,13 @@ class _StoreHomePageState extends State<StoreHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '店家後台',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text('店家後台', style: textTheme.titleLarge),
                           Text(
                             '歡迎回來，$storeName',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                         ],
@@ -180,15 +175,13 @@ class _StoreHomePageState extends State<StoreHomePage> {
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.settings_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                         ),
                         onPressed: () async {
                           final hasChanges = await Navigator.push<bool>(
@@ -213,12 +206,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
                 child: _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: colorScheme.primary,
                         ),
                       )
                     : RefreshIndicator(
                         onRefresh: () => _loadStoreData(forceRefresh: true),
-                        color: Theme.of(context).colorScheme.primary,
+                        color: colorScheme.primary,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -236,38 +229,27 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-                                          Theme.of(context).colorScheme.primary,
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.secondary,
+                                          colorScheme.primary,
+                                          colorScheme.secondary,
                                         ],
                                       ),
                                       borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Text(
-                                    '我的商品',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
+                                  Text('我的商品', style: textTheme.titleLarge),
                                   const Spacer(),
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withValues(alpha: 0.1),
+                                      color: colorScheme.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: IconButton(
                                       icon: Icon(
                                         Icons.sort_rounded,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
+                                        color: colorScheme.primary,
                                       ),
                                       onPressed: _showSortOptions,
                                       tooltip: '排序',
@@ -287,37 +269,35 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                               width: 100,
                                               height: 100,
                                               decoration: BoxDecoration(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
+                                                color: colorScheme.primary
                                                     .withValues(alpha: 0.1),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
                                                 Icons.inventory_2_outlined,
                                                 size: 50,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
+                                                color: colorScheme.primary
                                                     .withValues(alpha: 0.5),
                                               ),
                                             ),
                                             const SizedBox(height: 24),
                                             Text(
                                               '還沒有商品',
-                                              style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                              style: textTheme.titleSmall
+                                                  ?.copyWith(
+                                                    color: colorScheme.onSurface
+                                                        .withValues(alpha: 0.6),
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
                                               '點擊右下角按鈕新增商品',
-                                              style: TextStyle(
-                                                color: Colors.grey[500],
-                                                fontSize: 14,
-                                              ),
+                                              style: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                    color: colorScheme.onSurface
+                                                        .withValues(alpha: 0.5),
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -355,17 +335,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
+            colors: [colorScheme.primary, colorScheme.secondary],
           ),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.4),
+              color: colorScheme.primary.withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -388,10 +363,14 @@ class _StoreHomePageState extends State<StoreHomePage> {
               });
             },
             customBorder: const CircleBorder(),
-            child: const SizedBox(
+            child: SizedBox(
               width: 56,
               height: 56,
-              child: Icon(Icons.add_rounded, color: Colors.white, size: 28),
+              child: Icon(
+                Icons.add_rounded,
+                color: colorScheme.onPrimary,
+                size: 28,
+              ),
             ),
           ),
         ),

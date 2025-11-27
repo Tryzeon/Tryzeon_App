@@ -33,6 +33,9 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final isUser = message.isUser;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -46,13 +49,10 @@ class ChatBubble extends StatelessWidget {
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.secondary,
-                  ],
+                  colors: [colorScheme.primary, colorScheme.secondary],
                 )
               : null,
-          color: isUser ? null : Colors.white,
+          color: isUser ? null : colorScheme.surface,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -78,51 +78,43 @@ class ChatBubble extends StatelessWidget {
             MarkdownBody(
               data: message.text,
               styleSheet: MarkdownStyleSheet(
-                p: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 15,
+                p: textTheme.bodyLarge?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                   height: 1.4,
                 ),
-                strong: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 15,
+                strong: textTheme.bodyLarge?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
-                em: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 15,
+                em: textTheme.bodyLarge?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                   fontStyle: FontStyle.italic,
                 ),
-                h1: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                h1: textTheme.headlineLarge?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                 ),
-                h2: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
+                h2: textTheme.headlineMedium?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                   fontSize: 19,
-                  fontWeight: FontWeight.bold,
                 ),
-                h3: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
+                h3: textTheme.headlineSmall?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                   fontSize: 17,
-                  fontWeight: FontWeight.bold,
                 ),
-                listBullet: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 15,
+                listBullet: textTheme.bodyLarge?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                 ),
-                code: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
+                code: textTheme.bodyLarge?.copyWith(
+                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                   backgroundColor: isUser
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : Colors.grey.shade200,
+                      ? colorScheme.onPrimary.withValues(alpha: 0.2)
+                      : colorScheme.surfaceContainerHighest,
                   fontFamily: 'monospace',
                 ),
                 codeblockDecoration: BoxDecoration(
                   color: isUser
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : Colors.grey.shade200,
+                      ? colorScheme.onPrimary.withValues(alpha: 0.2)
+                      : colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -180,19 +172,22 @@ class QuickReplyButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+              colorScheme.primary.withValues(alpha: 0.1),
+              colorScheme.secondary.withValues(alpha: 0.1),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            color: colorScheme.primary.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),
@@ -205,10 +200,8 @@ class QuickReplyButton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Text(
                 text,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -406,6 +399,9 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -413,10 +409,10 @@ class _ChatPageState extends State<ChatPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.03),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.03),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -431,7 +427,7 @@ class _ChatPageState extends State<ChatPage> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -447,16 +443,13 @@ class _ChatPageState extends State<ChatPage> {
                       height: 40,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
+                          colors: [colorScheme.primary, colorScheme.secondary],
                         ),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.psychology_outlined,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         size: 22,
                       ),
                     ),
@@ -465,18 +458,13 @@ class _ChatPageState extends State<ChatPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '穿搭顧問',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text('穿搭顧問', style: textTheme.headlineSmall),
                           Text(
                             'AI 時尚助手',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                         ],
@@ -485,7 +473,7 @@ class _ChatPageState extends State<ChatPage> {
                     IconButton(
                       icon: Icon(
                         Icons.refresh_rounded,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: colorScheme.primary,
                       ),
                       onPressed: () async {
                         final confirmed = await ConfirmationDialog.show(
@@ -529,7 +517,7 @@ class _ChatPageState extends State<ChatPage> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
@@ -544,14 +532,18 @@ class _ChatPageState extends State<ChatPage> {
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: colorScheme.surfaceContainerLow,
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: TextField(
                             controller: controller,
                             decoration: InputDecoration(
                               hintText: isWaitingForAnswer ? '請輸入您的回答...' : '',
-                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              hintStyle: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
                               enabled: !isLoadingRecommendation,
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
@@ -571,11 +563,11 @@ class _ChatPageState extends State<ChatPage> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: isLoadingRecommendation
-                                ? [Colors.grey[300]!, Colors.grey[400]!]
-                                : [
-                                    Theme.of(context).colorScheme.primary,
-                                    Theme.of(context).colorScheme.secondary,
-                                  ],
+                                ? [
+                                    colorScheme.outlineVariant,
+                                    colorScheme.outline,
+                                  ]
+                                : [colorScheme.primary, colorScheme.secondary],
                           ),
                           shape: BoxShape.circle,
                         ),
@@ -586,9 +578,9 @@ class _ChatPageState extends State<ChatPage> {
                                 ? null
                                 : () => sendMessage(controller.text),
                             borderRadius: BorderRadius.circular(24),
-                            child: const Icon(
+                            child: Icon(
                               Icons.send_rounded,
-                              color: Colors.white,
+                              color: colorScheme.onPrimary,
                               size: 20,
                             ),
                           ),
