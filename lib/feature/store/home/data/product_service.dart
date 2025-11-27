@@ -56,6 +56,7 @@ class ProductService {
     required final int price,
     required final String purchaseLink,
     required final File imageFile,
+    final List<ProductSize> sizes = const [],
   }) async {
     try {
       // 獲取當前用戶 ID
@@ -77,8 +78,31 @@ class ProductService {
         imagePath: filePath,
       );
 
-      // 插入到資料庫
-      await _supabase.from(_productsTable).insert(product.toJson());
+      final response = await _supabase
+          .from(_productsTable)
+          .insert(product.toJson())
+          .select()
+          .single();
+      
+      final productId = response['id'];
+
+      if (sizes.isNotEmpty) {
+        final sizesData = sizes.map((final size) {
+          return {
+            'product_id': productId,
+            'name': size.name,
+            'height': size.height,
+            'weight': size.weight,
+            'chest': size.chest,
+            'waist': size.waist,
+            'hips': size.hips,
+            'shoulder_width': size.shoulderWidth,
+            'sleeve_length': size.sleeveLength,
+          };
+        }).toList();
+        
+        await _supabase.from('product_sizes').insert(sizesData);
+      }
 
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
