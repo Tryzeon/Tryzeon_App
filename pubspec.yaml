@@ -21,6 +21,7 @@ dependencies:
   shared_preferences: ^2.2.2
   logger: ^2.6.2
   gal: ^2.3.2
+  google_fonts: ^6.3.2
 
 dev_dependencies:
   flutter_test:

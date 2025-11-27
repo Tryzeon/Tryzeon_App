@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/shared/widgets/customize_scaffold.dart';
+// Import AppTheme to access static colors if needed, or just use Theme.of(context)
 
 import 'personal_login_page.dart';
 import 'store_login_page.dart';
@@ -68,97 +70,57 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.surface,
-              Color.alphaBlend(
-                Colors.white.withValues(alpha: 0.2),
-                Theme.of(context).colorScheme.surface,
-              ),
-              Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                Theme.of(context).colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: screenHeight * 0.08),
+    return CustomizeScaffold(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: screenHeight * 0.08),
 
-                    // Logo與標題區域
-                    _buildHeader(context),
+                // Logo area
+                _buildHeader(context),
 
-                    SizedBox(height: screenHeight * 0.06),
+                SizedBox(height: screenHeight * 0.06),
 
-                    // 按鈕區域
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildLoginOptionCard(
-                            context: context,
-                            icon: Icons.person_outline_rounded,
-                            title: '個人登入',
-                            subtitle: '我想虛擬試穿',
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Theme.of(context).colorScheme.secondary,
-                                Color.alphaBlend(
-                                  Colors.white.withValues(alpha: 0.2),
-                                  Theme.of(context).colorScheme.secondary,
-                                ),
-                              ],
-                            ),
-                            onTap: _navigateToPersonalLogin,
-                            delay: 100,
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          _buildLoginOptionCard(
-                            context: context,
-                            icon: Icons.store_outlined,
-                            title: '店家登入',
-                            subtitle: '我想上架服飾',
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Color.alphaBlend(
-                                  Colors.white.withValues(alpha: 0.2),
-                                  Theme.of(context).colorScheme.primary,
-                                ),
-                              ],
-                            ),
-                            onTap: _navigateToStoreLogin,
-                            delay: 200,
-                          ),
-                        ],
+                // Buttons
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildLoginOptionCard(
+                        context: context,
+                        icon: Icons.person_rounded, // Rounded icon
+                        title: 'User Login',
+                        subtitle: 'Virtual Try-On',
+                        color: colorScheme.secondary,
+                        onTap: _navigateToPersonalLogin,
+                        delay: 100,
                       ),
-                    ),
 
-                    SizedBox(height: screenHeight * 0.05),
-                  ],
+                      const SizedBox(height: 24),
+
+                      _buildLoginOptionCard(
+                        context: context,
+                        icon: Icons.store_rounded, // Rounded icon
+                        title: 'Store Login',
+                        subtitle: 'Manage Products',
+                        color: colorScheme.primary,
+                        onTap: _navigateToStoreLogin,
+                        delay: 200,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+
+                SizedBox(height: screenHeight * 0.05),
+              ],
             ),
           ),
         ),
@@ -167,67 +129,49 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        // Logo圖示
+        // Logo Container
         Container(
-          width: 80,
-          height: 80,
+          width: 100,
+          height: 100,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(24),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.3),
+                color: colorScheme.primary.withValues(alpha: 0.2),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
+            border: Border.all(color: Colors.white, width: 2),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.checkroom_rounded,
-            size: 48,
-            color: Colors.white,
+            size: 56,
+            color: colorScheme.primary,
           ),
         ),
         const SizedBox(height: 24),
 
-        // 標題
-        ShaderMask(
-          shaderCallback: (final bounds) => LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-          ).createShader(bounds),
-          child: Text(
-            'Tryzeon',
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1.5,
-            ),
-            textAlign: TextAlign.center,
+        // Title
+        Text(
+          'Tryzeon',
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+            color: colorScheme.primary,
+            letterSpacing: -1.0, // Tighter spacing for display font
           ),
+          textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
 
         Text(
-          '請選擇您的身份',
+          'Choose your identity',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.6),
-            letterSpacing: 0.5,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,
         ),
@@ -240,7 +184,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     required final IconData icon,
     required final String title,
     required final String subtitle,
-    required final Gradient gradient,
+    required final Color color,
     required final VoidCallback onTap,
     required final int delay,
   }) {
@@ -254,134 +198,65 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
         );
       },
-      child: _GlassCard(
-        gradient: gradient,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(28.0),
-          child: Row(
-            children: [
-              // Icon容器
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(32),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.7), // Glassy
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.15),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
-                child: Icon(icon, size: 36, color: Colors.white),
-              ),
-              const SizedBox(width: 24),
-
-              // 文字
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 箭頭
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withValues(alpha: 0.8),
-                size: 20,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassCard extends StatefulWidget {
-  const _GlassCard({
-    required this.child,
-    required this.onTap,
-    required this.gradient,
-  });
-  final Widget child;
-  final VoidCallback onTap;
-  final Gradient gradient;
-
-  @override
-  State<_GlassCard> createState() => _GlassCardState();
-}
-
-class _GlassCardState extends State<_GlassCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(final BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        onTapDown: (_) => _scaleController.forward(),
-        onTapUp: (_) {
-          _scaleController.reverse();
-          widget.onTap();
-        },
-        onTapCancel: () => _scaleController.reverse(),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: widget.gradient,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: widget.gradient.colors.first.withValues(alpha: 0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Stack(
+              ],
+            ),
+            child: Row(
               children: [
-                // 玻璃效果背景
-                Positioned.fill(child: CustomPaint(painter: _GlassPainter())),
+                // Icon Circle
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 32, color: color),
+                ),
+                const SizedBox(width: 20),
 
-                // 內容
-                widget.child,
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Arrow
+                Icon(Icons.arrow_forward_rounded, color: color, size: 28),
               ],
             ),
           ),
@@ -389,37 +264,4 @@ class _GlassCardState extends State<_GlassCard>
       ),
     );
   }
-}
-
-class _GlassPainter extends CustomPainter {
-  @override
-  void paint(final Canvas canvas, final Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.1)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-
-    final path = Path()
-      ..moveTo(size.width * 0.3, 0)
-      ..quadraticBezierTo(
-        size.width * 0.5,
-        size.height * 0.2,
-        size.width * 0.7,
-        0,
-      )
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height * 0.4)
-      ..quadraticBezierTo(
-        size.width * 0.8,
-        size.height * 0.3,
-        size.width * 0.6,
-        size.height * 0.5,
-      )
-      ..lineTo(0, size.height * 0.2)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant final CustomPainter oldDelegate) => false;
 }

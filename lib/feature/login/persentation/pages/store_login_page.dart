@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/shared/widgets/customize_scaffold.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class StoreLoginPage extends StatefulWidget {
@@ -63,7 +64,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
         MaterialPageRoute(builder: (final context) => const StoreEntry()),
       );
     } else if (!result.isSuccess) {
-      _showError(result.errorMessage ?? '$provider 登入失敗');
+      _showError(result.errorMessage ?? '$provider Login Failed');
     }
   }
 
@@ -71,79 +72,47 @@ class _StoreLoginPageState extends State<StoreLoginPage>
   Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
+    return CustomizeScaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.surface,
-                  Color.alphaBlend(
-                    Colors.white.withValues(alpha: 0.2),
-                    Theme.of(context).colorScheme.surface,
-                  ),
-                  Color.alphaBlend(
-                    Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.1),
-                    Theme.of(context).colorScheme.surface,
-                  ),
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: screenHeight * 0.05),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: screenHeight * 0.02),
 
-                    // 返回按鈕
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_rounded),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.surface.withValues(alpha: 0.8),
-                          padding: const EdgeInsets.all(12),
-                        ),
-                      ),
+                // Back Button
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.all(12),
+                      elevation: 2,
+                      shadowColor: Colors.black12,
                     ),
-
-                    SizedBox(height: screenHeight * 0.05),
-
-                    // Logo與標題區域
-                    _buildHeader(context),
-
-                    const Spacer(),
-
-                    // Google 登入按鈕
-                    _buildLoginButton('Google', () => _handleSignIn('Google')),
-
-                    const SizedBox(height: 16),
-
-                    // Facebook 登入按鈕
-                    _buildLoginButton(
-                      'Facebook',
-                      () => _handleSignIn('Facebook'),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Apple 登入按鈕
-                    _buildLoginButton('Apple', () => _handleSignIn('Apple')),
-
-                    SizedBox(height: screenHeight * 0.1),
-                  ],
+                  ),
                 ),
-              ),
+
+                SizedBox(height: screenHeight * 0.05),
+
+                // Header
+                _buildHeader(context),
+
+                const Spacer(),
+
+                // Login Buttons
+                _buildLoginButton('Google', () => _handleSignIn('Google')),
+                const SizedBox(height: 16),
+                _buildLoginButton('Facebook', () => _handleSignIn('Facebook')),
+                const SizedBox(height: 16),
+                _buildLoginButton('Apple', () => _handleSignIn('Apple')),
+
+                SizedBox(height: screenHeight * 0.1),
+              ],
             ),
           ),
           if (_isLoading)
@@ -159,67 +128,50 @@ class _StoreLoginPageState extends State<StoreLoginPage>
   }
 
   Widget _buildHeader(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        // Logo圖示
+        // Logo Icon
         Container(
-          width: 80,
-          height: 80,
+          width: 88,
+          height: 88,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(24),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: Colors.white, width: 4),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: colorScheme.primary.withValues(alpha: 0.2),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.store_outlined,
+          child: Icon(
+            Icons.store_rounded,
             size: 48,
-            color: Colors.white,
+            color: colorScheme.primary,
           ),
         ),
         const SizedBox(height: 32),
 
-        // 標題
-        ShaderMask(
-          shaderCallback: (final bounds) => LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-          ).createShader(bounds),
-          child: Text(
-            '歡迎回來!',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1.2,
-            ),
-            textAlign: TextAlign.center,
+        // Title
+        Text(
+          'Welcome Back!',
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+            letterSpacing: -0.5,
           ),
+          textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         Text(
-          '開始上架您的服飾商品',
+          'Start managing your store',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.6),
-            letterSpacing: 0.5,
+            color: Colors.grey[600],
+            letterSpacing: 0.2,
           ),
           textAlign: TextAlign.center,
         ),
@@ -230,17 +182,13 @@ class _StoreLoginPageState extends State<StoreLoginPage>
   Widget _buildLoginButton(final String provider, final VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.white.withValues(alpha: 0.95)],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -248,12 +196,12 @@ class _StoreLoginPageState extends State<StoreLoginPage>
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(32),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(width: 60),
                 SvgPicture.asset(
                   'assets/images/logo/$provider.svg',
                   height: 24,
@@ -261,11 +209,10 @@ class _StoreLoginPageState extends State<StoreLoginPage>
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '使用 $provider 登入',
+                  'Continue with $provider',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Colors.black87,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
