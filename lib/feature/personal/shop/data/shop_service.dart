@@ -17,14 +17,15 @@ class ShopService {
     final List<String>? types,
   }) async {
     try {
-      // 查詢所有商品並關聯店家資訊
+      // 查詢所有商品並關聯店家資訊和尺寸資訊
       // products.store_id = store_profile.store_id
       dynamic query = _supabase.from(_productsTable).select('''
             *,
-            store_profile!products_store_id_fkey(
+            store_profile(
               store_id,
               store_name
-            )
+            ),
+            product_sizes(*)
           ''');
 
       // 搜尋過濾（商品名稱或類型）

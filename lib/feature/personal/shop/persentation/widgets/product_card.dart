@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
+import 'package:tryzeon/feature/personal/personal/persentation/pages/settings/data/profile_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,6 +17,110 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
+  UserProfile? _userProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final result = await UserProfileService.getUserProfile();
+    if (result.isSuccess && mounted) {
+      setState(() {
+        _userProfile = result.data;
+      });
+    }
+  }
+
+  // 計算契合度等級：返回 'green', 'yellow', 'red' 或 null
+  String? _calculateFitLevel() {
+    if (_userProfile == null || widget.product.sizes.isEmpty) {
+      return null; // 無法計算
+    }
+
+    double? bestDiff;
+    // 對每個商品尺寸進行比對
+    for (final size in widget.product.sizes) {
+      double totalDiff = 0;
+      int comparisonCount = 0;
+
+      // 比對身高
+      if (_userProfile!.height != null && size.height != null) {
+        totalDiff += (_userProfile!.height! - size.height!).abs();
+        comparisonCount++;
+      }
+
+      // 比對體重
+      if (_userProfile!.weight != null && size.weight != null) {
+        totalDiff += (_userProfile!.weight! - size.weight!).abs();
+        comparisonCount++;
+      }
+
+      // 比對胸圍
+      if (_userProfile!.chest != null && size.chest != null) {
+        totalDiff += (_userProfile!.chest! - size.chest!).abs();
+        comparisonCount++;
+      }
+
+      // 比對腰圍
+      if (_userProfile!.waist != null && size.waist != null) {
+        totalDiff += (_userProfile!.waist! - size.waist!).abs();
+        comparisonCount++;
+      }
+
+      // 比對臀圍
+      if (_userProfile!.hips != null && size.hips != null) {
+        totalDiff += (_userProfile!.hips! - size.hips!).abs();
+        comparisonCount++;
+      }
+
+      // 比對肩寬
+      if (_userProfile!.shoulderWidth != null && size.shoulderWidth != null) {
+        totalDiff += (_userProfile!.shoulderWidth! - size.shoulderWidth!).abs();
+        comparisonCount++;
+      }
+
+      // 比對袖長
+      if (_userProfile!.sleeveLength != null && size.sleeveLength != null) {
+        totalDiff += (_userProfile!.sleeveLength! - size.sleeveLength!).abs();
+        comparisonCount++;
+      }
+
+      // 如果有比對到資料，記錄最佳差值
+      if (comparisonCount > 0) {
+        if (bestDiff == null || totalDiff < bestDiff) {
+          bestDiff = totalDiff;
+        }
+      }
+    }
+
+    // 根據最佳差值返回等級
+    if (bestDiff == null) {
+      return null; // 沒有可比對的資料
+    } else if (bestDiff <= 5) {
+      return 'green';
+    } else if (bestDiff <= 10) {
+      return 'yellow';
+    } else {
+      return 'red';
+    }
+  }
+
+  Color _getFitColor(String level) {
+    switch (level) {
+      case 'green':
+        return Colors.green;
+      case 'yellow':
+        return Colors.amber;
+      case 'red':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
   Future<void> _handleTryon() async {
     final product = widget.product;
     // 記錄虛擬試穿點擊次數（不等待結果）
@@ -112,7 +217,7 @@ class _ProductCardState extends State<ProductCard> {
                             child: const Icon(Icons.image),
                           ),
                   ),
-                  // Try-on button at bottom right
+                  // Try-on button with fit color at bottom right
                   Positioned(
                     bottom: 8,
                     right: 8,
@@ -121,26 +226,35 @@ class _ProductCardState extends State<ProductCard> {
                       child: InkWell(
                         onTap: _handleTryon,
                         borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.primary.withValues(
-                                  alpha: 0.4,
-                                ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                        child: Builder(
+                          builder: (context) {
+                            final fitLevel = _calculateFitLevel();
+                            final buttonColor = fitLevel == null 
+                                ? colorScheme.primary 
+                                : _getFitColor(fitLevel);
+                            
+                            return Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: buttonColor,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: buttonColor.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.auto_awesome,
-                            color: colorScheme.onPrimary,
-                            size: 20,
-                          ),
+                              child: Icon(
+                                Icons.auto_awesome,
+                                color: colorScheme.onPrimary,
+                                size: 20,
+                              ),
+                            );
+                          }
                         ),
                       ),
                     ),
