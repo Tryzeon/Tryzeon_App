@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
@@ -19,7 +21,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController purchaseLinkController = TextEditingController();
-  
+
   File? selectedImage;
   List<String> clothingTypes = [];
   Set<String> selectedTypes = {};
@@ -48,20 +50,17 @@ class _AddProductPageState extends State<AddProductPage> {
 
   void _addSizeBlock() {
     setState(() {
-      sizeControllers.add({
+      final Map<String, TextEditingController> newControllers = {
         'name': TextEditingController(),
-        'height': TextEditingController(),
-        'weight': TextEditingController(),
-        'chest': TextEditingController(),
-        'waist': TextEditingController(),
-        'hips': TextEditingController(),
-        'shoulderWidth': TextEditingController(),
-        'sleeveLength': TextEditingController(),
-      });
+      };
+      for (final type in MeasurementType.values) {
+        newControllers[type.name] = TextEditingController();
+      }
+      sizeControllers.add(newControllers);
     });
   }
 
-  void _removeSizeBlock(int index) {
+  void _removeSizeBlock(final int index) {
     setState(() {
       for (final controller in sizeControllers[index].values) {
         controller.dispose();
@@ -72,15 +71,17 @@ class _AddProductPageState extends State<AddProductPage> {
 
   List<ProductSize> _buildProductSizes() {
     return sizeControllers.map((final controllers) {
+      final Map<MeasurementType, double?> measurementsMap = {};
+      for (final type in MeasurementType.values) {
+        final text = controllers[type.name]?.text;
+        measurementsMap[type] = text != null && text.isNotEmpty
+            ? double.tryParse(text)
+            : null;
+      }
+
       return ProductSize(
         name: controllers['name']!.text,
-        height: double.tryParse(controllers['height']!.text),
-        weight: double.tryParse(controllers['weight']!.text),
-        chest: double.tryParse(controllers['chest']!.text),
-        waist: double.tryParse(controllers['waist']!.text),
-        hips: double.tryParse(controllers['hips']!.text),
-        shoulderWidth: double.tryParse(controllers['shoulderWidth']!.text),
-        sleeveLength: double.tryParse(controllers['sleeveLength']!.text),
+        measurements: BodyMeasurements.fromTypeMap(measurementsMap),
       );
     }).toList();
   }
@@ -165,8 +166,6 @@ class _AddProductPageState extends State<AddProductPage> {
       );
     }
   }
-
-
 
   @override
   Widget build(final BuildContext context) {
@@ -645,17 +644,6 @@ class _AddProductPageState extends State<AddProductPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final fields = [
-      ('name', '尺寸名稱 (如: S, M, XL)', false),
-      ('height', '身高 (cm)', true),
-      ('weight', '體重 (kg)', true),
-      ('chest', '胸圍 (cm)', true),
-      ('waist', '腰圍 (cm)', true),
-      ('hips', '臀圍 (cm)', true),
-      ('shoulderWidth', '肩寬 (cm)', true),
-      ('sleeveLength', '袖長 (cm)', true),
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -664,9 +652,18 @@ class _AddProductPageState extends State<AddProductPage> {
           children: [
             Row(
               children: [
-                Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
+                Icon(
+                  Icons.straighten_rounded,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
-                Text('尺寸列表', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+                Text(
+                  '尺寸列表',
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
             TextButton.icon(
@@ -674,7 +671,10 @@ class _AddProductPageState extends State<AddProductPage> {
               icon: const Icon(Icons.add, size: 18),
               label: const Text('新增尺寸'),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 0,
+                ),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
@@ -688,17 +688,21 @@ class _AddProductPageState extends State<AddProductPage> {
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.3),
+              ),
             ),
             child: Center(
               child: Text(
                 '尚未新增尺寸',
-                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           )
         else
-          ...List.generate(sizeControllers.length, (index) {
+          ...List.generate(sizeControllers.length, (final index) {
             final controllers = sizeControllers[index];
             return Column(
               children: [
@@ -708,7 +712,9 @@ class _AddProductPageState extends State<AddProductPage> {
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: colorScheme.outline.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -718,10 +724,16 @@ class _AddProductPageState extends State<AddProductPage> {
                         children: [
                           Text(
                             '尺寸 ${index + 1}',
-                            style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                            style: textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete_outline_rounded, color: colorScheme.error, size: 20),
+                            icon: Icon(
+                              Icons.delete_outline_rounded,
+                              color: colorScheme.error,
+                              size: 20,
+                            ),
                             onPressed: () => _removeSizeBlock(index),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -729,38 +741,91 @@ class _AddProductPageState extends State<AddProductPage> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      ...List.generate(fields.length, (fieldIndex) {
-                        final field = fields[fieldIndex];
-                        return Column(
-                          children: [
-                            if (fieldIndex > 0) const SizedBox(height: 12),
-                            TextField(
-                              controller: controllers[field.$1],
-                              style: textTheme.bodyMedium,
-                              decoration: InputDecoration(
-                                labelText: field.$2,
-                                labelStyle: textTheme.bodySmall,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                                ),
-                                filled: true,
-                                fillColor: colorScheme.surface,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                              ),
-                              keyboardType: field.$3
-                                  ? const TextInputType.numberWithOptions(decimal: true)
-                                  : TextInputType.text,
+                      // 尺寸名稱
+                      TextField(
+                        controller: controllers['name'],
+                        style: textTheme.bodyMedium,
+                        decoration: InputDecoration(
+                          labelText: '尺寸名稱 (如: S, M, XL)',
+                          labelStyle: textTheme.bodySmall,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: colorScheme.outline.withValues(alpha: 0.3),
                             ),
-                          ],
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: colorScheme.outline.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: colorScheme.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                        ),
+                        keyboardType: TextInputType.text,
+                      ),
+                      const SizedBox(height: 12),
+                      // 身體測量欄位
+                      ...MeasurementType.values.map((final type) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: TextField(
+                            controller: controllers[type.name],
+                            style: textTheme.bodyMedium,
+                            decoration: InputDecoration(
+                              labelText: type.label,
+                              labelStyle: textTheme.bodySmall,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: colorScheme.surface,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d*'),
+                              ),
+                            ],
+                          ),
                         );
                       }),
                     ],

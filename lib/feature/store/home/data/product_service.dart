@@ -83,7 +83,7 @@ class ProductService {
           .insert(product.toJson())
           .select()
           .single();
-      
+
       final productId = response['id'];
 
       if (sizes.isNotEmpty) {
@@ -91,16 +91,10 @@ class ProductService {
           return {
             'product_id': productId,
             'name': size.name,
-            'height': size.height,
-            'weight': size.weight,
-            'chest': size.chest,
-            'waist': size.waist,
-            'hips': size.hips,
-            'shoulder_width': size.shoulderWidth,
-            'sleeve_length': size.sleeveLength,
+            ...size.measurements.toJson(),
           };
         }).toList();
-        
+
         await _supabase.from('product_sizes').insert(sizesData);
       }
 

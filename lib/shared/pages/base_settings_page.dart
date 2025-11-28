@@ -153,9 +153,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
           const SizedBox(width: 12),
           Text(
             '設定',
-            style: textTheme.displaySmall?.copyWith(
-              letterSpacing: 0.5,
-            ),
+            style: textTheme.displaySmall?.copyWith(letterSpacing: 0.5),
           ),
         ],
       ),
@@ -208,21 +206,14 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
                         ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(
-                    icon,
-                    color: colorScheme.primary,
-                    size: 28,
-                  ),
+                  child: Icon(icon, color: colorScheme.primary, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: textTheme.titleSmall,
-                      ),
+                      Text(title, style: textTheme.titleSmall),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
@@ -270,9 +261,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
               const SizedBox(width: 8),
               Text(
                 '登出',
-                style: textTheme.titleSmall?.copyWith(
-                  color: colorScheme.error,
-                ),
+                style: textTheme.titleSmall?.copyWith(color: colorScheme.error),
               ),
             ],
           ),

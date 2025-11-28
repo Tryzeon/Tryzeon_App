@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../../data/profile_service.dart';
@@ -16,19 +17,17 @@ class _PersonalProfileSettingsPageState
     extends State<PersonalProfileSettingsPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _heightController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _chestController = TextEditingController();
-  final _waistController = TextEditingController();
-  final _hipsController = TextEditingController();
-  final _shoulderWidthController = TextEditingController();
-  final _sleeveLengthController = TextEditingController();
+  final _measurementControllers = <MeasurementType, TextEditingController>{};
 
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    // 初始化所有身型數據的控制器
+    for (final type in MeasurementType.values) {
+      _measurementControllers[type] = TextEditingController();
+    }
     _loadProfile(forceRefresh: true);
   }
 
@@ -44,13 +43,12 @@ class _PersonalProfileSettingsPageState
     if (result.isSuccess) {
       final profile = result.data!;
       _nameController.text = profile.name;
-      _heightController.text = profile.height?.toString() ?? '';
-      _weightController.text = profile.weight?.toString() ?? '';
-      _chestController.text = profile.chest?.toString() ?? '';
-      _waistController.text = profile.waist?.toString() ?? '';
-      _hipsController.text = profile.hips?.toString() ?? '';
-      _shoulderWidthController.text = profile.shoulderWidth?.toString() ?? '';
-      _sleeveLengthController.text = profile.sleeveLength?.toString() ?? '';
+
+      // 使用 Enum 遍歷更新數值
+      for (final type in MeasurementType.values) {
+        _measurementControllers[type]?.text =
+            profile.measurements[type]?.toString() ?? '';
+      }
     } else {
       if (mounted) {
         TopNotification.show(
@@ -73,29 +71,19 @@ class _PersonalProfileSettingsPageState
       _isLoading = true;
     });
 
+    // 收集所有控制器的值並轉換為 Map
+    final measurementsMap = <MeasurementType, double?>{};
+    for (final entry in _measurementControllers.entries) {
+      if (entry.value.text.isNotEmpty) {
+        measurementsMap[entry.key] = double.tryParse(entry.value.text);
+      } else {
+        measurementsMap[entry.key] = null;
+      }
+    }
+
     final result = await UserProfileService.updateUserProfile(
       name: _nameController.text,
-      height: _heightController.text.isNotEmpty
-          ? double.tryParse(_heightController.text)
-          : null,
-      weight: _weightController.text.isNotEmpty
-          ? double.tryParse(_weightController.text)
-          : null,
-      chest: _chestController.text.isNotEmpty
-          ? double.tryParse(_chestController.text)
-          : null,
-      waist: _waistController.text.isNotEmpty
-          ? double.tryParse(_waistController.text)
-          : null,
-      hips: _hipsController.text.isNotEmpty
-          ? double.tryParse(_hipsController.text)
-          : null,
-      shoulderWidth: _shoulderWidthController.text.isNotEmpty
-          ? double.tryParse(_shoulderWidthController.text)
-          : null,
-      sleeveLength: _sleeveLengthController.text.isNotEmpty
-          ? double.tryParse(_sleeveLengthController.text)
-          : null,
+      measurements: BodyMeasurements.fromTypeMap(measurementsMap),
     );
 
     setState(() {
@@ -123,13 +111,9 @@ class _PersonalProfileSettingsPageState
   @override
   void dispose() {
     _nameController.dispose();
-    _heightController.dispose();
-    _weightController.dispose();
-    _chestController.dispose();
-    _waistController.dispose();
-    _hipsController.dispose();
-    _shoulderWidthController.dispose();
-    _sleeveLengthController.dispose();
+    for (final controller in _measurementControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -240,13 +224,26 @@ class _PersonalProfileSettingsPageState
                           icon: Icons.straighten_rounded,
                           title: '身型資料',
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 16,
+                              children: MeasurementType.values.map((
+                                final type,
+                              ) {
+                                return SizedBox(
+                                  // 使用 LayoutBuilder 或固定寬度來實現類似 Grid 的效果，
+                                  // 這裡簡單地除以 2 減去間距的一半，讓它一行兩個
+                                  width:
+                                      (MediaQuery.of(context).size.width -
+                                          48 -
+                                          40 -
+                                          12) /
+                                      2,
+                                  // 48(page padding) + 40(card padding) + 12(spacing)
                                   child: _buildTextField(
-                                    controller: _heightController,
-                                    label: '身高 (cm)',
-                                    icon: Icons.height_rounded,
+                                    controller: _measurementControllers[type]!,
+                                    label: type.label,
+                                    icon: type.icon,
                                     keyboardType:
                                         const TextInputType.numberWithOptions(
                                           decimal: true,
@@ -257,116 +254,8 @@ class _PersonalProfileSettingsPageState
                                       ),
                                     ],
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _weightController,
-                                    label: '體重 (kg)',
-                                    icon: Icons.monitor_weight_outlined,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _chestController,
-                                    label: '胸圍 (cm)',
-                                    icon: Icons.accessibility_rounded,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _waistController,
-                                    label: '腰圍 (cm)',
-                                    icon: Icons.accessibility_rounded,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _hipsController,
-                                    label: '臀圍 (cm)',
-                                    icon: Icons.accessibility_rounded,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _shoulderWidthController,
-                                    label: '肩寬 (cm)',
-                                    icon: Icons.accessibility_rounded,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              controller: _sleeveLengthController,
-                              label: '袖長 (cm)',
-                              icon: Icons.accessibility_rounded,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d*'),
-                                ),
-                              ],
+                                );
+                              }).toList(),
                             ),
                           ],
                         ),

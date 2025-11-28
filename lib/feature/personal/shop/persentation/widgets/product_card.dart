@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/feature/personal/personal/persentation/pages/settings/data/profile_service.dart';
+import 'package:tryzeon/feature/personal/personal_entry.dart';
+import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -46,46 +47,14 @@ class _ProductCardState extends State<ProductCard> {
       double totalDiff = 0;
       int comparisonCount = 0;
 
-      // 比對身高
-      if (_userProfile!.height != null && size.height != null) {
-        totalDiff += (_userProfile!.height! - size.height!).abs();
-        comparisonCount++;
-      }
+      for (final type in MeasurementType.values) {
+        final userValue = _userProfile!.measurements[type];
+        final sizeValue = size.measurements[type];
 
-      // 比對體重
-      if (_userProfile!.weight != null && size.weight != null) {
-        totalDiff += (_userProfile!.weight! - size.weight!).abs();
-        comparisonCount++;
-      }
-
-      // 比對胸圍
-      if (_userProfile!.chest != null && size.chest != null) {
-        totalDiff += (_userProfile!.chest! - size.chest!).abs();
-        comparisonCount++;
-      }
-
-      // 比對腰圍
-      if (_userProfile!.waist != null && size.waist != null) {
-        totalDiff += (_userProfile!.waist! - size.waist!).abs();
-        comparisonCount++;
-      }
-
-      // 比對臀圍
-      if (_userProfile!.hips != null && size.hips != null) {
-        totalDiff += (_userProfile!.hips! - size.hips!).abs();
-        comparisonCount++;
-      }
-
-      // 比對肩寬
-      if (_userProfile!.shoulderWidth != null && size.shoulderWidth != null) {
-        totalDiff += (_userProfile!.shoulderWidth! - size.shoulderWidth!).abs();
-        comparisonCount++;
-      }
-
-      // 比對袖長
-      if (_userProfile!.sleeveLength != null && size.sleeveLength != null) {
-        totalDiff += (_userProfile!.sleeveLength! - size.sleeveLength!).abs();
-        comparisonCount++;
+        if (userValue != null && sizeValue != null) {
+          totalDiff += (userValue - sizeValue).abs();
+          comparisonCount++;
+        }
       }
 
       // 如果有比對到資料，記錄最佳差值
@@ -108,7 +77,7 @@ class _ProductCardState extends State<ProductCard> {
     }
   }
 
-  Color _getFitColor(String level) {
+  Color _getFitColor(final String level) {
     switch (level) {
       case 'green':
         return Colors.green;
@@ -227,12 +196,12 @@ class _ProductCardState extends State<ProductCard> {
                         onTap: _handleTryon,
                         borderRadius: BorderRadius.circular(20),
                         child: Builder(
-                          builder: (context) {
+                          builder: (final context) {
                             final fitLevel = _calculateFitLevel();
-                            final buttonColor = fitLevel == null 
-                                ? colorScheme.primary 
+                            final buttonColor = fitLevel == null
+                                ? colorScheme.primary
                                 : _getFitColor(fitLevel);
-                            
+
                             return Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -240,9 +209,7 @@ class _ProductCardState extends State<ProductCard> {
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: buttonColor.withValues(
-                                      alpha: 0.4,
-                                    ),
+                                    color: buttonColor.withValues(alpha: 0.4),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -254,7 +221,7 @@ class _ProductCardState extends State<ProductCard> {
                                 size: 20,
                               ),
                             );
-                          }
+                          },
                         ),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
+import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/result.dart';
 
 class ProductSize {
@@ -7,13 +8,7 @@ class ProductSize {
     this.id,
     this.productId,
     required this.name,
-    this.height,
-    this.weight,
-    this.chest,
-    this.waist,
-    this.hips,
-    this.shoulderWidth,
-    this.sleeveLength,
+    required this.measurements,
   });
 
   factory ProductSize.fromJson(final Map<String, dynamic> json) {
@@ -21,13 +16,7 @@ class ProductSize {
       id: json['id'],
       productId: json['product_id'],
       name: json['name'] ?? '',
-      height: json['height']?.toDouble(),
-      weight: json['weight']?.toDouble(),
-      chest: json['chest']?.toDouble(),
-      waist: json['waist']?.toDouble(),
-      hips: json['hips']?.toDouble(),
-      shoulderWidth: json['shoulder_width']?.toDouble(),
-      sleeveLength: json['sleeve_length']?.toDouble(),
+      measurements: BodyMeasurements.fromJson(json),
     );
   }
 
@@ -36,26 +25,14 @@ class ProductSize {
       if (id != null) 'id': id,
       if (productId != null) 'product_id': productId,
       'name': name,
-      if (height != null) 'height': height,
-      if (weight != null) 'weight': weight,
-      if (chest != null) 'chest': chest,
-      if (waist != null) 'waist': waist,
-      if (hips != null) 'hips': hips,
-      if (shoulderWidth != null) 'shoulder_width': shoulderWidth,
-      if (sleeveLength != null) 'sleeve_length': sleeveLength,
+      ...measurements.toJson(),
     };
   }
-  
+
   final String? id;
   final String? productId;
   final String name;
-  final double? height;
-  final double? weight;
-  final double? chest;
-  final double? waist;
-  final double? hips;
-  final double? shoulderWidth;
-  final double? sleeveLength;
+  final BodyMeasurements measurements;
 }
 
 class Product {
@@ -89,7 +66,8 @@ class Product {
       tryonCount: json['tryon_count'] ?? 0,
       purchaseClickCount: json['purchase_click_count'] ?? 0,
       storeName: json['store_profile']?['store_name'],
-      sizes: (json['product_sizes'] as List?)
+      sizes:
+          (json['product_sizes'] as List?)
               ?.map((final e) => ProductSize.fromJson(e))
               .toList() ??
           [],
