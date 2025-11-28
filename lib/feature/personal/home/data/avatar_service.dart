@@ -9,30 +9,35 @@ class AvatarService {
   static const _bucket = 'avatars';
 
   /// 獲取頭像（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File>> getAvatar() async {
+  static Future<Result<File>> getAvatar({final bool forceRefresh = false}) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
       return Result.failure('請重新登入');
     }
 
     try {
-      // 1. 檢查本地是否有緩存
-      final cachedFiles = await CacheService.getImages(
-        relativePath: '$userId/avatar',
-      );
-      if (cachedFiles.isNotEmpty) {
-        return Result.success(data: cachedFiles.first);
+      if(forceRefresh) {
+        await CacheService.deleteImages(relativePath: '$userId/avatar');
+      } else {
+        // 1. 檢查本地是否有緩存
+        final cachedFiles = await CacheService.getImages(
+          relativePath: '$userId/avatar',
+        );
+        if (cachedFiles.isNotEmpty) {
+          return Result.success(data: cachedFiles.first);
+        }
       }
 
       // 2. 從 Supabase 查詢檔案名稱
       final files = await _supabase.storage
           .from(_bucket)
           .list(path: '$userId/avatar');
+
       if (files.isEmpty) {
         return Result.success();
       }
 
-      final fileName = '$userId/avatar/${files.first.name}';
+      final fileName = '$userId/avatar/${files.last.name}';
 
       // 3. 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(fileName);

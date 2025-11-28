@@ -108,12 +108,12 @@ class HomePageState extends State<HomePage> {
     await _performTryOn(clothingPath: clothingPath);
   }
 
-  Future<void> _loadAvatar() async {
+  Future<void> _loadAvatar({final bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
     });
 
-    final result = await AvatarService.getAvatar();
+    final result = await AvatarService.getAvatar(forceRefresh: forceRefresh);
     if (!mounted) return;
 
     setState(() {
@@ -539,14 +539,18 @@ class HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 16.0,
-            ),
-            child: Column(
-              children: [
+        child: RefreshIndicator(
+          onRefresh: () => _loadAvatar(forceRefresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
+                child: Column(
+                  children: [
                 // 標題
                 ShaderMask(
                   shaderCallback: (final bounds) => LinearGradient(
@@ -735,6 +739,8 @@ class HomePageState extends State<HomePage> {
             ),
           ),
         ),
+      ),
+      ),
       ),
     );
   }
