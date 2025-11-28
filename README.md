@@ -53,7 +53,7 @@ flutter run -d <device-id>
 ### 5. Build the Application
 build apk file for Android
 ```bash
-flutter build apk 
+flutter build apk
 ```
 
 ## Linter
