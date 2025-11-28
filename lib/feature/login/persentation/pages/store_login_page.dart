@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tryzeon/feature/login/persentation/widgets/customize_scaffold.dart';
 import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
-import 'package:tryzeon/shared/widgets/customize_scaffold.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 class StoreLoginPage extends StatefulWidget {
