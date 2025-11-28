@@ -159,7 +159,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
 
         // Title
         Text(
-          'Welcome Back!',
+          'Welcome!',
           style: textTheme.displaySmall?.copyWith(
             color: colorScheme.primary,
             letterSpacing: -0.5,
