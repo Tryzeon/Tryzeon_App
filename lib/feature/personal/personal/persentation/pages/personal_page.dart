@@ -170,19 +170,26 @@ class _PersonalPageState extends State<PersonalPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // 使用者名稱
-                        ShaderMask(
-                          shaderCallback: (final bounds) => LinearGradient(
-                            colors: [
-                              colorScheme.primary,
-                              colorScheme.secondary,
-                            ],
-                          ).createShader(bounds),
-                          child: Text(
-                            '您好, $username',
-                            style: textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 20.0), // Add padding here
+                            child: ShaderMask(
+                              shaderCallback: (final bounds) => LinearGradient(
+                                colors: [
+                                  colorScheme.primary,
+                                  colorScheme.secondary,
+                                ],
+                              ).createShader(bounds),
+                              child: Text(
+                                '您好, $username',
+                                style: textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ),
