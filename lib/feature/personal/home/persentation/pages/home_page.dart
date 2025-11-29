@@ -551,196 +551,199 @@ class HomePageState extends State<HomePage> {
                 ),
                 child: Column(
                   children: [
-                // 標題
-                ShaderMask(
-                  shaderCallback: (final bounds) => LinearGradient(
-                    colors: [colorScheme.primary, colorScheme.secondary],
-                  ).createShader(bounds),
-                  child: const Text(
-                    'Tryzeon',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 3.0,
-                      height: 1.2,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(2, 2),
-                          blurRadius: 4,
-                          color: Color.fromARGB(80, 0, 0, 0),
-                        ),
-                        Shadow(
-                          offset: Offset(-1, -1),
-                          blurRadius: 8,
-                          color: Color.fromARGB(40, 255, 255, 255),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // 虛擬人偶容器
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: GestureDetector(
-                    onTap: _uploadAvatar,
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(32),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.surface,
-                            colorScheme.surface.withValues(alpha: 0.9),
+                    // 標題
+                    ShaderMask(
+                      shaderCallback: (final bounds) => LinearGradient(
+                        colors: [colorScheme.primary, colorScheme.secondary],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'Tryzeon',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 3.0,
+                          height: 1.2,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
+                              color: Color.fromARGB(80, 0, 0, 0),
+                            ),
+                            Shadow(
+                              offset: Offset(-1, -1),
+                              blurRadius: 8,
+                              color: Color.fromARGB(40, 255, 255, 255),
+                            ),
                           ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.15),
-                            spreadRadius: 0,
-                            blurRadius: 30,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(32),
-                        child: Stack(
-                          children: [
-                            // 主要圖片
-                            _buildAvatarImage(),
+                    ),
+                    const SizedBox(height: 24),
 
-                            // 載入遮罩
-                            if (_isLoading)
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.black.withValues(alpha: 0.6),
-                                      Colors.black.withValues(alpha: 0.8),
-                                    ],
-                                  ),
+                    // 虛擬人偶容器
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: GestureDetector(
+                        onTap: _uploadAvatar,
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(32),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                colorScheme.surface,
+                                colorScheme.surface.withValues(alpha: 0.9),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.15,
                                 ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CircularProgressIndicator(
-                                        color: colorScheme.secondary,
-                                        strokeWidth: 3,
+                                spreadRadius: 0,
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(32),
+                            child: Stack(
+                              children: [
+                                // 主要圖片
+                                _buildAvatarImage(),
+
+                                // 載入遮罩
+                                if (_isLoading)
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.black.withValues(alpha: 0.6),
+                                          Colors.black.withValues(alpha: 0.8),
+                                        ],
                                       ),
-                                      const SizedBox(height: 16),
-                                      ShaderMask(
-                                        shaderCallback: (final bounds) =>
-                                            LinearGradient(
-                                              colors: [
-                                                Colors.white,
-                                                colorScheme.surfaceContainer,
-                                              ],
-                                            ).createShader(bounds),
-                                        child: const Text(
-                                          '再一下...就快好了',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 1.5,
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            color: colorScheme.secondary,
+                                            strokeWidth: 3,
                                           ),
-                                        ),
+                                          const SizedBox(height: 16),
+                                          ShaderMask(
+                                            shaderCallback: (final bounds) =>
+                                                LinearGradient(
+                                                  colors: [
+                                                    Colors.white,
+                                                    colorScheme
+                                                        .surfaceContainer,
+                                                  ],
+                                                ).createShader(bounds),
+                                            child: const Text(
+                                              '再一下...就快好了',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: 1.5,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
 
-                            // 更多選項按鈕（僅在顯示試穿結果時顯示）
-                            if (!_isLoading && _currentTryonIndex >= 0)
-                              _buildMoreOptionsButton(),
+                                // 更多選項按鈕（僅在顯示試穿結果時顯示）
+                                if (!_isLoading && _currentTryonIndex >= 0)
+                                  _buildMoreOptionsButton(),
 
-                            // 上一步/下一步按鈕（僅在有試穿結果時顯示）
-                            if (!_isLoading && _tryonImages.isNotEmpty)
-                              _buildNavigationButtons(),
-                          ],
+                                // 上一步/下一步按鈕（僅在有試穿結果時顯示）
+                                if (!_isLoading && _tryonImages.isNotEmpty)
+                                  _buildNavigationButtons(),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
 
-                const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                // 虛擬試穿按鈕
-                Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: _isLoading
-                        ? LinearGradient(
-                            colors: [
-                              colorScheme.surfaceContainer,
-                              colorScheme.surfaceContainerHigh,
-                            ],
-                          )
-                        : LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              colorScheme.secondary,
-                              colorScheme.secondary.withValues(alpha: 0.8),
-                            ],
-                          ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: _isLoading
-                        ? []
-                        : [
-                            BoxShadow(
-                              color: colorScheme.secondary.withValues(
-                                alpha: 0.3,
+                    // 虛擬試穿按鈕
+                    Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: _isLoading
+                            ? LinearGradient(
+                                colors: [
+                                  colorScheme.surfaceContainer,
+                                  colorScheme.surfaceContainerHigh,
+                                ],
+                              )
+                            : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  colorScheme.secondary,
+                                  colorScheme.secondary.withValues(alpha: 0.8),
+                                ],
                               ),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _isLoading ? null : tryOnFromLocal,
-                      borderRadius: BorderRadius.circular(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.auto_awesome_rounded,
-                            color: colorScheme.onSecondary,
-                            size: 24,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: _isLoading
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: colorScheme.secondary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isLoading ? null : tryOnFromLocal,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.auto_awesome_rounded,
+                                color: colorScheme.onSecondary,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '虛擬試穿',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onSecondary,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '虛擬試穿',
-                            style: textTheme.titleMedium?.copyWith(
-                              color: colorScheme.onSecondary,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
 
-                const SizedBox(height: 16),
-              ],
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
-      ),
       ),
     );
   }

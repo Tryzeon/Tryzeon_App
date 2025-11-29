@@ -172,7 +172,7 @@ class _PersonalPageState extends State<PersonalPage> {
                         // 使用者名稱
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(right: 20.0), // Add padding here
+                            padding: const EdgeInsets.only(right: 20.0),
                             child: ShaderMask(
                               shaderCallback: (final bounds) => LinearGradient(
                                 colors: [
