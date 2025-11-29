@@ -1,3 +1,4 @@
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
@@ -80,12 +81,9 @@ class AuthService {
   /// 登出
   static Future<Result<void>> signOut() async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-
-      // 清除當前用戶的所有本地緩存
-      if (userId != null) {
-        await CacheService.deleteFolder(userId);
-      }
+      // 清除所有應用程式快取
+      await CacheService.deleteFolder('');
+      await DefaultCacheManager().emptyCache();
 
       // 清除所有 SharedPreferences
       final prefs = await SharedPreferences.getInstance();
