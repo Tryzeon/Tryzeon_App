@@ -56,6 +56,14 @@ build apk file for Android
 flutter build apk
 ```
 
+build apk file for Android through Github Actions
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+# or push all tags
+git push origin --tags
+```
+
 ## Linter
 ```bash
 dart fix --apply
