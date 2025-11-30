@@ -26,10 +26,10 @@ class WardrobeService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          final wardrobeItem = cachedData
+          final cachedWardrobeItem = cachedData
               .map((final json) => WardrobeItem.fromJson(json))
               .toList();
-          return Result.success(data: wardrobeItem);
+          return Result.success(data: cachedWardrobeItem);
         }
       }
 
@@ -53,7 +53,7 @@ class WardrobeService {
   }
 
   static Future<Result<void>> uploadWardrobeItem(
-    final File imageFile,
+    final File image,
     final String category, {
     final List<String> tags = const [],
   }) async {
@@ -65,14 +65,14 @@ class WardrobeService {
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final storagePath = '$user.id/$categoryCode/$timestamp.jpg';
+      final imagePath = '$user.id/$categoryCode/$timestamp.jpg';
 
       // 1. 上傳圖片到 Supabase Storage
-      final bytes = await imageFile.readAsBytes();
+      final bytes = await image.readAsBytes();
       await _supabase.storage
           .from(_bucket)
           .uploadBinary(
-            storagePath,
+            imagePath,
             bytes,
             fileOptions: const FileOptions(
               contentType: 'image/jpeg'
@@ -80,13 +80,13 @@ class WardrobeService {
           );
 
       // 2. 保存到本地緩存
-      await CacheService.saveImage(bytes, storagePath);
+      await CacheService.saveImage(bytes, imagePath);
 
       // 3. 新增 DB 記錄
       await _supabase.from(_wardrobeTable).insert({
         'user_id': user.id,
         'category': category,
-        'image_path': storagePath,
+        'image_path': imagePath,
         'tags': tags,
       });
 
@@ -122,20 +122,20 @@ class WardrobeService {
   }
 
   static Future<Result<File>> loadWardrobeItemImage(
-    final String storagePath,
+    final String imagePath,
   ) async {
     try {
       // 1. 先檢查本地是否有該圖片
-      final cachedFile = await CacheService.getImage(storagePath);
-      if (cachedFile != null && await cachedFile.exists()) {
-        return Result.success(data: cachedFile);
+      final cachedImage = await CacheService.getImage(imagePath);
+      if (cachedImage != null && await cachedImage.exists()) {
+        return Result.success(data: cachedImage);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
-      final bytes = await _supabase.storage.from(_bucket).download(storagePath);
-      final savedFile = await CacheService.saveImage(bytes, storagePath);
+      final bytes = await _supabase.storage.from(_bucket).download(imagePath);
+      final image = await CacheService.saveImage(bytes, imagePath);
 
-      return Result.success(data: savedFile);
+      return Result.success(data: image);
     } catch (e) {
       return Result.failure('衣櫃圖片載入失敗', error: e);
     }
