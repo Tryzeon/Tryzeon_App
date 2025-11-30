@@ -32,15 +32,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
 
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
-        );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     _fadeController.forward();
     _slideController.forward();
@@ -150,11 +147,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             ],
             border: Border.all(color: colorScheme.surface, width: 2),
           ),
-          child: Icon(
-            Icons.checkroom_rounded,
-            size: 56,
-            color: colorScheme.primary,
-          ),
+          child: Icon(Icons.checkroom_rounded, size: 56, color: colorScheme.primary),
         ),
         const SizedBox(height: 24),
 

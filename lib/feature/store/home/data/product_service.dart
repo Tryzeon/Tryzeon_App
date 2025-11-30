@@ -145,10 +145,7 @@ class ProductService {
         'updated_at': DateTime.now().toIso8601String(),
       };
 
-      await _supabase
-          .from(_productsTable)
-          .update(updateData)
-          .eq('id', productId);
+      await _supabase.from(_productsTable).update(updateData).eq('id', productId);
 
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
@@ -215,9 +212,7 @@ class ProductService {
         .uploadBinary(
           productImagePath,
           bytes,
-          fileOptions: const FileOptions(
-            contentType: 'image/jpeg',
-          ),
+          fileOptions: const FileOptions(contentType: 'image/jpeg'),
         );
 
     // 保存到本地緩存

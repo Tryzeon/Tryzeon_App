@@ -108,21 +108,13 @@ class _AddProductPageState extends State<AddProductPage> {
         nameController.text.isEmpty ||
         selectedTypes.isEmpty ||
         priceController.text.isEmpty) {
-      TopNotification.show(
-        context,
-        message: '請填寫完整資料',
-        type: NotificationType.warning,
-      );
+      TopNotification.show(context, message: '請填寫完整資料', type: NotificationType.warning);
       return false;
     }
 
     final price = int.tryParse(priceController.text);
     if (price == null) {
-      TopNotification.show(
-        context,
-        message: '請輸入有效的價格',
-        type: NotificationType.warning,
-      );
+      TopNotification.show(context, message: '請輸入有效的價格', type: NotificationType.warning);
       return false;
     }
 
@@ -153,11 +145,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
     if (result.isSuccess) {
       Navigator.pop(context, true);
-      TopNotification.show(
-        context,
-        message: '商品新增成功',
-        type: NotificationType.success,
-      );
+      TopNotification.show(context, message: '商品新增成功', type: NotificationType.success);
     } else {
       TopNotification.show(
         context,
@@ -262,9 +250,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           const SizedBox(height: 12),
                           GestureDetector(
                             onTap: () async {
-                              final image = await ImagePickerHelper.pickImage(
-                                context,
-                              );
+                              final image = await ImagePickerHelper.pickImage(context);
                               if (image != null) {
                                 setState(() {
                                   selectedImage = image;
@@ -278,23 +264,18 @@ class _AddProductPageState extends State<AddProductPage> {
                                 gradient: LinearGradient(
                                   colors: [
                                     colorScheme.primary.withValues(alpha: 0.1),
-                                    colorScheme.secondary.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    colorScheme.secondary.withValues(alpha: 0.1),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: colorScheme.primary.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.primary.withValues(alpha: 0.3),
                                   width: 2,
                                 ),
                               ),
                               child: selectedImage == null
                                   ? Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.add_photo_alternate_rounded,
@@ -361,17 +342,13 @@ class _AddProductPageState extends State<AddProductPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -412,17 +389,13 @@ class _AddProductPageState extends State<AddProductPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -455,17 +428,13 @@ class _AddProductPageState extends State<AddProductPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -493,25 +462,17 @@ class _AddProductPageState extends State<AddProductPage> {
                       decoration: BoxDecoration(
                         gradient: isLoading
                             ? LinearGradient(
-                                colors: [
-                                  colorScheme.outline,
-                                  colorScheme.outlineVariant,
-                                ],
+                                colors: [colorScheme.outline, colorScheme.outlineVariant],
                               )
                             : LinearGradient(
-                                colors: [
-                                  colorScheme.primary,
-                                  colorScheme.secondary,
-                                ],
+                                colors: [colorScheme.primary, colorScheme.secondary],
                               ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: isLoading
                             ? []
                             : [
                                 BoxShadow(
-                                  color: colorScheme.primary.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.primary.withValues(alpha: 0.3),
                                   blurRadius: 15,
                                   offset: const Offset(0, 8),
                                 ),
@@ -576,9 +537,7 @@ class _AddProductPageState extends State<AddProductPage> {
             const SizedBox(width: 8),
             Text(
               '商品類型',
-              style: textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 8),
             Text('(可多選)', style: textTheme.bodySmall),
@@ -591,9 +550,7 @@ class _AddProductPageState extends State<AddProductPage> {
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
           ),
           child: Wrap(
             spacing: 8,
@@ -616,14 +573,9 @@ class _AddProductPageState extends State<AddProductPage> {
                 selectedColor: colorScheme.primary,
                 checkmarkColor: colorScheme.onPrimary,
                 labelStyle: textTheme.labelLarge?.copyWith(
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurface,
+                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
@@ -652,17 +604,11 @@ class _AddProductPageState extends State<AddProductPage> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.straighten_rounded,
-                  color: colorScheme.primary,
-                  size: 20,
-                ),
+                Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   '尺寸列表',
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -671,10 +617,7 @@ class _AddProductPageState extends State<AddProductPage> {
               icon: const Icon(Icons.add, size: 18),
               label: const Text('新增尺寸'),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
@@ -688,9 +631,7 @@ class _AddProductPageState extends State<AddProductPage> {
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
             ),
             child: Center(
               child: Text(
@@ -712,9 +653,7 @@ class _AddProductPageState extends State<AddProductPage> {
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: colorScheme.outline.withValues(alpha: 0.3),
-                    ),
+                    border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -762,10 +701,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: colorScheme.primary,
-                              width: 2,
-                            ),
+                            borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           ),
                           filled: true,
                           fillColor: colorScheme.surface,
@@ -790,17 +726,13 @@ class _AddProductPageState extends State<AddProductPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -821,9 +753,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               decimal: true,
                             ),
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d*\.?\d*'),
-                              ),
+                              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                             ],
                           ),
                         );

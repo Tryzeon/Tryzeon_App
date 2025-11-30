@@ -9,12 +9,10 @@ class PersonalProfileSettingsPage extends StatefulWidget {
   const PersonalProfileSettingsPage({super.key});
 
   @override
-  State<PersonalProfileSettingsPage> createState() =>
-      _PersonalProfileSettingsPageState();
+  State<PersonalProfileSettingsPage> createState() => _PersonalProfileSettingsPageState();
 }
 
-class _PersonalProfileSettingsPageState
-    extends State<PersonalProfileSettingsPage> {
+class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _measurementControllers = <MeasurementType, TextEditingController>{};
@@ -36,9 +34,7 @@ class _PersonalProfileSettingsPageState
       _isLoading = true;
     });
 
-    final result = await UserProfileService.getUserProfile(
-      forceRefresh: forceRefresh,
-    );
+    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
 
     if (result.isSuccess) {
       final profile = result.data!;
@@ -93,11 +89,7 @@ class _PersonalProfileSettingsPageState
     if (mounted) {
       if (result.isSuccess) {
         Navigator.pop(context, true);
-        TopNotification.show(
-          context,
-          message: '個人資料已更新',
-          type: NotificationType.success,
-        );
+        TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
       } else {
         TopNotification.show(
           context,
@@ -227,27 +219,21 @@ class _PersonalProfileSettingsPageState
                             Wrap(
                               spacing: 12,
                               runSpacing: 16,
-                              children: MeasurementType.values.map((
-                                final type,
-                              ) {
+                              children: MeasurementType.values.map((final type) {
                                 return SizedBox(
                                   // 使用 LayoutBuilder 或固定寬度來實現類似 Grid 的效果，
                                   // 這裡簡單地除以 2 減去間距的一半，讓它一行兩個
                                   width:
-                                      (MediaQuery.of(context).size.width -
-                                          48 -
-                                          40 -
-                                          12) /
+                                      (MediaQuery.of(context).size.width - 48 - 40 - 12) /
                                       2,
                                   // 48(page padding) + 40(card padding) + 12(spacing)
                                   child: _buildTextField(
                                     controller: _measurementControllers[type]!,
                                     label: type.label,
                                     icon: type.icon,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                     inputFormatters: [
                                       FilteringTextInputFormatter.allow(
                                         RegExp(r'^\d*\.?\d*'),
@@ -275,19 +261,14 @@ class _PersonalProfileSettingsPageState
                                     ],
                                   )
                                 : LinearGradient(
-                                    colors: [
-                                      colorScheme.primary,
-                                      colorScheme.secondary,
-                                    ],
+                                    colors: [colorScheme.primary, colorScheme.secondary],
                                   ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: _isLoading
                                 ? []
                                 : [
                                     BoxShadow(
-                                      color: colorScheme.primary.withValues(
-                                        alpha: 0.3,
-                                      ),
+                                      color: colorScheme.primary.withValues(alpha: 0.3),
                                       blurRadius: 15,
                                       offset: const Offset(0, 8),
                                     ),
@@ -309,8 +290,7 @@ class _PersonalProfileSettingsPageState
                                         ),
                                       )
                                     : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.save_rounded,
@@ -320,13 +300,12 @@ class _PersonalProfileSettingsPageState
                                           const SizedBox(width: 8),
                                           Text(
                                             '儲存',
-                                            style: textTheme.titleMedium
-                                                ?.copyWith(
-                                                  color: colorScheme.onPrimary,
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.5,
-                                                ),
+                                            style: textTheme.titleMedium?.copyWith(
+                                              color: colorScheme.onPrimary,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0.5,
+                                            ),
                                           ),
                                         ],
                                       ),

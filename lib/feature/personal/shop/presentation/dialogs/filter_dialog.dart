@@ -29,11 +29,7 @@ class FilterDialog {
 }
 
 class _FilterDialogContent extends StatefulWidget {
-  const _FilterDialogContent({
-    this.minPrice,
-    this.maxPrice,
-    required this.onApply,
-  });
+  const _FilterDialogContent({this.minPrice, this.maxPrice, required this.onApply});
   final int? minPrice;
   final int? maxPrice;
   final Function(int? minPrice, int? maxPrice) onApply;
@@ -78,9 +74,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.only(
@@ -106,11 +100,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.tune_rounded,
-                    color: colorScheme.onPrimary,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.tune_rounded, color: colorScheme.onPrimary, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Text('篩選條件', style: textTheme.titleLarge),
@@ -126,17 +116,13 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
               children: [
                 Text(
                   '\$${_priceRange.start.round()}',
-                  style: textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                  ),
+                  style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                 ),
                 Text(
                   _priceRange.end.round() >= kMaxPrice
                       ? '\$${kMaxPrice.round()}+'
                       : '\$${_priceRange.end.round()}',
-                  style: textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                  ),
+                  style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                 ),
               ],
             ),
@@ -159,9 +145,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                   setState(() {
                     _priceRange = values;
                     _minPrice = values.start.round();
-                    _maxPrice = values.end >= kMaxPrice
-                        ? null
-                        : values.end.round();
+                    _maxPrice = values.end >= kMaxPrice ? null : values.end.round();
                   });
                 },
               ),

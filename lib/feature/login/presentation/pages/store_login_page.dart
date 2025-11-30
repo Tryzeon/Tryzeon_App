@@ -12,8 +12,7 @@ class StoreLoginPage extends StatefulWidget {
   State<StoreLoginPage> createState() => _StoreLoginPageState();
 }
 
-class _StoreLoginPageState extends State<StoreLoginPage>
-    with WidgetsBindingObserver {
+class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObserver {
   bool _isLoading = false;
 
   @override
@@ -39,11 +38,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
 
   void _showError(final String message) {
     if (!mounted) return;
-    TopNotification.show(
-      context,
-      message: message,
-      type: NotificationType.error,
-    );
+    TopNotification.show(context, message: message, type: NotificationType.error);
   }
 
   Future<void> _handleSignIn(final String provider) async {
@@ -149,11 +144,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
               ),
             ],
           ),
-          child: Icon(
-            Icons.store_rounded,
-            size: 48,
-            color: colorScheme.primary,
-          ),
+          child: Icon(Icons.store_rounded, size: 48, color: colorScheme.primary),
         ),
         const SizedBox(height: 32),
 

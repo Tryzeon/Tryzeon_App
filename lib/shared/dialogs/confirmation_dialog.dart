@@ -34,10 +34,7 @@ class ConfirmationDialog extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                colorScheme.surface,
-                colorScheme.surface.withValues(alpha: 0.95),
-              ],
+              colors: [colorScheme.surface, colorScheme.surface.withValues(alpha: 0.95)],
             ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
@@ -60,11 +57,7 @@ class ConfirmationDialog extends StatelessWidget {
               const SizedBox(height: 32),
 
               // 圖示
-              Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: colorScheme.primary,
-              ),
+              Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.primary),
               const SizedBox(height: 12),
 
               // 標題
@@ -116,8 +109,7 @@ class ConfirmationDialog extends StatelessWidget {
                               foregroundColor: colorScheme.onSurface.withValues(
                                 alpha: 0.7,
                               ),
-                              backgroundColor: colorScheme
-                                  .surfaceContainerHighest
+                              backgroundColor: colorScheme.surfaceContainerHighest
                                   .withValues(alpha: 0.3),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -145,9 +137,7 @@ class ConfirmationDialog extends StatelessWidget {
                             backgroundColor: colorScheme.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shadowColor: colorScheme.primary.withValues(
-                              alpha: 0.4,
-                            ),
+                            shadowColor: colorScheme.primary.withValues(alpha: 0.4),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),

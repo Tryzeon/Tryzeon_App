@@ -42,8 +42,7 @@ class _SortOptionsDialogContent extends StatefulWidget {
   final Function(bool) onAscendingChange;
 
   @override
-  State<_SortOptionsDialogContent> createState() =>
-      _SortOptionsDialogContentState();
+  State<_SortOptionsDialogContent> createState() => _SortOptionsDialogContentState();
 }
 
 class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
@@ -120,11 +119,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
             ),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            Icons.sort_rounded,
-            color: colorScheme.onPrimary,
-            size: 24,
-          ),
+          child: Icon(Icons.sort_rounded, color: colorScheme.onPrimary, size: 24),
         ),
         const SizedBox(width: 12),
         Text('排序方式', style: textTheme.titleLarge),
@@ -162,9 +157,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
                   )
                 : null,
             borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(color: colorScheme.primary, width: 2)
-                : null,
+            border: isSelected ? Border.all(color: colorScheme.primary, width: 2) : null,
           ),
           child: InkWell(
             onTap: () => _handleSortChange(value),
@@ -173,9 +166,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
               title: Text(
                 label,
                 style: textTheme.titleSmall?.copyWith(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurface,
+                  color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                 ),
               ),
               leading: Radio<String>(

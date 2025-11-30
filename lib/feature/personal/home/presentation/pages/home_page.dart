@@ -37,11 +37,7 @@ class HomePageState extends State<HomePage> {
     final String? clothesPath,
   }) async {
     if (_avatarFile == null) {
-      TopNotification.show(
-        context,
-        message: '請先上傳您的照片',
-        type: NotificationType.warning,
-      );
+      TopNotification.show(context, message: '請先上傳您的照片', type: NotificationType.warning);
       return;
     }
 
@@ -77,11 +73,7 @@ class HomePageState extends State<HomePage> {
           _currentTryonIndex = _tryonImages.length - 1;
         });
 
-        TopNotification.show(
-          context,
-          message: '試穿成功！',
-          type: NotificationType.success,
-        );
+        TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
       } else {
         TopNotification.show(
           context,
@@ -156,11 +148,7 @@ class HomePageState extends State<HomePage> {
         _customAvatarIndex = null;
       });
 
-      TopNotification.show(
-        context,
-        message: '頭像上傳成功',
-        type: NotificationType.success,
-      );
+      TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
     } else {
       TopNotification.show(
         context,
@@ -201,11 +189,7 @@ class HomePageState extends State<HomePage> {
       }
     } catch (e) {
       if (mounted) {
-        TopNotification.show(
-          context,
-          message: '儲存失敗：$e',
-          type: NotificationType.error,
-        );
+        TopNotification.show(context, message: '儲存失敗：$e', type: NotificationType.error);
       }
     }
   }
@@ -233,11 +217,7 @@ class HomePageState extends State<HomePage> {
       }
     } catch (e) {
       if (mounted) {
-        TopNotification.show(
-          context,
-          message: '操作失敗：$e',
-          type: NotificationType.error,
-        );
+        TopNotification.show(context, message: '操作失敗：$e', type: NotificationType.error);
       }
     }
   }
@@ -258,8 +238,7 @@ class HomePageState extends State<HomePage> {
         // 如果刪除的照片是自訂 avatar，清除設定
         if (_customAvatarIndex == deletedIndex) {
           _customAvatarIndex = null;
-        } else if (_customAvatarIndex != null &&
-            _customAvatarIndex! > deletedIndex) {
+        } else if (_customAvatarIndex != null && _customAvatarIndex! > deletedIndex) {
           // 如果自訂 avatar 在刪除照片之後，索引需要 -1
           _customAvatarIndex = _customAvatarIndex! - 1;
         }
@@ -276,11 +255,7 @@ class HomePageState extends State<HomePage> {
       });
 
       if (mounted) {
-        TopNotification.show(
-          context,
-          message: '已刪除試穿照片',
-          type: NotificationType.success,
-        );
+        TopNotification.show(context, message: '已刪除試穿照片', type: NotificationType.success);
       }
     }
   }
@@ -362,11 +337,7 @@ class HomePageState extends State<HomePage> {
               color: Colors.black.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
-              Icons.more_vert_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 24),
           ),
         ),
       ),
@@ -432,9 +403,7 @@ class HomePageState extends State<HomePage> {
           _buildNavButton(
             icon: Icons.arrow_forward_ios_rounded,
             isEnabled: _currentTryonIndex < _tryonImages.length - 1,
-            onTap: _currentTryonIndex < _tryonImages.length - 1
-                ? _nextTryon
-                : null,
+            onTap: _currentTryonIndex < _tryonImages.length - 1 ? _nextTryon : null,
           ),
         ],
       ),
@@ -461,9 +430,7 @@ class HomePageState extends State<HomePage> {
           ),
           child: Icon(
             icon,
-            color: isEnabled
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.5),
+            color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
             size: 24,
           ),
         ),
@@ -538,10 +505,7 @@ class HomePageState extends State<HomePage> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                 child: Column(
                   children: [
                     // 標題
@@ -593,9 +557,7 @@ class HomePageState extends State<HomePage> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: colorScheme.primary.withValues(
-                                  alpha: 0.15,
-                                ),
+                                color: colorScheme.primary.withValues(alpha: 0.15),
                                 spreadRadius: 0,
                                 blurRadius: 30,
                                 offset: const Offset(0, 10),
@@ -636,8 +598,7 @@ class HomePageState extends State<HomePage> {
                                                 LinearGradient(
                                                   colors: [
                                                     Colors.white,
-                                                    colorScheme
-                                                        .surfaceContainer,
+                                                    colorScheme.surfaceContainer,
                                                   ],
                                                 ).createShader(bounds),
                                             child: const Text(
@@ -695,9 +656,7 @@ class HomePageState extends State<HomePage> {
                             ? []
                             : [
                                 BoxShadow(
-                                  color: colorScheme.secondary.withValues(
-                                    alpha: 0.3,
-                                  ),
+                                  color: colorScheme.secondary.withValues(alpha: 0.3),
                                   blurRadius: 15,
                                   offset: const Offset(0, 8),
                                 ),

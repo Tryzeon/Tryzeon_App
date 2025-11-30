@@ -11,8 +11,7 @@ class PersonalSettingsPage extends BaseSettingsPage {
   BaseSettingsPageState createState() => _PersonalSettingsPageState();
 }
 
-class _PersonalSettingsPageState
-    extends BaseSettingsPageState<PersonalSettingsPage> {
+class _PersonalSettingsPageState extends BaseSettingsPageState<PersonalSettingsPage> {
   @override
   List<SettingsMenuItem> buildMenuItems() {
     return [
@@ -51,9 +50,7 @@ class _PersonalSettingsPageState
   Future<void> _navigateToProfile() async {
     final updated = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (final context) => const PersonalProfileSettingsPage(),
-      ),
+      MaterialPageRoute(builder: (final context) => const PersonalProfileSettingsPage()),
     );
     if (updated == true) {
       markAsChanged();

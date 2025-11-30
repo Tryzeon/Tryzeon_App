@@ -36,10 +36,7 @@ class ProductTypeFilter extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: isSelected
                           ? LinearGradient(
-                              colors: [
-                                colorScheme.primary,
-                                colorScheme.secondary,
-                              ],
+                              colors: [colorScheme.primary, colorScheme.secondary],
                             )
                           : null,
                       color: isSelected ? null : colorScheme.surfaceContainer,
@@ -62,12 +59,8 @@ class ProductTypeFilter extends StatelessWidget {
                   Text(
                     type,
                     style: textTheme.bodyLarge?.copyWith(
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurface,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                     ),
                   ),
                 ],

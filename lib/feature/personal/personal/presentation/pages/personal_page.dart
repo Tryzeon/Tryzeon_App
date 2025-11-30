@@ -51,9 +51,7 @@ class _PersonalPageState extends State<PersonalPage> {
       });
     }
 
-    final result = await UserProfileService.getUserProfile(
-      forceRefresh: forceRefresh,
-    );
+    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
     if (!mounted) return;
 
     setState(() {
@@ -72,9 +70,7 @@ class _PersonalPageState extends State<PersonalPage> {
     }
 
     final categories = WardrobeService.getWardrobeTypesList();
-    final result = await WardrobeService.getWardrobeItem(
-      forceRefresh: forceRefresh,
-    );
+    final result = await WardrobeService.getWardrobeItem(forceRefresh: forceRefresh);
 
     if (!mounted) return;
 
@@ -176,10 +172,7 @@ class _PersonalPageState extends State<PersonalPage> {
                             padding: const EdgeInsets.only(right: 20.0),
                             child: ShaderMask(
                               shaderCallback: (final bounds) => LinearGradient(
-                                colors: [
-                                  colorScheme.primary,
-                                  colorScheme.secondary,
-                                ],
+                                colors: [colorScheme.primary, colorScheme.secondary],
                               ).createShader(bounds),
                               child: Text(
                                 '您好, $username',
@@ -241,23 +234,14 @@ class _PersonalPageState extends State<PersonalPage> {
 
               // 我的衣櫃標題
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.checkroom_rounded,
-                      color: colorScheme.primary,
-                      size: 24,
-                    ),
+                    Icon(Icons.checkroom_rounded, color: colorScheme.primary, size: 24),
                     const SizedBox(width: 8),
                     Text(
                       '我的衣櫃',
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -304,11 +288,7 @@ class _PersonalPageState extends State<PersonalPage> {
               child: SizedBox(
                 width: 56,
                 height: 56,
-                child: Icon(
-                  Icons.add_rounded,
-                  color: colorScheme.onPrimary,
-                  size: 28,
-                ),
+                child: Icon(Icons.add_rounded, color: colorScheme.onPrimary, size: 28),
               ),
             ),
           ),
@@ -343,9 +323,7 @@ class _PersonalPageState extends State<PersonalPage> {
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
         gradient: isSelected
-            ? LinearGradient(
-                colors: [colorScheme.primary, colorScheme.secondary],
-              )
+            ? LinearGradient(colors: [colorScheme.primary, colorScheme.secondary])
             : null,
         color: isSelected ? null : colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(20),
@@ -374,9 +352,7 @@ class _PersonalPageState extends State<PersonalPage> {
               child: Text(
                 category,
                 style: textTheme.bodyMedium?.copyWith(
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurface,
+                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   fontSize: 14,
                   height: 1.0,
@@ -394,16 +370,12 @@ class _PersonalPageState extends State<PersonalPage> {
     final textTheme = Theme.of(context).textTheme;
 
     if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: colorScheme.primary),
-      );
+      return Center(child: CircularProgressIndicator(color: colorScheme.primary));
     }
 
     final filteredWardrobeItem = selectedCategory == '全部'
         ? wardrobeItem
-        : wardrobeItem
-              .where((final item) => item.category == selectedCategory)
-              .toList();
+        : wardrobeItem.where((final item) => item.category == selectedCategory).toList();
 
     if (filteredWardrobeItem.isEmpty) {
       return Center(

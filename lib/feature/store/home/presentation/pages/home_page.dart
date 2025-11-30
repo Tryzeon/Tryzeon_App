@@ -39,9 +39,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
       _isLoading = true;
     });
 
-    final name = await StoreProfileService.getStoreName(
-      forceRefresh: forceRefresh,
-    );
+    final name = await StoreProfileService.getStoreName(forceRefresh: forceRefresh);
 
     setState(() {
       storeName = name;
@@ -165,9 +163,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                           Text(
                             '歡迎回來，$storeName',
                             style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -179,16 +175,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        icon: Icon(
-                          Icons.settings_rounded,
-                          color: colorScheme.primary,
-                        ),
+                        icon: Icon(Icons.settings_rounded, color: colorScheme.primary),
                         onPressed: () async {
                           final hasChanges = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
-                              builder: (final context) =>
-                                  const StoreSettingsPage(),
+                              builder: (final context) => const StoreSettingsPage(),
                             ),
                           );
                           if (hasChanges == true) {
@@ -204,11 +196,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
               // 內容區域
               Expanded(
                 child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: colorScheme.primary,
-                        ),
-                      )
+                    ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                     : RefreshIndicator(
                         onRefresh: () => _loadStoreData(forceRefresh: true),
                         color: colorScheme.primary,
@@ -241,9 +229,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                   const Spacer(),
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: colorScheme.primary.withValues(
-                                        alpha: 0.1,
-                                      ),
+                                      color: colorScheme.primary.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: IconButton(
@@ -262,42 +248,43 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                 child: products.isEmpty
                                     ? Center(
                                         child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Container(
                                               width: 100,
                                               height: 100,
                                               decoration: BoxDecoration(
-                                                color: colorScheme.primary
-                                                    .withValues(alpha: 0.1),
+                                                color: colorScheme.primary.withValues(
+                                                  alpha: 0.1,
+                                                ),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
                                                 Icons.inventory_2_outlined,
                                                 size: 50,
-                                                color: colorScheme.primary
-                                                    .withValues(alpha: 0.5),
+                                                color: colorScheme.primary.withValues(
+                                                  alpha: 0.5,
+                                                ),
                                               ),
                                             ),
                                             const SizedBox(height: 24),
                                             Text(
                                               '還沒有商品',
-                                              style: textTheme.titleSmall
-                                                  ?.copyWith(
-                                                    color: colorScheme.onSurface
-                                                        .withValues(alpha: 0.6),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
+                                              style: textTheme.titleSmall?.copyWith(
+                                                color: colorScheme.onSurface.withValues(
+                                                  alpha: 0.6,
+                                                ),
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
                                               '點擊右下角按鈕新增商品',
-                                              style: textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: colorScheme.onSurface
-                                                        .withValues(alpha: 0.5),
-                                                  ),
+                                              style: textTheme.bodyMedium?.copyWith(
+                                                color: colorScheme.onSurface.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -311,14 +298,13 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                               childAspectRatio: 0.75,
                                             ),
                                         itemCount: products.length,
-                                        itemBuilder:
-                                            (final context, final index) {
-                                              final product = products[index];
-                                              return StoreProductCard(
-                                                product: product,
-                                                onUpdate: _loadStoreProducts,
-                                              );
-                                            },
+                                        itemBuilder: (final context, final index) {
+                                          final product = products[index];
+                                          return StoreProductCard(
+                                            product: product,
+                                            onUpdate: _loadStoreProducts,
+                                          );
+                                        },
                                       ),
                               ),
                             ],
@@ -353,9 +339,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (final context) => const AddProductPage(),
-                ),
+                MaterialPageRoute(builder: (final context) => const AddProductPage()),
               ).then((final success) {
                 if (success == true) {
                   _loadStoreProducts();
@@ -366,11 +350,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
             child: SizedBox(
               width: 56,
               height: 56,
-              child: Icon(
-                Icons.add_rounded,
-                color: colorScheme.onPrimary,
-                size: 28,
-              ),
+              child: Icon(Icons.add_rounded, color: colorScheme.onPrimary, size: 28),
             ),
           ),
         ),

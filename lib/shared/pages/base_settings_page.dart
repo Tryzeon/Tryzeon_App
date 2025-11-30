@@ -24,8 +24,7 @@ abstract class BaseSettingsPage extends StatefulWidget {
   const BaseSettingsPage({super.key});
 }
 
-abstract class BaseSettingsPageState<T extends BaseSettingsPage>
-    extends State<T> {
+abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T> {
   bool _hasChanges = false;
 
   // 子類需要實作這個方法
@@ -151,10 +150,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            '設定',
-            style: textTheme.displaySmall?.copyWith(letterSpacing: 0.5),
-          ),
+          Text('設定', style: textTheme.displaySmall?.copyWith(letterSpacing: 0.5)),
         ],
       ),
     );
@@ -259,10 +255,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage>
             children: [
               Icon(Icons.logout_rounded, color: colorScheme.error, size: 24),
               const SizedBox(width: 8),
-              Text(
-                '登出',
-                style: textTheme.titleSmall?.copyWith(color: colorScheme.error),
-              ),
+              Text('登出', style: textTheme.titleSmall?.copyWith(color: colorScheme.error)),
             ],
           ),
         ),

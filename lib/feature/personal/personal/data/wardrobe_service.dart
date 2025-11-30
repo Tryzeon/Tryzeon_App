@@ -74,9 +74,7 @@ class WardrobeService {
           .uploadBinary(
             imagePath,
             bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg'
-            ),
+            fileOptions: const FileOptions(contentType: 'image/jpeg'),
           );
 
       // 2. 保存到本地緩存
@@ -99,9 +97,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<void>> deleteWardrobeItem(
-    final WardrobeItem item,
-  ) async {
+  static Future<Result<void>> deleteWardrobeItem(final WardrobeItem item) async {
     try {
       // 1. 刪除 DB 記錄
       await _supabase.from(_wardrobeTable).delete().eq('id', item.id!);
@@ -121,9 +117,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<File>> loadWardrobeItemImage(
-    final String imagePath,
-  ) async {
+  static Future<Result<File>> loadWardrobeItemImage(final String imagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedImage = await CacheService.getImage(imagePath);
@@ -146,9 +140,7 @@ class WardrobeService {
   }
 
   static String getWardrobeTypesEnglishCode(final String nameZh) {
-    final type = WardrobeItemType.all
-        .where((final t) => t.zh == nameZh)
-        .firstOrNull;
+    final type = WardrobeItemType.all.where((final t) => t.zh == nameZh).firstOrNull;
     return type?.en ?? nameZh;
   }
 }

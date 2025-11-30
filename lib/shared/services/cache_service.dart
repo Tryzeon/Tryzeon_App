@@ -46,10 +46,7 @@ class CacheService {
   ///
   /// [cacheKey] 緩存的鍵
   /// [data] 要緩存的列表
-  static Future<void> saveList(
-    final String cacheKey,
-    final List<dynamic> data,
-  ) async {
+  static Future<void> saveList(final String cacheKey, final List<dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final jsonString = jsonEncode(data);
@@ -95,10 +92,7 @@ class CacheService {
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
   ///
   /// Returns 保存後的檔案
-  static Future<File> saveImage(
-    final Uint8List bytes,
-    final String filePath,
-  ) async {
+  static Future<File> saveImage(final Uint8List bytes, final String filePath) async {
     try {
       final baseDir = await getApplicationDocumentsDirectory();
 

@@ -4,12 +4,7 @@ import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/result.dart';
 
 class ProductSize {
-  ProductSize({
-    this.id,
-    this.productId,
-    required this.name,
-    required this.measurements,
-  });
+  ProductSize({this.id, this.productId, required this.name, required this.measurements});
 
   factory ProductSize.fromJson(final Map<String, dynamic> json) {
     return ProductSize(
@@ -101,10 +96,8 @@ class Product {
       'price': price,
       'image_path': imagePath,
       'purchase_link': purchaseLink,
-      'created_at':
-          createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
-      'updated_at':
-          updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'created_at': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'tryon_count': tryonCount,
       'purchase_click_count': purchaseClickCount,
     };

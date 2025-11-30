@@ -27,9 +27,7 @@ class _StoreEntryState extends State<StoreEntry> {
   }
 
   Future<void> _checkStoreInfo() async {
-    final result = await StoreProfileService.getStoreProfile(
-      forceRefresh: true,
-    );
+    final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
     if (!mounted) return;
 
     setState(() {

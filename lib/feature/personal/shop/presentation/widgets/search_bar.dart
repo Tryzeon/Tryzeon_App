@@ -66,10 +66,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                 ),
                 filled: true,
                 fillColor: colorScheme.surface,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
               onChanged: (final value) => setState(() {}),
               onSubmitted: widget.onSearch,
@@ -95,15 +92,8 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
               onTap: () => widget.onSearch(_controller.text),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Icon(
-                  Icons.search,
-                  color: colorScheme.onPrimary,
-                  size: 22,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Icon(Icons.search, color: colorScheme.onPrimary, size: 22),
               ),
             ),
           ),

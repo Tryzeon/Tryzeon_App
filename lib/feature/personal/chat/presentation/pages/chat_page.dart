@@ -6,11 +6,7 @@ import '../../data/chat_service.dart';
 
 // Question data structure
 class Question {
-  const Question({
-    required this.id,
-    required this.text,
-    required this.quickReplies,
-  });
+  const Question({required this.id, required this.text, required this.quickReplies});
   final String id;
   final String text;
   final List<String> quickReplies;
@@ -39,9 +35,7 @@ class ChatBubble extends StatelessWidget {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -56,12 +50,8 @@ class ChatBubble extends StatelessWidget {
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
-            bottomLeft: isUser
-                ? const Radius.circular(20)
-                : const Radius.circular(4),
-            bottomRight: isUser
-                ? const Radius.circular(4)
-                : const Radius.circular(20),
+            bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(4),
+            bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(20),
           ),
           boxShadow: [
             BoxShadow(
@@ -131,26 +121,10 @@ class ChatBubble extends StatelessWidget {
 // Q&A configuration
 class QAConfig {
   static const List<Question> questions = [
-    Question(
-      id: 'when',
-      text: '什麼時候要穿？',
-      quickReplies: ['早上', '下午', '晚上', '週末', '上班日'],
-    ),
-    Question(
-      id: 'where',
-      text: '在哪穿？',
-      quickReplies: ['辦公室', '咖啡廳', '戶外', '約會', '派對'],
-    ),
-    Question(
-      id: 'who',
-      text: '和誰？',
-      quickReplies: ['自己', '朋友', '同事', '情人', '家人'],
-    ),
-    Question(
-      id: 'what',
-      text: '要做什麼？',
-      quickReplies: ['工作', '休閒', '運動', '聚會', '拍照'],
-    ),
+    Question(id: 'when', text: '什麼時候要穿？', quickReplies: ['早上', '下午', '晚上', '週末', '上班日']),
+    Question(id: 'where', text: '在哪穿？', quickReplies: ['辦公室', '咖啡廳', '戶外', '約會', '派對']),
+    Question(id: 'who', text: '和誰？', quickReplies: ['自己', '朋友', '同事', '情人', '家人']),
+    Question(id: 'what', text: '要做什麼？', quickReplies: ['工作', '休閒', '運動', '聚會', '拍照']),
     Question(
       id: 'how',
       text: '想要什麼風格？',
@@ -200,9 +174,7 @@ class QuickReplyButton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Text(
                 text,
-                style: textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                ),
+                style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
               ),
             ),
           ),
@@ -247,11 +219,7 @@ class _ChatPageState extends State<ChatPage> {
       final question = QAConfig.questions[currentQuestionIndex];
       setState(() {
         messages.add(
-          ChatMessage(
-            text: question.text,
-            isUser: false,
-            questionId: question.id,
-          ),
+          ChatMessage(text: question.text, isUser: false, questionId: question.id),
         );
         isWaitingForAnswer = true;
       });
@@ -341,8 +309,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildQuickReplies() {
-    if (!isWaitingForAnswer ||
-        currentQuestionIndex >= QAConfig.questions.length) {
+    if (!isWaitingForAnswer || currentQuestionIndex >= QAConfig.questions.length) {
       return const SizedBox.shrink();
     }
 
@@ -422,10 +389,7 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               // 自訂 AppBar
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
                   boxShadow: [
@@ -462,19 +426,14 @@ class _ChatPageState extends State<ChatPage> {
                           Text(
                             'AI 時尚助手',
                             style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: Icon(
-                        Icons.refresh_rounded,
-                        color: colorScheme.primary,
-                      ),
+                      icon: Icon(Icons.refresh_rounded, color: colorScheme.primary),
                       onPressed: () async {
                         final confirmed = await ConfirmationDialog.show(
                           context: context,
@@ -494,10 +453,7 @@ class _ChatPageState extends State<ChatPage> {
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                   itemCount: messages.length,
                   itemBuilder: (final context, final index) {
                     return ChatBubble(message: messages[index]);
@@ -512,10 +468,7 @@ class _ChatPageState extends State<ChatPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(28),
@@ -540,9 +493,7 @@ class _ChatPageState extends State<ChatPage> {
                             decoration: InputDecoration(
                               hintText: isWaitingForAnswer ? '請輸入您的回答...' : '',
                               hintStyle: textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.5,
-                                ),
+                                color: colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                               enabled: !isLoadingRecommendation,
                               border: InputBorder.none,
@@ -563,10 +514,7 @@ class _ChatPageState extends State<ChatPage> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: isLoadingRecommendation
-                                ? [
-                                    colorScheme.outlineVariant,
-                                    colorScheme.outline,
-                                  ]
+                                ? [colorScheme.outlineVariant, colorScheme.outline]
                                 : [colorScheme.primary, colorScheme.secondary],
                           ),
                           shape: BoxShape.circle,

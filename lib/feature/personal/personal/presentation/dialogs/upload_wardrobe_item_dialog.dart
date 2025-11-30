@@ -15,8 +15,7 @@ class UploadWardrobeItemDialog extends StatefulWidget {
   final List<String> categories;
 
   @override
-  State<UploadWardrobeItemDialog> createState() =>
-      _UploadWardrobeItemDialogState();
+  State<UploadWardrobeItemDialog> createState() => _UploadWardrobeItemDialogState();
 }
 
 class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
@@ -130,10 +129,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                     decoration: BoxDecoration(
                       gradient: _selectedCategory != null && !_isUploading
                           ? LinearGradient(
-                              colors: [
-                                colorScheme.primary,
-                                colorScheme.secondary,
-                              ],
+                              colors: [colorScheme.primary, colorScheme.secondary],
                             )
                           : null,
                       color: _selectedCategory == null || _isUploading
@@ -215,9 +211,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
             return Container(
               decoration: BoxDecoration(
                 gradient: isSelected
-                    ? LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      )
+                    ? LinearGradient(colors: [colorScheme.primary, colorScheme.secondary])
                     : null,
                 color: isSelected ? null : colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(20),
@@ -232,19 +226,12 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     child: Text(
                       category,
                       style: textTheme.bodyMedium?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimary
-                            : colorScheme.onSurface,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
+                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         fontSize: 14,
                       ),
                     ),
@@ -327,10 +314,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                     onTap: () => _toggleTag(tag),
                     borderRadius: BorderRadius.circular(20),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -343,11 +327,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          Icon(
-                            Icons.close,
-                            color: colorScheme.onPrimary,
-                            size: 14,
-                          ),
+                          Icon(Icons.close, color: colorScheme.onPrimary, size: 14),
                         ],
                       ),
                     ),
@@ -475,11 +455,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      Icons.add,
-                      color: colorScheme.onPrimary,
-                      size: 20,
-                    ),
+                    child: Icon(Icons.add, color: colorScheme.onPrimary, size: 20),
                   ),
                 ),
               ),

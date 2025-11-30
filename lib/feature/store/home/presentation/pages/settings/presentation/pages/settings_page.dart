@@ -63,9 +63,7 @@ class _StoreSettingsPageState extends BaseSettingsPageState<StoreSettingsPage> {
   Future<void> _navigateToProfile() async {
     final updated = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (final context) => const StoreProfileSettingsPage(),
-      ),
+      MaterialPageRoute(builder: (final context) => const StoreProfileSettingsPage()),
     );
     if (updated == true) {
       markAsChanged();

@@ -193,9 +193,7 @@ class _ShopPageState extends State<ShopPage> {
                 Text(
                   label,
                   style: textTheme.labelLarge?.copyWith(
-                    color: isActive
-                        ? colorScheme.onPrimary
-                        : colorScheme.primary,
+                    color: isActive ? colorScheme.onPrimary : colorScheme.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -289,9 +287,7 @@ class _ShopPageState extends State<ShopPage> {
                             '發現時尚新品',
                             style: textTheme.bodyMedium?.copyWith(
                               fontSize: 12,
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -316,10 +312,7 @@ class _ShopPageState extends State<ShopPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: ShopSearchBar(
                             onSearch: (final query) {
-                              setState(
-                                () =>
-                                    _searchQuery = query.isEmpty ? null : query,
-                              );
+                              setState(() => _searchQuery = query.isEmpty ? null : query);
                               return _loadProducts();
                             },
                           ),
@@ -360,10 +353,7 @@ class _ShopPageState extends State<ShopPage> {
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [
-                                      colorScheme.primary,
-                                      colorScheme.secondary,
-                                    ],
+                                    colors: [colorScheme.primary, colorScheme.secondary],
                                   ),
                                   borderRadius: BorderRadius.circular(2),
                                 ),

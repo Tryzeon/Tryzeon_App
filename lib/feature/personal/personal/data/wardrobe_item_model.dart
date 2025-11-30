@@ -42,12 +42,7 @@ class WardrobeItem {
   final List<String> tags;
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'image_path': imagePath,
-      'category': category,
-      'tags': tags,
-    };
+    return {'id': id, 'image_path': imagePath, 'category': category, 'tags': tags};
   }
 
   // 按需載入圖片，使用快取機制

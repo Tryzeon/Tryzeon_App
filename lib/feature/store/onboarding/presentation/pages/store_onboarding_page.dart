@@ -26,11 +26,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (!mounted) return;
-      TopNotification.show(
-        context,
-        message: '無法開啟表單連結',
-        type: NotificationType.error,
-      );
+      TopNotification.show(context, message: '無法開啟表單連結', type: NotificationType.error);
     }
   }
 
@@ -137,10 +133,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        icon: Icon(
-                          Icons.person_rounded,
-                          color: colorScheme.primary,
-                        ),
+                        icon: Icon(Icons.person_rounded, color: colorScheme.primary),
                         onPressed: _switchToPersonalAccount,
                         tooltip: '切換回個人帳號',
                       ),
@@ -152,10 +145,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        icon: Icon(
-                          Icons.logout_rounded,
-                          color: colorScheme.primary,
-                        ),
+                        icon: Icon(Icons.logout_rounded, color: colorScheme.primary),
                         onPressed: _handleLogout,
                         tooltip: '登出',
                       ),
@@ -198,9 +188,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     gradient: LinearGradient(
                                       colors: [
                                         colorScheme.tertiary,
-                                        colorScheme.tertiary.withValues(
-                                          alpha: 0.8,
-                                        ),
+                                        colorScheme.tertiary.withValues(alpha: 0.8),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(16),
@@ -231,9 +219,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: colorScheme.primary.withValues(
-                                          alpha: 0.3,
-                                        ),
+                                        color: colorScheme.primary.withValues(alpha: 0.3),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       ),
@@ -250,8 +236,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                           vertical: 16,
                                         ),
                                         child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Icon(
                                               Icons.open_in_new_rounded,
@@ -261,11 +246,9 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                             const SizedBox(width: 12),
                                             Text(
                                               '開啟申請表單',
-                                              style: textTheme.titleSmall
-                                                  ?.copyWith(
-                                                    color:
-                                                        colorScheme.onPrimary,
-                                                  ),
+                                              style: textTheme.titleSmall?.copyWith(
+                                                color: colorScheme.onPrimary,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -280,14 +263,10 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                     vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.error.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: colorScheme.error.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: colorScheme.error.withValues(
-                                        alpha: 0.3,
-                                      ),
+                                      color: colorScheme.error.withValues(alpha: 0.3),
                                       width: 1.5,
                                     ),
                                   ),
@@ -337,9 +316,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        colorScheme.primary.withValues(
-                                          alpha: 0.7,
-                                        ),
+                                        colorScheme.primary.withValues(alpha: 0.7),
                                         colorScheme.primary,
                                       ],
                                     ),
@@ -354,13 +331,9 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        '審核時間',
-                                        style: textTheme.titleMedium,
-                                      ),
+                                      Text('審核時間', style: textTheme.titleMedium),
                                       const SizedBox(height: 4),
                                       Text(
                                         '填寫完表單後，請稍等 7-14 個工作天進行審核',

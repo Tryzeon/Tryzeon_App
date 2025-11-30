@@ -4,11 +4,7 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../dialogs/product_detail_dialog.dart';
 
 class StoreProductCard extends StatelessWidget {
-  const StoreProductCard({
-    super.key,
-    required this.product,
-    required this.onUpdate,
-  });
+  const StoreProductCard({super.key, required this.product, required this.onUpdate});
   final Product product;
   final VoidCallback onUpdate;
 
@@ -39,22 +35,17 @@ class StoreProductCard extends StatelessWidget {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 ),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(10),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
                   child: FutureBuilder(
                     future: product.loadImage(),
                     builder: (final context, final snapshot) {
                       final result = snapshot.data;
-                      if (result != null &&
-                          result.isSuccess &&
-                          result.data != null) {
+                      if (result != null && result.isSuccess && result.data != null) {
                         return Image.file(
                           result.data!,
                           fit: BoxFit.cover,
-                          errorBuilder:
-                              (final context, final error, final stackTrace) =>
-                                  const Icon(Icons.image_not_supported),
+                          errorBuilder: (final context, final error, final stackTrace) =>
+                              const Icon(Icons.image_not_supported),
                         );
                       }
                       if (result != null && !result.isSuccess) {
@@ -66,10 +57,7 @@ class StoreProductCard extends StatelessWidget {
                           );
                         });
                         return Center(
-                          child: Icon(
-                            Icons.error_outline,
-                            color: colorScheme.error,
-                          ),
+                          child: Icon(Icons.error_outline, color: colorScheme.error),
                         );
                       }
                       return const Center(child: CircularProgressIndicator());
@@ -99,9 +87,7 @@ class StoreProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '\$${product.price}',
-                    style: textTheme.labelLarge?.copyWith(
-                      color: colorScheme.primary,
-                    ),
+                    style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -120,10 +106,7 @@ class StoreProductCard extends StatelessWidget {
                         color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '${product.purchaseClickCount}',
-                        style: textTheme.bodySmall,
-                      ),
+                      Text('${product.purchaseClickCount}', style: textTheme.bodySmall),
                     ],
                   ),
                 ],

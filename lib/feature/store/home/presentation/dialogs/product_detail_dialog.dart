@@ -32,12 +32,8 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.product.name);
-    priceController = TextEditingController(
-      text: widget.product.price.toString(),
-    );
-    purchaseLinkController = TextEditingController(
-      text: widget.product.purchaseLink,
-    );
+    priceController = TextEditingController(text: widget.product.price.toString());
+    purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
     selectedTypes = Set<String>.from(widget.product.types);
     _loadProductTypes();
   }
@@ -91,11 +87,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
     if (result.isSuccess) {
       Navigator.pop(context, true);
-      TopNotification.show(
-        context,
-        message: '商品刪除成功',
-        type: NotificationType.success,
-      );
+      TopNotification.show(context, message: '商品刪除成功', type: NotificationType.success);
     } else {
       TopNotification.show(
         context,
@@ -108,20 +100,12 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   Future<void> _updateProduct() async {
     final price = int.tryParse(priceController.text);
     if (price == null) {
-      TopNotification.show(
-        context,
-        message: '請輸入有效的價格',
-        type: NotificationType.warning,
-      );
+      TopNotification.show(context, message: '請輸入有效的價格', type: NotificationType.warning);
       return;
     }
 
     if (selectedTypes.isEmpty) {
-      TopNotification.show(
-        context,
-        message: '請至少選擇一個類型',
-        type: NotificationType.warning,
-      );
+      TopNotification.show(context, message: '請至少選擇一個類型', type: NotificationType.warning);
       return;
     }
 
@@ -147,11 +131,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
     if (result.isSuccess) {
       Navigator.pop(context, true);
-      TopNotification.show(
-        context,
-        message: '商品更新成功',
-        type: NotificationType.success,
-      );
+      TopNotification.show(context, message: '商品更新成功', type: NotificationType.success);
     } else {
       TopNotification.show(
         context,
@@ -244,9 +224,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                     // 圖片區域
                     GestureDetector(
                       onTap: () async {
-                        final image = await ImagePickerHelper.pickImage(
-                          context,
-                        );
+                        final image = await ImagePickerHelper.pickImage(context);
                         if (image != null) {
                           setState(() {
                             newImage = image;
@@ -259,10 +237,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: colorScheme.outlineVariant,
-                            width: 1,
-                          ),
+                          border: Border.all(color: colorScheme.outlineVariant, width: 1),
                         ),
                         child: Stack(
                           children: [
@@ -278,8 +253,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                       future: widget.product.loadImage(),
                                       builder: (final context, final snapshot) {
                                         final result = snapshot.data;
-                                        if (result != null &&
-                                            result.isSuccess) {
+                                        if (result != null && result.isSuccess) {
                                           return Image.file(
                                             result.data!,
                                             fit: BoxFit.contain,
@@ -298,20 +272,18 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                 ),
                                           );
                                         }
-                                        if (result != null &&
-                                            !result.isSuccess) {
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) {
-                                                if (mounted) {
-                                                  TopNotification.show(
-                                                    context,
-                                                    message:
-                                                        result.errorMessage!,
-                                                    type:
-                                                        NotificationType.error,
-                                                  );
-                                                }
-                                              });
+                                        if (result != null && !result.isSuccess) {
+                                          WidgetsBinding.instance.addPostFrameCallback((
+                                            _,
+                                          ) {
+                                            if (mounted) {
+                                              TopNotification.show(
+                                                context,
+                                                message: result.errorMessage!,
+                                                type: NotificationType.error,
+                                              );
+                                            }
+                                          });
                                           return Center(
                                             child: Icon(
                                               Icons.error_outline,
@@ -454,10 +426,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
@@ -508,20 +477,13 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                 selectedColor: colorScheme.primary,
                 checkmarkColor: colorScheme.onPrimary,
                 labelStyle: textTheme.bodyMedium?.copyWith(
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurface,
+                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.outlineVariant,
+                    color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
                   ),
                 ),
               );

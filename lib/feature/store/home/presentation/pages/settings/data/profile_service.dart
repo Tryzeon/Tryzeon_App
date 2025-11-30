@@ -68,11 +68,7 @@ class StoreProfileService {
         return Result.failure('使用者獲取失敗');
       }
 
-      final data = {
-        'store_id': store.id,
-        'name': name,
-        'address': address,
-      };
+      final data = {'store_id': store.id, 'name': name, 'address': address};
 
       final response = await _supabase
           .from(_storesProfileTable)
@@ -94,9 +90,7 @@ class StoreProfileService {
   static Future<Result<File>> loadLogo(final String storeId) async {
     try {
       // 1. 先檢查本地資料夾是否有緩存
-      final cachedLogo = await CacheService.getImages(
-        relativePath: '$storeId/logo',
-      );
+      final cachedLogo = await CacheService.getImages(relativePath: '$storeId/logo');
 
       if (cachedLogo.isNotEmpty) {
         return Result.success(data: cachedLogo.first);
@@ -112,9 +106,7 @@ class StoreProfileService {
       }
 
       final logoPath = '$storeId/logo/${logoFiles.first.name}';
-      final bytes = await _supabase.storage
-          .from(_logoBucket)
-          .download(logoPath);
+      final bytes = await _supabase.storage.from(_logoBucket).download(logoPath);
 
       // 保存到本地緩存
       final logo = await CacheService.saveImage(bytes, logoPath);
@@ -146,9 +138,7 @@ class StoreProfileService {
           .uploadBinary(
             logoPath,
             bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-            ),
+            fileOptions: const FileOptions(contentType: 'image/jpeg'),
           );
 
       // 3. 保存新的 Logo 到本地
@@ -183,11 +173,7 @@ class StoreProfileService {
 }
 
 class StoreProfile {
-  StoreProfile({
-    required this.storeId,
-    required this.name,
-    required this.address,
-  });
+  StoreProfile({required this.storeId, required this.name, required this.address});
 
   factory StoreProfile.fromJson(final Map<String, dynamic> json) {
     return StoreProfile(

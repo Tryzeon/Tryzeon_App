@@ -1,7 +1,5 @@
 class AdService {
-  static Future<List<String>> getAdImages({
-    final bool forceRefresh = false,
-  }) async {
+  static Future<List<String>> getAdImages({final bool forceRefresh = false}) async {
     if (forceRefresh) {
       // clear cache
     }

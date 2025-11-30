@@ -77,11 +77,7 @@ class UserProfileService {
 }
 
 class UserProfile {
-  UserProfile({
-    required this.userId,
-    required this.name,
-    required this.measurements,
-  });
+  UserProfile({required this.userId, required this.name, required this.measurements});
 
   factory UserProfile.fromJson(final Map<String, dynamic> json) {
     return UserProfile(

@@ -103,11 +103,7 @@ class _ProductCardState extends State<ProductCard> {
     final product = widget.product;
 
     if (product.purchaseLink.isEmpty) {
-      TopNotification.show(
-        context,
-        message: '此商品尚無購買連結',
-        type: NotificationType.info,
-      );
+      TopNotification.show(context, message: '此商品尚無購買連結', type: NotificationType.info);
       return;
     }
 
@@ -115,11 +111,7 @@ class _ProductCardState extends State<ProductCard> {
     if (!await canLaunchUrl(url)) {
       if (!mounted) return;
 
-      TopNotification.show(
-        context,
-        message: '無法開啟購買連結',
-        type: NotificationType.error,
-      );
+      TopNotification.show(context, message: '無法開啟購買連結', type: NotificationType.error);
       return;
     }
 
@@ -159,11 +151,7 @@ class _ProductCardState extends State<ProductCard> {
                             fit: BoxFit.cover,
                             width: double.infinity,
                             loadingBuilder:
-                                (
-                                  final context,
-                                  final child,
-                                  final loadingProgress,
-                                ) {
+                                (final context, final child, final loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Center(
                                     child: CircularProgressIndicator(
@@ -172,14 +160,11 @@ class _ProductCardState extends State<ProductCard> {
                                   );
                                 },
                             errorBuilder:
-                                (
-                                  final context,
-                                  final error,
-                                  final stackTrace,
-                                ) => Container(
-                                  color: colorScheme.surfaceContainer,
-                                  child: const Icon(Icons.image_not_supported),
-                                ),
+                                (final context, final error, final stackTrace) =>
+                                    Container(
+                                      color: colorScheme.surfaceContainer,
+                                      child: const Icon(Icons.image_not_supported),
+                                    ),
                           )
                         : Container(
                             color: colorScheme.surfaceContainer,
@@ -243,9 +228,7 @@ class _ProductCardState extends State<ProductCard> {
                   const SizedBox(height: 4),
                   Text(
                     '\$${product.price}',
-                    style: textTheme.labelLarge?.copyWith(
-                      color: colorScheme.primary,
-                    ),
+                    style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                   ),
                   Text(
                     product.storeName!,

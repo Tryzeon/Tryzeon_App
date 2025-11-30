@@ -8,8 +8,7 @@ class StoreProfileSettingsPage extends StatefulWidget {
   const StoreProfileSettingsPage({super.key});
 
   @override
-  State<StoreProfileSettingsPage> createState() =>
-      _StoreProfileSettingsPageState();
+  State<StoreProfileSettingsPage> createState() => _StoreProfileSettingsPageState();
 }
 
 class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
@@ -32,9 +31,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       _isLoading = true;
     });
 
-    final result = await StoreProfileService.getStoreProfile(
-      forceRefresh: forceRefresh,
-    );
+    final result = await StoreProfileService.getStoreProfile(forceRefresh: forceRefresh);
 
     if (!mounted) return;
 
@@ -75,11 +72,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
     if (result.isSuccess) {
       Navigator.pop(context, true);
-      TopNotification.show(
-        context,
-        message: '店家資訊已更新',
-        type: NotificationType.success,
-      );
+      TopNotification.show(context, message: '店家資訊已更新', type: NotificationType.success);
     } else {
       TopNotification.show(
         context,
@@ -107,11 +100,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     });
 
     if (result.isSuccess) {
-      TopNotification.show(
-        context,
-        message: '店家Logo已更新',
-        type: NotificationType.success,
-      );
+      TopNotification.show(context, message: '店家Logo已更新', type: NotificationType.success);
     } else {
       TopNotification.show(
         context,
@@ -192,9 +181,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                             '管理您的店家資訊',
                             style: textTheme.bodyMedium?.copyWith(
                               fontSize: 12,
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -207,11 +194,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
               // 內容
               Expanded(
                 child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: colorScheme.primary,
-                        ),
-                      )
+                    ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                     : SingleChildScrollView(
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
@@ -251,12 +234,8 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            colorScheme.primary.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            colorScheme.secondary.withValues(
-                                              alpha: 0.1,
-                                            ),
+                                            colorScheme.primary.withValues(alpha: 0.1),
+                                            colorScheme.secondary.withValues(alpha: 0.1),
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(60),
@@ -269,8 +248,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       ),
                                       child: _logoImage != null
                                           ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(60),
+                                              borderRadius: BorderRadius.circular(60),
                                               child: Image.file(
                                                 _logoImage!,
                                                 fit: BoxFit.cover,
@@ -293,8 +271,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                 }
 
                                                 final result = snapshot.data;
-                                                if (result == null ||
-                                                    !result.isSuccess) {
+                                                if (result == null || !result.isSuccess) {
                                                   return Icon(
                                                     Icons.camera_alt_rounded,
                                                     size: 50,
@@ -304,10 +281,9 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
                                                 if (result.data != null) {
                                                   return ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          60,
-                                                        ),
+                                                    borderRadius: BorderRadius.circular(
+                                                      60,
+                                                    ),
                                                     child: Image.file(
                                                       result.data!,
                                                       fit: BoxFit.cover,
@@ -318,11 +294,9 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                             final stackTrace,
                                                           ) {
                                                             return Icon(
-                                                              Icons
-                                                                  .store_rounded,
+                                                              Icons.store_rounded,
                                                               size: 50,
-                                                              color: colorScheme
-                                                                  .primary,
+                                                              color: colorScheme.primary,
                                                             );
                                                           },
                                                     ),
@@ -342,9 +316,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   Text(
                                     '點擊上傳店家 Logo',
                                     style: textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurface.withValues(
-                                        alpha: 0.6,
-                                      ),
+                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -383,17 +355,15 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   // 店家名稱
                                   TextField(
                                     controller: storeNameController,
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontSize: 16,
-                                    ),
+                                    style: textTheme.bodyMedium?.copyWith(fontSize: 16),
                                     decoration: InputDecoration(
                                       labelText: '店家名稱',
-                                      labelStyle: textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color: colorScheme.onSurface
-                                                .withValues(alpha: 0.6),
-                                            fontSize: 14,
-                                          ),
+                                      labelStyle: textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        fontSize: 14,
+                                      ),
                                       prefixIcon: Icon(
                                         Icons.store_rounded,
                                         color: colorScheme.primary,
@@ -422,8 +392,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                         ),
                                       ),
                                       filled: true,
-                                      fillColor:
-                                          colorScheme.surfaceContainerLow,
+                                      fillColor: colorScheme.surfaceContainerLow,
                                     ),
                                   ),
 
@@ -432,17 +401,15 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   // 店家地址
                                   TextField(
                                     controller: storeAddressController,
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontSize: 16,
-                                    ),
+                                    style: textTheme.bodyMedium?.copyWith(fontSize: 16),
                                     decoration: InputDecoration(
                                       labelText: '店家地址',
-                                      labelStyle: textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color: colorScheme.onSurface
-                                                .withValues(alpha: 0.6),
-                                            fontSize: 14,
-                                          ),
+                                      labelStyle: textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        fontSize: 14,
+                                      ),
                                       prefixIcon: Icon(
                                         Icons.location_on_rounded,
                                         color: colorScheme.primary,
@@ -471,8 +438,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                         ),
                                       ),
                                       filled: true,
-                                      fillColor:
-                                          colorScheme.surfaceContainerLow,
+                                      fillColor: colorScheme.surfaceContainerLow,
                                     ),
                                   ),
                                 ],
@@ -487,17 +453,12 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                               height: 56,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [
-                                    colorScheme.primary,
-                                    colorScheme.secondary,
-                                  ],
+                                  colors: [colorScheme.primary, colorScheme.secondary],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: colorScheme.primary.withValues(
-                                      alpha: 0.3,
-                                    ),
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
                                     blurRadius: 15,
                                     offset: const Offset(0, 8),
                                   ),

@@ -9,9 +9,7 @@ class AvatarService {
   static const _bucket = 'avatars';
 
   /// 獲取頭像
-  static Future<Result<File>> getAvatar({
-    final bool forceRefresh = false,
-  }) async {
+  static Future<Result<File>> getAvatar({final bool forceRefresh = false}) async {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
@@ -28,22 +26,15 @@ class AvatarService {
         return Result.success();
       }
 
-      final cachedAvatar = await DefaultCacheManager().getFileFromCache(
-        avatarPath,
-      );
+      final cachedAvatar = await DefaultCacheManager().getFileFromCache(avatarPath);
       if (cachedAvatar != null) {
         return Result.success(data: cachedAvatar.file);
       }
 
       // Download from Supabase Storage
-      final url = await _supabase.storage
-          .from(_bucket)
-          .createSignedUrl(avatarPath, 60);
+      final url = await _supabase.storage.from(_bucket).createSignedUrl(avatarPath, 60);
 
-      final avatar = await DefaultCacheManager().getSingleFile(
-        url,
-        key: avatarPath,
-      );
+      final avatar = await DefaultCacheManager().getSingleFile(url, key: avatarPath);
 
       return Result.success(data: avatar);
     } catch (e) {
@@ -79,9 +70,7 @@ class AvatarService {
           );
 
       // 3. 更新 Metadata
-      await _supabase.auth.updateUser(
-        UserAttributes(data: {'avatar_path': avatarPath}),
-      );
+      await _supabase.auth.updateUser(UserAttributes(data: {'avatar_path': avatarPath}));
 
       // 4. 保存到本地緩存
       final avatar = await DefaultCacheManager().putFile(

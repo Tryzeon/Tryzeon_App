@@ -5,11 +5,7 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../data/wardrobe_item_model.dart';
 
 class WardrobeItemCard extends StatefulWidget {
-  const WardrobeItemCard({
-    super.key,
-    required this.item,
-    required this.onDelete,
-  });
+  const WardrobeItemCard({super.key, required this.item, required this.onDelete});
   final WardrobeItem item;
   final VoidCallback onDelete;
 
@@ -83,16 +79,12 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: Stack(
                 children: [
                   _isLoading
                       ? Center(
-                          child: CircularProgressIndicator(
-                            color: colorScheme.primary,
-                          ),
+                          child: CircularProgressIndicator(color: colorScheme.primary),
                         )
                       : _imageFile != null
                       ? Image.file(
@@ -100,25 +92,24 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
-                          errorBuilder:
-                              (final context, final error, final stackTrace) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        colorScheme.surfaceContainerLow,
-                                        colorScheme.surfaceContainerHigh,
-                                      ],
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.error_outline,
-                                    color: colorScheme.outline,
-                                  ),
-                                );
-                              },
+                          errorBuilder: (final context, final error, final stackTrace) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    colorScheme.surfaceContainerLow,
+                                    colorScheme.surfaceContainerHigh,
+                                  ],
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.error_outline,
+                                color: colorScheme.outline,
+                              ),
+                            );
+                          },
                         )
                       : Container(
                           width: double.infinity,
@@ -134,10 +125,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                             ),
                           ),
                           child: Center(
-                            child: Icon(
-                              Icons.error_outline,
-                              color: colorScheme.outline,
-                            ),
+                            child: Icon(Icons.error_outline, color: colorScheme.outline),
                           ),
                         ),
                   if (!_isLoading)
@@ -180,10 +168,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -209,10 +194,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                     runSpacing: 4,
                     children: widget.item.tags.take(3).map((final tag) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),

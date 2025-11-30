@@ -61,19 +61,14 @@ class ShopService {
   /// 增加商品的虛擬試穿點擊次數
   static Future<void> incrementTryonCount(final String productId) async {
     try {
-      await _supabase.rpc(
-        'increment_tryon_count',
-        params: {'product_uuid': productId},
-      );
+      await _supabase.rpc('increment_tryon_count', params: {'product_uuid': productId});
     } catch (e) {
       AppLogger.error('Error incrementing tryon count', e);
     }
   }
 
   /// 增加商品的購買連結點擊次數
-  static Future<void> incrementPurchaseClickCount(
-    final String productId,
-  ) async {
+  static Future<void> incrementPurchaseClickCount(final String productId) async {
     try {
       await _supabase.rpc(
         'increment_purchase_click_count',

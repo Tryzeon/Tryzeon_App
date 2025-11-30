@@ -39,11 +39,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
 
   void _showError(final String message) {
     if (!mounted) return;
-    TopNotification.show(
-      context,
-      message: message,
-      type: NotificationType.error,
-    );
+    TopNotification.show(context, message: message, type: NotificationType.error);
   }
 
   Future<void> _handleSignIn(final String provider) async {
@@ -149,11 +145,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
               ),
             ],
           ),
-          child: Icon(
-            Icons.person_rounded,
-            size: 48,
-            color: colorScheme.secondary,
-          ),
+          child: Icon(Icons.person_rounded, size: 48, color: colorScheme.secondary),
         ),
         const SizedBox(height: 32),
 

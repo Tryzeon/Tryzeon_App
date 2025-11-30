@@ -38,9 +38,7 @@ class BodyMeasurements {
     );
   }
 
-  factory BodyMeasurements.fromTypeMap(
-    final Map<MeasurementType, double?> map,
-  ) {
+  factory BodyMeasurements.fromTypeMap(final Map<MeasurementType, double?> map) {
     return BodyMeasurements(
       height: map[MeasurementType.height],
       weight: map[MeasurementType.weight],
