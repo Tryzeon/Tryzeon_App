@@ -141,7 +141,7 @@ class _AddProductPageState extends State<AddProductPage> {
       types: selectedTypes.toList(),
       price: int.parse(priceController.text),
       purchaseLink: purchaseLinkController.text,
-      productImage: selectedImage!,
+      image: selectedImage!,
       sizes: _buildProductSizes(),
     );
 
