@@ -16,12 +16,12 @@ class WardrobeService {
   static Future<Result<List<WardrobeItem>>> getWardrobeItem({
     final bool forceRefresh = false,
   }) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) {
-      return Result.failure('請重新登入');
-    }
-
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return Result.failure('請重新登入');
+      }
+
       // 如果不是強制刷新，先嘗試從快取讀取
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
@@ -57,16 +57,16 @@ class WardrobeService {
     final String category, {
     final List<String> tags = const [],
   }) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) {
-      return Result.failure('請重新登入');
-    }
-
-    final categoryCode = getWardrobeTypesEnglishCode(category);
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final storagePath = '$userId/$categoryCode/$timestamp.jpg';
-
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return Result.failure('請重新登入');
+      }
+
+      final categoryCode = getWardrobeTypesEnglishCode(category);
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final storagePath = '$userId/$categoryCode/$timestamp.jpg';
+
       // 1. 上傳圖片到 Supabase Storage
       final bytes = await imageFile.readAsBytes();
       await _supabase.storage
@@ -103,12 +103,12 @@ class WardrobeService {
   static Future<Result<void>> deleteWardrobeItem(
     final WardrobeItem item,
   ) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) {
-      return Result.failure('請重新登入');
-    }
-
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return Result.failure('請重新登入');
+      }
+      
       // 1. 刪除 DB 記錄
       await _supabase.from(_wardrobeTable).delete().eq('id', item.id!);
 
