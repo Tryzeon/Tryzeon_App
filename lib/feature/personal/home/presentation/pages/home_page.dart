@@ -162,13 +162,6 @@ class HomePageState extends State<HomePage> {
         type: NotificationType.success,
       );
     } else {
-      setState(() {
-        _avatarFile = null;
-        _tryonImages.clear();
-        _currentTryonIndex = -1;
-        _customAvatarIndex = null;
-      });
-
       TopNotification.show(
         context,
         message: result.errorMessage ?? '上傳失敗，請稍後再試',
