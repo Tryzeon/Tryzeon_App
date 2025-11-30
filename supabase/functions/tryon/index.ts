@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      message: errorMessage
+      errorMessage: errorMessage
     }), {
       status: 500,
       headers: {

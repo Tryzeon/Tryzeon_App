@@ -15,7 +15,7 @@ class Result<T> {
     if (error != null) {
       String errorMessage = '';
       if (error is FunctionException) {
-        errorMessage = (error.details as Map<String, dynamic>?)?['message'];
+        errorMessage = (error.details as Map<String, dynamic>?)?['errorMessage'];
       } else if (error is AuthException) {
         errorMessage = error.message;
       } else if (error is StorageException) {
