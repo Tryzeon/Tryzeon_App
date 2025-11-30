@@ -21,10 +21,10 @@ class UserProfileService {
       }
 
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadJSON(_cacheKey);
-        if (cachedData != null) {
-          final cachedProfile = UserProfile.fromJson(cachedData);
-          return Result.success(data: cachedProfile);
+        final cachedUserProfile = await CacheService.loadJSON(_cacheKey);
+        if (cachedUserProfile != null) {
+          final userProfile = UserProfile.fromJson(cachedUserProfile);
+          return Result.success(data: userProfile);
         }
       }
 
@@ -36,8 +36,8 @@ class UserProfileService {
 
       await CacheService.saveJSON(_cacheKey, response);
 
-      final profile = UserProfile.fromJson(response);
-      return Result.success(data: profile);
+      final userProfile = UserProfile.fromJson(response);
+      return Result.success(data: userProfile);
     } catch (e) {
       return Result.failure('取得個人資料失敗', error: e);
     }
@@ -68,8 +68,8 @@ class UserProfileService {
 
       await CacheService.saveJSON(_cacheKey, response);
 
-      final profile = UserProfile.fromJson(response);
-      return Result.success(data: profile);
+      final userProfile = UserProfile.fromJson(response);
+      return Result.success(data: userProfile);
     } catch (e) {
       return Result.failure('更新個人資料失敗', error: e);
     }
