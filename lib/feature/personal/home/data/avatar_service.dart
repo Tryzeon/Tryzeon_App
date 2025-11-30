@@ -52,7 +52,7 @@ class AvatarService {
   }
 
   /// 上傳頭像
-  static Future<Result<File>> uploadAvatar(final File newAvatar) async {
+  static Future<Result<File>> uploadAvatar(final File image) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
@@ -69,7 +69,7 @@ class AvatarService {
       final avatarPath = '${user.id}/avatar/$timestamp.png';
 
       // 2. 上傳到 Supabase
-      final bytes = await newAvatar.readAsBytes();
+      final bytes = await image.readAsBytes();
       await _supabase.storage
           .from(_bucket)
           .uploadBinary(
