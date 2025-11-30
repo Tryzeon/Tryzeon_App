@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -86,38 +87,41 @@ class StoreProfileService {
     }
   }
 
-  /// 載入 Logo（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File>> loadLogo(final String storeId) async {
+  /// 獲取店家 Logo
+  static Future<Result<File>> getLogo({final bool forceRefresh = false}) async {
     try {
-      // 1. 先檢查本地資料夾是否有緩存
-      final cachedLogo = await CacheService.getImages(relativePath: '$storeId/logo');
-
-      if (cachedLogo.isNotEmpty) {
-        return Result.success(data: cachedLogo.first);
+      final storeProfile = await getStoreProfile(forceRefresh: forceRefresh);
+      if (!storeProfile.isSuccess) {
+        return Result.failure(storeProfile.errorMessage!);
       }
 
-      // 2. 本地沒有，從 Supabase 下載
-      final logoFiles = await _supabase.storage
-          .from(_logoBucket)
-          .list(path: '$storeId/logo');
-
-      if (logoFiles.isEmpty) {
+      final logoPath = storeProfile.data?.logoPath;
+      if (logoPath == null || logoPath.isEmpty) {
         return Result.success();
       }
 
-      final logoPath = '$storeId/logo/${logoFiles.first.name}';
-      final bytes = await _supabase.storage.from(_logoBucket).download(logoPath);
+      final cachedLogo = await DefaultCacheManager().getFileFromCache(logoPath);
+      if (cachedLogo != null) {
+        return Result.success(data: cachedLogo.file);
+      }
 
-      // 保存到本地緩存
-      final logo = await CacheService.saveImage(bytes, logoPath);
+      // Download from Supabase Storage
+      final url = await _supabase.storage
+          .from(_logoBucket)
+          .createSignedUrl(logoPath, 60);
+
+      final logo = await DefaultCacheManager().getSingleFile(
+        url,
+        key: logoPath,
+      );
 
       return Result.success(data: logo);
     } catch (e) {
-      return Result.failure('Logo載入失敗', error: e);
+      return Result.failure('Logo獲取失敗', error: e);
     }
   }
 
-  /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
+  /// 上傳店家 Logo
   static Future<Result<File>> uploadLogo(final File image) async {
     try {
       final store = _supabase.auth.currentUser;
@@ -125,74 +129,84 @@ class StoreProfileService {
         return Result.failure('使用者獲取失敗');
       }
 
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final logoPath = '${store.id}/logo/$timestamp.jpg';
+      // 1. 獲取舊資料以刪除舊 Logo
+      final storeProfile = await getStoreProfile();
+      final oldLogoPath = storeProfile.data?.logoPath;
 
-      // 1. 先刪除舊 Logo（本地和 Supabase）
-      await _deleteLogo(store.id);
+      if (oldLogoPath != null && oldLogoPath.isNotEmpty) {
+        await _supabase.storage.from(_logoBucket).remove([oldLogoPath]);
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final logoPath = '${store.id}/logo/$timestamp.png';
 
       // 2. 上傳到 Supabase
       final bytes = await image.readAsBytes();
-      await _supabase.storage
-          .from(_logoBucket)
-          .uploadBinary(
-            logoPath,
-            bytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg'),
-          );
+      await _supabase.storage.from(_logoBucket).uploadBinary(
+        logoPath,
+        bytes,
+        fileOptions: const FileOptions(contentType: 'image/png'),
+      );
 
-      // 3. 保存新的 Logo 到本地
-      final logo = await CacheService.saveImage(bytes, logoPath);
+      // 3. 更新 store_profile table
+      final response = await _supabase
+          .from(_storesProfileTable)
+          .update({'logo_path': logoPath})
+          .eq('store_id', store.id)
+          .select()
+          .single();
+
+      // 4. 更新本地資料緩存
+      await CacheService.saveJSON(_cachedKey, response);
+
+      // 5. 保存圖片到本地緩存
+      final logo = await DefaultCacheManager().putFile(
+        logoPath,
+        bytes,
+        key: logoPath,
+        fileExtension: 'png',
+      );
 
       return Result.success(data: logo);
     } catch (e) {
       return Result.failure('Logo上傳失敗', error: e);
     }
   }
-
-  /// 刪除舊 Logo（Supabase 和本地）
-  static Future<void> _deleteLogo(final String storeId) async {
-    try {
-      // 刪除 Supabase 中的舊 Logo
-      final logoFiles = await _supabase.storage
-          .from(_logoBucket)
-          .list(path: '$storeId/logo');
-
-      if (logoFiles.isNotEmpty) {
-        await _supabase.storage.from(_logoBucket).remove([
-          '$storeId/logo/${logoFiles.first.name}',
-        ]);
-      }
-
-      // 刪除本地舊 Logo
-      await CacheService.deleteImages(relativePath: '$storeId/logo');
-    } catch (e) {
-      // 忽略刪除錯誤
-    }
-  }
 }
 
 class StoreProfile {
-  StoreProfile({required this.storeId, required this.name, required this.address});
+  StoreProfile({
+    required this.storeId,
+    required this.name,
+    required this.address,
+    this.logoPath,
+  });
 
   factory StoreProfile.fromJson(final Map<String, dynamic> json) {
     return StoreProfile(
       storeId: json['store_id'],
       name: json['name'],
       address: json['address'],
+      logoPath: json['logo_path'],
     );
   }
 
   final String storeId;
   final String name;
   final String address;
+  final String? logoPath;
 
   /// 按需載入 Logo，使用快取機制
   Future<Result<File>> loadLogo() async {
-    return StoreProfileService.loadLogo(storeId);
+    return StoreProfileService.getLogo();
   }
 
   Map<String, dynamic> toJson() {
-    return {'store_id': storeId, 'name': name, 'address': address};
+    return {
+      'store_id': storeId,
+      'name': name,
+      'address': address,
+      'logo_path': logoPath,
+    };
   }
 }
