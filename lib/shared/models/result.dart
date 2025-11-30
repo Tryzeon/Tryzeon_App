@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class Result<T> {
@@ -10,24 +8,10 @@ class Result<T> {
   }
 
   factory Result.failure(final String title, {final dynamic error}) {
-    String message = title;
+    final String message = '糟糕！$title, 請重試一次或重新登入。';
 
     if (error != null) {
-      String errorMessage = '';
-      if (error is FunctionException) {
-        errorMessage = (error.details as Map<String, dynamic>?)?['errorMessage'];
-      } else if (error is AuthException) {
-        errorMessage = error.message;
-      } else if (error is StorageException) {
-        errorMessage = error.message;
-      } else if (error is SocketException) {
-        errorMessage = '發生錯誤，請檢查網路連接或稍後再試。';
-      } else {
-        errorMessage = '發生錯誤，請稍後再試。';
-        AppLogger.error('$title: ${error.toString()}');
-      }
-
-      message = '$title: $errorMessage';
+      AppLogger.error('$title: ${error.toString()}');
     }
 
     return Result(isSuccess: false, errorMessage: message);
