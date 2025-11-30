@@ -157,9 +157,7 @@ class ProductService {
   }
 
   /// 刪除商品
-  static Future<Result<void>> deleteProduct(
-    final Product product,
-  ) async {
+  static Future<Result<void>> deleteProduct(final Product product) async {
     try {
       // 刪除圖片（Supabase Storage 和本地）
       if (product.imagePath.isNotEmpty) {
