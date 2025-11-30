@@ -18,8 +18,8 @@ class ProductService {
     final bool forceRefresh = false,
   }) async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
         return Result.failure('使用者獲取失敗');
       }
 
@@ -38,7 +38,7 @@ class ProductService {
       final response = await _supabase
           .from(_productsTable)
           .select()
-          .eq('store_id', user.id);
+          .eq('store_id', store.id);
 
       await CacheService.saveList(_cacheKey, response);
 
@@ -60,8 +60,8 @@ class ProductService {
   }) async {
     try {
       // 獲取當前用戶 ID
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
         return Result.failure('使用者獲取失敗');
       }
 
@@ -70,7 +70,7 @@ class ProductService {
 
       // 商品創建資料
       final product = Product(
-        storeId: user.id,
+        storeId: store.id,
         name: name,
         types: types,
         price: price,
@@ -199,13 +199,13 @@ class ProductService {
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
   static Future<String?> _uploadProductImage(final File productImage) async {
-    final storeId = _supabase.auth.currentUser?.id;
-    if (storeId == null) return null;
+    final store = _supabase.auth.currentUser;
+    if (store == null) return null;
 
     // 生成唯一的檔案名稱
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final imageName = '$timestamp.jpg';
-    final productImagePath = '$storeId/products/$imageName';
+    final productImagePath = '${store.id}/products/$imageName';
 
     final bytes = await productImage.readAsBytes();
 

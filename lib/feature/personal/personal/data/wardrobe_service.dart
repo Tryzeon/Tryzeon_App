@@ -17,8 +17,8 @@ class WardrobeService {
     final bool forceRefresh = false,
   }) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         return Result.failure('使用者獲取失敗');
       }
 
@@ -37,7 +37,7 @@ class WardrobeService {
       final response = await _supabase
           .from(_wardrobeTable)
           .select()
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .order('created_at', ascending: false);
 
       await CacheService.saveList(_cacheKey, response);
@@ -58,14 +58,14 @@ class WardrobeService {
     final List<String> tags = const [],
   }) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         return Result.failure('使用者獲取失敗');
       }
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final storagePath = '$userId/$categoryCode/$timestamp.jpg';
+      final storagePath = '$user.id/$categoryCode/$timestamp.jpg';
 
       // 1. 上傳圖片到 Supabase Storage
       final bytes = await imageFile.readAsBytes();
@@ -84,7 +84,7 @@ class WardrobeService {
 
       // 3. 新增 DB 記錄
       await _supabase.from(_wardrobeTable).insert({
-        'user_id': userId,
+        'user_id': user.id,
         'category': category,
         'image_path': storagePath,
         'tags': tags,

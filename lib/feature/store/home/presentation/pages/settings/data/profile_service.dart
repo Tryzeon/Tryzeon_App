@@ -17,8 +17,8 @@ class StoreProfileService {
     final bool forceRefresh = false,
   }) async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
         return Result.failure('使用者獲取失敗');
       }
 
@@ -35,7 +35,7 @@ class StoreProfileService {
       final response = await _supabase
           .from(_storesProfileTable)
           .select()
-          .eq('store_id', user.id)
+          .eq('store_id', store.id)
           .maybeSingle();
 
       if (response == null) {
@@ -63,13 +63,13 @@ class StoreProfileService {
     required final String address,
   }) async {
     try {
-      final user = _supabase.auth.currentUser?.id;
-      if (user == null) {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
         return Result.failure('使用者獲取失敗');
       }
 
       final data = {
-        'store_id': user,
+        'store_id': store.id,
         'name': name,
         'address': address,
       };
@@ -77,7 +77,7 @@ class StoreProfileService {
       final response = await _supabase
           .from(_storesProfileTable)
           .update(data)
-          .eq('store_id', user)
+          .eq('store_id', store.id)
           .select()
           .single();
 
@@ -128,16 +128,16 @@ class StoreProfileService {
   /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
   static Future<Result<File>> uploadLogo(final File newLogo) async {
     try {
-      final user = _supabase.auth.currentUser?.id;
-      if (user == null) {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
         return Result.failure('使用者獲取失敗');
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final logoPath = '$user/logo/$timestamp.jpg';
+      final logoPath = '${store.id}/logo/$timestamp.jpg';
 
       // 1. 先刪除舊 Logo（本地和 Supabase）
-      await _deleteLogo(user);
+      await _deleteLogo(store.id);
 
       // 2. 上傳到 Supabase
       final bytes = await newLogo.readAsBytes();
