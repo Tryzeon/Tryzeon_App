@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/login/persentation/pages/login_page.dart';
+import 'package:tryzeon/feature/login/presentation/pages/login_page.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 

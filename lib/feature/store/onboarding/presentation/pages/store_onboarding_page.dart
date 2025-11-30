@@ -4,7 +4,7 @@ import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../login/persentation/pages/login_page.dart';
+import '../../../../login/presentation/pages/login_page.dart';
 import '../../../../personal/personal_entry.dart';
 
 class StoreOnboardingPage extends StatefulWidget {

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:tryzeon/feature/login/persentation/widgets/customize_scaffold.dart';
-import 'package:tryzeon/feature/personal/personal_entry.dart';
+import 'package:tryzeon/feature/login/presentation/widgets/customize_scaffold.dart';
+import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
-class PersonalLoginPage extends StatefulWidget {
-  const PersonalLoginPage({super.key});
+class StoreLoginPage extends StatefulWidget {
+  const StoreLoginPage({super.key});
 
   @override
-  State<PersonalLoginPage> createState() => _PersonalLoginPageState();
+  State<StoreLoginPage> createState() => _StoreLoginPageState();
 }
 
-class _PersonalLoginPageState extends State<PersonalLoginPage>
+class _StoreLoginPageState extends State<StoreLoginPage>
     with WidgetsBindingObserver {
   bool _isLoading = false;
 
@@ -51,7 +51,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
 
     final result = await AuthService.signInWithProvider(
       provider: provider,
-      userType: UserType.personal,
+      userType: UserType.store,
     );
 
     if (mounted) {
@@ -61,7 +61,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
     if (result.isSuccess && mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (final context) => const PersonalEntry()),
+        MaterialPageRoute(builder: (final context) => const StoreEntry()),
       );
     } else if (!result.isSuccess) {
       _showError(result.errorMessage ?? '$provider Login Failed');
@@ -143,16 +143,16 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
             border: Border.all(color: colorScheme.surface, width: 4),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.secondary.withValues(alpha: 0.2),
+                color: colorScheme.primary.withValues(alpha: 0.2),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
               ),
             ],
           ),
           child: Icon(
-            Icons.person_rounded,
+            Icons.store_rounded,
             size: 48,
-            color: colorScheme.secondary,
+            color: colorScheme.primary,
           ),
         ),
         const SizedBox(height: 32),
@@ -161,7 +161,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
         Text(
           'Welcome!',
           style: textTheme.displaySmall?.copyWith(
-            color: colorScheme.secondary,
+            color: colorScheme.primary,
             letterSpacing: -0.5,
           ),
           textAlign: TextAlign.center,
@@ -169,7 +169,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
         const SizedBox(height: 12),
 
         Text(
-          'Ready to try on some new looks?',
+          'Start managing your store',
           style: textTheme.titleMedium?.copyWith(
             color: colorScheme.onSurfaceVariant,
             letterSpacing: 0.2,
@@ -190,7 +190,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.secondary.withValues(alpha: 0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

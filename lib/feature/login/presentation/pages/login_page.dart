@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/login/persentation/widgets/customize_scaffold.dart';
+import 'package:tryzeon/feature/login/presentation/widgets/customize_scaffold.dart';
 // Import AppTheme to access static colors if needed, or just use Theme.of(context)
 
 import 'personal_login_page.dart';
