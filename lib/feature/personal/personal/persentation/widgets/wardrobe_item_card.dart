@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-
-import '../../data/wardrobe_service.dart';
+import '../../data/wardrobe_item_model.dart';
 
 class WardrobeItemCard extends StatefulWidget {
-  const WardrobeItemCard({super.key, required this.item, required this.onDelete});
+  const WardrobeItemCard({
+    super.key,
+    required this.item,
+    required this.onDelete,
+  });
   final WardrobeItem item;
   final VoidCallback onDelete;
 

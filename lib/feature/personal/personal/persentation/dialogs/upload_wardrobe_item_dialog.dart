@@ -15,7 +15,8 @@ class UploadWardrobeItemDialog extends StatefulWidget {
   final List<String> categories;
 
   @override
-  State<UploadWardrobeItemDialog> createState() => _UploadWardrobeItemDialogState();
+  State<UploadWardrobeItemDialog> createState() =>
+      _UploadWardrobeItemDialogState();
 }
 
 class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {

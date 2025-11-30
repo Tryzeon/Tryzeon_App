@@ -5,6 +5,7 @@ import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
+import '../../data/wardrobe_item_model.dart';
 import '../../data/wardrobe_service.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
 import '../widgets/wardrobe_item_card.dart';
