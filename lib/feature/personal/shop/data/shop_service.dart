@@ -5,7 +5,7 @@ import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
-  static const _productsTable = 'products_info';
+  static const _productsTable = 'products';
 
   /// 獲取所有商品（包含店家資訊）
   static Future<Result<List<Product>>> getProducts({

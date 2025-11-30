@@ -7,7 +7,7 @@ import 'package:tryzeon/shared/services/cache_service.dart';
 
 class ProductService {
   static final _supabase = Supabase.instance.client;
-  static const _productsTable = 'products_info';
+  static const _productsTable = 'products';
   static const _productImagesBucket = 'store';
   static const _cacheKey = 'products_cache';
 
