@@ -50,7 +50,7 @@ class ProductService {
   }
 
   /// 創建新商品
-  static Future<Result<List<Product>>> createProduct({
+  static Future<Result<void>> createProduct({
     required final String name,
     required final List<String> types,
     required final int price,
@@ -108,7 +108,7 @@ class ProductService {
   }
 
   /// 更新商品
-  static Future<Result<List<Product>>> updateProduct({
+  static Future<Result<void>> updateProduct({
     required final String productId,
     required final String name,
     required final List<String> types,
@@ -157,7 +157,7 @@ class ProductService {
   }
 
   /// 刪除商品
-  static Future<Result<List<Product>>> deleteProduct(
+  static Future<Result<void>> deleteProduct(
     final Product product,
   ) async {
     try {

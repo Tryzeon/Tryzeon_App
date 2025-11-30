@@ -50,7 +50,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<List<WardrobeItem>>> uploadWardrobeItem(
+  static Future<Result<void>> uploadWardrobeItem(
     final File imageFile,
     final String category, {
     final List<String> tags = const [],
@@ -98,7 +98,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<List<WardrobeItem>>> deleteWardrobeItem(
+  static Future<Result<void>> deleteWardrobeItem(
     final WardrobeItem item,
   ) async {
     final userId = _supabase.auth.currentUser?.id;
