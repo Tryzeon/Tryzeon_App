@@ -126,7 +126,7 @@ class StoreProfileService {
   }
 
   /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
-  static Future<Result<File>> uploadLogo(final File newLogo) async {
+  static Future<Result<File>> uploadLogo(final File image) async {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
@@ -140,7 +140,7 @@ class StoreProfileService {
       await _deleteLogo(store.id);
 
       // 2. 上傳到 Supabase
-      final bytes = await newLogo.readAsBytes();
+      final bytes = await image.readAsBytes();
       await _supabase.storage
           .from(_logoBucket)
           .uploadBinary(
