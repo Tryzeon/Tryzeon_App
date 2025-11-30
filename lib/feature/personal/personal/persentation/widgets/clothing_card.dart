@@ -47,7 +47,7 @@ class _ClothingCardState extends State<ClothingCard> {
 
     if (result.isSuccess) {
       setState(() {
-        _imageFile = result.file;
+        _imageFile = result.data;
       });
     } else {
       TopNotification.show(

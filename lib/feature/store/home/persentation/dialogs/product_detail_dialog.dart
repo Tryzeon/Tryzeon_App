@@ -281,7 +281,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                         if (result != null &&
                                             result.isSuccess) {
                                           return Image.file(
-                                            result.file!,
+                                            result.data!,
                                             fit: BoxFit.contain,
                                             width: double.infinity,
                                             errorBuilder:

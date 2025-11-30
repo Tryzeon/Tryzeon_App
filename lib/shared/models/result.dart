@@ -3,10 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class Result<T> {
-  Result({required this.isSuccess, this.data, this.file, this.errorMessage});
+  Result({required this.isSuccess, this.data, this.errorMessage});
 
-  factory Result.success({final T? data, final File? file}) {
-    return Result(isSuccess: true, data: data, file: file);
+  factory Result.success({final T? data}) {
+    return Result(isSuccess: true, data: data);
   }
 
   factory Result.failure(final String title, {final dynamic error}) {
@@ -35,6 +35,5 @@ class Result<T> {
 
   final bool isSuccess;
   final T? data;
-  final File? file;
   final String? errorMessage;
 }

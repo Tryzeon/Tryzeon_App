@@ -302,14 +302,14 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                   );
                                                 }
 
-                                                if (result.file != null) {
+                                                if (result.data != null) {
                                                   return ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           60,
                                                         ),
                                                     child: Image.file(
-                                                      result.file!,
+                                                      result.data!,
                                                       fit: BoxFit.cover,
                                                       errorBuilder:
                                                           (

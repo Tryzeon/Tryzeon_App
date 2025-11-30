@@ -184,7 +184,7 @@ class ProductService {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(filePath);
       if (cachedFile != null && await cachedFile.exists()) {
-        return Result.success(file: cachedFile);
+        return Result.success(data: cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
@@ -193,7 +193,7 @@ class ProductService {
           .download(filePath);
       final savedFile = await CacheService.saveImage(bytes, filePath);
 
-      return Result.success(file: savedFile);
+      return Result.success(data: savedFile);
     } catch (e) {
       return Result.failure('載入商品圖片失敗', error: e);
     }

@@ -98,7 +98,7 @@ class StoreProfileService {
       );
 
       if (cachedFiles.isNotEmpty) {
-        return Result.success(file: cachedFiles.first);
+        return Result.success(data: cachedFiles.first);
       }
 
       // 2. 本地沒有，從 Supabase 下載
@@ -117,7 +117,7 @@ class StoreProfileService {
       // 保存到本地緩存
       final savedFile = await CacheService.saveImage(bytes, fileName);
 
-      return Result.success(file: savedFile);
+      return Result.success(data: savedFile);
     } catch (e) {
       return Result.failure('載入Logo失敗', error: e);
     }
@@ -153,7 +153,7 @@ class StoreProfileService {
       // 3. 保存新的 Logo 到本地
       final savedFile = await CacheService.saveImage(bytes, fileName);
 
-      return Result.success(file: savedFile);
+      return Result.success(data: savedFile);
     } catch (e) {
       return Result.failure('上傳Logo失敗', error: e);
     }

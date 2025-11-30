@@ -48,9 +48,9 @@ class StoreProductCard extends StatelessWidget {
                       final result = snapshot.data;
                       if (result != null &&
                           result.isSuccess &&
-                          result.file != null) {
+                          result.data != null) {
                         return Image.file(
-                          result.file!,
+                          result.data!,
                           fit: BoxFit.cover,
                           errorBuilder:
                               (final context, final error, final stackTrace) =>

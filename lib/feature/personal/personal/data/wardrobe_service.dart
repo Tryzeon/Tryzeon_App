@@ -132,14 +132,14 @@ class WardrobeService {
       // 1. 先檢查本地是否有該圖片
       final cachedFile = await CacheService.getImage(storagePath);
       if (cachedFile != null && await cachedFile.exists()) {
-        return Result.success(file: cachedFile);
+        return Result.success(data: cachedFile);
       }
 
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage.from(_bucket).download(storagePath);
       final savedFile = await CacheService.saveImage(bytes, storagePath);
 
-      return Result.success(file: savedFile);
+      return Result.success(data: savedFile);
     } catch (e) {
       return Result.failure('載入衣櫃圖片失敗', error: e);
     }
