@@ -8,7 +8,7 @@ class ProductTypeService {
 
   static const _cacheKey = 'product_types_cache';
 
-  static Future<Result<List<String>>> getProductTypesList({
+  static Future<Result<List<String>>> getProductTypes({
     final bool forceRefresh = false,
   }) async {
     try {

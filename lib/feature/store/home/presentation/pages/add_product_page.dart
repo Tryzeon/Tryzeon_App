@@ -87,7 +87,7 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   Future<void> _loadProductTypes() async {
-    final result = await ProductTypeService.getProductTypesList();
+    final result = await ProductTypeService.getProductTypes();
     if (!mounted) return;
 
     if (result.isSuccess) {

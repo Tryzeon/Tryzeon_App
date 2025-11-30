@@ -57,7 +57,7 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   Future<void> _loadProductTypes({final bool forceRefresh = false}) async {
-    final result = await ProductTypeService.getProductTypesList(
+    final result = await ProductTypeService.getProductTypes(
       forceRefresh: forceRefresh,
     );
     if (!mounted) return;
