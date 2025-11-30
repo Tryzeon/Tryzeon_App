@@ -17,7 +17,7 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者未登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       if (!forceRefresh) {
@@ -51,7 +51,7 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者未登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       final updateData = <String, dynamic>{};

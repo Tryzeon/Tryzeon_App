@@ -15,7 +15,7 @@ class AvatarService {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('請重新登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       if (forceRefresh) {
@@ -56,7 +56,7 @@ class AvatarService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('請重新登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       // 1. 刪除舊頭像（如果存在）

@@ -19,7 +19,7 @@ class StoreProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者未登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       // 讀取 cache
@@ -65,7 +65,7 @@ class StoreProfileService {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
-        return Result.failure('使用者未登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       final data = {
@@ -130,7 +130,7 @@ class StoreProfileService {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
-        return Result.failure('使用者未登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;

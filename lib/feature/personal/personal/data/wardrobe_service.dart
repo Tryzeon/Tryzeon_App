@@ -19,7 +19,7 @@ class WardrobeService {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
-        return Result.failure('請重新登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       // 如果不是強制刷新，先嘗試從快取讀取
@@ -60,7 +60,7 @@ class WardrobeService {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
-        return Result.failure('請重新登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
@@ -103,11 +103,6 @@ class WardrobeService {
     final WardrobeItem item,
   ) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) {
-        return Result.failure('請重新登入');
-      }
-      
       // 1. 刪除 DB 記錄
       await _supabase.from(_wardrobeTable).delete().eq('id', item.id!);
 

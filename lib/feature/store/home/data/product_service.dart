@@ -20,7 +20,7 @@ class ProductService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('請重新登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       if (!forceRefresh) {
@@ -62,7 +62,7 @@ class ProductService {
       // 獲取當前用戶 ID
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('請重新登入');
+        return Result.failure('獲取使用者失敗');
       }
 
       // 如果有圖片，先上傳圖片
