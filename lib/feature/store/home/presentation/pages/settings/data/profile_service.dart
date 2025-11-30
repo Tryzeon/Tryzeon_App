@@ -193,11 +193,6 @@ class StoreProfile {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'store_id': storeId,
-      'name': name,
-      'address': address,
-      'logo_path': logoPath,
-    };
+    return {'store_id': storeId, 'name': name, 'address': address, 'logo_path': logoPath};
   }
 }

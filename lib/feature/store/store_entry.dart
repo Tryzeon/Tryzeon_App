@@ -30,7 +30,7 @@ class _StoreEntryState extends State<StoreEntry> {
     setState(() {
       _isChecking = true;
     });
-    
+
     final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
     if (!mounted) return;
 
@@ -39,7 +39,7 @@ class _StoreEntryState extends State<StoreEntry> {
     });
 
     if (result.isSuccess) {
-      if(result.data != null){
+      if (result.data != null) {
         setState(() {
           _needsOnboarding = false;
         });
@@ -62,9 +62,7 @@ class _StoreEntryState extends State<StoreEntry> {
     if (_needsOnboarding) {
       return PopScope(
         canPop: false,
-        child: StoreOnboardingPage(
-          onRefresh: _checkStoreInfo,
-        ),
+        child: StoreOnboardingPage(onRefresh: _checkStoreInfo),
       );
     } else {
       return const StoreHomePage();

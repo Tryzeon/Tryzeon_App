@@ -126,9 +126,7 @@ class WardrobeService {
       }
 
       // 2. 本地沒有，從 Supabase 取得 Signed URL 下載
-      final url = await _supabase.storage
-          .from(_bucket)
-          .createSignedUrl(imagePath, 60);
+      final url = await _supabase.storage.from(_bucket).createSignedUrl(imagePath, 60);
 
       final image = await CacheService.getImage(imagePath, downloadUrl: url);
 

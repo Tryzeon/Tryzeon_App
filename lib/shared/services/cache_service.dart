@@ -142,7 +142,7 @@ class CacheService {
   static Future<void> emptyCache() async {
     try {
       await DefaultCacheManager().emptyCache();
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
     } catch (e) {

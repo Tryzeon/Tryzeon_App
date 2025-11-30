@@ -181,10 +181,7 @@ class ProductService {
           .from(_productImagesBucket)
           .createSignedUrl(imagePath, 60);
 
-      final productImage = await CacheService.getImage(
-        imagePath,
-        downloadUrl: url,
-      );
+      final productImage = await CacheService.getImage(imagePath, downloadUrl: url);
 
       return Result.success(data: productImage);
     } catch (e) {
