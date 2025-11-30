@@ -19,7 +19,7 @@ class StoreProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       // 讀取 cache
@@ -47,7 +47,7 @@ class StoreProfileService {
       final storeProfile = StoreProfile.fromJson(response);
       return Result.success(data: storeProfile);
     } catch (e) {
-      return Result.failure('取得店家資料失敗', error: e);
+      return Result.failure('店家資料取得失敗', error: e);
     }
   }
 
@@ -65,7 +65,7 @@ class StoreProfileService {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       final data = {
@@ -86,7 +86,7 @@ class StoreProfileService {
       final storeProfile = StoreProfile.fromJson(response);
       return Result.success(data: storeProfile);
     } catch (e) {
-      return Result.failure('更新店家資料失敗', error: e);
+      return Result.failure('店家資料更新失敗', error: e);
     }
   }
 
@@ -121,7 +121,7 @@ class StoreProfileService {
 
       return Result.success(data: logo);
     } catch (e) {
-      return Result.failure('載入Logo失敗', error: e);
+      return Result.failure('Logo載入失敗', error: e);
     }
   }
 
@@ -130,7 +130,7 @@ class StoreProfileService {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -156,7 +156,7 @@ class StoreProfileService {
 
       return Result.success(data: logo);
     } catch (e) {
-      return Result.failure('上傳Logo失敗', error: e);
+      return Result.failure('Logo上傳失敗', error: e);
     }
   }
 

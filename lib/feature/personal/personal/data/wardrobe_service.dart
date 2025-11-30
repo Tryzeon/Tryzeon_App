@@ -19,7 +19,7 @@ class WardrobeService {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       // 如果不是強制刷新，先嘗試從快取讀取
@@ -48,7 +48,7 @@ class WardrobeService {
 
       return Result.success(data: wardrobeItem);
     } catch (e) {
-      return Result.failure('獲取衣櫃列表失敗', error: e);
+      return Result.failure('衣櫃列表獲取失敗', error: e);
     }
   }
 
@@ -60,7 +60,7 @@ class WardrobeService {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
@@ -95,7 +95,7 @@ class WardrobeService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('上傳衣物失敗', error: e);
+      return Result.failure('衣物上傳失敗', error: e);
     }
   }
 
@@ -117,7 +117,7 @@ class WardrobeService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('刪除衣物失敗', error: e);
+      return Result.failure('衣物刪除失敗', error: e);
     }
   }
 
@@ -137,7 +137,7 @@ class WardrobeService {
 
       return Result.success(data: savedFile);
     } catch (e) {
-      return Result.failure('載入衣櫃圖片失敗', error: e);
+      return Result.failure('衣櫃圖片載入失敗', error: e);
     }
   }
 

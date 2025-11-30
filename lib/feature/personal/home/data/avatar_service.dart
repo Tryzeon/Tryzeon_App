@@ -15,7 +15,7 @@ class AvatarService {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       if (forceRefresh) {
@@ -47,7 +47,7 @@ class AvatarService {
 
       return Result.success(data: avatar);
     } catch (e) {
-      return Result.failure('獲取頭像失敗', error: e);
+      return Result.failure('頭像獲取失敗', error: e);
     }
   }
 
@@ -56,7 +56,7 @@ class AvatarService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       // 1. 刪除舊頭像（如果存在）
@@ -93,7 +93,7 @@ class AvatarService {
 
       return Result.success(data: avatar);
     } catch (e) {
-      return Result.failure('上傳頭像失敗', error: e);
+      return Result.failure('頭像上傳失敗', error: e);
     }
   }
 }

@@ -17,7 +17,7 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       if (!forceRefresh) {
@@ -39,7 +39,7 @@ class UserProfileService {
       final userProfile = UserProfile.fromJson(response);
       return Result.success(data: userProfile);
     } catch (e) {
-      return Result.failure('取得個人資料失敗', error: e);
+      return Result.failure('個人資料取得失敗', error: e);
     }
   }
 
@@ -51,7 +51,7 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       final updateData = <String, dynamic>{};
@@ -71,7 +71,7 @@ class UserProfileService {
       final userProfile = UserProfile.fromJson(response);
       return Result.success(data: userProfile);
     } catch (e) {
-      return Result.failure('更新個人資料失敗', error: e);
+      return Result.failure('個人資料更新失敗', error: e);
     }
   }
 }

@@ -23,7 +23,7 @@ class ChatService {
       );
       return Result.success(data: response.data['text']);
     } catch (e) {
-      return Result.failure('獲取穿搭建議失敗', error: e);
+      return Result.failure('穿搭建議獲取失敗', error: e);
     }
   }
 }

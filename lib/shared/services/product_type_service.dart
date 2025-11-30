@@ -33,7 +33,7 @@ class ProductTypeService {
 
       return Result.success(data: types);
     } catch (e) {
-      return Result.failure('取得商品類型失敗', error: e);
+      return Result.failure('商品類型取得失敗', error: e);
     }
   }
 }

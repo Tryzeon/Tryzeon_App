@@ -54,7 +54,7 @@ class ShopService {
 
       return Result.success(data: searchResult);
     } catch (e) {
-      return Result.failure('獲取商品列表失敗', error: e);
+      return Result.failure('商品列表獲取失敗', error: e);
     }
   }
 

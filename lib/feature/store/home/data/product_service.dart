@@ -20,7 +20,7 @@ class ProductService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       if (!forceRefresh) {
@@ -45,7 +45,7 @@ class ProductService {
       final List<Product> products = response.map(Product.fromJson).toList();
       return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
-      return Result.failure('獲取商品列表失敗', error: e);
+      return Result.failure('商品列表獲取失敗', error: e);
     }
   }
 
@@ -62,13 +62,13 @@ class ProductService {
       // 獲取當前用戶 ID
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('獲取使用者失敗');
+        return Result.failure('使用者獲取失敗');
       }
 
       // 如果有圖片，先上傳圖片
       final String productImagePath = await _uploadProductImage(productImage) ?? '';
 
-      // 創建商品資料
+      // 商品創建資料
       final product = Product(
         storeId: user.id,
         name: name,
@@ -103,7 +103,7 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('創建商品失敗', error: e);
+      return Result.failure('商品創建失敗', error: e);
     }
   }
 
@@ -152,7 +152,7 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('更新商品失敗', error: e);
+      return Result.failure('商品更新失敗', error: e);
     }
   }
 
@@ -172,7 +172,7 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('刪除商品失敗', error: e);
+      return Result.failure('商品刪除失敗', error: e);
     }
   }
 
@@ -193,7 +193,7 @@ class ProductService {
 
       return Result.success(data: productImage);
     } catch (e) {
-      return Result.failure('載入商品圖片失敗', error: e);
+      return Result.failure('商品圖片載入失敗', error: e);
     }
   }
 
