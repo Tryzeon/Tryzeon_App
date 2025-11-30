@@ -8,8 +8,7 @@ import '../../../../login/presentation/pages/login_page.dart';
 import '../../../../personal/personal_entry.dart';
 
 class StoreOnboardingPage extends StatefulWidget {
-  const StoreOnboardingPage({super.key, this.onComplete, this.onRefresh});
-  final VoidCallback? onComplete;
+  const StoreOnboardingPage({super.key, this.onRefresh});
   final Future<void> Function()? onRefresh;
 
   @override

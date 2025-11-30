@@ -27,6 +27,10 @@ class _StoreEntryState extends State<StoreEntry> {
   }
 
   Future<void> _checkStoreInfo() async {
+    setState(() {
+      _isChecking = true;
+    });
+    
     final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
     if (!mounted) return;
 
@@ -35,24 +39,18 @@ class _StoreEntryState extends State<StoreEntry> {
     });
 
     if (result.isSuccess) {
-      setState(() {
-        _needsOnboarding = false;
-      });
+      if(result.data != null){
+        setState(() {
+          _needsOnboarding = false;
+        });
+      }
     } else {
-      if (result.errorMessage == '查無店家資料') return;
-
       TopNotification.show(
         context,
         message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
-  }
-
-  void _onOnboardingComplete() {
-    setState(() {
-      _needsOnboarding = false;
-    });
   }
 
   @override
@@ -63,14 +61,13 @@ class _StoreEntryState extends State<StoreEntry> {
 
     if (_needsOnboarding) {
       return PopScope(
-        canPop: false, // 防止返回
+        canPop: false,
         child: StoreOnboardingPage(
-          onComplete: _onOnboardingComplete,
           onRefresh: _checkStoreInfo,
         ),
       );
+    } else {
+      return const StoreHomePage();
     }
-
-    return const StoreHomePage();
   }
 }
