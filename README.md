@@ -79,7 +79,7 @@ dart format .
 `[wardrobe_bucket]/${userId}/wardrobe/${categoryCode}/${timestamp}.jpg`
 
 
-## Clothing Categories
+## Clothes Categories
 
 - 上衣 : `top`
 - 褲子 : `pants`

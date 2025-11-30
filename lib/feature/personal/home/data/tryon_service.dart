@@ -6,14 +6,14 @@ class TryonService {
 
   static Future<Result<String>> tryon({
     final String? avatarBase64,
-    final String? clothingBase64,
-    final String? clothingPath,
+    final String? clothesBase64,
+    final String? clothesPath,
   }) async {
     try {
       final Map<String, dynamic> body = {};
       body['avatarBase64'] = avatarBase64;
-      body['clothingBase64'] = clothingBase64;
-      body['clothingPath'] = clothingPath;
+      body['clothesBase64'] = clothesBase64;
+      body['clothesPath'] = clothesPath;
 
       final response = await _supabase.functions.invoke('tryon', body: body);
       return Result.success(data: response.data['image']);

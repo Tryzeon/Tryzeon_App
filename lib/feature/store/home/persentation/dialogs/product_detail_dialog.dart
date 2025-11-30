@@ -25,7 +25,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
   bool isLoading = false;
 
   // 衣服種類選項
-  List<String> clothingTypes = [];
+  List<String> clothesTypes = [];
   Set<String> selectedTypes = {};
 
   @override
@@ -48,7 +48,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
 
     if (result.isSuccess) {
       setState(() {
-        clothingTypes = result.data!;
+        clothesTypes = result.data!;
       });
     } else {
       TopNotification.show(
@@ -491,7 +491,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: clothingTypes.map((final type) {
+            children: clothesTypes.map((final type) {
               final isSelected = selectedTypes.contains(type);
               return FilterChip(
                 label: Text(type),

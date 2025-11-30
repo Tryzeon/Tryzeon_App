@@ -65,9 +65,9 @@ Deno.serve(async (req) => {
     if (updateError) throw updateError;
 
     const body = await req.json();
-    const { avatarBase64, clothingBase64, clothingPath } = body;
+    const { avatarBase64, clothesBase64, clothesPath } = body;
 
-    var avatarImage, clothingImage;
+    var avatarImage, clothesImage;
 
     if (avatarBase64) {
       avatarImage = avatarBase64;
@@ -87,23 +87,23 @@ Deno.serve(async (req) => {
       avatarImage = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
     }
 
-    if (clothingBase64) {
-      clothingImage = clothingBase64;
+    if (clothesBase64) {
+      clothesImage = clothesBase64;
     } else {
       let bucket;
-      if (clothingPath.includes('wardrobe')) {
+      if (clothesPath.includes('wardrobe')) {
         bucket = 'wardrobe';
-      } else if (clothingPath.includes('product')) {
+      } else if (clothesPath.includes('product')) {
         bucket = 'store';
       } else {
-        throw new Error(`Cannot determine bucket from path: ${clothingPath}`);
+        throw new Error(`Cannot determine bucket from path: ${clothesPath}`);
       }
 
-      const { data: clothingData, error: downloadError } = await supabase.storage.from(bucket).download(clothingPath);
+      const { data: clothesData, error: downloadError } = await supabase.storage.from(bucket).download(clothesPath);
       if (downloadError) throw downloadError;
 
-      const buf = new Uint8Array(await clothingData.arrayBuffer());
-      clothingImage = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
+      const buf = new Uint8Array(await clothesData.arrayBuffer());
+      clothesImage = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
     }
 
     const model = genAI.getGenerativeModel({
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
         },
         {
           inlineData: {
-            data: clothingImage,
+            data: clothesImage,
             mimeType: "image/jpeg"
           }
         }

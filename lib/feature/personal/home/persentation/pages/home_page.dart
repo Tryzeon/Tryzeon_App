@@ -33,8 +33,8 @@ class HomePageState extends State<HomePage> {
 
   /// 核心試穿邏輯 - 處理本地檔案或儲存路徑的試穿
   Future<void> _performTryOn({
-    final String? clothingBase64,
-    final String? clothingPath,
+    final String? clothesBase64,
+    final String? clothesPath,
   }) async {
     if (_avatarFile == null) {
       TopNotification.show(
@@ -57,8 +57,8 @@ class HomePageState extends State<HomePage> {
 
     final result = await TryonService.tryon(
       avatarBase64: customAvatarBase64,
-      clothingBase64: clothingBase64,
-      clothingPath: clothingPath,
+      clothesBase64: clothesBase64,
+      clothesPath: clothesPath,
     );
 
     if (mounted) {
@@ -94,18 +94,18 @@ class HomePageState extends State<HomePage> {
 
   /// 從本地選擇衣服進行試穿
   Future<void> tryOnFromLocal() async {
-    final File? clothingImage = await ImagePickerHelper.pickImage(context);
-    if (clothingImage == null) return;
+    final File? clothesImage = await ImagePickerHelper.pickImage(context);
+    if (clothesImage == null) return;
 
-    final clothingBytes = await clothingImage.readAsBytes();
-    final clothingBase64 = base64Encode(clothingBytes);
+    final clothesBytes = await clothesImage.readAsBytes();
+    final clothesBase64 = base64Encode(clothesBytes);
 
-    await _performTryOn(clothingBase64: clothingBase64);
+    await _performTryOn(clothesBase64: clothesBase64);
   }
 
   /// 從儲存路徑進行試穿
-  Future<void> tryOnFromStorage(final String clothingPath) async {
-    await _performTryOn(clothingPath: clothingPath);
+  Future<void> tryOnFromStorage(final String clothesPath) async {
+    await _performTryOn(clothesPath: clothesPath);
   }
 
   Future<void> _loadAvatar({final bool forceRefresh = false}) async {
