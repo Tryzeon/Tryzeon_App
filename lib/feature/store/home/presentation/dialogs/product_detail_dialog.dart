@@ -135,8 +135,8 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
       types: selectedTypes.toList(), // 改為 types 傳遞陣列
       price: price,
       purchaseLink: purchaseLinkController.text,
-      currentFilePath: widget.product.imagePath,
-      newImageFile: newImage,
+      currentProductImagePath: widget.product.imagePath,
+      newProductImage: newImage,
     );
 
     if (!mounted) return;

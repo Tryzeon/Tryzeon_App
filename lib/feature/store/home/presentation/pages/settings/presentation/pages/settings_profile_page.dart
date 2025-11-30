@@ -45,7 +45,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     if (result.isSuccess) {
       setState(() {
         _storeProfile = result.data;
-        storeNameController.text = result.data!.storeName;
+        storeNameController.text = result.data!.name;
         storeAddressController.text = result.data!.address;
       });
     } else {
@@ -63,7 +63,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     });
 
     final result = await StoreProfileService.updateStoreProfile(
-      storeName: storeNameController.text.trim(),
+      name: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
     );
 

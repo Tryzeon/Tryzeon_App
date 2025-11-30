@@ -24,10 +24,10 @@ class StoreProfileService {
 
       // 讀取 cache
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadJSON(_cachedKey);
-        if (cachedData != null) {
-          final cachedProfile = StoreProfile.fromJson(cachedData);
-          return Result.success(data: cachedProfile);
+        final cachedStoreProfile = await CacheService.loadJSON(_cachedKey);
+        if (cachedStoreProfile != null) {
+          final storeProfile = StoreProfile.fromJson(cachedStoreProfile);
+          return Result.success(data: storeProfile);
         }
       }
 
@@ -44,8 +44,8 @@ class StoreProfileService {
 
       await CacheService.saveJSON(_cachedKey, response);
 
-      final profile = StoreProfile.fromJson(response);
-      return Result.success(data: profile);
+      final storeProfile = StoreProfile.fromJson(response);
+      return Result.success(data: storeProfile);
     } catch (e) {
       return Result.failure('取得店家資料失敗', error: e);
     }
@@ -53,13 +53,13 @@ class StoreProfileService {
 
   /// 獲取店家名稱
   static Future<String> getStoreName({final bool forceRefresh = false}) async {
-    final result = await getStoreProfile(forceRefresh: forceRefresh);
-    return result.data?.storeName ?? '店家';
+    final response = await getStoreProfile(forceRefresh: forceRefresh);
+    return response.data?.name ?? '店家';
   }
 
   /// 更新店家資料
   static Future<Result<StoreProfile>> updateStoreProfile({
-    required final String storeName,
+    required final String name,
     required final String address,
   }) async {
     try {
@@ -70,7 +70,7 @@ class StoreProfileService {
 
       final data = {
         'store_id': user,
-        'store_name': storeName,
+        'name': name,
         'address': address,
       };
 
@@ -82,8 +82,8 @@ class StoreProfileService {
 
       await CacheService.saveJSON(_cachedKey, response);
 
-      final profile = StoreProfile.fromJson(response);
-      return Result.success(data: profile);
+      final storeProfile = StoreProfile.fromJson(response);
+      return Result.success(data: storeProfile);
     } catch (e) {
       return Result.failure('更新店家資料失敗', error: e);
     }
@@ -93,38 +93,39 @@ class StoreProfileService {
   static Future<Result<File>> loadLogo(final String storeId) async {
     try {
       // 1. 先檢查本地資料夾是否有緩存
-      final cachedFiles = await CacheService.getImages(
+      final cachedLogo = await CacheService.getImages(
         relativePath: '$storeId/logo',
       );
 
-      if (cachedFiles.isNotEmpty) {
-        return Result.success(data: cachedFiles.first);
+      if (cachedLogo.isNotEmpty) {
+        return Result.success(data: cachedLogo.first);
       }
 
       // 2. 本地沒有，從 Supabase 下載
-      final files = await _supabase.storage
+      final logoFiles = await _supabase.storage
           .from(_logoBucket)
           .list(path: '$storeId/logo');
-      if (files.isEmpty) {
+
+      if (logoFiles.isEmpty) {
         return Result.success();
       }
 
-      final fileName = '$storeId/logo/${files.first.name}';
+      final logoPath = '$storeId/logo/${logoFiles.first.name}';
       final bytes = await _supabase.storage
           .from(_logoBucket)
-          .download(fileName);
+          .download(logoPath);
 
       // 保存到本地緩存
-      final savedFile = await CacheService.saveImage(bytes, fileName);
+      final logo = await CacheService.saveImage(bytes, logoPath);
 
-      return Result.success(data: savedFile);
+      return Result.success(data: logo);
     } catch (e) {
       return Result.failure('載入Logo失敗', error: e);
     }
   }
 
   /// 上傳店家Logo（先上傳到後端，成功後才保存到本地）
-  static Future<Result<File>> uploadLogo(final File logo) async {
+  static Future<Result<File>> uploadLogo(final File newLogo) async {
     try {
       final user = _supabase.auth.currentUser?.id;
       if (user == null) {
@@ -132,17 +133,17 @@ class StoreProfileService {
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = '$user/logo/$timestamp.jpg';
+      final logoPath = '$user/logo/$timestamp.jpg';
 
       // 1. 先刪除舊 Logo（本地和 Supabase）
       await _deleteLogo(user);
 
       // 2. 上傳到 Supabase
-      final bytes = await logo.readAsBytes();
+      final bytes = await newLogo.readAsBytes();
       await _supabase.storage
           .from(_logoBucket)
           .uploadBinary(
-            fileName,
+            logoPath,
             bytes,
             fileOptions: const FileOptions(
               contentType: 'image/jpeg',
@@ -151,29 +152,30 @@ class StoreProfileService {
           );
 
       // 3. 保存新的 Logo 到本地
-      final savedFile = await CacheService.saveImage(bytes, fileName);
+      final logo = await CacheService.saveImage(bytes, logoPath);
 
-      return Result.success(data: savedFile);
+      return Result.success(data: logo);
     } catch (e) {
       return Result.failure('上傳Logo失敗', error: e);
     }
   }
 
   /// 刪除舊 Logo（Supabase 和本地）
-  static Future<void> _deleteLogo(final String user) async {
+  static Future<void> _deleteLogo(final String storeId) async {
     try {
       // 刪除 Supabase 中的舊 Logo
-      final files = await _supabase.storage
+      final logoFiles = await _supabase.storage
           .from(_logoBucket)
-          .list(path: '$user/logo');
-      if (files.isNotEmpty) {
+          .list(path: '$storeId/logo');
+
+      if (logoFiles.isNotEmpty) {
         await _supabase.storage.from(_logoBucket).remove([
-          '$user/logo/${files.first.name}',
+          '$storeId/logo/${logoFiles.first.name}',
         ]);
       }
 
       // 刪除本地舊 Logo
-      await CacheService.deleteImages(relativePath: '$user/logo');
+      await CacheService.deleteImages(relativePath: '$storeId/logo');
     } catch (e) {
       // 忽略刪除錯誤
     }
@@ -183,20 +185,20 @@ class StoreProfileService {
 class StoreProfile {
   StoreProfile({
     required this.storeId,
-    required this.storeName,
+    required this.name,
     required this.address,
   });
 
   factory StoreProfile.fromJson(final Map<String, dynamic> json) {
     return StoreProfile(
       storeId: json['store_id'],
-      storeName: json['store_name'],
+      name: json['name'],
       address: json['address'],
     );
   }
 
   final String storeId;
-  final String storeName;
+  final String name;
   final String address;
 
   /// 按需載入 Logo，使用快取機制
@@ -205,6 +207,6 @@ class StoreProfile {
   }
 
   Map<String, dynamic> toJson() {
-    return {'store_id': storeId, 'store_name': storeName, 'address': address};
+    return {'store_id': storeId, 'name': name, 'address': address};
   }
 }
