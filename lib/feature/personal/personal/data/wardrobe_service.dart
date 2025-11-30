@@ -13,7 +13,7 @@ class WardrobeService {
 
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static Future<Result<List<WardrobeItem>>> getWardrobeItem({
+  static Future<Result<List<WardrobeItem>>> getWardrobeItems({
     final bool forceRefresh = false,
   }) async {
     try {
@@ -26,10 +26,10 @@ class WardrobeService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          final cachedWardrobeItem = cachedData
+          final cachedWardrobeItems = cachedData
               .map((final json) => WardrobeItem.fromJson(json))
               .toList();
-          return Result.success(data: cachedWardrobeItem);
+          return Result.success(data: cachedWardrobeItems);
         }
       }
 
@@ -42,11 +42,11 @@ class WardrobeService {
 
       await CacheService.saveList(_cacheKey, response);
 
-      final wardrobeItem = (response as List)
+      final wardrobeItems = (response as List)
           .map((final json) => WardrobeItem.fromJson(json))
           .toList();
 
-      return Result.success(data: wardrobeItem);
+      return Result.success(data: wardrobeItems);
     } catch (e) {
       return Result.failure('衣櫃列表獲取失敗', error: e);
     }

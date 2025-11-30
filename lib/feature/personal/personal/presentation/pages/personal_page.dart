@@ -70,7 +70,7 @@ class _PersonalPageState extends State<PersonalPage> {
     }
 
     final categories = WardrobeService.getWardrobeTypesList();
-    final result = await WardrobeService.getWardrobeItem(forceRefresh: forceRefresh);
+    final result = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh);
 
     if (!mounted) return;
 
