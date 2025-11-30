@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/models/product.dart';
+import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
@@ -18,6 +19,7 @@ class ProductDetailDialog extends StatefulWidget {
 }
 
 class _ProductDetailDialogState extends State<ProductDetailDialog> {
+  late Future<Result<File>> productImage;
   late TextEditingController nameController;
   late TextEditingController priceController;
   late TextEditingController purchaseLinkController;
@@ -35,6 +37,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     priceController = TextEditingController(text: widget.product.price.toString());
     purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
     selectedTypes = Set<String>.from(widget.product.types);
+    productImage = widget.product.loadImage();
     _loadProductTypes();
   }
 
@@ -86,8 +89,8 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     });
 
     if (result.isSuccess) {
-      Navigator.pop(context, true);
       TopNotification.show(context, message: '商品刪除成功', type: NotificationType.success);
+      Navigator.pop(context, true);
     } else {
       TopNotification.show(
         context,
@@ -250,7 +253,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                       width: double.infinity,
                                     )
                                   : FutureBuilder(
-                                      future: widget.product.loadImage(),
+                                      future: productImage,
                                       builder: (final context, final snapshot) {
                                         final result = snapshot.data;
                                         if (result != null && result.isSuccess) {
