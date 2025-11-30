@@ -24,14 +24,12 @@ class ProductService {
       }
 
       if (!forceRefresh) {
-        final cachedProducts = await CacheService.loadList(_cacheKey);
-        if (cachedProducts != null) {
-          final List<Product> products = cachedProducts
+        final cachedData = await CacheService.loadList(_cacheKey);
+        if (cachedData != null) {
+          final List<Product> cachedProducts = cachedData
               .map((final json) => Product.fromJson(json))
               .toList();
-          return Result.success(
-            data: _sortProducts(products, sortBy, ascending),
-          );
+          return Result.success(data: _sortProducts(cachedProducts, sortBy, ascending));
         }
       }
 
@@ -55,7 +53,7 @@ class ProductService {
     required final List<String> types,
     required final int price,
     required final String purchaseLink,
-    required final File productImage,
+    required final File image,
     final List<ProductSize> sizes = const [],
   }) async {
     try {
@@ -66,7 +64,7 @@ class ProductService {
       }
 
       // 如果有圖片，先上傳圖片
-      final String productImagePath = await _uploadProductImage(productImage) ?? '';
+      final String imagePath = await _uploadProductImage(store, image);
 
       // 商品創建資料
       final product = Product(
@@ -75,7 +73,7 @@ class ProductService {
         types: types,
         price: price,
         purchaseLink: purchaseLink,
-        imagePath: productImagePath,
+        imagePath: imagePath,
       );
 
       final response = await _supabase
@@ -118,15 +116,20 @@ class ProductService {
     final File? newProductImage,
   }) async {
     try {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
+        return Result.failure('使用者獲取失敗');
+      }
+
       String? productImagePath = currentProductImagePath;
 
       // 如果有新圖片，上傳新圖片並刪除舊圖片
       if (newProductImage != null) {
         // 上傳新圖片
-        final newProductImagePath = await _uploadProductImage(newProductImage);
+        final newProductImagePath = await _uploadProductImage(store, newProductImage);
 
         // 如果新圖片上傳成功，刪除舊圖片
-        if (newProductImagePath != null && currentProductImagePath.isNotEmpty) {
+        if (currentProductImagePath.isNotEmpty) {
           await _deleteProductImage(currentProductImagePath);
         }
 
@@ -177,10 +180,10 @@ class ProductService {
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File>> loadProductImage(final String productImagePath) async {
+  static Future<Result<File>> loadProductImage(final String imagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
-      final cachedProductImage = await CacheService.getImage(productImagePath);
+      final cachedProductImage = await CacheService.getImage(imagePath);
       if (cachedProductImage != null && await cachedProductImage.exists()) {
         return Result.success(data: cachedProductImage);
       }
@@ -188,8 +191,8 @@ class ProductService {
       // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
       final bytes = await _supabase.storage
           .from(_productImagesBucket)
-          .download(productImagePath);
-      final productImage = await CacheService.saveImage(bytes, productImagePath);
+          .download(imagePath);
+      final productImage = await CacheService.saveImage(bytes, imagePath);
 
       return Result.success(data: productImage);
     } catch (e) {
@@ -198,16 +201,13 @@ class ProductService {
   }
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
-  static Future<String?> _uploadProductImage(final File productImage) async {
-    final store = _supabase.auth.currentUser;
-    if (store == null) return null;
-
+  static Future<String> _uploadProductImage(final store, final File image) async {
     // 生成唯一的檔案名稱
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final imageName = '$timestamp.jpg';
     final productImagePath = '${store.id}/products/$imageName';
 
-    final bytes = await productImage.readAsBytes();
+    final bytes = await image.readAsBytes();
 
     // 上傳到 Supabase Storage
     await _supabase.storage
@@ -228,14 +228,14 @@ class ProductService {
   }
 
   /// 刪除商品圖片（Supabase 和本地）
-  static Future<void> _deleteProductImage(final String productImagePath) async {
-    if (productImagePath.isEmpty) return;
+  static Future<void> _deleteProductImage(final String imagePath) async {
+    if (imagePath.isEmpty) return;
 
     // 1. 刪除 Supabase Storage 中的圖片
-    await _supabase.storage.from(_productImagesBucket).remove([productImagePath]);
+    await _supabase.storage.from(_productImagesBucket).remove([imagePath]);
 
     // 2. 刪除本地緩存的圖片
-    await CacheService.deleteImage(productImagePath);
+    await CacheService.deleteImage(imagePath);
   }
 
   /// 本地排序產品
