@@ -75,8 +75,7 @@ class WardrobeService {
             storagePath,
             bytes,
             fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              upsert: false,
+              contentType: 'image/jpeg'
             ),
           );
 

@@ -217,7 +217,6 @@ class ProductService {
           bytes,
           fileOptions: const FileOptions(
             contentType: 'image/jpeg',
-            upsert: false,
           ),
         );
 

@@ -148,7 +148,6 @@ class StoreProfileService {
             bytes,
             fileOptions: const FileOptions(
               contentType: 'image/jpeg',
-              upsert: false,
             ),
           );
 
