@@ -76,7 +76,8 @@ class StoreProfileService {
 
       final response = await _supabase
           .from(_storesProfileTable)
-          .upsert(data, onConflict: 'store_id')
+          .update(data)
+          .eq('store_id', user)
           .select()
           .single();
 
