@@ -117,12 +117,11 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     });
 
     final result = await ProductService.updateProduct(
-      productId: widget.product.id!,
+      product: widget.product,
       name: nameController.text,
-      types: selectedTypes.toList(), // 改為 types 傳遞陣列
+      types: selectedTypes.toList(),
       price: price,
       purchaseLink: purchaseLinkController.text,
-      currentProductImagePath: widget.product.imagePath,
       newProductImage: newImage,
     );
 

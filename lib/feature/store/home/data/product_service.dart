@@ -107,12 +107,11 @@ class ProductService {
 
   /// 更新商品
   static Future<Result<void>> updateProduct({
-    required final String productId,
+    required final Product product,
     required final String name,
     required final List<String> types,
     required final int price,
     required final String purchaseLink,
-    required final String currentProductImagePath,
     final File? newProductImage,
   }) async {
     try {
@@ -121,19 +120,11 @@ class ProductService {
         return Result.failure('使用者獲取失敗');
       }
 
-      String? productImagePath = currentProductImagePath;
+      String? productImagePath = product.imagePath;
 
-      // 如果有新圖片，上傳新圖片並刪除舊圖片
       if (newProductImage != null) {
-        // 上傳新圖片
-        final newProductImagePath = await _uploadProductImage(store, newProductImage);
-
-        // 如果新圖片上傳成功，刪除舊圖片
-        if (currentProductImagePath.isNotEmpty) {
-          await _deleteProductImage(currentProductImagePath);
-        }
-
-        productImagePath = newProductImagePath;
+        await _deleteProductImage(productImagePath);
+        productImagePath = await _uploadProductImage(store, newProductImage);
       }
 
       final updateData = {
@@ -145,7 +136,7 @@ class ProductService {
         'updated_at': DateTime.now().toIso8601String(),
       };
 
-      await _supabase.from(_productsTable).update(updateData).eq('id', productId);
+      await _supabase.from(_productsTable).update(updateData).eq('id', product.id!);
 
       // 清除快取以確保下次獲取最新資料
       await CacheService.clearCache(_cacheKey);
