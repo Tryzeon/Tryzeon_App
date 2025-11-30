@@ -24,10 +24,10 @@ class StoreProfileService {
 
       // 讀取 cache
       if (!forceRefresh) {
-        final cachedStoreProfile = await CacheService.loadJSON(_cachedKey);
-        if (cachedStoreProfile != null) {
-          final storeProfile = StoreProfile.fromJson(cachedStoreProfile);
-          return Result.success(data: storeProfile);
+        final cachedData = await CacheService.loadJSON(_cachedKey);
+        if (cachedData != null) {
+          final cachedStoreProfile = StoreProfile.fromJson(cachedData);
+          return Result.success(data: cachedStoreProfile);
         }
       }
 

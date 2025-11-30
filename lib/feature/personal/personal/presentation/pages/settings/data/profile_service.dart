@@ -21,10 +21,10 @@ class UserProfileService {
       }
 
       if (!forceRefresh) {
-        final cachedUserProfile = await CacheService.loadJSON(_cacheKey);
-        if (cachedUserProfile != null) {
-          final userProfile = UserProfile.fromJson(cachedUserProfile);
-          return Result.success(data: userProfile);
+        final cachedData = await CacheService.loadJSON(_cacheKey);
+        if (cachedData != null) {
+          final cachedUserProfile = UserProfile.fromJson(cachedData);
+          return Result.success(data: cachedUserProfile);
         }
       }
 
