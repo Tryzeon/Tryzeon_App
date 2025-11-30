@@ -172,15 +172,19 @@ class ProductService {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedProductImage = await CacheService.getImage(imagePath);
-      if (cachedProductImage != null && await cachedProductImage.exists()) {
+      if (cachedProductImage != null) {
         return Result.success(data: cachedProductImage);
       }
 
-      // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
-      final bytes = await _supabase.storage
+      // 2. 本地沒有，從 Supabase 取得 Signed URL 下載
+      final url = await _supabase.storage
           .from(_productImagesBucket)
-          .download(imagePath);
-      final productImage = await CacheService.saveImage(bytes, imagePath);
+          .createSignedUrl(imagePath, 60);
+
+      final productImage = await CacheService.getImage(
+        imagePath,
+        downloadUrl: url,
+      );
 
       return Result.success(data: productImage);
     } catch (e) {

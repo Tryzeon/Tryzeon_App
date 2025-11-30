@@ -65,7 +65,7 @@ class WardrobeService {
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final imagePath = '$user.id/$categoryCode/$timestamp.jpg';
+      final imagePath = '${user.id}/$categoryCode/$timestamp.jpg';
 
       // 1. 上傳圖片到 Supabase Storage
       final bytes = await image.readAsBytes();
@@ -121,13 +121,16 @@ class WardrobeService {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedImage = await CacheService.getImage(imagePath);
-      if (cachedImage != null && await cachedImage.exists()) {
+      if (cachedImage != null) {
         return Result.success(data: cachedImage);
       }
 
-      // 2. 本地沒有，從 Supabase 下載並保存到本地緩存
-      final bytes = await _supabase.storage.from(_bucket).download(imagePath);
-      final image = await CacheService.saveImage(bytes, imagePath);
+      // 2. 本地沒有，從 Supabase 取得 Signed URL 下載
+      final url = await _supabase.storage
+          .from(_bucket)
+          .createSignedUrl(imagePath, 60);
+
+      final image = await CacheService.getImage(imagePath, downloadUrl: url);
 
       return Result.success(data: image);
     } catch (e) {

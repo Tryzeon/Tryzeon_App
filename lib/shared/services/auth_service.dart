@@ -1,7 +1,7 @@
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 enum UserType { personal, store }
 
@@ -80,11 +80,8 @@ class AuthService {
   /// 登出
   static Future<Result<void>> signOut() async {
     try {
-      await DefaultCacheManager().emptyCache();
-
-      // 清除所有 SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      // 清除所有 SharedPreferences and Cache
+      await CacheService.emptyCache();
 
       // 執行 Supabase 登出
       await _supabase.auth.signOut();

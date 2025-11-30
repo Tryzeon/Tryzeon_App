@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/services/cache_service.dart';
 
 class AvatarService {
   static final _supabase = Supabase.instance.client;
@@ -26,15 +26,15 @@ class AvatarService {
         return Result.success();
       }
 
-      final cachedAvatar = await DefaultCacheManager().getFileFromCache(avatarPath);
+      final cachedAvatar = await CacheService.getImage(avatarPath);
       if (cachedAvatar != null) {
-        return Result.success(data: cachedAvatar.file);
+        return Result.success(data: cachedAvatar);
       }
 
       // Download from Supabase Storage
       final url = await _supabase.storage.from(_bucket).createSignedUrl(avatarPath, 60);
 
-      final avatar = await DefaultCacheManager().getSingleFile(url, key: avatarPath);
+      final avatar = await CacheService.getImage(avatarPath, downloadUrl: url);
 
       return Result.success(data: avatar);
     } catch (e) {
@@ -73,12 +73,7 @@ class AvatarService {
       await _supabase.auth.updateUser(UserAttributes(data: {'avatar_path': avatarPath}));
 
       // 4. 保存到本地緩存
-      final avatar = await DefaultCacheManager().putFile(
-        avatarPath,
-        bytes,
-        key: avatarPath,
-        fileExtension: 'png',
-      );
+      final avatar = await CacheService.saveImage(bytes, avatarPath);
 
       return Result.success(data: avatar);
     } catch (e) {

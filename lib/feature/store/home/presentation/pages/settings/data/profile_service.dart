@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -100,20 +99,15 @@ class StoreProfileService {
         return Result.success();
       }
 
-      final cachedLogo = await DefaultCacheManager().getFileFromCache(logoPath);
+      final cachedLogo = await CacheService.getImage(logoPath);
       if (cachedLogo != null) {
-        return Result.success(data: cachedLogo.file);
+        return Result.success(data: cachedLogo);
       }
 
       // Download from Supabase Storage
-      final url = await _supabase.storage
-          .from(_logoBucket)
-          .createSignedUrl(logoPath, 60);
+      final url = await _supabase.storage.from(_logoBucket).createSignedUrl(logoPath, 60);
 
-      final logo = await DefaultCacheManager().getSingleFile(
-        url,
-        key: logoPath,
-      );
+      final logo = await CacheService.getImage(logoPath, downloadUrl: url);
 
       return Result.success(data: logo);
     } catch (e) {
@@ -142,11 +136,13 @@ class StoreProfileService {
 
       // 2. 上傳到 Supabase
       final bytes = await image.readAsBytes();
-      await _supabase.storage.from(_logoBucket).uploadBinary(
-        logoPath,
-        bytes,
-        fileOptions: const FileOptions(contentType: 'image/png'),
-      );
+      await _supabase.storage
+          .from(_logoBucket)
+          .uploadBinary(
+            logoPath,
+            bytes,
+            fileOptions: const FileOptions(contentType: 'image/png'),
+          );
 
       // 3. 更新 store_profile table
       final response = await _supabase
@@ -160,12 +156,7 @@ class StoreProfileService {
       await CacheService.saveJSON(_cachedKey, response);
 
       // 5. 保存圖片到本地緩存
-      final logo = await DefaultCacheManager().putFile(
-        logoPath,
-        bytes,
-        key: logoPath,
-        fileExtension: 'png',
-      );
+      final logo = await CacheService.saveImage(bytes, logoPath);
 
       return Result.success(data: logo);
     } catch (e) {

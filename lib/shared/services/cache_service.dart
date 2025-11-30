@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 
@@ -53,6 +53,7 @@ class CacheService {
       await prefs.setString(cacheKey, jsonString);
     } catch (e) {
       AppLogger.error('Failed to save list cache for $cacheKey', e);
+      rethrow;
     }
   }
 
@@ -70,7 +71,7 @@ class CacheService {
       return jsonDecode(jsonString) as List<dynamic>;
     } catch (e) {
       AppLogger.error('Failed to load list cache for $cacheKey', e);
-      return null;
+      rethrow;
     }
   }
 
@@ -83,76 +84,70 @@ class CacheService {
       await prefs.remove(cacheKey);
     } catch (e) {
       AppLogger.error('Failed to clear cache for $cacheKey', e);
+      rethrow;
     }
   }
 
-  /// 保存檔案到指定的緩存路徑
+  /// 保存檔案到緩存
   ///
   /// [bytes] 要保存的檔案數據
-  /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
+  /// [filePath] 檔案路徑，將作為緩存的 key
   ///
   /// Returns 保存後的檔案
   static Future<File> saveImage(final Uint8List bytes, final String filePath) async {
     try {
-      final baseDir = await getApplicationDocumentsDirectory();
-
-      // 分離目錄路徑和檔名
-      final lastSlashIndex = filePath.lastIndexOf('/');
-      final dirPath = filePath.substring(0, lastSlashIndex);
-
-      final targetDir = Directory('${baseDir.path}/$dirPath');
-
-      // 創建目錄（如果不存在）
-      if (!targetDir.existsSync()) {
-        await targetDir.create(recursive: true);
-      }
-
-      // 保存檔案
-      final targetPath = '${baseDir.path}/$filePath';
-      final file = File(targetPath);
-      await file.writeAsBytes(bytes);
-
-      return file;
+      return await DefaultCacheManager().putFile(filePath, bytes, key: filePath);
     } catch (e) {
       AppLogger.error('Failed to save image to $filePath', e);
       rethrow;
     }
   }
 
-  /// 獲取指定路徑的檔案
+  /// 獲取緩存的檔案
   ///
-  /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
+  /// [filePath] 檔案路徑，作為緩存的 key
+  /// [downloadUrl] 如果提供，當緩存不存在時會嘗試從此 URL 下載
   ///
   /// Returns 找到的檔案，如果不存在則返回 null
-  static Future<File?> getImage(final String filePath) async {
+  static Future<File?> getImage(
+    final String filePath, {
+    final String? downloadUrl,
+  }) async {
     try {
-      final baseDir = await getApplicationDocumentsDirectory();
-      final file = File('${baseDir.path}/$filePath');
-
-      if (await file.exists()) {
-        return file;
+      if (downloadUrl != null) {
+        return await DefaultCacheManager().getSingleFile(downloadUrl, key: filePath);
       }
 
-      return null;
+      final fileInfo = await DefaultCacheManager().getFileFromCache(filePath);
+      return fileInfo?.file;
     } catch (e) {
       AppLogger.error('Failed to get image from $filePath', e);
-      return null;
+      rethrow;
     }
   }
 
-  /// 刪除指定的單個檔案
+  /// 刪除指定的緩存檔案
   ///
-  /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
+  /// [filePath] 檔案路徑，作為緩存的 key
   static Future<void> deleteImage(final String filePath) async {
     try {
-      final baseDir = await getApplicationDocumentsDirectory();
-      final file = File('${baseDir.path}/$filePath');
-
-      if (await file.exists()) {
-        await file.delete();
-      }
+      await DefaultCacheManager().removeFile(filePath);
     } catch (e) {
       AppLogger.error('Failed to delete image at $filePath', e);
+      rethrow;
+    }
+  }
+
+  /// 清空所有緩存
+  static Future<void> emptyCache() async {
+    try {
+      await DefaultCacheManager().emptyCache();
+      
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (e) {
+      AppLogger.error('Failed to empty cache', e);
+      rethrow;
     }
   }
 }
