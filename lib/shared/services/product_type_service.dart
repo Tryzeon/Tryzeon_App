@@ -15,8 +15,8 @@ class ProductTypeService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          final types = List<String>.from(cachedData);
-          return Result.success(data: types);
+          final cachedProductTypes = List<String>.from(cachedData);
+          return Result.success(data: cachedProductTypes);
         }
       }
 
@@ -25,13 +25,13 @@ class ProductTypeService {
           .select('name_zh')
           .order('priority', ascending: true);
 
-      final types = (response as List)
+      final productTypes = (response as List)
           .map((final item) => item['name_zh'] as String)
           .toList();
 
-      await CacheService.saveList(_cacheKey, types);
+      await CacheService.saveList(_cacheKey, productTypes);
 
-      return Result.success(data: types);
+      return Result.success(data: productTypes);
     } catch (e) {
       return Result.failure('商品類型取得失敗', error: e);
     }
