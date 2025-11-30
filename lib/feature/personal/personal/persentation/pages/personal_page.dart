@@ -6,8 +6,8 @@ import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../../data/wardrobe_service.dart';
-import '../dialogs/upload_clothing_dialog.dart';
-import '../widgets/clothing_card.dart';
+import '../dialogs/upload_wardrobe_item_dialog.dart';
+import '../widgets/wardrobe_item_card.dart';
 import 'settings/data/profile_service.dart';
 import 'settings/presentation/pages/settings_page.dart';
 
@@ -22,7 +22,7 @@ class _PersonalPageState extends State<PersonalPage> {
   String username = '';
   List<String> wardrobeCategories = [];
   String selectedCategory = '全部';
-  List<Clothing> clothing = [];
+  List<WardrobeItem> wardrobeItem = [];
   final ScrollController _categoryScrollController = ScrollController();
   bool _isLoading = true;
 
@@ -71,7 +71,7 @@ class _PersonalPageState extends State<PersonalPage> {
     }
 
     final categories = WardrobeService.getWardrobeTypesList();
-    final result = await WardrobeService.getClothing(
+    final result = await WardrobeService.getWardrobeItem(
       forceRefresh: forceRefresh,
     );
 
@@ -83,7 +83,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (result.isSuccess) {
       setState(() {
-        clothing = result.data!;
+        wardrobeItem = result.data!;
         wardrobeCategories = ['全部', ...categories];
       });
     } else {
@@ -95,7 +95,7 @@ class _PersonalPageState extends State<PersonalPage> {
     }
   }
 
-  Future<void> _showDeleteDialog(final Clothing item) async {
+  Future<void> _showDeleteDialog(final WardrobeItem item) async {
     final confirmed = await ConfirmationDialog.show(
       context: context,
       title: '刪除衣物',
@@ -105,7 +105,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (confirmed != true || !mounted) return;
 
-    final result = await WardrobeService.deleteClothing(item);
+    final result = await WardrobeService.deleteWardrobeItem(item);
     if (!mounted) return;
 
     if (result.isSuccess) {
@@ -125,7 +125,7 @@ class _PersonalPageState extends State<PersonalPage> {
     if (image != null && mounted) {
       final result = await showDialog<bool>(
         context: context,
-        builder: (final context) => UploadClothingDialog(
+        builder: (final context) => UploadWardrobeItemDialog(
           image: image,
           categories: WardrobeService.getWardrobeTypesList(),
         ),
@@ -269,7 +269,7 @@ class _PersonalPageState extends State<PersonalPage> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => _loadPersonalData(forceRefresh: true),
-                  child: _buildClothingGrid(),
+                  child: _buildWardrobeItemGrid(),
                 ),
               ),
             ],
@@ -388,7 +388,7 @@ class _PersonalPageState extends State<PersonalPage> {
     );
   }
 
-  Widget _buildClothingGrid() {
+  Widget _buildWardrobeItemGrid() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -398,13 +398,13 @@ class _PersonalPageState extends State<PersonalPage> {
       );
     }
 
-    final filteredClothing = selectedCategory == '全部'
-        ? clothing
-        : clothing
+    final filteredWardrobeItem = selectedCategory == '全部'
+        ? wardrobeItem
+        : wardrobeItem
               .where((final item) => item.category == selectedCategory)
               .toList();
 
-    if (filteredClothing.isEmpty) {
+    if (filteredWardrobeItem.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -451,11 +451,11 @@ class _PersonalPageState extends State<PersonalPage> {
           mainAxisSpacing: 16,
           childAspectRatio: 0.7,
         ),
-        itemCount: filteredClothing.length,
+        itemCount: filteredWardrobeItem.length,
         itemBuilder: (final context, final index) {
-          return ClothingCard(
-            item: filteredClothing[index],
-            onDelete: () => _showDeleteDialog(filteredClothing[index]),
+          return WardrobeItemCard(
+            item: filteredWardrobeItem[index],
+            onDelete: () => _showDeleteDialog(filteredWardrobeItem[index]),
           );
         },
       );

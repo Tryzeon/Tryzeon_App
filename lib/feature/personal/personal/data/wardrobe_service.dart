@@ -11,7 +11,7 @@ class WardrobeService {
 
   static const _cacheKey = 'wardrobe_items_cache';
 
-  static Future<Result<List<Clothing>>> getClothing({
+  static Future<Result<List<WardrobeItem>>> getWardrobeItem({
     final bool forceRefresh = false,
   }) async {
     final userId = _supabase.auth.currentUser?.id;
@@ -24,10 +24,10 @@ class WardrobeService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadList(_cacheKey);
         if (cachedData != null) {
-          final clothing = cachedData
-              .map((final json) => Clothing.fromJson(json))
+          final wardrobeItem = cachedData
+              .map((final json) => WardrobeItem.fromJson(json))
               .toList();
-          return Result.success(data: clothing);
+          return Result.success(data: wardrobeItem);
         }
       }
 
@@ -40,17 +40,17 @@ class WardrobeService {
 
       await CacheService.saveList(_cacheKey, response);
 
-      final clothing = (response as List)
-          .map((final json) => Clothing.fromJson(json))
+      final wardrobeItem = (response as List)
+          .map((final json) => WardrobeItem.fromJson(json))
           .toList();
 
-      return Result.success(data: clothing);
+      return Result.success(data: wardrobeItem);
     } catch (e) {
       return Result.failure('獲取衣櫃列表失敗', error: e);
     }
   }
 
-  static Future<Result<List<Clothing>>> uploadClothing(
+  static Future<Result<List<WardrobeItem>>> uploadWardrobeItem(
     final File imageFile,
     final String category, {
     final List<String> tags = const [],
@@ -98,8 +98,8 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<List<Clothing>>> deleteClothing(
-    final Clothing item,
+  static Future<Result<List<WardrobeItem>>> deleteWardrobeItem(
+    final WardrobeItem item,
   ) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -125,7 +125,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<File>> loadClothingImage(
+  static Future<Result<File>> loadWardrobeItemImage(
     final String storagePath,
   ) async {
     try {
@@ -146,43 +146,43 @@ class WardrobeService {
   }
 
   static List<String> getWardrobeTypesList() {
-    return ClothingType.all.map((final t) => t.zh).toList();
+    return WardrobeItemType.all.map((final t) => t.zh).toList();
   }
 
   static String getWardrobeTypesEnglishCode(final String nameZh) {
-    final type = ClothingType.all
+    final type = WardrobeItemType.all
         .where((final t) => t.zh == nameZh)
         .firstOrNull;
     return type?.en ?? nameZh;
   }
 }
 
-class ClothingType {
-  const ClothingType({required this.zh, required this.en});
+class WardrobeItemType {
+  const WardrobeItemType({required this.zh, required this.en});
   final String zh;
   final String en;
 
-  static const List<ClothingType> all = [
-    ClothingType(zh: '上衣', en: 'top'),
-    ClothingType(zh: '褲子', en: 'pants'),
-    ClothingType(zh: '裙子', en: 'skirt'),
-    ClothingType(zh: '外套', en: 'jacket'),
-    ClothingType(zh: '鞋子', en: 'shoes'),
-    ClothingType(zh: '配件', en: 'accessories'),
-    ClothingType(zh: '其他', en: 'others'),
+  static const List<WardrobeItemType> all = [
+    WardrobeItemType(zh: '上衣', en: 'top'),
+    WardrobeItemType(zh: '褲子', en: 'pants'),
+    WardrobeItemType(zh: '裙子', en: 'skirt'),
+    WardrobeItemType(zh: '外套', en: 'jacket'),
+    WardrobeItemType(zh: '鞋子', en: 'shoes'),
+    WardrobeItemType(zh: '配件', en: 'accessories'),
+    WardrobeItemType(zh: '其他', en: 'others'),
   ];
 }
 
-class Clothing {
-  Clothing({
+class WardrobeItem {
+  WardrobeItem({
     this.id,
     required this.imagePath,
     required this.category,
     this.tags = const [],
   });
 
-  factory Clothing.fromJson(final Map<String, dynamic> json) {
-    return Clothing(
+  factory WardrobeItem.fromJson(final Map<String, dynamic> json) {
+    return WardrobeItem(
       id: json['id'],
       imagePath: json['image_path'],
       category: json['category'],
@@ -206,6 +206,6 @@ class Clothing {
 
   // 按需載入圖片，使用快取機制
   Future<Result<File>> loadImage() async {
-    return WardrobeService.loadClothingImage(imagePath);
+    return WardrobeService.loadWardrobeItemImage(imagePath);
   }
 }

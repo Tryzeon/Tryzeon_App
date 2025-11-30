@@ -5,16 +5,16 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../../data/wardrobe_service.dart';
 
-class ClothingCard extends StatefulWidget {
-  const ClothingCard({super.key, required this.item, required this.onDelete});
-  final Clothing item;
+class WardrobeItemCard extends StatefulWidget {
+  const WardrobeItemCard({super.key, required this.item, required this.onDelete});
+  final WardrobeItem item;
   final VoidCallback onDelete;
 
   @override
-  State<ClothingCard> createState() => _ClothingCardState();
+  State<WardrobeItemCard> createState() => _WardrobeItemCardState();
 }
 
-class _ClothingCardState extends State<ClothingCard> {
+class _WardrobeItemCardState extends State<WardrobeItemCard> {
   File? _imageFile;
   bool _isLoading = true;
 
@@ -25,7 +25,7 @@ class _ClothingCardState extends State<ClothingCard> {
   }
 
   @override
-  void didUpdateWidget(final ClothingCard oldWidget) {
+  void didUpdateWidget(final WardrobeItemCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     // 當 item 改變時重新載入圖片
     if (oldWidget.item.imagePath != widget.item.imagePath) {

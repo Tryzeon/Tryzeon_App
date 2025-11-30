@@ -5,8 +5,8 @@ import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../../data/wardrobe_service.dart';
 
-class UploadClothingDialog extends StatefulWidget {
-  const UploadClothingDialog({
+class UploadWardrobeItemDialog extends StatefulWidget {
+  const UploadWardrobeItemDialog({
     super.key,
     required this.image,
     required this.categories,
@@ -15,10 +15,10 @@ class UploadClothingDialog extends StatefulWidget {
   final List<String> categories;
 
   @override
-  State<UploadClothingDialog> createState() => _UploadClothingDialogState();
+  State<UploadWardrobeItemDialog> createState() => _UploadWardrobeItemDialogState();
 }
 
-class _UploadClothingDialogState extends State<UploadClothingDialog> {
+class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
   String? _selectedCategory;
   final List<String> _selectedTags = [];
   bool _isUploading = false;
@@ -43,7 +43,7 @@ class _UploadClothingDialogState extends State<UploadClothingDialog> {
       _isUploading = true;
     });
 
-    final result = await WardrobeService.uploadClothing(
+    final result = await WardrobeService.uploadWardrobeItem(
       widget.image,
       _selectedCategory!,
       tags: _selectedTags,
