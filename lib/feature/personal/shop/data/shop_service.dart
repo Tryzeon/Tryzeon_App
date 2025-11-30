@@ -23,7 +23,7 @@ class ShopService {
             *,
             store_profile(
               store_id,
-              store_name
+              name
             ),
             product_sizes(*)
           ''');

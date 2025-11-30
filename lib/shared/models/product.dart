@@ -65,7 +65,7 @@ class Product {
       updatedAt: DateTime.parse(json['updated_at']),
       tryonCount: json['tryon_count'] ?? 0,
       purchaseClickCount: json['purchase_click_count'] ?? 0,
-      storeName: json['store_profile']?['store_name'],
+      storeName: json['store_profile']?['name'],
       sizes:
           (json['product_sizes'] as List?)
               ?.map((final e) => ProductSize.fromJson(e))
