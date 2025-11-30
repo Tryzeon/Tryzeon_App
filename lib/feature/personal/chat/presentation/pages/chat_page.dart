@@ -318,7 +318,7 @@ class _ChatPageState extends State<ChatPage> {
       // Show error message
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '獲取 LLM 回應失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

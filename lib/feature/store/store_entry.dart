@@ -45,7 +45,7 @@ class _StoreEntryState extends State<StoreEntry> {
 
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '無法取得店家資料',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

@@ -39,7 +39,7 @@ class StoreProfileService {
           .maybeSingle();
 
       if (response == null) {
-        return Result.failure('查無店家資料');
+        return Result.success();
       }
 
       await CacheService.saveJSON(_cachedKey, response);

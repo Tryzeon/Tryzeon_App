@@ -64,7 +64,7 @@ class _StoreLoginPageState extends State<StoreLoginPage>
         MaterialPageRoute(builder: (final context) => const StoreEntry()),
       );
     } else if (!result.isSuccess) {
-      _showError(result.errorMessage ?? '$provider Login Failed');
+      _showError(result.errorMessage!);
     }
   }
 

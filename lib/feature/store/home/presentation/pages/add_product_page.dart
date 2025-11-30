@@ -97,7 +97,7 @@ class _AddProductPageState extends State<AddProductPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入商品類型失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -161,7 +161,7 @@ class _AddProductPageState extends State<AddProductPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '商品新增失敗,請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

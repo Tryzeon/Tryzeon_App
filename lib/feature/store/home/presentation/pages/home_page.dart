@@ -73,7 +73,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入商品失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

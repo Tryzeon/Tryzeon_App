@@ -61,7 +61,7 @@ class StoreProductCard extends StatelessWidget {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           TopNotification.show(
                             context,
-                            message: result.errorMessage ?? '載入圖片失敗',
+                            message: result.errorMessage!,
                             type: NotificationType.error,
                           );
                         });

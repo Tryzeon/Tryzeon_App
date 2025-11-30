@@ -55,7 +55,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入圖片失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

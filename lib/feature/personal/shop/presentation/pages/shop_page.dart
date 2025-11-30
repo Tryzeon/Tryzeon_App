@@ -69,7 +69,7 @@ class _ShopPageState extends State<ShopPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入商品類型失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -100,7 +100,7 @@ class _ShopPageState extends State<ShopPage> {
       setState(() => isLoading = false);
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入商品失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

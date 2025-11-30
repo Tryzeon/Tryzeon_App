@@ -53,7 +53,7 @@ class _PersonalProfileSettingsPageState
       if (mounted) {
         TopNotification.show(
           context,
-          message: result.errorMessage ?? '載入個人資料失敗，請稍後再試',
+          message: result.errorMessage!,
           type: NotificationType.error,
         );
       }
@@ -101,7 +101,7 @@ class _PersonalProfileSettingsPageState
       } else {
         TopNotification.show(
           context,
-          message: result.errorMessage ?? '更新失敗，請稍後再試',
+          message: result.errorMessage!,
           type: NotificationType.error,
         );
       }

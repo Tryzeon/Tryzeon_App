@@ -90,7 +90,7 @@ class _PersonalPageState extends State<PersonalPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入衣櫃項目失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -114,7 +114,7 @@ class _PersonalPageState extends State<PersonalPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '刪除失敗，請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

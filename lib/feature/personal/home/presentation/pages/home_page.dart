@@ -85,7 +85,7 @@ class HomePageState extends State<HomePage> {
       } else {
         TopNotification.show(
           context,
-          message: result.errorMessage ?? '發生錯誤',
+          message: result.errorMessage!,
           type: NotificationType.error,
         );
       }
@@ -127,7 +127,7 @@ class HomePageState extends State<HomePage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '獲取頭像失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -164,7 +164,7 @@ class HomePageState extends State<HomePage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '上傳失敗，請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

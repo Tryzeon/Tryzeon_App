@@ -64,7 +64,7 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
         MaterialPageRoute(builder: (final context) => const PersonalEntry()),
       );
     } else if (!result.isSuccess) {
-      _showError(result.errorMessage ?? '$provider Login Failed');
+      _showError(result.errorMessage!);
     }
   }
 

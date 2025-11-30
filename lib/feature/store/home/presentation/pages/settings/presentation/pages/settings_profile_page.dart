@@ -51,7 +51,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入店家資料失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -83,7 +83,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '更新失敗，請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -115,7 +115,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '上傳失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }

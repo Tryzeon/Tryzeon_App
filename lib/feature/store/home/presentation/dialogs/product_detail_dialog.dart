@@ -53,7 +53,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '載入商品類型失敗',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -99,7 +99,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '商品刪除失敗，請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -155,7 +155,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '商品更新失敗，請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
@@ -306,8 +306,7 @@ class _ProductDetailDialogState extends State<ProductDetailDialog> {
                                                   TopNotification.show(
                                                     context,
                                                     message:
-                                                        result.errorMessage ??
-                                                        '載入圖片失敗',
+                                                        result.errorMessage!,
                                                     type:
                                                         NotificationType.error,
                                                   );

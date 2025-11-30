@@ -61,7 +61,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage ?? '上傳失敗，請稍後再試',
+        message: result.errorMessage!,
         type: NotificationType.error,
       );
     }
