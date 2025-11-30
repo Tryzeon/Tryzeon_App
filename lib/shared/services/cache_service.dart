@@ -140,35 +140,6 @@ class CacheService {
     }
   }
 
-  /// 獲取指定路徑下所有符合模式的檔案
-  ///
-  /// [relativePath] 相對於應用目錄的路徑
-  /// [filePattern] 要查找的檔案模式（選填）
-  ///
-  /// Returns 找到的檔案列表
-  static Future<List<File>> getImages({
-    required final String relativePath,
-    final String? filePattern,
-  }) async {
-    try {
-      final baseDir = await getApplicationDocumentsDirectory();
-      final targetDir = Directory('${baseDir.path}/$relativePath');
-
-      if (!targetDir.existsSync()) return [];
-
-      final files = targetDir.listSync().whereType<File>();
-
-      if (filePattern != null) {
-        return files.where((final f) => f.path.contains(filePattern)).toList();
-      }
-
-      return files.toList();
-    } catch (e) {
-      AppLogger.error('Failed to get images from $relativePath', e);
-      return [];
-    }
-  }
-
   /// 刪除指定的單個檔案
   ///
   /// [filePath] 檔案路徑（例如：'userId/avatar.jpg'）
@@ -182,41 +153,6 @@ class CacheService {
       }
     } catch (e) {
       AppLogger.error('Failed to delete image at $filePath', e);
-    }
-  }
-
-  /// 刪除指定路徑下的所有檔案
-  ///
-  /// [relativePath] 相對於應用目錄的路徑（例如：'userId/avatar'）
-  static Future<void> deleteImages({required final String relativePath}) async {
-    try {
-      final baseDir = await getApplicationDocumentsDirectory();
-      final targetDir = Directory('${baseDir.path}/$relativePath');
-
-      if (await targetDir.exists()) {
-        final files = targetDir.listSync().whereType<File>();
-        for (final file in files) {
-          await file.delete();
-        }
-      }
-    } catch (e) {
-      AppLogger.error('Failed to delete images at $relativePath', e);
-    }
-  }
-
-  /// 刪除指定的資料夾及其所有內容
-  ///
-  /// [relativePath] 相對於應用目錄的資料夾路徑（例如：'userId'）
-  static Future<void> deleteFolder(final String relativePath) async {
-    try {
-      final baseDir = await getApplicationDocumentsDirectory();
-      final directory = Directory('${baseDir.path}/$relativePath');
-
-      if (await directory.exists()) {
-        await directory.delete(recursive: true);
-      }
-    } catch (e) {
-      AppLogger.error('Failed to delete folder at $relativePath', e);
     }
   }
 }
