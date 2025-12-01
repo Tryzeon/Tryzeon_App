@@ -21,9 +21,9 @@ class UserProfileService {
       }
 
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadJSON(_cacheKey);
+        final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
-          final cachedUserProfile = UserProfile.fromJson(cachedData);
+          final cachedUserProfile = UserProfile.fromJson(Map<String, dynamic>.from(cachedData as Map));
           return Result.success(data: cachedUserProfile);
         }
       }
@@ -34,7 +34,7 @@ class UserProfileService {
           .eq('user_id', user.id)
           .single();
 
-      await CacheService.saveJSON(_cacheKey, response);
+      await CacheService.saveToCache(_cacheKey, response);
 
       final userProfile = UserProfile.fromJson(response);
       return Result.success(data: userProfile);
@@ -66,7 +66,7 @@ class UserProfileService {
           .select()
           .single();
 
-      await CacheService.saveJSON(_cacheKey, response);
+      await CacheService.saveToCache(_cacheKey, response);
 
       final userProfile = UserProfile.fromJson(response);
       return Result.success(data: userProfile);

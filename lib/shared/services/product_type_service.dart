@@ -13,7 +13,7 @@ class ProductTypeService {
   }) async {
     try {
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadList(_cacheKey);
+        final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final cachedProductTypes = List<String>.from(cachedData);
           return Result.success(data: cachedProductTypes);
@@ -29,7 +29,7 @@ class ProductTypeService {
           .map((final item) => item['name_zh'] as String)
           .toList();
 
-      await CacheService.saveList(_cacheKey, productTypes);
+      await CacheService.saveToCache(_cacheKey, productTypes);
 
       return Result.success(data: productTypes);
     } catch (e) {

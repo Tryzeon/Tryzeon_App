@@ -24,11 +24,12 @@ class ProductService {
       }
 
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadList(_cacheKey);
+        final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final List<Product> cachedProducts = cachedData
-              .map((final json) => Product.fromJson(json))
-              .toList();
+              .map((final json) => Product.fromJson(Map<String, dynamic>.from(json as Map)))
+              .toList()
+              .cast<Product>();
           return Result.success(data: _sortProducts(cachedProducts, sortBy, ascending));
         }
       }
@@ -38,7 +39,7 @@ class ProductService {
           .select()
           .eq('store_id', store.id);
 
-      await CacheService.saveList(_cacheKey, response);
+      await CacheService.saveToCache(_cacheKey, response);
 
       final List<Product> products = response.map(Product.fromJson).toList();
       return Result.success(data: _sortProducts(products, sortBy, ascending));

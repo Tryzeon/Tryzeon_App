@@ -24,11 +24,12 @@ class WardrobeService {
 
       // 如果不是強制刷新，先嘗試從快取讀取
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadList(_cacheKey);
+        final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final cachedWardrobeItems = cachedData
-              .map((final json) => WardrobeItem.fromJson(json))
-              .toList();
+              .map((final json) => WardrobeItem.fromJson(Map<String, dynamic>.from(json as Map)))
+              .toList()
+              .cast<WardrobeItem>();
           return Result.success(data: cachedWardrobeItems);
         }
       }
@@ -40,11 +41,12 @@ class WardrobeService {
           .eq('user_id', user.id)
           .order('created_at', ascending: false);
 
-      await CacheService.saveList(_cacheKey, response);
+      await CacheService.saveToCache(_cacheKey, response);
 
       final wardrobeItems = (response as List)
           .map((final json) => WardrobeItem.fromJson(json))
-          .toList();
+          .toList()
+          .cast<WardrobeItem>();
 
       return Result.success(data: wardrobeItems);
     } catch (e) {

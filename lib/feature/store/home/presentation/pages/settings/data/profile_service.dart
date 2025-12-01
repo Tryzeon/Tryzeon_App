@@ -24,9 +24,9 @@ class StoreProfileService {
 
       // 讀取 cache
       if (!forceRefresh) {
-        final cachedData = await CacheService.loadJSON(_cachedKey);
+        final cachedData = await CacheService.loadFromCache(_cachedKey);
         if (cachedData != null) {
-          final cachedStoreProfile = StoreProfile.fromJson(cachedData);
+          final cachedStoreProfile = StoreProfile.fromJson(Map<String, dynamic>.from(cachedData as Map));
           return Result.success(data: cachedStoreProfile);
         }
       }
@@ -42,7 +42,7 @@ class StoreProfileService {
         return Result.success();
       }
 
-      await CacheService.saveJSON(_cachedKey, response);
+      await CacheService.saveToCache(_cachedKey, response);
 
       final storeProfile = StoreProfile.fromJson(response);
       return Result.success(data: storeProfile);
@@ -87,7 +87,7 @@ class StoreProfileService {
           .select()
           .single();
 
-      await CacheService.saveJSON(_cachedKey, response);
+      await CacheService.saveToCache(_cachedKey, response);
 
       final storeProfile = StoreProfile.fromJson(response);
       return Result.success(data: storeProfile);

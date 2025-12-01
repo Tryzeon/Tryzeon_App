@@ -1,124 +1,94 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart' as fcm;
+import 'package:stash/stash_api.dart';
+import 'package:stash_shared_preferences/stash_shared_preferences.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class CacheService {
-  /// 儲存資料到 SharedPreferences（自動進行 JSON 編碼）
+  static Cache? _cache;
+
+  /// 初始化並獲取 Cache 實例
+  static Future<Cache> get _getCache async {
+    if (_cache != null) return _cache!;
+
+    // 建立基於 SharedPreferences 的 CacheStore
+    final store = await newSharedPreferencesCacheStore();
+
+    // 建立 Cache，預設過期時間為 7 天
+    _cache = await store.cache(
+      name: 'app_general_cache',
+      expiryPolicy: const CreatedExpiryPolicy(Duration(days: 7)),
+    );
+
+    return _cache!;
+  }
+
+  /// 儲存資料到緩存
   ///
-  /// [cacheKey] 緩存的鍵
-  /// [data] 要緩存的資料
-  static Future<void> saveJSON(
-    final String cacheKey,
-    final Map<String, dynamic> data,
+  /// [key] 緩存鍵
+  /// [value] 要儲存的資料 (支援 Map, List, String, int, bool 等基本型別)
+  static Future<void> saveToCache(
+    final String key,
+    final dynamic value,
   ) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = jsonEncode(data);
-      await prefs.setString(cacheKey, jsonString);
+      final cache = await _getCache;
+      await cache.put(key, value);
     } catch (e) {
-      AppLogger.error('Failed to save cache for $cacheKey', e);
+      AppLogger.error('Failed to save to cache: $key', e);
     }
   }
 
-  /// 從 SharedPreferences 載入資料（自動進行 JSON 解碼）
+  /// 從緩存讀取資料
   ///
-  /// [cacheKey] 緩存的鍵
+  /// [key] 緩存鍵
   ///
-  /// Returns 緩存的資料，如果不存在或解碼失敗則返回 null
-  static Future<Map<String, dynamic>?> loadJSON(final String cacheKey) async {
+  /// Returns 緩存的資料，如果不存在或已過期則返回 null
+  static Future<dynamic> loadFromCache(final String key) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(cacheKey);
-      if (jsonString == null) return null;
-
-      return jsonDecode(jsonString) as Map<String, dynamic>;
+      final cache = await _getCache;
+      return await cache.get(key);
     } catch (e) {
-      AppLogger.error('Failed to load cache for $cacheKey', e);
+      AppLogger.error('Failed to load from cache: $key', e);
       return null;
-    }
-  }
-
-  /// 儲存 List 到 SharedPreferences（自動進行 JSON 編碼）
-  ///
-  /// [cacheKey] 緩存的鍵
-  /// [data] 要緩存的列表
-  static Future<void> saveList(final String cacheKey, final List<dynamic> data) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = jsonEncode(data);
-      await prefs.setString(cacheKey, jsonString);
-    } catch (e) {
-      AppLogger.error('Failed to save list cache for $cacheKey', e);
-      rethrow;
-    }
-  }
-
-  /// 從 SharedPreferences 載入 List（自動進行 JSON 解碼）
-  ///
-  /// [cacheKey] 緩存的鍵
-  ///
-  /// Returns 緩存的列表，如果不存在或解碼失敗則返回 null
-  static Future<List<dynamic>?> loadList(final String cacheKey) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(cacheKey);
-      if (jsonString == null) return null;
-
-      return jsonDecode(jsonString) as List<dynamic>;
-    } catch (e) {
-      AppLogger.error('Failed to load list cache for $cacheKey', e);
-      rethrow;
     }
   }
 
   /// 清除指定的緩存
   ///
-  /// [cacheKey] 緩存的鍵
-  static Future<void> clearCache(final String cacheKey) async {
+  /// [key] 緩存的鍵
+  static Future<void> clearCache(final String key) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(cacheKey);
+      final cache = await _getCache;
+      await cache.remove(key);
     } catch (e) {
-      AppLogger.error('Failed to clear cache for $cacheKey', e);
-      rethrow;
+      AppLogger.error('Failed to clear cache for $key', e);
     }
   }
 
-  /// 保存檔案到緩存
-  ///
-  /// [bytes] 要保存的檔案數據
-  /// [filePath] 檔案路徑，將作為緩存的 key
-  ///
-  /// Returns 保存後的檔案
+  /// 保存檔案到緩存 (圖片專用)
   static Future<File> saveImage(final Uint8List bytes, final String filePath) async {
     try {
-      return await DefaultCacheManager().putFile(filePath, bytes, key: filePath);
+      return await fcm.DefaultCacheManager().putFile(filePath, bytes, key: filePath);
     } catch (e) {
       AppLogger.error('Failed to save image to $filePath', e);
       rethrow;
     }
   }
 
-  /// 獲取緩存的檔案
-  ///
-  /// [filePath] 檔案路徑，作為緩存的 key
-  /// [downloadUrl] 如果提供，當緩存不存在時會嘗試從此 URL 下載
-  ///
-  /// Returns 找到的檔案，如果不存在則返回 null
+  /// 獲取緩存的檔案 (圖片專用)
   static Future<File?> getImage(
     final String filePath, {
     final String? downloadUrl,
   }) async {
     try {
       if (downloadUrl != null) {
-        return await DefaultCacheManager().getSingleFile(downloadUrl, key: filePath);
+        return await fcm.DefaultCacheManager().getSingleFile(downloadUrl, key: filePath);
       }
 
-      final fileInfo = await DefaultCacheManager().getFileFromCache(filePath);
+      final fileInfo = await fcm.DefaultCacheManager().getFileFromCache(filePath);
       return fileInfo?.file;
     } catch (e) {
       AppLogger.error('Failed to get image from $filePath', e);
@@ -126,28 +96,25 @@ class CacheService {
     }
   }
 
-  /// 刪除指定的緩存檔案
-  ///
-  /// [filePath] 檔案路徑，作為緩存的 key
+  /// 刪除指定的緩存檔案 (圖片專用)
   static Future<void> deleteImage(final String filePath) async {
     try {
-      await DefaultCacheManager().removeFile(filePath);
+      await fcm.DefaultCacheManager().removeFile(filePath);
     } catch (e) {
       AppLogger.error('Failed to delete image at $filePath', e);
       rethrow;
     }
   }
 
-  /// 清空所有緩存
+  /// 清空所有緩存 (包含圖片與資料)
   static Future<void> emptyCache() async {
     try {
-      await DefaultCacheManager().emptyCache();
+      final cache = await _getCache;
+      await cache.clear();
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      await fcm.DefaultCacheManager().emptyCache();
     } catch (e) {
       AppLogger.error('Failed to empty cache', e);
-      rethrow;
     }
   }
 }

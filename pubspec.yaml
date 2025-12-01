@@ -23,6 +23,8 @@ dependencies:
   gal: ^2.3.2
   google_fonts: ^6.3.2
   flutter_cache_manager: ^3.4.1
+  stash: ^5.2.0
+  stash_shared_preferences: ^5.2.0
 
 dev_dependencies:
   flutter_test:

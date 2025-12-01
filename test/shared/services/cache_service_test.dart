@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -8,50 +9,65 @@ void main() {
   group('CacheService', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
+      
+      const MethodChannel channel = MethodChannel('plugins.flutter.io/path_provider');
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        channel,
+        (final MethodCall methodCall) async {
+          return '.';
+        },
+      );
     });
 
-    test('saveJSON saves map as json string', () async {
+    test('saveToCache and loadFromCache work for Map', () async {
       final data = {'key': 'value', 'count': 1};
-      await CacheService.saveJSON('test_json', data);
+      await CacheService.saveToCache('test_map', data);
 
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('test_json'), '{"key":"value","count":1}');
+      final loadedData = await CacheService.loadFromCache('test_map');
+      expect(loadedData, data);
     });
 
-    test('loadJSON loads map correctly', () async {
-      SharedPreferences.setMockInitialValues({'test_json': '{"key":"value","count":1}'});
+    test('saveToCache and loadFromCache work for List', () async {
+      final list = ['a', 'b', 'c'];
+      await CacheService.saveToCache('test_list', list);
 
-      final data = await CacheService.loadJSON('test_json');
-      expect(data, {'key': 'value', 'count': 1});
+      final loadedList = await CacheService.loadFromCache('test_list');
+      expect(loadedList, list);
     });
 
-    test('loadJSON returns null if not found', () async {
-      final data = await CacheService.loadJSON('non_existent');
+    test('saveToCache and loadFromCache work for String', () async {
+      const str = 'test string';
+      await CacheService.saveToCache('test_string', str);
+
+      final loadedStr = await CacheService.loadFromCache('test_string');
+      expect(loadedStr, str);
+    });
+
+    test('loadFromCache returns null if key does not exist', () async {
+      final data = await CacheService.loadFromCache('non_existent');
       expect(data, null);
     });
 
-    test('saveList saves list as json string', () async {
-      final list = ['a', 'b', 'c'];
-      await CacheService.saveList('test_list', list);
+    test('clearCache removes the item', () async {
+      await CacheService.saveToCache('to_delete', 'value');
+      await CacheService.clearCache('to_delete');
 
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('test_list'), '["a","b","c"]');
+      final data = await CacheService.loadFromCache('to_delete');
+      expect(data, null);
     });
 
-    test('loadList loads list correctly', () async {
-      SharedPreferences.setMockInitialValues({'test_list': '["a","b","c"]'});
+    test('emptyCache removes all items (data)', () async {
+      await CacheService.saveToCache('item1', 'value1');
+      await CacheService.saveToCache('item2', 'value2');
 
-      final list = await CacheService.loadList('test_list');
-      expect(list, ['a', 'b', 'c']);
-    });
+      try {
+        await CacheService.emptyCache();
+      } catch (_) {
+        // Ignore DefaultCacheManager errors in test environment
+      }
 
-    test('clearCache removes the key', () async {
-      SharedPreferences.setMockInitialValues({'test_key': 'some value'});
-
-      await CacheService.clearCache('test_key');
-
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.containsKey('test_key'), false);
+      expect(await CacheService.loadFromCache('item1'), null);
+      expect(await CacheService.loadFromCache('item2'), null);
     });
   });
 }
