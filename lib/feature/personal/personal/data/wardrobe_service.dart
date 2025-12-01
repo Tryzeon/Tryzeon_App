@@ -66,21 +66,7 @@ class WardrobeService {
       }
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final imagePath = '${user.id}/$categoryCode/$timestamp.jpg';
-
-      // 1. 上傳圖片到 Supabase Storage
-      final bytes = await image.readAsBytes();
-      await _supabase.storage
-          .from(_bucket)
-          .uploadBinary(
-            imagePath,
-            bytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg'),
-          );
-
-      // 2. 保存到本地緩存
-      await CacheService.saveImage(bytes, imagePath);
+      final imagePath = await _uploadWardrobeItemImage(user, image, categoryCode);
 
       // 3. 新增 DB 記錄
       await _supabase.from(_wardrobeTable).insert({
@@ -136,6 +122,34 @@ class WardrobeService {
     } catch (e) {
       return Result.failure('衣櫃圖片載入失敗', error: e);
     }
+  }
+
+  /// 上傳衣物圖片（先上傳到後端，成功後才保存到本地）
+  static Future<String> _uploadWardrobeItemImage(
+    final User user,
+    final File image,
+    final String categoryCode,
+  ) async {
+    // 生成唯一的檔案名稱
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final imagePath = '${user.id}/$categoryCode/$timestamp.jpg';
+
+    final bytes = await image.readAsBytes();
+
+    // 上傳到 Supabase Storage
+    await _supabase.storage
+        .from(_bucket)
+        .uploadBinary(
+          imagePath,
+          bytes,
+          fileOptions: const FileOptions(contentType: 'image/jpeg'),
+        );
+
+    // 保存到本地緩存
+    await CacheService.saveImage(bytes, imagePath);
+
+    // 返回檔案路徑
+    return imagePath;
   }
 
   static List<String> getWardrobeTypesList() {
