@@ -7,8 +7,12 @@ class Result<T> {
     return Result(isSuccess: true, data: data);
   }
 
-  factory Result.failure(final String title, {final dynamic error}) {
-    final String message = '糟糕！$title, 請重試一次或重新登入。';
+  factory Result.failure(
+    final String title, {
+    final dynamic error,
+    final String? errorMessage,
+  }) {
+    final String message = errorMessage ?? '糟糕！$title, 請重試一次或重新登入。';
 
     if (error != null) {
       AppLogger.error('$title: ${error.toString()}');
