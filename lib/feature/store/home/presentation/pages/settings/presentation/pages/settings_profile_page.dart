@@ -62,6 +62,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     final result = await StoreProfileService.updateStoreProfile(
       name: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
+      logo: _logoImage,
     );
 
     if (!mounted) return;
@@ -88,26 +89,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
     setState(() {
       _logoImage = File(image.path);
-      _isLoading = true;
     });
-
-    final result = await StoreProfileService.uploadLogo(_logoImage!);
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      TopNotification.show(context, message: '店家Logo已更新', type: NotificationType.success);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.errorMessage!,
-        type: NotificationType.error,
-      );
-    }
   }
 
   @override
