@@ -19,6 +19,20 @@ class TryonService {
 
       final response = await _supabase.functions.invoke('tryon', body: body);
       return Result.success(data: response.data['image']);
+    } on FunctionException catch (e) {
+      String message;
+      switch (e.status) {
+        case 403:
+          message = '今日試穿次數已達上限，請明日再試或升級方案';
+          break;
+        case 422:
+          message = 'AI 無法辨識圖片，請換一張試試';
+          break;
+        default:
+          message = '伺服器錯誤，請稍後再試';
+          break;
+      }
+      return Result.failure('虛擬試穿失敗', error: e, errorMessage: message);
     } catch (e) {
       return Result.failure('虛擬試穿失敗', error: e);
     }
