@@ -2,12 +2,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-class UserError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "UserError";
-  }
-}
 
 Deno.serve(async (req) => {
   try {
@@ -33,8 +27,20 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
+    const body = await req.json();
+    const { avatarBase64, avatarPath, clothesBase64, clothesPath } = body;
+
+    if(!avatarPath && !avatarBase64) {
+      throw new Error("未提供頭像圖片");
+    }
+
+    if (!clothesPath && !clothesBase64) {
+      throw new Error("未提供服裝圖片");
+    }
+
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
 
     const { data: subscribeData, error: subscribeError } = await supabase
       .from('subscribe')
@@ -53,7 +59,7 @@ Deno.serve(async (req) => {
 
     if (lastResetDate !== today) currentUsage = 0;
 
-    if (currentUsage >= dailyLimit) throw new UserError('今日試穿次數已達上限，請明天再試或升級方案');
+    if (currentUsage >= dailyLimit) throw new Error('今日試穿次數已達上限，請明天再試或升級方案');
 
     const { error: updateError } = await supabase
       .from('subscribe')
@@ -64,32 +70,18 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id);
     if (updateError) throw updateError;
 
-    const body = await req.json();
-    const { avatarBase64, clothesBase64, clothesPath } = body;
+    var avatarImage = avatarBase64;
+    var clothesImage = clothesBase64;
 
-    var avatarImage, clothesImage;
-
-    if (avatarBase64) {
-      avatarImage = avatarBase64;
-    } else {
-      const { data: files, error: listError } = await supabase.storage
-        .from("avatars")
-        .list(`${user.id}/avatar`);
-
-      if (listError) throw listError;
-      if (!files || files.length == 0) throw new Error("No avatar found");
-
-      const fileName = `${user.id}/avatar/${files[0].name}`;
-      const { data: avatarData, error: downloadError } = await supabase.storage.from("avatars").download(fileName);
+    if (avatarPath) {
+      const { data: avatarData, error: downloadError } = await supabase.storage.from("avatars").download(avatarPath);
       if (downloadError) throw downloadError;
 
       const buf = new Uint8Array(await avatarData.arrayBuffer());
       avatarImage = btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
     }
 
-    if (clothesBase64) {
-      clothesImage = clothesBase64;
-    } else {
+    if (clothesPath) {
       let bucket;
       if (clothesPath.includes('wardrobe')) {
         bucket = 'wardrobe';
@@ -157,18 +149,11 @@ Deno.serve(async (req) => {
       }
       await new Promise((r) => setTimeout(r, 1000));
     }
-    throw new UserError("無法辨識圖像，請更換其他張試試！");
+    throw new Error("無法辨識圖像，請更換其他張試試！");
   } catch (err) {
-    let errorMessage;
-    if (err instanceof UserError) {
-      errorMessage = err.message;
-    } else {
-      console.error(err);
-      errorMessage = "伺服器發生錯誤，請稍後再試。";
-    }
-
+    console.error(err);
     return new Response(JSON.stringify({
-      errorMessage: errorMessage
+      message: String(err)
     }), {
       status: 500,
       headers: {

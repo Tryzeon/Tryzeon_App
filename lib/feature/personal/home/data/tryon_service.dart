@@ -6,12 +6,14 @@ class TryonService {
 
   static Future<Result<String>> tryon({
     final String? avatarBase64,
+    final String? avatarPath,
     final String? clothesBase64,
     final String? clothesPath,
   }) async {
     try {
       final Map<String, dynamic> body = {};
       body['avatarBase64'] = avatarBase64;
+      body['avatarPath'] = avatarPath;
       body['clothesBase64'] = clothesBase64;
       body['clothesPath'] = clothesPath;
 

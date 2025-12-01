@@ -19,6 +19,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  String? _avatarPath;
   File? _avatarFile;
   final List<Uint8List> _tryonImages = []; // 試穿後的圖片列表（已解碼的 bytes）
   int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
@@ -53,6 +54,7 @@ class HomePageState extends State<HomePage> {
 
     final result = await TryonService.tryon(
       avatarBase64: customAvatarBase64,
+      avatarPath: _avatarPath,
       clothesBase64: clothesBase64,
       clothesPath: clothesPath,
     );
@@ -114,7 +116,8 @@ class HomePageState extends State<HomePage> {
 
     if (result.isSuccess) {
       setState(() {
-        _avatarFile = result.data;
+        _avatarPath = result.data!.avatarPath;
+        _avatarFile = result.data!.avatarFile;
       });
     } else {
       TopNotification.show(
@@ -142,7 +145,8 @@ class HomePageState extends State<HomePage> {
 
     if (result.isSuccess) {
       setState(() {
-        _avatarFile = result.data;
+        _avatarPath = result.data!.avatarPath;
+        _avatarFile = result.data!.avatarFile;
         _tryonImages.clear();
         _currentTryonIndex = -1;
         _customAvatarIndex = null;

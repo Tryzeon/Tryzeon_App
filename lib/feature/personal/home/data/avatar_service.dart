@@ -9,7 +9,9 @@ class AvatarService {
   static const _bucket = 'avatars';
 
   /// 獲取頭像
-  static Future<Result<File>> getAvatar({final bool forceRefresh = false}) async {
+  static Future<Result<({String avatarPath, File avatarFile})>> getAvatar({
+    final bool forceRefresh = false,
+  }) async {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
@@ -28,22 +30,23 @@ class AvatarService {
 
       final cachedAvatar = await CacheService.getImage(avatarPath);
       if (cachedAvatar != null) {
-        return Result.success(data: cachedAvatar);
+        return Result.success(data: (avatarPath: avatarPath, avatarFile: cachedAvatar));
       }
 
       // Download from Supabase Storage
       final url = await _supabase.storage.from(_bucket).createSignedUrl(avatarPath, 60);
-
       final avatar = await CacheService.getImage(avatarPath, downloadUrl: url);
 
-      return Result.success(data: avatar);
+      return Result.success(data: (avatarPath: avatarPath, avatarFile: avatar!));
     } catch (e) {
       return Result.failure('頭像獲取失敗', error: e);
     }
   }
 
   /// 上傳頭像
-  static Future<Result<File>> uploadAvatar(final File image) async {
+  static Future<Result<({String avatarPath, File avatarFile})>> uploadAvatar(
+    final File image,
+  ) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
@@ -75,7 +78,7 @@ class AvatarService {
       // 4. 保存到本地緩存
       final avatar = await CacheService.saveImage(bytes, avatarPath);
 
-      return Result.success(data: avatar);
+      return Result.success(data: (avatarPath: avatarPath, avatarFile: avatar));
     } catch (e) {
       return Result.failure('頭像上傳失敗', error: e);
     }
