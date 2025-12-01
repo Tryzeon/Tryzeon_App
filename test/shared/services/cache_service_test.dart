@@ -48,20 +48,20 @@ void main() {
       expect(data, null);
     });
 
-    test('clearCache removes the item', () async {
+    test('deleteCache removes the item', () async {
       await CacheService.saveToCache('to_delete', 'value');
-      await CacheService.clearCache('to_delete');
+      await CacheService.deleteCache('to_delete');
 
       final data = await CacheService.loadFromCache('to_delete');
       expect(data, null);
     });
 
-    test('emptyCache removes all items (data)', () async {
+    test('deleteCache removes all items (data)', () async {
       await CacheService.saveToCache('item1', 'value1');
       await CacheService.saveToCache('item2', 'value2');
 
       try {
-        await CacheService.emptyCache();
+        await CacheService.clearCache();
       } catch (_) {
         // Ignore DefaultCacheManager errors in test environment
       }

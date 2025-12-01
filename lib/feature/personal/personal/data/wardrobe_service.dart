@@ -54,7 +54,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<void>> uploadWardrobeItem(
+  static Future<Result<void>> createWardrobeItem(
     final File image,
     final String category, {
     final List<String> tags = const [],
@@ -91,7 +91,7 @@ class WardrobeService {
       });
 
       // 4. 清除快取以確保下次獲取最新資料
-      await CacheService.clearCache(_cacheKey);
+      await CacheService.deleteCache(_cacheKey);
 
       return Result.success();
     } catch (e) {
@@ -111,7 +111,7 @@ class WardrobeService {
       await CacheService.deleteImage(item.imagePath);
 
       // 4. 清除快取以確保下次獲取最新資料
-      await CacheService.clearCache(_cacheKey);
+      await CacheService.deleteCache(_cacheKey);
 
       return Result.success();
     } catch (e) {
@@ -119,7 +119,7 @@ class WardrobeService {
     }
   }
 
-  static Future<Result<File>> loadWardrobeItemImage(final String imagePath) async {
+  static Future<Result<File>> getWardrobeItemImage(final String imagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedImage = await CacheService.getImage(imagePath);

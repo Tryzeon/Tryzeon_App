@@ -10,7 +10,7 @@ class AuthService {
   static const _lastLoginTypeKey = 'last_login_type';
 
   /// 儲存最後登入的類型
-  static Future<void> saveLastLoginType(final UserType userType) async {
+  static Future<void> setLastLoginType(final UserType userType) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastLoginTypeKey, userType.name);
   }
@@ -69,7 +69,7 @@ class AuthService {
       }
 
       // 儲存登入類型
-      await saveLastLoginType(userType);
+      await setLastLoginType(userType);
 
       return Result.success(data: user);
     } catch (e) {
@@ -81,7 +81,7 @@ class AuthService {
   static Future<Result<void>> signOut() async {
     try {
       // 清除所有 SharedPreferences and Cache
-      await CacheService.emptyCache();
+      await CacheService.clearCache();
 
       // 執行 Supabase 登出
       await _supabase.auth.signOut();

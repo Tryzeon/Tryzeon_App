@@ -84,7 +84,7 @@ class Product {
 
   /// 按需載入圖片，使用快取機制
   Future<Result<File>> loadImage() async {
-    return ProductService.loadProductImage(imagePath);
+    return ProductService.getProductImage(imagePath);
   }
 
   Map<String, dynamic> toJson() {

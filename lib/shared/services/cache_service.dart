@@ -59,7 +59,7 @@ class CacheService {
   /// 清除指定的緩存
   ///
   /// [key] 緩存的鍵
-  static Future<void> clearCache(final String key) async {
+  static Future<void> deleteCache(final String key) async {
     try {
       final cache = await _getCache;
       await cache.remove(key);
@@ -107,7 +107,7 @@ class CacheService {
   }
 
   /// 清空所有緩存 (包含圖片與資料)
-  static Future<void> emptyCache() async {
+  static Future<void> clearCache() async {
     try {
       final cache = await _getCache;
       await cache.clear();

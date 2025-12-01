@@ -36,7 +36,7 @@ class PersonalEntryState extends State<PersonalEntry> {
       const PersonalPage(),
     ];
 
-    AuthService.saveLastLoginType(UserType.personal);
+    AuthService.setLastLoginType(UserType.personal);
   }
 
   void _onItemTapped(final int index) {

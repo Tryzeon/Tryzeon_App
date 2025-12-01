@@ -23,7 +23,7 @@ class _StoreEntryState extends State<StoreEntry> {
     super.initState();
     _checkStoreInfo();
 
-    AuthService.saveLastLoginType(UserType.store);
+    AuthService.setLastLoginType(UserType.store);
   }
 
   Future<void> _checkStoreInfo() async {

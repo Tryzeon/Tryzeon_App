@@ -10,8 +10,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('saveLastLoginType saves the correct type', () async {
-      await AuthService.saveLastLoginType(UserType.store);
+    test('setLastLoginType saves the correct type', () async {
+      await AuthService.setLastLoginType(UserType.store);
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('last_login_type'), 'store');

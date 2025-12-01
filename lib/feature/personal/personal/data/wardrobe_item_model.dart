@@ -47,6 +47,6 @@ class WardrobeItem {
 
   // 按需載入圖片，使用快取機制
   Future<Result<File>> loadImage() async {
-    return WardrobeService.loadWardrobeItemImage(imagePath);
+    return WardrobeService.getWardrobeItemImage(imagePath);
   }
 }

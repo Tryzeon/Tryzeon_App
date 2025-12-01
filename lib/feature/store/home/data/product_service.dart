@@ -98,7 +98,7 @@ class ProductService {
       }
 
       // 清除快取以確保下次獲取最新資料
-      await CacheService.clearCache(_cacheKey);
+      await CacheService.deleteCache(_cacheKey);
 
       return Result.success();
     } catch (e) {
@@ -140,7 +140,7 @@ class ProductService {
       await _supabase.from(_productsTable).update(updateData).eq('id', product.id!);
 
       // 清除快取以確保下次獲取最新資料
-      await CacheService.clearCache(_cacheKey);
+      await CacheService.deleteCache(_cacheKey);
 
       return Result.success();
     } catch (e) {
@@ -160,7 +160,7 @@ class ProductService {
       await _supabase.from(_productsTable).delete().eq('id', product.id!);
 
       // 清除快取以確保下次獲取最新資料
-      await CacheService.clearCache(_cacheKey);
+      await CacheService.deleteCache(_cacheKey);
 
       return Result.success();
     } catch (e) {
@@ -169,7 +169,7 @@ class ProductService {
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File>> loadProductImage(final String imagePath) async {
+  static Future<Result<File>> getProductImage(final String imagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedProductImage = await CacheService.getImage(imagePath);
