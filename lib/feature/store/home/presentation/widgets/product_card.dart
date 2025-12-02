@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import '../dialogs/product_detail_dialog.dart';
+import '../pages/product_detail_page.dart';
 
 class StoreProductCard extends StatelessWidget {
   const StoreProductCard({super.key, required this.product, required this.onUpdate});
@@ -15,9 +15,11 @@ class StoreProductCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        final result = await showDialog<bool>(
-          context: context,
-          builder: (final context) => ProductDetailDialog(product: product),
+        final result = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (final context) => ProductDetailPage(product: product),
+          ),
         );
         if (result == true) {
           onUpdate();
