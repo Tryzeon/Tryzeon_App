@@ -48,10 +48,13 @@ class AvatarService {
     final File image,
   ) async {
     try {
-      final user = _supabase.auth.currentUser;
+      var user = _supabase.auth.currentUser;
       if (user == null) {
         return Result.failure('使用者獲取失敗');
       }
+
+      final response = await _supabase.auth.refreshSession();
+      user = response.session?.user ?? user;
 
       // 1. 刪除舊頭像（如果存在）
       final oldAvatarPath = user.userMetadata?['avatar_path'] as String?;
