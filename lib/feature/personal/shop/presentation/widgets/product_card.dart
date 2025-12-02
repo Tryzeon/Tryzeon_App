@@ -37,13 +37,13 @@ class _ProductCardState extends State<ProductCard> {
 
   // 計算契合度等級：返回 'green', 'yellow', 'red' 或 null
   String? _calculateFitLevel() {
-    if (_userProfile == null || widget.product.sizes.isEmpty) {
+    if (_userProfile == null || widget.product.sizes == null) {
       return null; // 無法計算
     }
 
     double? bestDiff;
     // 對每個商品尺寸進行比對
-    for (final size in widget.product.sizes) {
+    for (final size in widget.product.sizes!) {
       double totalDiff = 0;
       int comparisonCount = 0;
 
@@ -102,12 +102,12 @@ class _ProductCardState extends State<ProductCard> {
   Future<void> _handlePurchase() async {
     final product = widget.product;
 
-    if (product.purchaseLink.isEmpty) {
+    if (product.purchaseLink == null) {
       TopNotification.show(context, message: '此商品尚無購買連結', type: NotificationType.info);
       return;
     }
 
-    final Uri url = Uri.parse(product.purchaseLink);
+    final Uri url = Uri.parse(product.purchaseLink!);
     if (!await canLaunchUrl(url)) {
       if (!mounted) return;
 

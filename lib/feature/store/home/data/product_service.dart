@@ -73,8 +73,8 @@ class ProductService {
         name: name,
         types: types,
         price: price,
-        purchaseLink: purchaseLink,
         imagePath: imagePath,
+        purchaseLink: purchaseLink,
       );
 
       final response = await _supabase

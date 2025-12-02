@@ -37,8 +37,8 @@ void main() {
       expect(product.tryonCount, 10);
       expect(product.purchaseClickCount, 5);
       expect(product.storeName, 'Test Store');
-      expect(product.sizes.length, 1);
-      expect(product.sizes.first.name, 'M');
+      expect(product.sizes?.length, 1);
+      expect(product.sizes?.first.name, 'M');
     });
 
     test('toJson converts object to valid JSON', () {
