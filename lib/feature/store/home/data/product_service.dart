@@ -27,7 +27,9 @@ class ProductService {
         final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final List<Product> cachedProducts = cachedData
-              .map((final json) => Product.fromJson(Map<String, dynamic>.from(json as Map)))
+              .map(
+                (final json) => Product.fromJson(Map<String, dynamic>.from(json as Map)),
+              )
               .toList()
               .cast<Product>();
           return Result.success(data: _sortProducts(cachedProducts, sortBy, ascending));

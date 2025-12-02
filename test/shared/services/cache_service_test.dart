@@ -9,14 +9,12 @@ void main() {
   group('CacheService', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      
+
       const MethodChannel channel = MethodChannel('plugins.flutter.io/path_provider');
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-        channel,
-        (final MethodCall methodCall) async {
-          return '.';
-        },
-      );
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (final MethodCall methodCall) async {
+            return '.';
+          });
     });
 
     test('saveToCache and loadFromCache work for Map', () async {

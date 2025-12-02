@@ -27,7 +27,10 @@ class WardrobeService {
         final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final cachedWardrobeItems = cachedData
-              .map((final json) => WardrobeItem.fromJson(Map<String, dynamic>.from(json as Map)))
+              .map(
+                (final json) =>
+                    WardrobeItem.fromJson(Map<String, dynamic>.from(json as Map)),
+              )
               .toList()
               .cast<WardrobeItem>();
           return Result.success(data: cachedWardrobeItems);

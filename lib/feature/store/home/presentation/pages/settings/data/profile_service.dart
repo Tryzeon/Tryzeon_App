@@ -26,7 +26,9 @@ class StoreProfileService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadFromCache(_cachedKey);
         if (cachedData != null) {
-          final cachedStoreProfile = StoreProfile.fromJson(Map<String, dynamic>.from(cachedData as Map));
+          final cachedStoreProfile = StoreProfile.fromJson(
+            Map<String, dynamic>.from(cachedData as Map),
+          );
           return Result.success(data: cachedStoreProfile);
         }
       }
@@ -126,17 +128,14 @@ class StoreProfileService {
   }
 
   /// 上傳店家 Logo 到 Storage 並返回路徑
-  static Future<String> _uploadLogo(
-    final User store,
-    final File image,
-  ) async {
+  static Future<String> _uploadLogo(final User store, final File image) async {
     // 1. 刪除舊 Logo
     final storeProfile = await getStoreProfile();
     final oldLogoPath = storeProfile.data?.logoPath;
     if (oldLogoPath != null && oldLogoPath.isNotEmpty) {
       await _supabase.storage.from(_logoBucket).remove([oldLogoPath]);
     }
-    
+
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final logoPath = '${store.id}/logo/$timestamp.png';
 

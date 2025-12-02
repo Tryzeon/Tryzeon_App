@@ -23,7 +23,9 @@ class UserProfileService {
       if (!forceRefresh) {
         final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
-          final cachedUserProfile = UserProfile.fromJson(Map<String, dynamic>.from(cachedData as Map));
+          final cachedUserProfile = UserProfile.fromJson(
+            Map<String, dynamic>.from(cachedData as Map),
+          );
           return Result.success(data: cachedUserProfile);
         }
       }

@@ -40,7 +40,7 @@ class Product {
     required this.types,
     required this.price,
     required this.imagePath,
-    
+
     this.id,
     this.purchaseLink,
     this.tryonCount,
@@ -81,9 +81,9 @@ class Product {
       'type': types,
       'price': price,
       'image_path': imagePath,
-      
-      if(id != null) 'id': id,
-      if(purchaseLink != null) 'purchase_link': purchaseLink,
+
+      if (id != null) 'id': id,
+      if (purchaseLink != null) 'purchase_link': purchaseLink,
       if (tryonCount != null) 'tryon_count': tryonCount,
       if (purchaseClickCount != null) 'purchase_click_count': purchaseClickCount,
       if (createdAt != null) 'created_at': createdAt,

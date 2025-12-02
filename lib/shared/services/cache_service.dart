@@ -29,10 +29,7 @@ class CacheService {
   ///
   /// [key] 緩存鍵
   /// [value] 要儲存的資料 (支援 Map, List, String, int, bool 等基本型別)
-  static Future<void> saveToCache(
-    final String key,
-    final dynamic value,
-  ) async {
+  static Future<void> saveToCache(final String key, final dynamic value) async {
     try {
       final cache = await _getCache;
       await cache.put(key, value);
