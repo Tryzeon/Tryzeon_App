@@ -177,10 +177,8 @@ class ProductService {
         return Result.success(data: cachedProductImage);
       }
 
-      // 2. 本地沒有，從 Supabase 取得 Signed URL 下載
-      final url = await _supabase.storage
-          .from(_productImagesBucket)
-          .createSignedUrl(imagePath, 60);
+      // 2. 本地沒有，從 Supabase 取得 Public URL 下載
+      final url = _supabase.storage.from(_productImagesBucket).getPublicUrl(imagePath);
 
       final productImage = await CacheService.getImage(imagePath, downloadUrl: url);
 

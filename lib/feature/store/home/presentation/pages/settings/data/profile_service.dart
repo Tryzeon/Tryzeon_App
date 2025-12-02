@@ -115,7 +115,7 @@ class StoreProfileService {
       }
 
       // Download from Supabase Storage
-      final url = await _supabase.storage.from(_logoBucket).createSignedUrl(logoPath, 60);
+      final url = _supabase.storage.from(_logoBucket).getPublicUrl(logoPath);
 
       final logo = await CacheService.getImage(logoPath, downloadUrl: url);
 
