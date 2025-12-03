@@ -27,9 +27,7 @@ class ProductService {
         final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final List<Product> cachedProducts = cachedData
-              .map(
-                (final json) => Product.fromJson(Map<String, dynamic>.from(json as Map)),
-              )
+              .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
               .toList()
               .cast<Product>();
           return Result.success(data: _sortProducts(cachedProducts, sortBy, ascending));
@@ -38,12 +36,15 @@ class ProductService {
 
       final response = await _supabase
           .from(_productsTable)
-          .select()
+          .select('*, product_sizes(*)')
           .eq('store_id', store.id);
 
       await CacheService.saveToCache(_cacheKey, response);
 
-      final List<Product> products = response.map(Product.fromJson).toList();
+      final List<Product> products = response
+          .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
+          .toList()
+          .cast<Product>();
       return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
       return Result.failure('商品列表獲取失敗', error: e);
@@ -110,12 +111,9 @@ class ProductService {
 
   /// 更新商品
   static Future<Result<void>> updateProduct({
-    required final Product product,
-    required final String name,
-    required final Set<String> types,
-    required final int price,
-    required final String purchaseLink,
-    final File? newProductImage,
+    required final Product original,
+    required final Product target,
+    final File? newImage,
   }) async {
     try {
       final store = _supabase.auth.currentUser;
@@ -123,23 +121,41 @@ class ProductService {
         return Result.failure('使用者獲取失敗');
       }
 
-      String? productImagePath = product.imagePath;
+      // 1. 取得變更的欄位 (Dirty Checking)
+      final updateData = original.getDirtyFields(target);
+      final sizesChanged = original.hasSizesChanged(target.sizes);
 
-      if (newProductImage != null) {
-        await _deleteProductImage(productImagePath);
-        productImagePath = await _uploadProductImage(store, newProductImage);
+      // 如果有新圖片，則處理圖片上傳與舊圖刪除
+      if (newImage != null) {
+        await _deleteProductImage(original.imagePath);
+        updateData['image_path'] = await _uploadProductImage(store, newImage);
       }
 
-      final updateData = {
-        'name': name,
-        'type': types.toList(),
-        'price': price,
-        'image_path': productImagePath,
-        'purchase_link': purchaseLink,
-        'updated_at': DateTime.now().toIso8601String(),
-      };
+      // 如果有一般欄位需要更新
+      if (updateData.isNotEmpty) {
+        await _supabase.from(_productsTable).update(updateData).eq('id', original.id!);
+      }
 
-      await _supabase.from(_productsTable).update(updateData).eq('id', product.id!);
+      if (sizesChanged) {
+        // 更新尺寸：先刪除舊的，再新增新的
+        final sizesToUpdate = target.sizes ?? [];
+
+        // 1. 刪除該商品的所有尺寸
+        await _supabase.from('product_sizes').delete().eq('product_id', original.id!);
+
+        // 2. 新增新的尺寸
+        if (sizesToUpdate.isNotEmpty) {
+          final sizesData = sizesToUpdate.map((final size) {
+            return {
+              'product_id': original.id,
+              'name': size.name,
+              ...size.measurements.toJson(),
+            };
+          }).toList();
+
+          await _supabase.from('product_sizes').insert(sizesData);
+        }
+      }
 
       // 清除快取以確保下次獲取最新資料
       await CacheService.deleteCache(_cacheKey);

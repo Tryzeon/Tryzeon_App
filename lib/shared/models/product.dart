@@ -68,7 +68,7 @@ class Product {
       storeName: json['store_profile']?['name'],
       sizes:
           (json['product_sizes'] as List?)
-              ?.map((final e) => ProductSize.fromJson(e))
+              ?.map((final e) => ProductSize.fromJson(Map<String, dynamic>.from(e)))
               .toList() ??
           [],
     );
@@ -112,4 +112,54 @@ class Product {
   final String? storeName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// 比對另一個 Product，回傳差異的 Map (不包含 sizes)
+  Map<String, dynamic> getDirtyFields(final Product target) {
+    final updates = <String, dynamic>{};
+
+    if (name != target.name) {
+      updates['name'] = target.name;
+    }
+
+    if (types != target.types) {
+      updates['type'] = target.types.toList();
+    }
+
+    if (price != target.price) {
+      updates['price'] = target.price;
+    }
+
+    if (imagePath != target.imagePath) {
+      updates['image_path'] = target.imagePath;
+    }
+
+    if (purchaseLink != target.purchaseLink) {
+      updates['purchase_link'] = target.purchaseLink;
+    }
+
+    return updates;
+  }
+
+  /// 判斷 Sizes 是否改變
+  bool hasSizesChanged(final List<ProductSize>? targetSizes) {
+    final currentSizes = sizes ?? [];
+    final newSizes = targetSizes ?? [];
+
+    if (currentSizes.length != newSizes.length) return true;
+
+    for (int i = 0; i < currentSizes.length; i++) {
+      final o = currentSizes[i];
+      final n = newSizes[i];
+
+      if (o.name != n.name) return true;
+
+      // 比較測量數值
+      final m1 = o.measurements.toJson();
+      final m2 = n.measurements.toJson();
+      for (final key in m1.keys) {
+        if (m1[key] != m2[key]) return true;
+      }
+    }
+    return false;
+  }
 }

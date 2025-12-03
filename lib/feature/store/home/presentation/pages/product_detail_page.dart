@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
@@ -29,6 +30,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   List<String> clothesTypes = [];
   Set<String> selectedTypes = {};
 
+  // 尺寸列表
+  final List<_SizeEntry> _sizeEntries = [];
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +42,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     selectedTypes = Set<String>.from(widget.product.types);
     productImage = widget.product.loadImage();
     _loadProductTypes();
+
+    // 從商品資料中載入尺寸（因為 getProducts 已經包含了 product_sizes）
+    if (widget.product.sizes != null) {
+      for (final size in widget.product.sizes!) {
+        _sizeEntries.add(_SizeEntry.fromProductSize(size));
+      }
+    }
   }
 
   Future<void> _loadProductTypes() async {
@@ -62,6 +73,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     nameController.dispose();
     priceController.dispose();
     purchaseLinkController.dispose();
+    for (final entry in _sizeEntries) {
+      entry.dispose();
+    }
     super.dispose();
   }
 
@@ -115,13 +129,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       isLoading = true;
     });
 
-    final result = await ProductService.updateProduct(
-      product: widget.product,
+    // 準備目標商品資料
+    final targetProduct = Product(
+      storeId: widget.product.storeId,
       name: nameController.text,
       types: selectedTypes,
       price: price,
+      imagePath: widget.product.imagePath,
+      id: widget.product.id,
       purchaseLink: purchaseLinkController.text,
-      newProductImage: newImage,
+      sizes: _sizeEntries.map((final e) => e.toProductSize(widget.product.id!)).toList(),
+    );
+
+    final result = await ProductService.updateProduct(
+      original: widget.product,
+      target: targetProduct,
+      newImage: newImage,
     );
 
     if (!mounted) return;
@@ -140,6 +163,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         type: NotificationType.error,
       );
     }
+  }
+
+  void _addSize() {
+    setState(() {
+      _sizeEntries.add(_SizeEntry());
+    });
+  }
+
+  void _removeSize(final int index) {
+    setState(() {
+      _sizeEntries[index].dispose();
+      _sizeEntries.removeAt(index);
+    });
   }
 
   @override
@@ -287,6 +323,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             const SizedBox(height: 24),
 
+            // 尺寸編輯區
+            _buildSizeList(),
+            const SizedBox(height: 24),
+
             // 儲存按鈕
             SizedBox(
               width: double.infinity,
@@ -324,12 +364,122 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  Widget _buildSizeList() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('尺寸詳細資訊', style: textTheme.titleMedium),
+            TextButton.icon(
+              onPressed: _addSize,
+              icon: const Icon(Icons.add),
+              label: const Text('新增尺寸'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_sizeEntries.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: Center(
+              child: Text(
+                '暫無尺寸資訊',
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+              ),
+            ),
+          ),
+        ..._sizeEntries.asMap().entries.map((final entry) {
+          final index = entry.key;
+          final sizeEntry = entry.value;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: colorScheme.outlineVariant),
+            ),
+            color: colorScheme.surfaceContainerLow,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: sizeEntry.nameController,
+                          label: '尺寸名稱 (如: S, M)',
+                          icon: Icons.label_outline,
+                          filledColor: colorScheme.surface,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        color: colorScheme.error,
+                        onPressed: () => _removeSize(index),
+                        tooltip: '刪除此尺寸',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: MeasurementType.values.map((final type) {
+                      return _buildMeasurementField(
+                        sizeEntry.measurementControllers[type]!,
+                        type.label,
+                        type.icon,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildMeasurementField(
+    final TextEditingController controller,
+    final String label,
+    final IconData icon,
+  ) {
+    return SizedBox(
+      width: (MediaQuery.of(context).size.width - 48 - 32 - 12) / 2,
+      child: _buildTextField(
+        controller: controller,
+        label: label,
+        icon: icon,
+        keyboardType: TextInputType.number,
+        filledColor: Theme.of(context).colorScheme.surface,
+        isDense: true,
+      ),
+    );
+  }
+
   Widget _buildTextField({
     required final TextEditingController controller,
     required final String label,
     required final IconData icon,
     final TextInputType? keyboardType,
     final String? hintText,
+    final Color? filledColor,
+    final bool isDense = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -344,7 +494,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         labelStyle: textTheme.bodyMedium,
         prefixIcon: Icon(icon, color: colorScheme.outline, size: 20),
         filled: true,
-        fillColor: colorScheme.surfaceContainerLow,
+        fillColor: filledColor ?? colorScheme.surfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -423,5 +573,42 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
       ],
     );
+  }
+}
+
+class _SizeEntry {
+  _SizeEntry({final String name = '', final BodyMeasurements? measurements})
+    : nameController = TextEditingController(text: name) {
+    for (final type in MeasurementType.values) {
+      measurementControllers[type] = TextEditingController(
+        text: measurements?[type]?.toString() ?? '',
+      );
+    }
+  }
+
+  factory _SizeEntry.fromProductSize(final ProductSize size) {
+    return _SizeEntry(name: size.name, measurements: size.measurements);
+  }
+  final TextEditingController nameController;
+  final Map<MeasurementType, TextEditingController> measurementControllers = {};
+
+  ProductSize toProductSize(final String productId) {
+    final Map<MeasurementType, double?> measurementsMap = {};
+    for (final entry in measurementControllers.entries) {
+      measurementsMap[entry.key] = double.tryParse(entry.value.text);
+    }
+
+    return ProductSize(
+      productId: productId,
+      name: nameController.text,
+      measurements: BodyMeasurements.fromTypeMap(measurementsMap),
+    );
+  }
+
+  void dispose() {
+    nameController.dispose();
+    for (final controller in measurementControllers.values) {
+      controller.dispose();
+    }
   }
 }
