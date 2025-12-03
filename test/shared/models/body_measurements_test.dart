@@ -48,28 +48,6 @@ void main() {
       expect(json['sleeve_length'], 60.0);
     });
 
-    test('fromTypeMap creates object correctly', () {
-      final map = {
-        MeasurementType.height: 180.0,
-        MeasurementType.weight: 75.0,
-        MeasurementType.chest: 100.0,
-        MeasurementType.waist: 85.0,
-        MeasurementType.hips: 95.0,
-        MeasurementType.shoulderWidth: 48.0,
-        MeasurementType.sleeveLength: 62.0,
-      };
-
-      final measurements = BodyMeasurements.fromTypeMap(map);
-
-      expect(measurements.height, 180.0);
-      expect(measurements.weight, 75.0);
-      expect(measurements.chest, 100.0);
-      expect(measurements.waist, 85.0);
-      expect(measurements.hips, 95.0);
-      expect(measurements.shoulderWidth, 48.0);
-      expect(measurements.sleeveLength, 62.0);
-    });
-
     test('operator [] returns correct values', () {
       const measurements = BodyMeasurements(
         height: 175.0,

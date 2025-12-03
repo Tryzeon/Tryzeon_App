@@ -598,16 +598,19 @@ class _SizeEntry {
   }
 
   ProductSize toProductSize(final String productId) {
-    final Map<MeasurementType, double?> measurementsMap = {};
+    final Map<String, dynamic> measurementsJson = {};
     for (final entry in measurementControllers.entries) {
-      measurementsMap[entry.key] = double.tryParse(entry.value.text);
+      final value = double.tryParse(entry.value.text);
+      if (value != null) {
+        measurementsJson[entry.key.key] = value;
+      }
     }
 
     return ProductSize(
       id: id,
       productId: productId,
       name: nameController.text,
-      measurements: BodyMeasurements.fromTypeMap(measurementsMap),
+      measurements: BodyMeasurements.fromJson(measurementsJson),
     );
   }
 

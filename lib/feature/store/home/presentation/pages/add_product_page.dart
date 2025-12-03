@@ -71,17 +71,18 @@ class _AddProductPageState extends State<AddProductPage> {
 
   List<ProductSize> _buildProductSizes() {
     return sizeControllers.map((final controllers) {
-      final Map<MeasurementType, double?> measurementsMap = {};
+      final Map<String, dynamic> measurementsJson = {};
       for (final type in MeasurementType.values) {
         final text = controllers[type.name]?.text;
-        measurementsMap[type] = text != null && text.isNotEmpty
-            ? double.tryParse(text)
-            : null;
+        final value = text != null && text.isNotEmpty ? double.tryParse(text) : null;
+        if (value != null) {
+          measurementsJson[type.key] = value;
+        }
       }
 
       return ProductSize(
         name: controllers['name']!.text,
-        measurements: BodyMeasurements.fromTypeMap(measurementsMap),
+        measurements: BodyMeasurements.fromJson(measurementsJson),
       );
     }).toList();
   }

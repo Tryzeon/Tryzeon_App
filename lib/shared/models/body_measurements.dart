@@ -39,18 +39,6 @@ class BodyMeasurements {
     );
   }
 
-  factory BodyMeasurements.fromTypeMap(final Map<MeasurementType, double?> map) {
-    return BodyMeasurements(
-      height: map[MeasurementType.height],
-      weight: map[MeasurementType.weight],
-      chest: map[MeasurementType.chest],
-      waist: map[MeasurementType.waist],
-      hips: map[MeasurementType.hips],
-      shoulderWidth: map[MeasurementType.shoulderWidth],
-      sleeveLength: map[MeasurementType.sleeveLength],
-    );
-  }
-
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     for (final type in MeasurementType.values) {

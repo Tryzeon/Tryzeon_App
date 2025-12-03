@@ -68,18 +68,16 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     });
 
     // 收集所有控制器的值並轉換為 Map
-    final measurementsMap = <MeasurementType, double?>{};
+    final measurementsJson = <String, dynamic>{};
     for (final entry in _measurementControllers.entries) {
       if (entry.value.text.isNotEmpty) {
-        measurementsMap[entry.key] = double.tryParse(entry.value.text);
-      } else {
-        measurementsMap[entry.key] = null;
+        measurementsJson[entry.key.key] = double.tryParse(entry.value.text);
       }
     }
 
     final result = await UserProfileService.updateUserProfile(
       name: _nameController.text,
-      measurements: BodyMeasurements.fromTypeMap(measurementsMap),
+      measurements: BodyMeasurements.fromJson(measurementsJson),
     );
 
     setState(() {
