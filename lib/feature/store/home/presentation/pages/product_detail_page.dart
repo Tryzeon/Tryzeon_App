@@ -118,7 +118,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final result = await ProductService.updateProduct(
       product: widget.product,
       name: nameController.text,
-      types: selectedTypes.toList(),
+      types: selectedTypes,
       price: price,
       purchaseLink: purchaseLinkController.text,
       newProductImage: newImage,

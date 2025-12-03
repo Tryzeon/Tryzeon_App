@@ -130,7 +130,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
     final result = await ProductService.createProduct(
       name: nameController.text,
-      types: selectedTypes.toList(),
+      types: selectedTypes,
       price: int.parse(priceController.text),
       purchaseLink: purchaseLinkController.text,
       image: selectedImage!,

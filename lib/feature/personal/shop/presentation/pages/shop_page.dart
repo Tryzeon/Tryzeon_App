@@ -84,7 +84,7 @@ class _ShopPageState extends State<ShopPage> {
       ascending: _ascending,
       minPrice: _minPrice,
       maxPrice: _maxPrice,
-      types: _selectedTypes.isEmpty ? null : _selectedTypes.toList(),
+      types: _selectedTypes.isEmpty ? null : _selectedTypes,
     );
 
     if (!mounted) return;

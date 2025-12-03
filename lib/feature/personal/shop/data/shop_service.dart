@@ -14,7 +14,7 @@ class ShopService {
     final bool ascending = false,
     final int? minPrice,
     final int? maxPrice,
-    final List<String>? types,
+    final Set<String>? types,
   }) async {
     try {
       // 查詢所有商品並關聯店家資訊和尺寸資訊
@@ -42,7 +42,7 @@ class ShopService {
       }
       // 類型過濾（使用 PostgreSQL 陣列 overlap 操作符）
       if (types != null && types.isNotEmpty) {
-        query = query.overlaps('type', types);
+        query = query.overlaps('type', types.toList());
       }
 
       // 排序

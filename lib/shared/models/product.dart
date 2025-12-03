@@ -55,7 +55,7 @@ class Product {
     return Product(
       storeId: json['store_id'],
       name: json['name'],
-      types: (json['type'] as List).map((final e) => e.toString()).toList(),
+      types: (json['type'] as List).map((final e) => e.toString()).toSet(),
       price: json['price'].toInt(),
       imagePath: json['image_path'],
 
@@ -78,7 +78,7 @@ class Product {
     return {
       'store_id': storeId,
       'name': name,
-      'type': types,
+      'type': types.toList(),
       'price': price,
       'image_path': imagePath,
 
@@ -100,7 +100,7 @@ class Product {
 
   final String storeId;
   final String name;
-  final List<String> types;
+  final Set<String> types;
   final int price;
   final String imagePath;
 

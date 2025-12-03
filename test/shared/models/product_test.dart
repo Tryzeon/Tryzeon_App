@@ -28,7 +28,7 @@ void main() {
       expect(product.id, 'prod_123');
       expect(product.storeId, 'store_456');
       expect(product.name, 'Test Product');
-      expect(product.types, ['Shirt', 'Top']);
+      expect(product.types, {'Shirt', 'Top'});
       expect(product.price, 1000);
       expect(product.imagePath, 'path/to/image.jpg');
       expect(product.purchaseLink, 'https://example.com');
@@ -46,7 +46,7 @@ void main() {
         id: 'prod_123',
         storeId: 'store_456',
         name: 'Test Product',
-        types: ['Shirt', 'Top'],
+        types: {'Shirt', 'Top'},
         price: 1000,
         imagePath: 'path/to/image.jpg',
         purchaseLink: 'https://example.com',

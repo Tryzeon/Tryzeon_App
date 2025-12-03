@@ -53,7 +53,7 @@ class ProductService {
   /// 創建新商品
   static Future<Result<void>> createProduct({
     required final String name,
-    required final List<String> types,
+    required final Set<String> types,
     required final int price,
     required final String purchaseLink,
     required final File image,
@@ -112,7 +112,7 @@ class ProductService {
   static Future<Result<void>> updateProduct({
     required final Product product,
     required final String name,
-    required final List<String> types,
+    required final Set<String> types,
     required final int price,
     required final String purchaseLink,
     final File? newProductImage,
@@ -132,7 +132,7 @@ class ProductService {
 
       final updateData = {
         'name': name,
-        'type': types,
+        'type': types.toList(),
         'price': price,
         'image_path': productImagePath,
         'purchase_link': purchaseLink,
