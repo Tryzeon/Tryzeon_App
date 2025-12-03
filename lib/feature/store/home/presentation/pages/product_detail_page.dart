@@ -577,8 +577,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 }
 
 class _SizeEntry {
-  _SizeEntry({final String name = '', final BodyMeasurements? measurements})
-    : nameController = TextEditingController(text: name) {
+  _SizeEntry({
+    this.id,
+    final String name = '',
+    final BodyMeasurements? measurements,
+  }) : nameController = TextEditingController(text: name) {
     for (final type in MeasurementType.values) {
       measurementControllers[type] = TextEditingController(
         text: measurements?[type]?.toString() ?? '',
@@ -587,10 +590,12 @@ class _SizeEntry {
   }
 
   factory _SizeEntry.fromProductSize(final ProductSize size) {
-    return _SizeEntry(name: size.name, measurements: size.measurements);
+    return _SizeEntry(
+      id: size.id,
+      name: size.name,
+      measurements: size.measurements,
+    );
   }
-  final TextEditingController nameController;
-  final Map<MeasurementType, TextEditingController> measurementControllers = {};
 
   ProductSize toProductSize(final String productId) {
     final Map<MeasurementType, double?> measurementsMap = {};
@@ -599,11 +604,16 @@ class _SizeEntry {
     }
 
     return ProductSize(
+      id: id,
       productId: productId,
       name: nameController.text,
       measurements: BodyMeasurements.fromTypeMap(measurementsMap),
     );
   }
+
+  final String? id;
+  final TextEditingController nameController;
+  final Map<MeasurementType, TextEditingController> measurementControllers = {};
 
   void dispose() {
     nameController.dispose();

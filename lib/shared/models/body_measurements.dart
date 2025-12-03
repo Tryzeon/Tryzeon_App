@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 
 /// 身型測量欄位定義
 enum MeasurementType {
-  height('身高 (cm)', Icons.height_rounded),
-  weight('體重 (kg)', Icons.monitor_weight_outlined),
-  chest('胸圍 (cm)', Icons.accessibility_rounded),
-  waist('腰圍 (cm)', Icons.accessibility_rounded),
-  hips('臀圍 (cm)', Icons.accessibility_rounded),
-  shoulderWidth('肩寬 (cm)', Icons.accessibility_rounded),
-  sleeveLength('袖長 (cm)', Icons.accessibility_rounded);
+  height('身高 (cm)', 'height', Icons.height_rounded),
+  weight('體重 (kg)', 'weight', Icons.monitor_weight_outlined),
+  chest('胸圍 (cm)', 'chest', Icons.accessibility_rounded),
+  waist('腰圍 (cm)', 'waist', Icons.accessibility_rounded),
+  hips('臀圍 (cm)', 'hips', Icons.accessibility_rounded),
+  shoulderWidth('肩寬 (cm)', 'shoulder_width', Icons.accessibility_rounded),
+  sleeveLength('袖長 (cm)', 'sleeve_length', Icons.accessibility_rounded);
 
-  const MeasurementType(this.label, this.icon);
+  const MeasurementType(this.label, this.key, this.icon);
   final String label;
   final IconData icon;
+  final String key;
 }
 
 class BodyMeasurements {
@@ -51,15 +52,14 @@ class BodyMeasurements {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      if (height != null) 'height': height,
-      if (weight != null) 'weight': weight,
-      if (chest != null) 'chest': chest,
-      if (waist != null) 'waist': waist,
-      if (hips != null) 'hips': hips,
-      if (shoulderWidth != null) 'shoulder_width': shoulderWidth,
-      if (sleeveLength != null) 'sleeve_length': sleeveLength,
-    };
+    final data = <String, dynamic>{};
+    for (final type in MeasurementType.values) {
+      final value = this[type];
+      if (value != null) {
+        data[type.key] = value;
+      }
+    }
+    return data;
   }
 
   final double? height;
@@ -88,10 +88,5 @@ class BodyMeasurements {
       case MeasurementType.sleeveLength:
         return sleeveLength;
     }
-  }
-
-  @override
-  String toString() {
-    return 'height: $height, weight: $weight, chest: $chest, waist: $waist, hips: $hips, shoulderWidth: $shoulderWidth, sleeveLength: $sleeveLength)';
   }
 }

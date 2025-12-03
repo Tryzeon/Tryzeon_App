@@ -117,7 +117,6 @@ class ProductService {
 
       // 1. 取得變更的欄位 (Dirty Checking)
       final updateData = original.getDirtyFields(target);
-      final sizesChanged = original.hasSizesChanged(target.sizes);
 
       // 如果有新圖片，則處理圖片上傳與舊圖刪除
       if (newImage != null) {
@@ -130,24 +129,38 @@ class ProductService {
         await _supabase.from(_productsTable).update(updateData).eq('id', original.id!);
       }
 
-      if (sizesChanged) {
-        // 更新尺寸：先刪除舊的，再新增新的
-        final sizesToUpdate = target.sizes ?? [];
+      // 2. 處理尺寸變更
+      final currentSizes = original.sizes ?? [];
+      final newSizes = target.sizes ?? [];
+      final newIds = newSizes.map((final e) => e.id).whereType<String>().toSet();
 
-        // 1. 刪除該商品的所有尺寸
-        await _supabase.from('product_sizes').delete().eq('product_id', original.id!);
+      // A. 刪除 (在 original 中有 id，但在 target 中找不到)
+      for (final oldSize in currentSizes) {
+        if (oldSize.id != null && !newIds.contains(oldSize.id)) {
+          await _supabase.from('product_sizes').delete().eq('id', oldSize.id!);
+        }
+      }
 
-        // 2. 新增新的尺寸
-        if (sizesToUpdate.isNotEmpty) {
-          final sizesData = sizesToUpdate.map((final size) {
-            return {
-              'product_id': original.id,
-              'name': size.name,
-              ...size.measurements.toJson(),
-            };
-          }).toList();
+      // B. 新增或更新
+      for (final newSize in newSizes) {
+        if (newSize.id == null) {
+          // 新增
+          await _supabase.from('product_sizes').insert({
+            'product_id': original.id,
+            'name': newSize.name,
+            ...newSize.measurements.toJson(),
+          });
+        } else {
+          // 更新 (先檢查是否變更)
+          final oldSize = currentSizes.firstWhere((final e) => e.id == newSize.id);
+          final sizeUpdates = oldSize.getDirtyFields(newSize);
 
-          await _supabase.from('product_sizes').insert(sizesData);
+          if (sizeUpdates.isNotEmpty) {
+            await _supabase
+                .from('product_sizes')
+                .update(sizeUpdates)
+                .eq('id', newSize.id!);
+          }
         }
       }
 

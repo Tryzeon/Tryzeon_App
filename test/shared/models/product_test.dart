@@ -71,6 +71,45 @@ void main() {
       expect(json['tryon_count'], 10);
       expect(json['purchase_click_count'], 5);
     });
+
+    test('getDirtyFields detects changes correctly', () {
+      final original = Product(
+        storeId: 'store_1',
+        name: 'Original Name',
+        types: {'A', 'B'},
+        price: 100,
+        imagePath: 'img.jpg',
+        purchaseLink: 'link.com',
+      );
+
+      // Case 1: No changes
+      final same = Product(
+        storeId: 'store_1',
+        name: 'Original Name',
+        types: {'B', 'A'}, // Different order, same content
+        price: 100,
+        imagePath: 'img.jpg',
+        purchaseLink: 'link.com',
+      );
+      expect(original.getDirtyFields(same), isEmpty);
+
+      // Case 2: Changes
+      final changed = Product(
+        storeId: 'store_1',
+        name: 'New Name',
+        types: {'A', 'C'},
+        price: 200,
+        imagePath: 'new_img.jpg',
+        purchaseLink: 'new_link.com',
+      );
+      final dirty = original.getDirtyFields(changed);
+
+      expect(dirty['name'], 'New Name');
+      expect(dirty['type'], containsAll(['A', 'C']));
+      expect(dirty['price'], 200);
+      expect(dirty['image_path'], 'new_img.jpg');
+      expect(dirty['purchase_link'], 'new_link.com');
+    });
   });
 
   group('ProductSize', () {
@@ -107,6 +146,49 @@ void main() {
       expect(json['name'], 'L');
       expect(json['height'], 180.0);
       expect(json['weight'], 75.0);
+    });
+
+    test('getDirtyFields detects changes correctly', () {
+      final original = ProductSize(
+        id: 's1',
+        name: 'M',
+        measurements: const BodyMeasurements(height: 170, weight: 60),
+      );
+
+      // Case 1: No changes
+      final same = ProductSize(
+        id: 's1',
+        name: 'M',
+        measurements: const BodyMeasurements(height: 170, weight: 60),
+      );
+      expect(original.getDirtyFields(same), isEmpty);
+
+      // Case 2: Name changed
+      final nameChanged = ProductSize(
+        id: 's1',
+        name: 'L',
+        measurements: const BodyMeasurements(height: 170, weight: 60),
+      );
+      expect(original.getDirtyFields(nameChanged), {'name': 'L'});
+
+      // Case 3: Measurement changed
+      final measureChanged = ProductSize(
+        id: 's1',
+        name: 'M',
+        measurements: const BodyMeasurements(height: 175, weight: 60),
+      );
+      expect(original.getDirtyFields(measureChanged), {'height': 175.0});
+
+      // Case 4: Multiple changes
+      final multiChanged = ProductSize(
+        id: 's1',
+        name: 'XL',
+        measurements: const BodyMeasurements(height: 180, weight: 70),
+      );
+      final dirty = original.getDirtyFields(multiChanged);
+      expect(dirty['name'], 'XL');
+      expect(dirty['height'], 180.0);
+      expect(dirty['weight'], 70.0);
     });
   });
 }

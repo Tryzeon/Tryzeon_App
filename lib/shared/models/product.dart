@@ -1,4 +1,6 @@
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/result.dart';
@@ -31,6 +33,26 @@ class ProductSize {
 
   final String name;
   final BodyMeasurements measurements;
+
+  /// 比對另一個 ProductSize，回傳差異的 Map
+  Map<String, dynamic> getDirtyFields(final ProductSize target) {
+    final updates = <String, dynamic>{};
+
+    if (name != target.name) {
+      updates['name'] = target.name;
+    }
+
+    for (final type in MeasurementType.values) {
+      final oldValue = measurements[type];
+      final newValue = target.measurements[type];
+
+      if (oldValue != newValue) {
+        updates[type.key] = newValue;
+      }
+    }
+
+    return updates;
+  }
 }
 
 class Product {
@@ -121,7 +143,7 @@ class Product {
       updates['name'] = target.name;
     }
 
-    if (types != target.types) {
+    if (!setEquals(types, target.types)) {
       updates['type'] = target.types.toList();
     }
 
@@ -138,28 +160,5 @@ class Product {
     }
 
     return updates;
-  }
-
-  /// 判斷 Sizes 是否改變
-  bool hasSizesChanged(final List<ProductSize>? targetSizes) {
-    final currentSizes = sizes ?? [];
-    final newSizes = targetSizes ?? [];
-
-    if (currentSizes.length != newSizes.length) return true;
-
-    for (int i = 0; i < currentSizes.length; i++) {
-      final o = currentSizes[i];
-      final n = newSizes[i];
-
-      if (o.name != n.name) return true;
-
-      // 比較測量數值
-      final m1 = o.measurements.toJson();
-      final m2 = n.measurements.toJson();
-      for (final key in m1.keys) {
-        if (m1[key] != m2[key]) return true;
-      }
-    }
-    return false;
   }
 }
