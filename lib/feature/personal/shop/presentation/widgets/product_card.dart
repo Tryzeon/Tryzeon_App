@@ -102,7 +102,7 @@ class _ProductCardState extends State<ProductCard> {
   Future<void> _handlePurchase() async {
     final product = widget.product;
 
-    if (product.purchaseLink == null) {
+    if (product.purchaseLink == null || product.purchaseLink!.isEmpty) {
       TopNotification.show(context, message: '此商品尚無購買連結', type: NotificationType.info);
       return;
     }
