@@ -53,12 +53,8 @@ class ProductService {
 
   /// 創建新商品
   static Future<Result<void>> createProduct({
-    required final String name,
-    required final Set<String> types,
-    required final int price,
-    required final String purchaseLink,
+    required final Product product,
     required final File image,
-    final List<ProductSize> sizes = const [],
   }) async {
     try {
       // 獲取當前用戶 ID
@@ -67,26 +63,24 @@ class ProductService {
         return Result.failure('使用者獲取失敗');
       }
 
-      // 如果有圖片，先上傳圖片
+      // 先上傳圖片
       final String imagePath = await _uploadProductImage(store, image);
 
-      // 商品創建資料
-      final product = Product(
-        storeId: store.id,
-        name: name,
-        types: types,
-        price: price,
-        imagePath: imagePath,
-        purchaseLink: purchaseLink,
-      );
+      // 準備商品資料
+      final productData = product.toJson();
+      productData['store_id'] = store.id; // 確保 store_id 正確
+      productData['image_path'] = imagePath; // 更新圖片路徑
+      productData.remove('id'); // 移除 id，讓資料庫自動生成
+      productData.remove('product_sizes'); // 移除 sizes，稍後分開處理
 
       final response = await _supabase
           .from(_productsTable)
-          .insert(product.toJson())
+          .insert(productData)
           .select()
           .single();
 
       final productId = response['id'];
+      final sizes = product.sizes ?? [];
 
       if (sizes.isNotEmpty) {
         final sizesData = sizes.map((final size) {

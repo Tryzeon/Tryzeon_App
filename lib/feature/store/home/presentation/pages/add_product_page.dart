@@ -128,13 +128,19 @@ class _AddProductPageState extends State<AddProductPage> {
       isLoading = true;
     });
 
-    final result = await ProductService.createProduct(
+    final newProduct = Product(
+      storeId: '',
       name: nameController.text,
       types: selectedTypes,
       price: int.parse(priceController.text),
       purchaseLink: purchaseLinkController.text,
-      image: selectedImage!,
+      imagePath: '',
       sizes: _buildProductSizes(),
+    );
+
+    final result = await ProductService.createProduct(
+      product: newProduct,
+      image: selectedImage!,
     );
 
     if (!mounted) return;
