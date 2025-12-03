@@ -721,50 +721,54 @@ class _AddProductPageState extends State<AddProductPage> {
                       ),
                       const SizedBox(height: 12),
                       // 身體測量欄位
-                      ...MeasurementType.values.map((final type) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: TextField(
-                            controller: controllers[type.name],
-                            style: textTheme.bodyMedium,
-                            decoration: InputDecoration(
-                              labelText: type.label,
-                              labelStyle: textTheme.bodySmall,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: MeasurementType.values.map((final type) {
+                          return SizedBox(
+                            width: (MediaQuery.of(context).size.width - 118) / 2,
+                            child: TextField(
+                              controller: controllers[type.name],
+                              style: textTheme.bodyMedium,
+                              decoration: InputDecoration(
+                                labelText: type.label,
+                                labelStyle: textTheme.bodySmall,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: colorScheme.surface,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
                                 ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
+                              keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true,
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surface,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                              ],
                             ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                            ],
-                          ),
-                        );
-                      }),
+                          );
+                        }).toList(),
+                      ),
                     ],
                   ),
                 ),
