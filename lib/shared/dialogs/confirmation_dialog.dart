@@ -61,7 +61,7 @@ class ConfirmationDialog extends StatelessWidget {
               const SizedBox(height: 12),
 
               // 標題
-              if (title != null)
+              if (title != null && title!.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
@@ -76,7 +76,7 @@ class ConfirmationDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (title != null) const SizedBox(height: 12),
+              if (title != null && title!.isNotEmpty) const SizedBox(height: 12),
 
               // 說明文字
               Padding(

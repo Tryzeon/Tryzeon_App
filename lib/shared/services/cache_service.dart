@@ -81,7 +81,7 @@ class CacheService {
     final String? downloadUrl,
   }) async {
     try {
-      if (downloadUrl != null) {
+      if (downloadUrl != null && downloadUrl.isNotEmpty) {
         return await fcm.DefaultCacheManager().getSingleFile(downloadUrl, key: filePath);
       }
 
