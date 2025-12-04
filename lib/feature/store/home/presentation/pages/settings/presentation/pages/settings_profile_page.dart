@@ -60,7 +60,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
     if (_storeProfile == null) {
       if (mounted) {
-        TopNotification.show(context, message: '無法取得原始店家資料', type: NotificationType.error);
+        TopNotification.show(
+          context,
+          message: '無法取得原始店家資料',
+          type: NotificationType.error,
+        );
       }
       return;
     }
@@ -199,313 +203,319 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Logo卡片
-                            Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '店家 Logo',
-                                    style: textTheme.titleMedium?.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
                                     ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  GestureDetector(
-                                    onTap: _updateLogo,
-                                    child: Container(
-                                      width: 120,
-                                      height: 120,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            colorScheme.primary.withValues(alpha: 0.1),
-                                            colorScheme.secondary.withValues(alpha: 0.1),
-                                          ],
-                                        ),
-                                        borderRadius: BorderRadius.circular(60),
-                                        border: Border.all(
-                                          color: colorScheme.primary.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                          width: 2,
-                                        ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '店家 Logo',
+                                      style: textTheme.titleMedium?.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      child: _logoImage != null
-                                          ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(60),
-                                              child: Image.file(
-                                                _logoImage!,
-                                                fit: BoxFit.cover,
+                                    ),
+                                    const SizedBox(height: 20),
+                                    GestureDetector(
+                                      onTap: _updateLogo,
+                                      child: Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              colorScheme.primary.withValues(alpha: 0.1),
+                                              colorScheme.secondary.withValues(
+                                                alpha: 0.1,
                                               ),
-                                            )
-                                          : _storeProfile == null
-                                          ? Icon(
-                                              Icons.camera_alt_rounded,
-                                              size: 50,
-                                              color: colorScheme.primary,
-                                            )
-                                          : FutureBuilder(
-                                              future: _storeProfile!.loadLogo(),
-                                              builder: (final context, final snapshot) {
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return CircularProgressIndicator(
-                                                    color: colorScheme.primary,
-                                                  );
-                                                }
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(60),
+                                          border: Border.all(
+                                            color: colorScheme.primary.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: _logoImage != null
+                                            ? ClipRRect(
+                                                borderRadius: BorderRadius.circular(60),
+                                                child: Image.file(
+                                                  _logoImage!,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              )
+                                            : _storeProfile == null
+                                            ? Icon(
+                                                Icons.camera_alt_rounded,
+                                                size: 50,
+                                                color: colorScheme.primary,
+                                              )
+                                            : FutureBuilder(
+                                                future: _storeProfile!.loadLogo(),
+                                                builder: (final context, final snapshot) {
+                                                  if (snapshot.connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return CircularProgressIndicator(
+                                                      color: colorScheme.primary,
+                                                    );
+                                                  }
 
-                                                final result = snapshot.data;
-                                                if (result == null || !result.isSuccess) {
+                                                  final result = snapshot.data;
+                                                  if (result == null ||
+                                                      !result.isSuccess) {
+                                                    return Icon(
+                                                      Icons.camera_alt_rounded,
+                                                      size: 50,
+                                                      color: colorScheme.primary,
+                                                    );
+                                                  }
+
+                                                  if (result.data != null) {
+                                                    return ClipRRect(
+                                                      borderRadius: BorderRadius.circular(
+                                                        60,
+                                                      ),
+                                                      child: Image.file(
+                                                        result.data!,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder:
+                                                            (
+                                                              final context,
+                                                              final error,
+                                                              final stackTrace,
+                                                            ) {
+                                                              return Icon(
+                                                                Icons.store_rounded,
+                                                                size: 50,
+                                                                color:
+                                                                    colorScheme.primary,
+                                                              );
+                                                            },
+                                                      ),
+                                                    );
+                                                  }
+
                                                   return Icon(
                                                     Icons.camera_alt_rounded,
                                                     size: 50,
                                                     color: colorScheme.primary,
                                                   );
-                                                }
+                                                },
+                                              ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      '點擊上傳店家 Logo',
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
 
-                                                if (result.data != null) {
-                                                  return ClipRRect(
-                                                    borderRadius: BorderRadius.circular(
-                                                      60,
-                                                    ),
-                                                    child: Image.file(
-                                                      result.data!,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder:
-                                                          (
-                                                            final context,
-                                                            final error,
-                                                            final stackTrace,
-                                                          ) {
-                                                            return Icon(
-                                                              Icons.store_rounded,
-                                                              size: 50,
-                                                              color: colorScheme.primary,
-                                                            );
-                                                          },
-                                                    ),
-                                                  );
-                                                }
+                              const SizedBox(height: 24),
 
-                                                return Icon(
-                                                  Icons.camera_alt_rounded,
-                                                  size: 50,
-                                                  color: colorScheme.primary,
-                                                );
-                                              },
+                              // 資訊卡片
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '店家資訊',
+                                      style: textTheme.titleMedium?.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // 店家名稱
+                                    TextFormField(
+                                      controller: storeNameController,
+                                      style: textTheme.bodyMedium?.copyWith(fontSize: 16),
+                                      decoration: InputDecoration(
+                                        labelText: '店家名稱',
+                                        labelStyle: textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurface.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          fontSize: 14,
+                                        ),
+                                        prefixIcon: Icon(
+                                          Icons.store_rounded,
+                                          color: colorScheme.primary,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.outline.withValues(
+                                              alpha: 0.3,
                                             ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    '點擊上傳店家 Logo',
-                                    style: textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // 資訊卡片
-                            Container(
-                              decoration: BoxDecoration(
-                                color: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '店家資訊',
-                                    style: textTheme.titleMedium?.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-
-                                  // 店家名稱
-                                  TextFormField(
-                                    controller: storeNameController,
-                                    style: textTheme.bodyMedium?.copyWith(fontSize: 16),
-                                    decoration: InputDecoration(
-                                      labelText: '店家名稱',
-                                      labelStyle: textTheme.bodyMedium?.copyWith(
-                                        color: colorScheme.onSurface.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                        fontSize: 14,
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.store_rounded,
-                                        color: colorScheme.primary,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: colorScheme.outline.withValues(
-                                            alpha: 0.3,
                                           ),
                                         ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: colorScheme.outline.withValues(
-                                            alpha: 0.3,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.outline.withValues(
+                                              alpha: 0.3,
+                                            ),
                                           ),
                                         ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.primary,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        filled: true,
+                                        fillColor: colorScheme.surfaceContainerLow,
                                       ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
+                                      validator: (final value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return '請輸入店家名稱';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // 店家地址
+                                    TextFormField(
+                                      controller: storeAddressController,
+                                      style: textTheme.bodyMedium?.copyWith(fontSize: 16),
+                                      decoration: InputDecoration(
+                                        labelText: '店家地址',
+                                        labelStyle: textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurface.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          fontSize: 14,
+                                        ),
+                                        prefixIcon: Icon(
+                                          Icons.location_on_rounded,
                                           color: colorScheme.primary,
-                                          width: 2,
                                         ),
-                                      ),
-                                      filled: true,
-                                      fillColor: colorScheme.surfaceContainerLow,
-                                    ),
-                                    validator: (final value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return '請輸入店家名稱';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // 店家地址
-                                  TextFormField(
-                                    controller: storeAddressController,
-                                    style: textTheme.bodyMedium?.copyWith(fontSize: 16),
-                                    decoration: InputDecoration(
-                                      labelText: '店家地址',
-                                      labelStyle: textTheme.bodyMedium?.copyWith(
-                                        color: colorScheme.onSurface.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                        fontSize: 14,
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.location_on_rounded,
-                                        color: colorScheme.primary,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: colorScheme.outline.withValues(
-                                            alpha: 0.3,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.outline.withValues(
+                                              alpha: 0.3,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: colorScheme.outline.withValues(
-                                            alpha: 0.3,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.outline.withValues(
+                                              alpha: 0.3,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: colorScheme.primary,
-                                          width: 2,
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.primary,
+                                            width: 2,
+                                          ),
                                         ),
+                                        filled: true,
+                                        fillColor: colorScheme.surfaceContainerLow,
                                       ),
-                                      filled: true,
-                                      fillColor: colorScheme.surfaceContainerLow,
+                                      validator: (final value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return '請輸入店家地址';
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    validator: (final value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return '請輸入店家地址';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // 儲存按鈕
-                            Container(
-                              width: double.infinity,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [colorScheme.primary, colorScheme.secondary],
+                                  ],
                                 ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colorScheme.primary.withValues(alpha: 0.3),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
                               ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _updateProfile,
+
+                              const SizedBox(height: 24),
+
+                              // 儲存按鈕
+                              Container(
+                                width: double.infinity,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [colorScheme.primary, colorScheme.secondary],
+                                  ),
                                   borderRadius: BorderRadius.circular(16),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.save_rounded,
-                                        color: colorScheme.onPrimary,
-                                        size: 24,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '儲存',
-                                        style: textTheme.titleMedium?.copyWith(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: colorScheme.primary.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _updateProfile,
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.save_rounded,
                                           color: colorScheme.onPrimary,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
+                                          size: 24,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '儲存',
+                                          style: textTheme.titleMedium?.copyWith(
+                                            color: colorScheme.onPrimary,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
               ),
             ],
           ),

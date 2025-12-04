@@ -64,10 +64,7 @@ void main() {
       expect(profile.getDirtyFields(logoChanged), {'logo_path': 'new/logo.png'});
 
       // Case 5: Multiple changes
-      final multiChanged = profile.copyWith(
-        name: 'New Name',
-        address: 'New Address',
-      );
+      final multiChanged = profile.copyWith(name: 'New Name', address: 'New Address');
       final diff = profile.getDirtyFields(multiChanged);
       expect(diff['name'], 'New Name');
       expect(diff['address'], 'New Address');

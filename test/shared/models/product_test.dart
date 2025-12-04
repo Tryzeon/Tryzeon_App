@@ -120,10 +120,7 @@ void main() {
         imagePath: 'img.jpg',
       );
 
-      final copy = original.copyWith(
-        name: 'New Name',
-        price: 200,
-      );
+      final copy = original.copyWith(name: 'New Name', price: 200);
 
       expect(copy.storeId, original.storeId);
       expect(copy.name, 'New Name');

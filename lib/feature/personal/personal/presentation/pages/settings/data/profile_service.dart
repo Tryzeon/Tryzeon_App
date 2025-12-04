@@ -58,7 +58,10 @@ class UserProfileService {
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getUserProfile();
       if (!currentProfileResult.isSuccess) {
-        return Result.failure('無法取得目前資料以進行更新比對', errorMessage: currentProfileResult.errorMessage);
+        return Result.failure(
+          '無法取得目前資料以進行更新比對',
+          errorMessage: currentProfileResult.errorMessage,
+        );
       }
       final original = currentProfileResult.data!;
 

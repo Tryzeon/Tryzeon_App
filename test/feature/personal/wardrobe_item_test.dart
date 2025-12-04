@@ -43,10 +43,7 @@ void main() {
         tags: ['summer'],
       );
 
-      final copy = original.copyWith(
-        category: 'pants',
-        tags: ['winter'],
-      );
+      final copy = original.copyWith(category: 'pants', tags: ['winter']);
 
       expect(copy.id, original.id); // Unchanged
       expect(copy.imagePath, original.imagePath); // Unchanged

@@ -210,7 +210,8 @@ class ProductSizeChanges {
   final List<Map<String, dynamic>> toUpdate;
   final List<String> toDeleteIds;
 
-  bool get hasChanges => toAdd.isNotEmpty || toUpdate.isNotEmpty || toDeleteIds.isNotEmpty;
+  bool get hasChanges =>
+      toAdd.isNotEmpty || toUpdate.isNotEmpty || toDeleteIds.isNotEmpty;
 }
 
 extension ProductSizeListExtension on List<ProductSize>? {
@@ -234,7 +235,10 @@ extension ProductSizeListExtension on List<ProductSize>? {
     final List<String> sizesToDeleteIds = [];
 
     // Delete
-    final targetSizeIds = finalTargetSizes.map((final s) => s.id).whereType<String>().toSet();
+    final targetSizeIds = finalTargetSizes
+        .map((final s) => s.id)
+        .whereType<String>()
+        .toSet();
     for (final originalSize in originalSizes) {
       if (originalSize.id != null && !targetSizeIds.contains(originalSize.id)) {
         sizesToDeleteIds.add(originalSize.id!);
@@ -242,10 +246,14 @@ extension ProductSizeListExtension on List<ProductSize>? {
     }
 
     for (final targetSize in finalTargetSizes) {
-      if (targetSize.id == null) { // Insert
+      if (targetSize.id == null) {
+        // Insert
         sizesToAdd.add(targetSize);
-      } else { // Update
-        final originalSize = originalSizes.firstWhereOrNull((final s) => s.id == targetSize.id);
+      } else {
+        // Update
+        final originalSize = originalSizes.firstWhereOrNull(
+          (final s) => s.id == targetSize.id,
+        );
         if (originalSize != null) {
           final dirtyFields = originalSize.getDirtyFields(targetSize);
           if (dirtyFields.isNotEmpty) {

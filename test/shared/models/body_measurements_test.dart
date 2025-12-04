@@ -77,15 +77,12 @@ void main() {
     });
 
     test('copyWith creates new instance with updated values', () {
-      const original = BodyMeasurements(
-        height: 170,
-        weight: 60,
-        chest: 90,
-      );
+      const original = BodyMeasurements(height: 170, weight: 60, chest: 90);
 
       final copy = original.copyWith(
         weight: 65, // Changed
-        chest: null, // Keep original (null in parameters means "use this value" if passed, but here copyWith uses ?? this.field, so passing null usually means "keep original" if the parameter is nullable but default is null. Wait, let's check copyWith impl)
+        chest:
+            null, // Keep original (null in parameters means "use this value" if passed, but here copyWith uses ?? this.field, so passing null usually means "keep original" if the parameter is nullable but default is null. Wait, let's check copyWith impl)
       );
       // Checking implementation of copyWith:
       // height: height ?? this.height
@@ -95,53 +92,35 @@ void main() {
       expect(copy.weight, 65);
       expect(copy.chest, 90); // passed null, so keeps 90
 
-      final copy2 = original.copyWith(
-        chest: 95,
-      );
+      final copy2 = original.copyWith(chest: 95);
       expect(copy2.chest, 95);
     });
 
     test('getDirtyFields detects changes correctly', () {
-      const original = BodyMeasurements(
-        height: 170,
-        weight: 60,
-      );
+      const original = BodyMeasurements(height: 170, weight: 60);
 
       // No changes
       expect(original.getDirtyFields(original), isEmpty);
 
       // Change one field
-      const changedWeight = BodyMeasurements(
-        height: 170,
-        weight: 65,
-      );
+      const changedWeight = BodyMeasurements(height: 170, weight: 65);
       expect(original.getDirtyFields(changedWeight), {'weight': 65.0});
 
       // Change multiple fields
-      const changedBoth = BodyMeasurements(
-        height: 175,
-        weight: 65,
-      );
+      const changedBoth = BodyMeasurements(height: 175, weight: 65);
       final diff = original.getDirtyFields(changedBoth);
       expect(diff['height'], 175.0);
       expect(diff['weight'], 65.0);
 
       // Add new field (was null, now has value)
-      const addedChest = BodyMeasurements(
-        height: 170,
-        weight: 60,
-        chest: 90,
-      );
+      const addedChest = BodyMeasurements(height: 170, weight: 60, chest: 90);
       expect(original.getDirtyFields(addedChest), {'chest': 90.0});
 
       // Remove field (was value, now null? Wait, BodyMeasurements fields are nullable.
       // If target has null and original has value, getDirtyFields should detect it?
       // Logic: if (oldValue != newValue) updates[key] = newValue;
       // So yes, if newValue is null, it puts null in map.
-      const removedWeight = BodyMeasurements(
-        height: 170,
-        weight: null,
-      );
+      const removedWeight = BodyMeasurements(height: 170, weight: null);
       expect(original.getDirtyFields(removedWeight), {'weight': null});
     });
   });

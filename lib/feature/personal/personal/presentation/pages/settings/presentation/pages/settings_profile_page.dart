@@ -67,7 +67,11 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
     if (_currentUserProfile == null) {
       if (mounted) {
-        TopNotification.show(context, message: '無法取得原始個人資料', type: NotificationType.error);
+        TopNotification.show(
+          context,
+          message: '無法取得原始個人資料',
+          type: NotificationType.error,
+        );
       }
       return;
     }
@@ -91,9 +95,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
       measurements: newMeasurements,
     );
 
-    final result = await UserProfileService.updateUserProfile(
-      target: targetProfile,
-    );
+    final result = await UserProfileService.updateUserProfile(target: targetProfile);
 
     setState(() {
       _isLoading = false;
@@ -248,7 +250,9 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                       decimal: true,
                                     ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
                                     ],
                                   ),
                                 );

@@ -112,7 +112,11 @@ class _AddProductPageState extends State<AddProductPage> {
     }
 
     if (selectedTypes.isEmpty) {
-      TopNotification.show(context, message: '請至少選擇一種商品類型', type: NotificationType.warning);
+      TopNotification.show(
+        context,
+        message: '請至少選擇一種商品類型',
+        type: NotificationType.warning,
+      );
       return false;
     }
 
@@ -236,318 +240,319 @@ class _AddProductPageState extends State<AddProductPage> {
                   child: ListView(
                     padding: const EdgeInsets.all(20.0),
                     children: [
-                    // 圖片上傳卡片
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('商品圖片', style: textTheme.titleSmall),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: () async {
-                              final image = await ImagePickerHelper.pickImage(context);
-                              if (image != null) {
-                                setState(() {
-                                  selectedImage = image;
-                                });
-                              }
-                            },
-                            child: Container(
-                              height: 180,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    colorScheme.primary.withValues(alpha: 0.1),
-                                    colorScheme.secondary.withValues(alpha: 0.1),
-                                  ],
+                      // 圖片上傳卡片
+                      Container(
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('商品圖片', style: textTheme.titleSmall),
+                            const SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: () async {
+                                final image = await ImagePickerHelper.pickImage(context);
+                                if (image != null) {
+                                  setState(() {
+                                    selectedImage = image;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                height: 180,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      colorScheme.primary.withValues(alpha: 0.1),
+                                      colorScheme.secondary.withValues(alpha: 0.1),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
+                                    width: 2,
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: colorScheme.primary.withValues(alpha: 0.3),
-                                  width: 2,
-                                ),
+                                child: selectedImage == null
+                                    ? Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_photo_alternate_rounded,
+                                            size: 40,
+                                            color: colorScheme.primary,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            '點擊選擇圖片',
+                                            style: textTheme.labelLarge?.copyWith(
+                                              color: colorScheme.primary,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.file(
+                                          selectedImage!,
+                                          fit: BoxFit.contain,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                        ),
+                                      ),
                               ),
-                              child: selectedImage == null
-                                  ? Column(
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 商品資訊卡片
+                      Container(
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('商品資訊', style: textTheme.titleSmall),
+                            const SizedBox(height: 16),
+
+                            // 商品名稱
+                            TextFormField(
+                              controller: nameController,
+                              style: textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: '商品名稱',
+                                labelStyle: textTheme.bodyMedium,
+                                prefixIcon: Icon(
+                                  Icons.shopping_bag_outlined,
+                                  color: colorScheme.primary,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: colorScheme.surfaceContainer,
+                              ),
+                              validator: (final value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return '請輸入商品名稱';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            // 商品類型（多選）
+                            _buildTypeSelector(),
+
+                            const SizedBox(height: 16),
+
+                            // 尺寸資訊 (列表 + 新增按鈕)
+                            _buildSizeInputs(),
+
+                            const SizedBox(height: 16),
+
+                            // 價格
+                            TextFormField(
+                              controller: priceController,
+                              style: textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: '價格',
+                                labelStyle: textTheme.bodyMedium,
+                                prefixIcon: Icon(
+                                  Icons.attach_money_rounded,
+                                  color: colorScheme.primary,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: colorScheme.surfaceContainer,
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              validator: (final value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return '請輸入價格';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            // 購買連結
+                            TextFormField(
+                              controller: purchaseLinkController,
+                              style: textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: '購買連結',
+                                hintText: 'https://...',
+                                labelStyle: textTheme.bodyMedium,
+                                prefixIcon: Icon(
+                                  Icons.link_rounded,
+                                  color: colorScheme.primary,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: colorScheme.surfaceContainer,
+                              ),
+                              keyboardType: TextInputType.url,
+                              validator: (final value) {
+                                if (value != null && value.isNotEmpty) {
+                                  // Optional: Check for valid URL format if needed
+                                  if (!Uri.parse(value).isAbsolute) {
+                                    return '請輸入有效的網址';
+                                  }
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 新增按鈕
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: isLoading
+                              ? LinearGradient(
+                                  colors: [
+                                    colorScheme.outline,
+                                    colorScheme.outlineVariant,
+                                  ],
+                                )
+                              : LinearGradient(
+                                  colors: [colorScheme.primary, colorScheme.secondary],
+                                ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: isLoading
+                              ? []
+                              : [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: isLoading ? null : _handleAddProduct,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Center(
+                              child: isLoading
+                                  ? SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.onPrimary,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(
-                                          Icons.add_photo_alternate_rounded,
-                                          size: 40,
-                                          color: colorScheme.primary,
+                                          Icons.add_rounded,
+                                          color: colorScheme.onPrimary,
+                                          size: 24,
                                         ),
-                                        const SizedBox(height: 6),
+                                        const SizedBox(width: 8),
                                         Text(
-                                          '點擊選擇圖片',
-                                          style: textTheme.labelLarge?.copyWith(
-                                            color: colorScheme.primary,
+                                          '新增商品',
+                                          style: textTheme.titleMedium?.copyWith(
+                                            color: colorScheme.onPrimary,
                                           ),
                                         ),
                                       ],
-                                    )
-                                  : ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Image.file(
-                                        selectedImage!,
-                                        fit: BoxFit.contain,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                      ),
                                     ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 商品資訊卡片
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('商品資訊', style: textTheme.titleSmall),
-                          const SizedBox(height: 16),
-
-                          // 商品名稱
-                          TextFormField(
-                            controller: nameController,
-                            style: textTheme.bodyLarge,
-                            decoration: InputDecoration(
-                              labelText: '商品名稱',
-                              labelStyle: textTheme.bodyMedium,
-                              prefixIcon: Icon(
-                                Icons.shopping_bag_outlined,
-                                color: colorScheme.primary,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surfaceContainer,
-                            ),
-                            validator: (final value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return '請輸入商品名稱';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // 商品類型（多選）
-                          _buildTypeSelector(),
-
-                          const SizedBox(height: 16),
-
-                          // 尺寸資訊 (列表 + 新增按鈕)
-                          _buildSizeInputs(),
-
-                          const SizedBox(height: 16),
-
-                          // 價格
-                          TextFormField(
-                            controller: priceController,
-                            style: textTheme.bodyLarge,
-                            decoration: InputDecoration(
-                              labelText: '價格',
-                              labelStyle: textTheme.bodyMedium,
-                              prefixIcon: Icon(
-                                Icons.attach_money_rounded,
-                                color: colorScheme.primary,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surfaceContainer,
-                            ),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            validator: (final value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return '請輸入價格';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // 購買連結
-                          TextFormField(
-                            controller: purchaseLinkController,
-                            style: textTheme.bodyLarge,
-                            decoration: InputDecoration(
-                              labelText: '購買連結',
-                              hintText: 'https://...',
-                              labelStyle: textTheme.bodyMedium,
-                              prefixIcon: Icon(
-                                Icons.link_rounded,
-                                color: colorScheme.primary,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surfaceContainer,
-                            ),
-                            keyboardType: TextInputType.url,
-                            validator: (final value) {
-                              if (value != null && value.isNotEmpty) {
-                                // Optional: Check for valid URL format if needed
-                                if (!Uri.parse(value).isAbsolute) {
-                                  return '請輸入有效的網址';
-                                }
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 新增按鈕
-                    Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: isLoading
-                            ? LinearGradient(
-                                colors: [colorScheme.outline, colorScheme.outlineVariant],
-                              )
-                            : LinearGradient(
-                                colors: [colorScheme.primary, colorScheme.secondary],
-                              ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: isLoading
-                            ? []
-                            : [
-                                BoxShadow(
-                                  color: colorScheme.primary.withValues(alpha: 0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: isLoading ? null : _handleAddProduct,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Center(
-                            child: isLoading
-                                ? SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: colorScheme.onPrimary,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_rounded,
-                                        color: colorScheme.onPrimary,
-                                        size: 24,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '新增商品',
-                                        style: textTheme.titleMedium?.copyWith(
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               ),
             ],
           ),
