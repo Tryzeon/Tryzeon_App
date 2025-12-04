@@ -194,10 +194,71 @@ class Product {
       updates['image_path'] = target.imagePath;
     }
 
-    if (purchaseLink != target.purchaseLink) {
-      updates['purchase_link'] = target.purchaseLink;
+    return updates;
+  }
+}
+
+/// Helper class to encapsulate product size changes
+class ProductSizeChanges {
+  ProductSizeChanges({
+    required this.toAdd,
+    required this.toUpdate,
+    required this.toDeleteIds,
+  });
+
+  final List<ProductSize> toAdd;
+  final List<Map<String, dynamic>> toUpdate;
+  final List<String> toDeleteIds;
+
+  bool get hasChanges => toAdd.isNotEmpty || toUpdate.isNotEmpty || toDeleteIds.isNotEmpty;
+}
+
+extension ProductSizeListExtension on List<ProductSize>? {
+  ProductSize? firstWhereOrNull(final bool Function(ProductSize) test) {
+    if (this == null) return null;
+    for (final element in this!) {
+      if (test(element)) {
+        return element;
+      }
+    }
+    return null;
+  }
+
+  /// 獲取尺寸的變更，包含新增、更新和刪除
+  ProductSizeChanges getDirtyFields(final List<ProductSize>? targetSizes) {
+    final originalSizes = this ?? [];
+    final finalTargetSizes = targetSizes ?? [];
+
+    final List<ProductSize> sizesToAdd = [];
+    final List<Map<String, dynamic>> sizesToUpdate = [];
+    final List<String> sizesToDeleteIds = [];
+
+    // Delete
+    final targetSizeIds = finalTargetSizes.map((final s) => s.id).whereType<String>().toSet();
+    for (final originalSize in originalSizes) {
+      if (originalSize.id != null && !targetSizeIds.contains(originalSize.id)) {
+        sizesToDeleteIds.add(originalSize.id!);
+      }
     }
 
-    return updates;
+    for (final targetSize in finalTargetSizes) {
+      if (targetSize.id == null) { // Insert
+        sizesToAdd.add(targetSize);
+      } else { // Update
+        final originalSize = originalSizes.firstWhereOrNull((final s) => s.id == targetSize.id);
+        if (originalSize != null) {
+          final dirtyFields = originalSize.getDirtyFields(targetSize);
+          if (dirtyFields.isNotEmpty) {
+            sizesToUpdate.add({'id': targetSize.id!, 'dirtyFields': dirtyFields});
+          }
+        }
+      }
+    }
+
+    return ProductSizeChanges(
+      toAdd: sizesToAdd,
+      toUpdate: sizesToUpdate,
+      toDeleteIds: sizesToDeleteIds,
+    );
   }
 }

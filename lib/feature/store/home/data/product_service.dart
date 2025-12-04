@@ -8,6 +8,7 @@ import 'package:tryzeon/shared/services/cache_service.dart';
 class ProductService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products';
+  static const _productSizesTable = 'product_sizes';
   static const _productImagesBucket = 'store';
   static const _cacheKey = 'products_cache';
 
@@ -91,7 +92,7 @@ class ProductService {
           };
         }).toList();
 
-        await _supabase.from('product_sizes').insert(sizesData);
+        await _supabase.from(_productSizesTable).insert(sizesData);
       }
 
       // 清除快取以確保下次獲取最新資料
@@ -130,37 +131,28 @@ class ProductService {
       }
 
       // 2. 處理尺寸變更
-      final currentSizes = original.sizes ?? [];
-      final newSizes = target.sizes ?? [];
-      final newIds = newSizes.map((final e) => e.id).whereType<String>().toSet();
+      final sizeChanges = original.sizes.getDirtyFields(target.sizes);
 
-      // A. 刪除 (在 original 中有 id，但在 target 中找不到)
-      for (final oldSize in currentSizes) {
-        if (oldSize.id != null && !newIds.contains(oldSize.id)) {
-          await _supabase.from('product_sizes').delete().eq('id', oldSize.id!);
+      if (sizeChanges.hasChanges) {
+        // A. 刪除
+        for (final id in sizeChanges.toDeleteIds) {
+          await _supabase.from(_productSizesTable).delete().eq('id', id);
         }
-      }
 
-      // B. 新增或更新
-      for (final newSize in newSizes) {
-        if (newSize.id == null) {
-          // 新增
-          await _supabase.from('product_sizes').insert({
+        // B. 新增
+        for (final newSize in sizeChanges.toAdd) {
+          await _supabase.from(_productSizesTable).insert({
             'product_id': original.id,
             'name': newSize.name,
             ...newSize.measurements.toJson(),
           });
-        } else {
-          // 更新 (先檢查是否變更)
-          final oldSize = currentSizes.firstWhere((final e) => e.id == newSize.id);
-          final sizeUpdates = oldSize.getDirtyFields(newSize);
+        }
 
-          if (sizeUpdates.isNotEmpty) {
-            await _supabase
-                .from('product_sizes')
-                .update(sizeUpdates)
-                .eq('id', newSize.id!);
-          }
+        // C. 更新
+        for (final updateEntry in sizeChanges.toUpdate) {
+          final id = updateEntry['id'];
+          final dirtyFields = updateEntry['dirtyFields'];
+          await _supabase.from(_productSizesTable).update(dirtyFields).eq('id', id);
         }
       }
 
