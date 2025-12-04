@@ -110,6 +110,30 @@ void main() {
       expect(dirty['image_path'], 'new_img.jpg');
       expect(dirty['purchase_link'], 'new_link.com');
     });
+
+    test('copyWith creates new instance with updated values', () {
+      final original = Product(
+        storeId: 'store_1',
+        name: 'Original Name',
+        types: {'A'},
+        price: 100,
+        imagePath: 'img.jpg',
+      );
+
+      final copy = original.copyWith(
+        name: 'New Name',
+        price: 200,
+      );
+
+      expect(copy.storeId, original.storeId);
+      expect(copy.name, 'New Name');
+      expect(copy.price, 200);
+      expect(copy.types, original.types);
+      expect(copy.imagePath, original.imagePath);
+
+      final copyTypes = original.copyWith(types: {'B'});
+      expect(copyTypes.types, {'B'});
+    });
   });
 
   group('ProductSize', () {
@@ -146,6 +170,24 @@ void main() {
       expect(json['name'], 'L');
       expect(json['height'], 180.0);
       expect(json['weight'], 75.0);
+    });
+
+    test('copyWith creates new instance with updated values', () {
+      final original = ProductSize(
+        id: 's1',
+        name: 'M',
+        measurements: const BodyMeasurements(height: 170),
+      );
+
+      final copy = original.copyWith(name: 'L');
+      expect(copy.id, original.id);
+      expect(copy.name, 'L');
+      expect(copy.measurements, original.measurements);
+
+      final copyMeasure = original.copyWith(
+        measurements: const BodyMeasurements(height: 180),
+      );
+      expect(copyMeasure.measurements.height, 180);
     });
 
     test('getDirtyFields detects changes correctly', () {

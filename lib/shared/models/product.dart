@@ -34,6 +34,20 @@ class ProductSize {
   final String name;
   final BodyMeasurements measurements;
 
+  ProductSize copyWith({
+    final String? id,
+    final String? productId,
+    final String? name,
+    final BodyMeasurements? measurements,
+  }) {
+    return ProductSize(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      name: name ?? this.name,
+      measurements: measurements ?? this.measurements,
+    );
+  }
+
   /// 比對另一個 ProductSize，回傳差異的 Map
   Map<String, dynamic> getDirtyFields(final ProductSize target) {
     final updates = <String, dynamic>{};
@@ -127,6 +141,38 @@ class Product {
   final String? storeName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  Product copyWith({
+    final String? storeId,
+    final String? name,
+    final Set<String>? types,
+    final int? price,
+    final String? imagePath,
+    final String? id,
+    final String? purchaseLink,
+    final int? tryonCount,
+    final int? purchaseClickCount,
+    final List<ProductSize>? sizes,
+    final String? storeName,
+    final DateTime? createdAt,
+    final DateTime? updatedAt,
+  }) {
+    return Product(
+      storeId: storeId ?? this.storeId,
+      name: name ?? this.name,
+      types: types ?? this.types,
+      price: price ?? this.price,
+      imagePath: imagePath ?? this.imagePath,
+      id: id ?? this.id,
+      purchaseLink: purchaseLink ?? this.purchaseLink,
+      tryonCount: tryonCount ?? this.tryonCount,
+      purchaseClickCount: purchaseClickCount ?? this.purchaseClickCount,
+      sizes: sizes ?? this.sizes,
+      storeName: storeName ?? this.storeName,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 
   /// 比對另一個 Product，回傳差異的 Map (不包含 sizes)
   Map<String, dynamic> getDirtyFields(final Product target) {

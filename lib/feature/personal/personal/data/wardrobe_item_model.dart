@@ -41,6 +41,20 @@ class WardrobeItem {
   final String category;
   final List<String> tags;
 
+  WardrobeItem copyWith({
+    final String? id,
+    final String? imagePath,
+    final String? category,
+    final List<String>? tags,
+  }) {
+    return WardrobeItem(
+      id: id ?? this.id,
+      imagePath: imagePath ?? this.imagePath,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {'id': id, 'image_path': imagePath, 'category': category, 'tags': tags};
   }
