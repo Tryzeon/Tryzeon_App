@@ -248,9 +248,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                       decimal: true,
                                     ),
                                     inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
+                                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                                     ],
                                   ),
                                 );

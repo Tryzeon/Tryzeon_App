@@ -12,6 +12,7 @@ class StoreProfileSettingsPage extends StatefulWidget {
 }
 
 class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
+  final _formKey = GlobalKey<FormState>();
   File? _logoImage;
   StoreProfile? _storeProfile;
   final TextEditingController storeNameController = TextEditingController();
@@ -55,6 +56,8 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   }
 
   Future<void> _updateProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
     if (_storeProfile == null) {
       if (mounted) {
         TopNotification.show(context, message: '無法取得原始店家資料', type: NotificationType.error);
@@ -190,10 +193,12 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                     ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                     : SingleChildScrollView(
                         padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Logo卡片
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Logo卡片
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
@@ -346,7 +351,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   const SizedBox(height: 20),
 
                                   // 店家名稱
-                                  TextField(
+                                  TextFormField(
                                     controller: storeNameController,
                                     style: textTheme.bodyMedium?.copyWith(fontSize: 16),
                                     decoration: InputDecoration(
@@ -387,12 +392,18 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       filled: true,
                                       fillColor: colorScheme.surfaceContainerLow,
                                     ),
+                                    validator: (final value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return '請輸入店家名稱';
+                                      }
+                                      return null;
+                                    },
                                   ),
 
                                   const SizedBox(height: 20),
 
                                   // 店家地址
-                                  TextField(
+                                  TextFormField(
                                     controller: storeAddressController,
                                     style: textTheme.bodyMedium?.copyWith(fontSize: 16),
                                     decoration: InputDecoration(
@@ -433,6 +444,12 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                       filled: true,
                                       fillColor: colorScheme.surfaceContainerLow,
                                     ),
+                                    validator: (final value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return '請輸入店家地址';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ],
                               ),
@@ -488,6 +505,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                           ],
                         ),
                       ),
+                    ),
               ),
             ],
           ),

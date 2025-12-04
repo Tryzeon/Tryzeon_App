@@ -18,6 +18,7 @@ class AddProductPage extends StatefulWidget {
 }
 
 class _AddProductPageState extends State<AddProductPage> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController purchaseLinkController = TextEditingController();
@@ -105,17 +106,13 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   bool _validateProductForm() {
-    if (selectedImage == null ||
-        nameController.text.isEmpty ||
-        selectedTypes.isEmpty ||
-        priceController.text.isEmpty) {
-      TopNotification.show(context, message: '請填寫完整資料', type: NotificationType.warning);
+    if (selectedImage == null) {
+      TopNotification.show(context, message: '請選擇商品圖片', type: NotificationType.warning);
       return false;
     }
 
-    final price = int.tryParse(priceController.text);
-    if (price == null) {
-      TopNotification.show(context, message: '請輸入有效的價格', type: NotificationType.warning);
+    if (selectedTypes.isEmpty) {
+      TopNotification.show(context, message: '請至少選擇一種商品類型', type: NotificationType.warning);
       return false;
     }
 
@@ -123,6 +120,7 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   Future<void> _handleAddProduct() async {
+    if (!_formKey.currentState!.validate()) return;
     if (!_validateProductForm()) return;
 
     setState(() {
@@ -233,9 +231,11 @@ class _AddProductPageState extends State<AddProductPage> {
 
               // 內容
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(20.0),
-                  children: [
+                child: Form(
+                  key: _formKey,
+                  child: ListView(
+                    padding: const EdgeInsets.all(20.0),
+                    children: [
                     // 圖片上傳卡片
                     Container(
                       decoration: BoxDecoration(
@@ -336,7 +336,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           const SizedBox(height: 16),
 
                           // 商品名稱
-                          TextField(
+                          TextFormField(
                             controller: nameController,
                             style: textTheme.bodyLarge,
                             decoration: InputDecoration(
@@ -368,6 +368,12 @@ class _AddProductPageState extends State<AddProductPage> {
                               filled: true,
                               fillColor: colorScheme.surfaceContainer,
                             ),
+                            validator: (final value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return '請輸入商品名稱';
+                              }
+                              return null;
+                            },
                           ),
 
                           const SizedBox(height: 12),
@@ -383,7 +389,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           const SizedBox(height: 16),
 
                           // 價格
-                          TextField(
+                          TextFormField(
                             controller: priceController,
                             style: textTheme.bodyLarge,
                             decoration: InputDecoration(
@@ -416,12 +422,21 @@ class _AddProductPageState extends State<AddProductPage> {
                               fillColor: colorScheme.surfaceContainer,
                             ),
                             keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            validator: (final value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return '請輸入價格';
+                              }
+                              return null;
+                            },
                           ),
 
                           const SizedBox(height: 12),
 
                           // 購買連結
-                          TextField(
+                          TextFormField(
                             controller: purchaseLinkController,
                             style: textTheme.bodyLarge,
                             decoration: InputDecoration(
@@ -455,6 +470,15 @@ class _AddProductPageState extends State<AddProductPage> {
                               fillColor: colorScheme.surfaceContainer,
                             ),
                             keyboardType: TextInputType.url,
+                            validator: (final value) {
+                              if (value != null && value.isNotEmpty) {
+                                // Optional: Check for valid URL format if needed
+                                if (!Uri.parse(value).isAbsolute) {
+                                  return '請輸入有效的網址';
+                                }
+                              }
+                              return null;
+                            },
                           ),
                         ],
                       ),
@@ -523,6 +547,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                   ],
                 ),
+              ),
               ),
             ],
           ),
@@ -688,7 +713,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       ),
                       const SizedBox(height: 12),
                       // 尺寸名稱
-                      TextField(
+                      TextFormField(
                         controller: controllers['name'],
                         style: textTheme.bodyMedium,
                         decoration: InputDecoration(
@@ -718,6 +743,12 @@ class _AddProductPageState extends State<AddProductPage> {
                           ),
                         ),
                         keyboardType: TextInputType.text,
+                        validator: (final value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return '請輸入尺寸名稱';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 12),
                       // 身體測量欄位
@@ -727,7 +758,7 @@ class _AddProductPageState extends State<AddProductPage> {
                         children: MeasurementType.values.map((final type) {
                           return SizedBox(
                             width: (MediaQuery.of(context).size.width - 118) / 2,
-                            child: TextField(
+                            child: TextFormField(
                               controller: controllers[type.name],
                               style: textTheme.bodyMedium,
                               decoration: InputDecoration(
@@ -765,6 +796,14 @@ class _AddProductPageState extends State<AddProductPage> {
                               inputFormatters: [
                                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                               ],
+                              validator: (final value) {
+                                if (value != null && value.isNotEmpty) {
+                                  if (double.tryParse(value) == null) {
+                                    return '請輸入有效數字';
+                                  }
+                                }
+                                return null;
+                              },
                             ),
                           );
                         }).toList(),

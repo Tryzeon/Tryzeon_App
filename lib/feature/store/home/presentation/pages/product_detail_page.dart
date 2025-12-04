@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
@@ -19,6 +20,7 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+  final _formKey = GlobalKey<FormState>();
   late Future<Result<File>> productImage;
   late TextEditingController nameController;
   late TextEditingController priceController;
@@ -114,11 +116,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> _updateProduct() async {
-    final price = int.tryParse(priceController.text);
-    if (price == null) {
-      TopNotification.show(context, message: '請輸入有效的價格', type: NotificationType.warning);
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     if (selectedTypes.isEmpty) {
       TopNotification.show(context, message: '請至少選擇一個類型', type: NotificationType.warning);
@@ -134,7 +132,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       storeId: widget.product.storeId,
       name: nameController.text,
       types: selectedTypes,
-      price: price,
+      price: int.parse(priceController.text),
       imagePath: widget.product.imagePath,
       id: widget.product.id,
       purchaseLink: purchaseLinkController.text,
@@ -196,7 +194,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
+        child: Form(
+          key: _formKey,
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 圖片區域
@@ -300,6 +300,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               controller: nameController,
               label: '商品名稱',
               icon: Icons.inventory_2_outlined,
+              validator: (final value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '請輸入商品名稱';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
 
@@ -311,6 +317,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               label: '價格',
               icon: Icons.attach_money,
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (final value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '請輸入價格';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
 
@@ -320,6 +333,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               icon: Icons.link,
               keyboardType: TextInputType.url,
               hintText: 'https://...',
+              validator: (final value) {
+                if (value != null && value.isNotEmpty) {
+                  // Optional: Check for valid URL format if needed
+                  if (!Uri.parse(value).isAbsolute) {
+                    return '請輸入有效的網址';
+                  }
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 24),
 
@@ -361,7 +383,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildSizeList() {
@@ -422,6 +445,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           label: '尺寸名稱 (如: S, M)',
                           icon: Icons.label_outline,
                           filledColor: colorScheme.surface,
+                          validator: (final value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return '請輸入尺寸名稱';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -465,9 +494,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         controller: controller,
         label: label,
         icon: icon,
-        keyboardType: TextInputType.number,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         filledColor: Theme.of(context).colorScheme.surface,
         isDense: true,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        validator: (final value) {
+          if (value != null && value.isNotEmpty) {
+            if (double.tryParse(value) == null) {
+              return '請輸入有效數字';
+            }
+          }
+          return null;
+        },
       ),
     );
   }
@@ -480,13 +520,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final String? hintText,
     final Color? filledColor,
     final bool isDense = false,
+    final String? Function(String?)? validator,
+    final List<TextInputFormatter>? inputFormatters,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: textTheme.bodyLarge,
       decoration: InputDecoration(
         labelText: label,
@@ -509,6 +552,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
+      validator: validator,
     );
   }
 
