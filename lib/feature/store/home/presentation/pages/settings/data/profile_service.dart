@@ -71,20 +71,39 @@ class StoreProfileService {
         return Result.failure('使用者獲取失敗');
       }
 
-      final Map<String, dynamic> data = {
-        'store_id': store.id,
-        'name': name,
-        'address': address,
-      };
+      // 1. 取得目前資料以進行比對
+      final currentProfileResult = await getStoreProfile();
+      if (!currentProfileResult.isSuccess || currentProfileResult.data == null) {
+        return Result.failure('無法取得目前資料以進行更新比對');
+      }
+      final original = currentProfileResult.data!;
 
+      String? newLogoPath = original.logoPath;
+
+      // 2. 處理 Logo 上傳
       if (logo != null) {
-        final logoPath = await _uploadLogo(store, logo);
-        data['logo_path'] = logoPath;
+        newLogoPath = await _uploadLogo(store, logo);
+      }
+
+      // 3. 建立目標物件
+      final target = StoreProfile(
+        storeId: original.storeId,
+        name: name,
+        address: address,
+        logoPath: newLogoPath,
+      );
+
+      // 4. 取得變更欄位
+      final updateData = original.getDirtyFields(target);
+
+      // 如果沒有變更，直接返回原資料
+      if (updateData.isEmpty) {
+        return Result.success(data: original);
       }
 
       final response = await _supabase
           .from(_storesProfileTable)
-          .update(data)
+          .update(updateData)
           .eq('store_id', store.id)
           .select()
           .single();
@@ -185,5 +204,24 @@ class StoreProfile {
 
   Map<String, dynamic> toJson() {
     return {'store_id': storeId, 'name': name, 'address': address, 'logo_path': logoPath};
+  }
+
+  /// 比對另一個 StoreProfile，回傳差異的 Map
+  Map<String, dynamic> getDirtyFields(final StoreProfile target) {
+    final updates = <String, dynamic>{};
+
+    if (name != target.name) {
+      updates['name'] = target.name;
+    }
+
+    if (address != target.address) {
+      updates['address'] = target.address;
+    }
+
+    if (logoPath != target.logoPath) {
+      updates['logo_path'] = target.logoPath;
+    }
+
+    return updates;
   }
 }

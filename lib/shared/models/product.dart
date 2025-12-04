@@ -42,14 +42,7 @@ class ProductSize {
       updates['name'] = target.name;
     }
 
-    for (final type in MeasurementType.values) {
-      final oldValue = measurements[type];
-      final newValue = target.measurements[type];
-
-      if (oldValue != newValue) {
-        updates[type.key] = newValue;
-      }
-    }
+    updates.addAll(measurements.getDirtyFields(target.measurements));
 
     return updates;
   }

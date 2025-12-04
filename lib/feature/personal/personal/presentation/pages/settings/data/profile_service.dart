@@ -56,10 +56,27 @@ class UserProfileService {
         return Result.failure('使用者獲取失敗');
       }
 
-      final updateData = <String, dynamic>{};
+      // 1. 取得目前資料以進行比對
+      final currentProfileResult = await getUserProfile();
+      if (!currentProfileResult.isSuccess || currentProfileResult.data == null) {
+        return Result.failure('無法取得目前資料以進行更新比對');
+      }
+      final original = currentProfileResult.data!;
 
-      if (name != null) updateData['name'] = name.trim();
-      if (measurements != null) updateData.addAll(measurements.toJson());
+      // 2. 建立目標物件
+      final target = UserProfile(
+        userId: original.userId,
+        name: name?.trim() ?? original.name,
+        measurements: measurements ?? original.measurements,
+      );
+
+      // 3. 取得變更欄位
+      final updateData = original.getDirtyFields(target);
+
+      // 如果沒有變更，直接返回原資料
+      if (updateData.isEmpty) {
+        return Result.success(data: original);
+      }
 
       final response = await _supabase
           .from(_userProfileTable)
@@ -94,5 +111,18 @@ class UserProfile {
 
   Map<String, dynamic> toJson() {
     return {'user_id': userId, 'name': name, ...measurements.toJson()};
+  }
+
+  /// 比對另一個 UserProfile，回傳差異的 Map
+  Map<String, dynamic> getDirtyFields(final UserProfile target) {
+    final updates = <String, dynamic>{};
+
+    if (name != target.name) {
+      updates['name'] = target.name;
+    }
+
+    updates.addAll(measurements.getDirtyFields(target.measurements));
+
+    return updates;
   }
 }

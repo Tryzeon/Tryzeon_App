@@ -77,4 +77,18 @@ class BodyMeasurements {
         return sleeveLength;
     }
   }
+
+  /// 比對另一個 BodyMeasurements，回傳差異的 Map
+  Map<String, dynamic> getDirtyFields(final BodyMeasurements target) {
+    final updates = <String, dynamic>{};
+    for (final type in MeasurementType.values) {
+      final oldValue = this[type];
+      final newValue = target[type];
+
+      if (oldValue != newValue) {
+        updates[type.key] = newValue;
+      }
+    }
+    return updates;
+  }
 }
