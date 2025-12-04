@@ -61,8 +61,7 @@ class StoreProfileService {
 
   /// 更新店家資料
   static Future<Result<StoreProfile>> updateStoreProfile({
-    required final String name,
-    required final String address,
+    required final StoreProfile target,
     final File? logo,
   }) async {
     try {
@@ -73,28 +72,20 @@ class StoreProfileService {
 
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getStoreProfile();
-      if (!currentProfileResult.isSuccess || currentProfileResult.data == null) {
-        return Result.failure('無法取得目前資料以進行更新比對');
+      if (!currentProfileResult.isSuccess) {
+        return Result.failure('無法取得目前資料以進行更新比對', errorMessage: currentProfileResult.errorMessage);
       }
       final original = currentProfileResult.data!;
 
-      String? newLogoPath = original.logoPath;
-
-      // 2. 處理 Logo 上傳
+      // 2. 處理 Logo 上傳 (這裡會更新 target 的 logoPath)
+      StoreProfile finalTarget = target;
       if (logo != null) {
-        newLogoPath = await _uploadLogo(store, logo);
+        final newLogoPath = await _uploadLogo(store, logo);
+        finalTarget = target.copyWith(logoPath: newLogoPath);
       }
 
-      // 3. 建立目標物件
-      final target = StoreProfile(
-        storeId: original.storeId,
-        name: name,
-        address: address,
-        logoPath: newLogoPath,
-      );
-
-      // 4. 取得變更欄位
-      final updateData = original.getDirtyFields(target);
+      // 3. 取得變更欄位
+      final updateData = original.getDirtyFields(finalTarget);
 
       // 如果沒有變更，直接返回原資料
       if (updateData.isEmpty) {
@@ -204,6 +195,20 @@ class StoreProfile {
 
   Map<String, dynamic> toJson() {
     return {'store_id': storeId, 'name': name, 'address': address, 'logo_path': logoPath};
+  }
+
+  StoreProfile copyWith({
+    final String? storeId,
+    final String? name,
+    final String? address,
+    final String? logoPath,
+  }) {
+    return StoreProfile(
+      storeId: storeId ?? this.storeId,
+      name: name ?? this.name,
+      address: address ?? this.address,
+      logoPath: logoPath ?? this.logoPath,
+    );
   }
 
   /// 比對另一個 StoreProfile，回傳差異的 Map

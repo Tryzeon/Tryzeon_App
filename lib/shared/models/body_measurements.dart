@@ -78,6 +78,26 @@ class BodyMeasurements {
     }
   }
 
+  BodyMeasurements copyWith({
+    final double? height,
+    final double? weight,
+    final double? chest,
+    final double? waist,
+    final double? hips,
+    final double? shoulderWidth,
+    final double? sleeveLength,
+  }) {
+    return BodyMeasurements(
+      height: height ?? this.height,
+      weight: weight ?? this.weight,
+      chest: chest ?? this.chest,
+      waist: waist ?? this.waist,
+      hips: hips ?? this.hips,
+      shoulderWidth: shoulderWidth ?? this.shoulderWidth,
+      sleeveLength: sleeveLength ?? this.sleeveLength,
+    );
+  }
+
   /// 比對另一個 BodyMeasurements，回傳差異的 Map
   Map<String, dynamic> getDirtyFields(final BodyMeasurements target) {
     final updates = <String, dynamic>{};

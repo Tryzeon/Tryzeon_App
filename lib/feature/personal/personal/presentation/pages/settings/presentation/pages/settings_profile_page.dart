@@ -18,6 +18,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
   final _measurementControllers = <MeasurementType, TextEditingController>{};
 
   bool _isLoading = false;
+  UserProfile? _currentUserProfile;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
     if (result.isSuccess) {
       final profile = result.data!;
+      _currentUserProfile = profile;
       _nameController.text = profile.name;
 
       // 使用 Enum 遍歷更新數值
@@ -63,6 +65,13 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
   Future<void> _updateProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_currentUserProfile == null) {
+      if (mounted) {
+        TopNotification.show(context, message: '無法取得原始個人資料', type: NotificationType.error);
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -75,9 +84,15 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
       }
     }
 
+    final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(measurementsJson);
+
+    final targetProfile = _currentUserProfile!.copyWith(
+      name: _nameController.text.trim(),
+      measurements: newMeasurements,
+    );
+
     final result = await UserProfileService.updateUserProfile(
-      name: _nameController.text,
-      measurements: BodyMeasurements.fromJson(measurementsJson),
+      target: targetProfile,
     );
 
     setState(() {

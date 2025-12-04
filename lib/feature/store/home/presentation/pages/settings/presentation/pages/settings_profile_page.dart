@@ -55,13 +55,24 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   }
 
   Future<void> _updateProfile() async {
+    if (_storeProfile == null) {
+      if (mounted) {
+        TopNotification.show(context, message: '無法取得原始店家資料', type: NotificationType.error);
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    final result = await StoreProfileService.updateStoreProfile(
+    final targetProfile = _storeProfile!.copyWith(
       name: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
+    );
+
+    final result = await StoreProfileService.updateStoreProfile(
+      target: targetProfile,
       logo: _logoImage,
     );
 

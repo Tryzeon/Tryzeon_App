@@ -47,8 +47,7 @@ class UserProfileService {
 
   /// 更新使用者個人資料
   static Future<Result<UserProfile>> updateUserProfile({
-    final String? name,
-    final BodyMeasurements? measurements,
+    required final UserProfile target,
   }) async {
     try {
       final user = _supabase.auth.currentUser;
@@ -58,19 +57,12 @@ class UserProfileService {
 
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getUserProfile();
-      if (!currentProfileResult.isSuccess || currentProfileResult.data == null) {
-        return Result.failure('無法取得目前資料以進行更新比對');
+      if (!currentProfileResult.isSuccess) {
+        return Result.failure('無法取得目前資料以進行更新比對', errorMessage: currentProfileResult.errorMessage);
       }
       final original = currentProfileResult.data!;
 
-      // 2. 建立目標物件
-      final target = UserProfile(
-        userId: original.userId,
-        name: name?.trim() ?? original.name,
-        measurements: measurements ?? original.measurements,
-      );
-
-      // 3. 取得變更欄位
+      // 2. 取得變更欄位 (直接比對傳入的 target 與 original)
       final updateData = original.getDirtyFields(target);
 
       // 如果沒有變更，直接返回原資料
@@ -111,6 +103,18 @@ class UserProfile {
 
   Map<String, dynamic> toJson() {
     return {'user_id': userId, 'name': name, ...measurements.toJson()};
+  }
+
+  UserProfile copyWith({
+    final String? userId,
+    final String? name,
+    final BodyMeasurements? measurements,
+  }) {
+    return UserProfile(
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      measurements: measurements ?? this.measurements,
+    );
   }
 
   /// 比對另一個 UserProfile，回傳差異的 Map
