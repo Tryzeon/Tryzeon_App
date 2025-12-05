@@ -165,7 +165,9 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
                     )
                   : null,
               borderRadius: BorderRadius.circular(12),
-              border: isSelected ? Border.all(color: colorScheme.primary, width: 2) : null,
+              border: isSelected
+                  ? Border.all(color: colorScheme.primary, width: 2)
+                  : null,
             ),
             child: InkWell(
               onTap: () => _handleSortChange(value),

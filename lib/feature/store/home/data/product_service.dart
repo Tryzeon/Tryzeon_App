@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'package:mime/mime.dart';
 
+import 'package:mime/mime.dart';
+import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/models/result.dart';
@@ -271,8 +271,7 @@ class ProductService {
           comparison = (a.tryonCount ?? 0).compareTo(b.tryonCount ?? 0);
           break;
         case 'purchase_click_count':
-          comparison =
-              (a.purchaseClickCount ?? 0).compareTo(b.purchaseClickCount ?? 0);
+          comparison = (a.purchaseClickCount ?? 0).compareTo(b.purchaseClickCount ?? 0);
           break;
         default:
           comparison = 0;
