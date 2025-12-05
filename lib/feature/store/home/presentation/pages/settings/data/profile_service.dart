@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:mime/mime.dart';
+import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -149,18 +151,16 @@ class StoreProfileService {
       await _supabase.storage.from(_logoBucket).remove([oldLogoPath]);
     }
 
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final logoPath = '${store.id}/logo/$timestamp.png';
+    final imageName = p.basename(image.path);
+    final logoPath = '${store.id}/logo/$imageName';
+
+    final mimeType = lookupMimeType(image.path);
 
     // 2. 上傳到 Storage
     final bytes = await image.readAsBytes();
     await _supabase.storage
         .from(_logoBucket)
-        .uploadBinary(
-          logoPath,
-          bytes,
-          fileOptions: const FileOptions(contentType: 'image/png'),
-        );
+        .uploadBinary(logoPath, bytes, fileOptions: FileOptions(contentType: mimeType));
 
     // 3. 保存圖片到本地緩存
     await CacheService.saveImage(bytes, logoPath);

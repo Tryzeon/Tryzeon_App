@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:mime/mime.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
@@ -207,12 +209,12 @@ class ProductService {
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
   static Future<String> _uploadProductImage(final store, final File image) async {
-    // 生成唯一的檔案名稱
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final imageName = '$timestamp.jpg';
+    // 使用圖片本身的檔案名稱
+    final imageName = p.basename(image.path);
     final productImagePath = '${store.id}/products/$imageName';
 
     final bytes = await image.readAsBytes();
+    final mimeType = lookupMimeType(image.path);
 
     // 上傳到 Supabase Storage
     await _supabase.storage
@@ -220,7 +222,7 @@ class ProductService {
         .uploadBinary(
           productImagePath,
           bytes,
-          fileOptions: const FileOptions(contentType: 'image/jpeg'),
+          fileOptions: FileOptions(contentType: mimeType),
         );
 
     // 保存到本地緩存

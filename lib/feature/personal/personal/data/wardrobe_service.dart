@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:mime/mime.dart';
+import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -134,19 +136,16 @@ class WardrobeService {
     final String categoryCode,
   ) async {
     // 生成唯一的檔案名稱
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final imagePath = '${user.id}/$categoryCode/$timestamp.jpg';
+    final imageName = p.basename(image.path);
+    final imagePath = '${user.id}/$categoryCode/$imageName';
 
     final bytes = await image.readAsBytes();
+    final mimeType = lookupMimeType(image.path);
 
     // 上傳到 Supabase Storage
     await _supabase.storage
         .from(_bucket)
-        .uploadBinary(
-          imagePath,
-          bytes,
-          fileOptions: const FileOptions(contentType: 'image/jpeg'),
-        );
+        .uploadBinary(imagePath, bytes, fileOptions: FileOptions(contentType: mimeType));
 
     // 保存到本地緩存
     await CacheService.saveImage(bytes, imagePath);

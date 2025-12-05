@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:mime/mime.dart';
+import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -62,8 +64,10 @@ class AvatarService {
         await _supabase.storage.from(_bucket).remove([oldAvatarPath]);
       }
 
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final avatarPath = '${user.id}/avatar/$timestamp.png';
+      final imageName = p.basename(image.path);
+      final avatarPath = '${user.id}/avatar/$imageName';
+
+      final mimeType = lookupMimeType(image.path);
 
       // 2. 上傳到 Supabase
       final bytes = await image.readAsBytes();
@@ -72,7 +76,7 @@ class AvatarService {
           .uploadBinary(
             avatarPath,
             bytes,
-            fileOptions: const FileOptions(contentType: 'image/png'),
+            fileOptions: FileOptions(contentType: mimeType),
           );
 
       // 3. 更新 Metadata
