@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import '../../data/profile_service.dart';
 
@@ -17,7 +17,6 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   StoreProfile? _storeProfile;
   final TextEditingController storeNameController = TextEditingController();
   final TextEditingController storeAddressController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
 
   bool _isLoading = false;
 
@@ -102,11 +101,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   }
 
   Future<void> _updateLogo() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final File? image = await ImagePickerHelper.pickImage(context);
     if (image == null) return;
 
     setState(() {
-      _logoImage = File(image.path);
+      _logoImage = image;
     });
   }
 

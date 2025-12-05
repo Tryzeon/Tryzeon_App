@@ -9,14 +9,9 @@ class ImagePickerHelper {
 
   static Future<File?> pickImage(
     final BuildContext context, {
-    final File? currentImage,
     final double maxWidth = 1080,
     final double maxHeight = 1920,
     final int imageQuality = 85,
-    final String title = '選擇圖片來源',
-    final String galleryText = '從相簿選擇',
-    final String cameraText = '拍攝新照片',
-    final Color iconColor = Colors.brown,
   }) async {
     final ImageSource? source = await showModalBottomSheet<ImageSource?>(
       context: context,
@@ -30,19 +25,19 @@ class ImagePickerHelper {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const Text(
+                  '選擇圖片來源',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 ListTile(
-                  leading: Icon(Icons.photo_library, color: iconColor),
-                  title: Text(galleryText),
+                  leading: Icon(Icons.photo_library, color: Theme.of(context).colorScheme.primary),
+                  title: const Text('從相簿選擇'),
                   onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
                 ListTile(
-                  leading: Icon(Icons.camera_alt, color: iconColor),
-                  title: Text(cameraText),
+                  leading: Icon(Icons.camera_alt, color: Theme.of(context).colorScheme.primary),
+                  title: const Text('拍攝新照片'),
                   onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),
               ],
@@ -77,6 +72,6 @@ class ImagePickerHelper {
     }
 
     // User cancelled or no image selected
-    return currentImage;
+    return null;
   }
 }
