@@ -194,6 +194,10 @@ class Product {
       updates['image_path'] = target.imagePath;
     }
 
+    if (purchaseLink != target.purchaseLink) {
+      updates['purchase_link'] = target.purchaseLink;
+    }
+
     return updates;
   }
 }
