@@ -132,6 +132,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
     final textTheme = Theme.of(context).textTheme;
 
     final options = [
+      {'label': '名稱', 'value': 'name'},
       {'label': '價格', 'value': 'price'},
       {'label': '建立時間', 'value': 'created_at'},
       {'label': '更新時間', 'value': 'updated_at'},
@@ -139,55 +140,57 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
       {'label': '購買點擊次數', 'value': 'purchase_click_count'},
     ];
 
-    return Column(
-      children: options.map((final option) {
-        final label = option['label']!;
-        final value = option['value']!;
-        final isSelected = _sortBy == value;
+    return RadioGroup<String>(
+      groupValue: _sortBy,
+      onChanged: (final val) {
+        if (val != null) {
+          _handleSortChange(val);
+        }
+      },
+      child: Column(
+        children: options.map((final option) {
+          final label = option['label']!;
+          final value = option['value']!;
+          final isSelected = _sortBy == value;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      colorScheme.primary.withValues(alpha: 0.1),
-                      colorScheme.secondary.withValues(alpha: 0.1),
-                    ],
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected ? Border.all(color: colorScheme.primary, width: 2) : null,
-          ),
-          child: InkWell(
-            onTap: () => _handleSortChange(value),
-            borderRadius: BorderRadius.circular(12),
-            child: ListTile(
-              title: Text(
-                label,
-                style: textTheme.titleSmall?.copyWith(
-                  color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        colorScheme.primary.withValues(alpha: 0.1),
+                        colorScheme.secondary.withValues(alpha: 0.1),
+                      ],
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(12),
+              border: isSelected ? Border.all(color: colorScheme.primary, width: 2) : null,
+            ),
+            child: InkWell(
+              onTap: () => _handleSortChange(value),
+              borderRadius: BorderRadius.circular(12),
+              child: ListTile(
+                title: Text(
+                  label,
+                  style: textTheme.titleSmall?.copyWith(
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                  ),
+                ),
+                leading: Radio<String>(
+                  value: value,
+                  fillColor: WidgetStateProperty.resolveWith((final states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return colorScheme.primary;
+                    }
+                    return null;
+                  }),
                 ),
               ),
-              leading: Radio<String>(
-                value: value,
-                groupValue: _sortBy,
-                onChanged: (final val) {
-                  if (val != null) {
-                    _handleSortChange(val);
-                  }
-                },
-                fillColor: WidgetStateProperty.resolveWith((final states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return colorScheme.primary;
-                  }
-                  return null;
-                }),
-              ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -207,7 +210,7 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
       ),
       child: SwitchListTile(
         title: Text(
-          '遞增排序',
+          '排序轉換',
           style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
         ),
         value: _ascending,

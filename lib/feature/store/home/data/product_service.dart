@@ -247,14 +247,14 @@ class ProductService {
     final String sortBy,
     final bool ascending,
   ) {
-    final sortedProducts = List<Product>.from(products);
+    final sortedProducts = products;
 
     sortedProducts.sort((final a, final b) {
       int comparison;
 
       switch (sortBy) {
         case 'name':
-          comparison = a.name.compareTo(b.name);
+          comparison = -a.name.compareTo(b.name);
           break;
         case 'price':
           comparison = a.price.compareTo(b.price);
@@ -264,6 +264,13 @@ class ProductService {
           break;
         case 'updated_at':
           comparison = a.updatedAt!.compareTo(b.updatedAt!);
+          break;
+        case 'tryon_count':
+          comparison = (a.tryonCount ?? 0).compareTo(b.tryonCount ?? 0);
+          break;
+        case 'purchase_click_count':
+          comparison =
+              (a.purchaseClickCount ?? 0).compareTo(b.purchaseClickCount ?? 0);
           break;
         default:
           comparison = 0;
