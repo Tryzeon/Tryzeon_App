@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ProductService {
   static final _supabase = Supabase.instance.client;
@@ -23,7 +24,7 @@ class ProductService {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       if (!forceRefresh) {
@@ -50,7 +51,8 @@ class ProductService {
           .cast<Product>();
       return Result.success(data: _sortProducts(products, sortBy, ascending));
     } catch (e) {
-      return Result.failure('商品列表獲取失敗', error: e);
+      AppLogger.error('商品列表獲取失敗', e);
+      return Result.failure('無法取得商品列表，請稍後再試');
     }
   }
 
@@ -63,7 +65,7 @@ class ProductService {
       // 獲取當前用戶 ID
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       // 先上傳圖片
@@ -102,7 +104,8 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('商品創建失敗', error: e);
+      AppLogger.error('商品創建失敗', e);
+      return Result.failure('新增商品失敗，請稍後再試');
     }
   }
 
@@ -115,7 +118,7 @@ class ProductService {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       // 1. 取得變更的欄位 (Dirty Checking)
@@ -163,7 +166,8 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('商品更新失敗', error: e);
+      AppLogger.error('商品更新失敗', e);
+      return Result.failure('更新商品失敗，請稍後再試');
     }
   }
 
@@ -183,7 +187,8 @@ class ProductService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('商品刪除失敗', error: e);
+      AppLogger.error('商品刪除失敗', e);
+      return Result.failure('刪除商品失敗，請稍後再試');
     }
   }
 
@@ -203,7 +208,8 @@ class ProductService {
 
       return Result.success(data: productImage);
     } catch (e) {
-      return Result.failure('商品圖片載入失敗', error: e);
+      AppLogger.error('商品圖片載入失敗', e);
+      return Result.failure('無法載入商品圖片，請稍後再試');
     }
   }
 

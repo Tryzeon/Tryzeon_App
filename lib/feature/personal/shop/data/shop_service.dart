@@ -54,7 +54,8 @@ class ShopService {
 
       return Result.success(data: searchResult);
     } catch (e) {
-      return Result.failure('商品列表獲取失敗', error: e);
+      AppLogger.error('商品列表獲取失敗', e);
+      return Result.failure('無法取得商品列表，請稍後再試');
     }
   }
 

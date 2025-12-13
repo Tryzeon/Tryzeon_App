@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class AvatarService {
   static final _supabase = Supabase.instance.client;
@@ -17,7 +18,7 @@ class AvatarService {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       if (forceRefresh) {
@@ -41,7 +42,8 @@ class AvatarService {
 
       return Result.success(data: (avatarPath: avatarPath, avatarFile: avatar!));
     } catch (e) {
-      return Result.failure('頭像獲取失敗', error: e);
+      AppLogger.error('頭像獲取失敗', e);
+      return Result.failure('無法取得頭像，請稍後再試');
     }
   }
 
@@ -52,7 +54,7 @@ class AvatarService {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       final response = await _supabase.auth.refreshSession();
@@ -87,7 +89,8 @@ class AvatarService {
 
       return Result.success(data: (avatarPath: avatarPath, avatarFile: avatar));
     } catch (e) {
-      return Result.failure('頭像上傳失敗', error: e);
+      AppLogger.error('頭像上傳失敗', e);
+      return Result.failure('頭像上傳失敗，請稍後再試');
     }
   }
 }

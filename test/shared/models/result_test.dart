@@ -19,18 +19,5 @@ void main() {
       expect(result.errorMessage, contains('Test Error'));
       expect(result.errorMessage, contains('糟糕！'));
     });
-
-    test('failure factory logs error if provided', () {
-      // Since we can't easily mock static methods or logger without dependency injection,
-      // we mainly test the state of the returned object.
-      // In a real scenario, we might want to mock AppLogger.
-      final result = Result.failure(
-        'Test Error',
-        error: Exception('Something went wrong'),
-      );
-
-      expect(result.isSuccess, false);
-      expect(result.errorMessage, contains('Test Error'));
-    });
   });
 }

@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 import 'wardrobe_item_model.dart';
 
@@ -21,7 +22,7 @@ class WardrobeService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       // 如果不是強制刷新，先嘗試從快取讀取
@@ -55,7 +56,8 @@ class WardrobeService {
 
       return Result.success(data: wardrobeItems);
     } catch (e) {
-      return Result.failure('衣櫃列表獲取失敗', error: e);
+      AppLogger.error('衣櫃列表獲取失敗', e);
+      return Result.failure('無法取得衣櫃資料，請稍後再試');
     }
   }
 
@@ -67,7 +69,7 @@ class WardrobeService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       final categoryCode = getWardrobeTypesEnglishCode(category);
@@ -86,7 +88,8 @@ class WardrobeService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('衣物上傳失敗', error: e);
+      AppLogger.error('衣物上傳失敗', e);
+      return Result.failure('上傳衣物失敗，請稍後再試');
     }
   }
 
@@ -106,7 +109,8 @@ class WardrobeService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('衣物刪除失敗', error: e);
+      AppLogger.error('衣物刪除失敗', e);
+      return Result.failure('刪除衣物失敗，請稍後再試');
     }
   }
 
@@ -125,7 +129,8 @@ class WardrobeService {
 
       return Result.success(data: image);
     } catch (e) {
-      return Result.failure('衣櫃圖片載入失敗', error: e);
+      AppLogger.error('衣櫃圖片載入失敗', e);
+      return Result.failure('無法載入衣物圖片，請稍後再試');
     }
   }
 

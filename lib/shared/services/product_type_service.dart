@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ProductTypeService {
   static final _supabase = Supabase.instance.client;
@@ -33,7 +34,8 @@ class ProductTypeService {
 
       return Result.success(data: productTypes);
     } catch (e) {
-      return Result.failure('商品類型取得失敗', error: e);
+      AppLogger.error('商品類型取得失敗', e);
+      return Result.failure('無法取得商品分類，請稍後再試');
     }
   }
 }

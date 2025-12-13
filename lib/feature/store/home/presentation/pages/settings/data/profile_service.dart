@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class StoreProfileService {
   static final _supabase = Supabase.instance.client;
@@ -21,7 +22,7 @@ class StoreProfileService {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       // 讀取 cache
@@ -51,7 +52,8 @@ class StoreProfileService {
       final storeProfile = StoreProfile.fromJson(response);
       return Result.success(data: storeProfile);
     } catch (e) {
-      return Result.failure('店家資料取得失敗', error: e);
+      AppLogger.error('店家資料取得失敗', e);
+      return Result.failure('無法取得店家資料，請稍後再試');
     }
   }
 
@@ -69,16 +71,16 @@ class StoreProfileService {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getStoreProfile();
       if (!currentProfileResult.isSuccess) {
-        return Result.failure(
-          '無法取得目前資料以進行更新比對',
-          errorMessage: currentProfileResult.errorMessage,
+        AppLogger.error(
+          '無法取得目前資料以進行更新比對: ${currentProfileResult.errorMessage}',
         );
+        return Result.failure('資料同步錯誤，請重新刷新頁面');
       }
       final original = currentProfileResult.data!;
 
@@ -109,7 +111,8 @@ class StoreProfileService {
       final storeProfile = StoreProfile.fromJson(response);
       return Result.success(data: storeProfile);
     } catch (e) {
-      return Result.failure('店家資料更新失敗', error: e);
+      AppLogger.error('店家資料更新失敗', e);
+      return Result.failure('店家資料更新失敗，請稍後再試');
     }
   }
 
@@ -138,7 +141,8 @@ class StoreProfileService {
 
       return Result.success(data: logo);
     } catch (e) {
-      return Result.failure('Logo獲取失敗', error: e);
+      AppLogger.error('Logo獲取失敗', e);
+      return Result.failure('無法載入店家 Logo ，請稍後再試');
     }
   }
 

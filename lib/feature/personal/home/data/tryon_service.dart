@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class TryonService {
   static final _supabase = Supabase.instance.client;
@@ -29,12 +30,14 @@ class TryonService {
           message = 'AI 無法辨識圖片，請換一張試試';
           break;
         default:
-          message = '伺服器錯誤，請稍後再試';
+          message = '虛擬試穿服務暫時無法使用，請稍後再試';
+          AppLogger.error('虛擬試穿失敗 (FunctionException)', e);
           break;
       }
-      return Result.failure('虛擬試穿失敗', error: e, errorMessage: message);
+      return Result.failure(message);
     } catch (e) {
-      return Result.failure('虛擬試穿失敗', error: e);
+      AppLogger.error('虛擬試穿失敗', e);
+      return Result.failure('虛擬試穿服務暫時無法使用，請稍後再試');
     }
   }
 }

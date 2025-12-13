@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 enum UserType { personal, store }
 
@@ -46,7 +47,7 @@ class AuthService {
           oauthProvider = OAuthProvider.apple;
           break;
         default:
-          return Result.failure('不支援的登入方式：$provider');
+          return Result.failure('目前不支援 $provider 登入');
       }
 
       final success = await _supabase.auth.signInWithOAuth(
@@ -65,7 +66,7 @@ class AuthService {
           .then((final state) => state.session?.user);
 
       if (user == null) {
-        return Result.failure('$provider 登入失敗：無法取得用戶資訊');
+        return Result.failure('$provider 登入失敗，無法取得用戶資訊，請稍後再試');
       }
 
       // 儲存登入類型
@@ -73,7 +74,8 @@ class AuthService {
 
       return Result.success(data: user);
     } catch (e) {
-      return Result.failure('$provider 登入失敗', error: e);
+      AppLogger.error('$provider 登入失敗', e);
+      return Result.failure('$provider 登入失敗，請稍後再試');
     }
   }
 
@@ -88,7 +90,8 @@ class AuthService {
 
       return Result.success();
     } catch (e) {
-      return Result.failure('登出失敗', error: e);
+      AppLogger.error('登出失敗', e);
+      return Result.failure('登出失敗，請稍後再試');
     }
   }
 }

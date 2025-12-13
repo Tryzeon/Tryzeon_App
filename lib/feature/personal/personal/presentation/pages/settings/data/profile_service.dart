@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class UserProfileService {
   static final _supabase = Supabase.instance.client;
@@ -17,7 +18,7 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       if (!forceRefresh) {
@@ -41,7 +42,8 @@ class UserProfileService {
       final userProfile = UserProfile.fromJson(response);
       return Result.success(data: userProfile);
     } catch (e) {
-      return Result.failure('個人資料取得失敗', error: e);
+      AppLogger.error('個人資料取得失敗', e);
+      return Result.failure('無法取得個人資料，請稍後再試');
     }
   }
 
@@ -52,16 +54,16 @@ class UserProfileService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('使用者獲取失敗');
+        return Result.failure('無法獲取使用者資訊，請重新登入');
       }
 
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getUserProfile();
       if (!currentProfileResult.isSuccess) {
-        return Result.failure(
-          '無法取得目前資料以進行更新比對',
-          errorMessage: currentProfileResult.errorMessage,
+        AppLogger.error(
+          '無法取得目前資料以進行更新比對: ${currentProfileResult.errorMessage}',
         );
+        return Result.failure('資料同步錯誤，請重新刷新頁面');
       }
       final original = currentProfileResult.data!;
 
@@ -85,7 +87,8 @@ class UserProfileService {
       final userProfile = UserProfile.fromJson(response);
       return Result.success(data: userProfile);
     } catch (e) {
-      return Result.failure('個人資料更新失敗', error: e);
+      AppLogger.error('個人資料更新失敗', e);
+      return Result.failure('個人資料更新失敗，請稍後再試');
     }
   }
 }

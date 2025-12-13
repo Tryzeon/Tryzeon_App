@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/result.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ChatService {
   static final _supabase = Supabase.instance.client;
@@ -23,7 +24,8 @@ class ChatService {
       );
       return Result.success(data: response.data['text']);
     } catch (e) {
-      return Result.failure('穿搭建議獲取失敗', error: e);
+      AppLogger.error('穿搭建議獲取失敗', e);
+      return Result.failure('無法取得穿搭建議，請稍後再試');
     }
   }
 }
