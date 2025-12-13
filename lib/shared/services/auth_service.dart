@@ -82,16 +82,24 @@ class AuthService {
   /// 登出
   static Future<Result<void, String>> signOut() async {
     try {
-      // 清除所有 SharedPreferences and Cache
-      await CacheService.clearCache();
-
-      // 執行 Supabase 登出
       await _supabase.auth.signOut();
-
-      return const Ok(null);
     } catch (e) {
-      AppLogger.error('登出失敗', e);
-      return const Err('登出失敗，請稍後再試');
+      AppLogger.error('Supabase 登出失敗 (已忽略)', e);
     }
+
+    try {
+      await CacheService.clearCache();
+    } catch (e) {
+      AppLogger.error('清除快取失敗 (已忽略)', e);
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (e) {
+      AppLogger.error('清除登入類型失敗 (已忽略)', e);
+    }
+
+    return const Ok(null);
   }
 }
