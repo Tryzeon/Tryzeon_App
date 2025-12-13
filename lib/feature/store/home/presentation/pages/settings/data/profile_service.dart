@@ -77,9 +77,7 @@ class StoreProfileService {
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getStoreProfile();
       if (!currentProfileResult.isSuccess) {
-        AppLogger.error(
-          '無法取得目前資料以進行更新比對: ${currentProfileResult.errorMessage}',
-        );
+        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.errorMessage}');
         return Result.failure('資料同步錯誤，請重新刷新頁面');
       }
       final original = currentProfileResult.data!;
