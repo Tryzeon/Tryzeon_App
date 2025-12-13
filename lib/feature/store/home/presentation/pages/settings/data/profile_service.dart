@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class StoreProfileService {
   static final _supabase = Supabase.instance.client;
@@ -16,13 +16,13 @@ class StoreProfileService {
   static const _cachedKey = 'store_profile_cache';
 
   /// 獲取店家資料
-  static Future<Result<StoreProfile>> getStoreProfile({
+  static Future<Result<StoreProfile?, String>> getStoreProfile({
     final bool forceRefresh = false,
   }) async {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       // 讀取 cache
@@ -32,7 +32,7 @@ class StoreProfileService {
           final cachedStoreProfile = StoreProfile.fromJson(
             Map<String, dynamic>.from(cachedData as Map),
           );
-          return Result.success(data: cachedStoreProfile);
+          return Ok(cachedStoreProfile);
         }
       }
 
@@ -44,43 +44,43 @@ class StoreProfileService {
           .maybeSingle();
 
       if (response == null) {
-        return Result.success();
+        return const Ok(null);
       }
 
       await CacheService.saveToCache(_cachedKey, response);
 
       final storeProfile = StoreProfile.fromJson(response);
-      return Result.success(data: storeProfile);
+      return Ok(storeProfile);
     } catch (e) {
       AppLogger.error('店家資料取得失敗', e);
-      return Result.failure('無法取得店家資料，請稍後再試');
+      return const Err('無法取得店家資料，請稍後再試');
     }
   }
 
   /// 獲取店家名稱
   static Future<String> getStoreName({final bool forceRefresh = false}) async {
     final response = await getStoreProfile(forceRefresh: forceRefresh);
-    return response.data?.name ?? '店家';
+    return response.get()?.name ?? '店家';
   }
 
   /// 更新店家資料
-  static Future<Result<StoreProfile>> updateStoreProfile({
+  static Future<Result<StoreProfile, String>> updateStoreProfile({
     required final StoreProfile target,
     final File? logo,
   }) async {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getStoreProfile();
       if (!currentProfileResult.isSuccess) {
-        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.errorMessage}');
-        return Result.failure('資料同步錯誤，請重新刷新頁面');
+        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.getError()}');
+        return const Err('資料同步錯誤，請重新刷新頁面');
       }
-      final original = currentProfileResult.data!;
+      final original = currentProfileResult.get()!;
 
       // 2. 處理 Logo 上傳 (這裡會更新 target 的 logoPath)
       StoreProfile finalTarget = target;
@@ -94,7 +94,7 @@ class StoreProfileService {
 
       // 如果沒有變更，直接返回原資料
       if (updateData.isEmpty) {
-        return Result.success(data: original);
+        return Ok(original);
       }
 
       final response = await _supabase
@@ -107,29 +107,29 @@ class StoreProfileService {
       await CacheService.saveToCache(_cachedKey, response);
 
       final storeProfile = StoreProfile.fromJson(response);
-      return Result.success(data: storeProfile);
+      return Ok(storeProfile);
     } catch (e) {
       AppLogger.error('店家資料更新失敗', e);
-      return Result.failure('店家資料更新失敗，請稍後再試');
+      return const Err('店家資料更新失敗，請稍後再試');
     }
   }
 
   /// 獲取店家 Logo
-  static Future<Result<File>> _getLogo({final bool forceRefresh = false}) async {
+  static Future<Result<File?, String>> _getLogo({final bool forceRefresh = false}) async {
     try {
       final storeProfile = await getStoreProfile(forceRefresh: forceRefresh);
       if (!storeProfile.isSuccess) {
-        return Result.failure(storeProfile.errorMessage!);
+        return Err(storeProfile.getError()!);
       }
 
-      final logoPath = storeProfile.data?.logoPath;
+      final logoPath = storeProfile.get()?.logoPath;
       if (logoPath == null || logoPath.isEmpty) {
-        return Result.success();
+        return const Ok(null);
       }
 
       final cachedLogo = await CacheService.getImage(logoPath);
       if (cachedLogo != null) {
-        return Result.success(data: cachedLogo);
+        return Ok(cachedLogo);
       }
 
       // Download from Supabase Storage
@@ -137,10 +137,10 @@ class StoreProfileService {
 
       final logo = await CacheService.getImage(logoPath, downloadUrl: url);
 
-      return Result.success(data: logo);
+      return Ok(logo);
     } catch (e) {
       AppLogger.error('Logo獲取失敗', e);
-      return Result.failure('無法載入店家 Logo ，請稍後再試');
+      return const Err('無法載入店家 Logo ，請稍後再試');
     }
   }
 
@@ -148,7 +148,7 @@ class StoreProfileService {
   static Future<String> _uploadLogo(final User store, final File image) async {
     // 1. 刪除舊 Logo
     final storeProfile = await getStoreProfile();
-    final oldLogoPath = storeProfile.data?.logoPath;
+    final oldLogoPath = storeProfile.get()?.logoPath;
     if (oldLogoPath != null && oldLogoPath.isNotEmpty) {
       await _supabase.storage.from(_logoBucket).remove([oldLogoPath]);
     }
@@ -194,7 +194,7 @@ class StoreProfile {
   final String? logoPath;
 
   /// 按需載入 Logo，使用快取機制
-  Future<Result<File>> loadLogo() async {
+  Future<Result<File?, String>> loadLogo() async {
     return StoreProfileService._getLogo();
   }
 

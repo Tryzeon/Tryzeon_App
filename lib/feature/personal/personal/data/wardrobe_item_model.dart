@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:tryzeon/feature/personal/personal/data/wardrobe_service.dart';
-import 'package:tryzeon/shared/models/result.dart';
+import 'package:typed_result/typed_result.dart';
 
 class WardrobeItemType {
   const WardrobeItemType({required this.zh, required this.en});
@@ -60,7 +60,7 @@ class WardrobeItem {
   }
 
   // 按需載入圖片，使用快取機制
-  Future<Result<File>> loadImage() async {
+  Future<Result<File, String>> loadImage() async {
     return WardrobeService.getWardrobeItemImage(imagePath);
   }
 }

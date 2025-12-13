@@ -941,6 +941,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  typed_result:
+    dependency: "direct main"
+    description:
+      name: typed_result
+      sha256: "9c834bbca6b1e527aa553a9bb5864244ef921d94078cf70393cec5d1a201f73d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   url_launcher:
     dependency: "direct main"
     description:

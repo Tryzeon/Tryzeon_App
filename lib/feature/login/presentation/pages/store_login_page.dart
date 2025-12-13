@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/login/presentation/widgets/customize_scaffold.da
 import 'package:tryzeon/feature/store/store_entry.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 class StoreLoginPage extends StatefulWidget {
   const StoreLoginPage({super.key});
@@ -36,11 +37,6 @@ class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObse
     }
   }
 
-  void _showError(final String message) {
-    if (!mounted) return;
-    TopNotification.show(context, message: message, type: NotificationType.error);
-  }
-
   Future<void> _handleSignIn(final String provider) async {
     setState(() => _isLoading = true);
 
@@ -49,17 +45,20 @@ class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObse
       userType: UserType.store,
     );
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-    if (result.isSuccess && mounted) {
+    if (result.isSuccess) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (final context) => const StoreEntry()),
       );
-    } else if (!result.isSuccess) {
-      _showError(result.errorMessage!);
+    } else {
+      TopNotification.show(
+        context,
+        message: result.getError()!,
+        type: NotificationType.error,
+      );
     }
   }
 

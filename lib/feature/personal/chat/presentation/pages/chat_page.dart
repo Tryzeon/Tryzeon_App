@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
+
 import '../../data/chat_service.dart';
 
 // Question data structure
@@ -280,13 +282,13 @@ class _ChatPageState extends State<ChatPage> {
     if (result.isSuccess) {
       // Add LLM response
       setState(() {
-        messages.add(ChatMessage(text: result.data!, isUser: false));
+        messages.add(ChatMessage(text: result.get()!, isUser: false));
       });
     } else {
       // Show error message
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

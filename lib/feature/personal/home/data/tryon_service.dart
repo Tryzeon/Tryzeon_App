@@ -1,11 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class TryonService {
   static final _supabase = Supabase.instance.client;
 
-  static Future<Result<String>> tryon({
+  static Future<Result<String, String>> tryon({
     final String? avatarBase64,
     final String? avatarPath,
     final String? clothesBase64,
@@ -19,7 +19,7 @@ class TryonService {
       body['clothesPath'] = clothesPath;
 
       final response = await _supabase.functions.invoke('tryon', body: body);
-      return Result.success(data: response.data['image']);
+      return Ok(response.data['image']);
     } on FunctionException catch (e) {
       String message;
       switch (e.status) {
@@ -34,10 +34,10 @@ class TryonService {
           AppLogger.error('虛擬試穿失敗 (FunctionException)', e);
           break;
       }
-      return Result.failure(message);
+      return Err(message);
     } catch (e) {
       AppLogger.error('虛擬試穿失敗', e);
-      return Result.failure('虛擬試穿服務暫時無法使用，請稍後再試');
+      return const Err('虛擬試穿服務暫時無法使用，請稍後再試');
     }
   }
 }

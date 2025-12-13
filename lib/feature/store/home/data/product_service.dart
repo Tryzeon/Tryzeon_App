@@ -4,9 +4,9 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class ProductService {
   static final _supabase = Supabase.instance.client;
@@ -16,7 +16,7 @@ class ProductService {
   static const _cacheKey = 'products_cache';
 
   /// 獲取店家的所有商品
-  static Future<Result<List<Product>>> getProducts({
+  static Future<Result<List<Product>, String>> getProducts({
     final String sortBy = 'created_at',
     final bool ascending = false,
     final bool forceRefresh = false,
@@ -24,7 +24,7 @@ class ProductService {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       if (!forceRefresh) {
@@ -34,7 +34,7 @@ class ProductService {
               .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
               .toList()
               .cast<Product>();
-          return Result.success(data: _sortProducts(cachedProducts, sortBy, ascending));
+          return Ok(_sortProducts(cachedProducts, sortBy, ascending));
         }
       }
 
@@ -49,15 +49,15 @@ class ProductService {
           .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
           .toList()
           .cast<Product>();
-      return Result.success(data: _sortProducts(products, sortBy, ascending));
+      return Ok(_sortProducts(products, sortBy, ascending));
     } catch (e) {
       AppLogger.error('商品列表獲取失敗', e);
-      return Result.failure('無法取得商品列表，請稍後再試');
+      return const Err('無法取得商品列表，請稍後再試');
     }
   }
 
   /// 創建新商品
-  static Future<Result<void>> createProduct({
+  static Future<Result<void, String>> createProduct({
     required final Product product,
     required final File image,
   }) async {
@@ -65,7 +65,7 @@ class ProductService {
       // 獲取當前用戶 ID
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       // 先上傳圖片
@@ -102,15 +102,15 @@ class ProductService {
       // 清除快取以確保下次獲取最新資料
       await CacheService.deleteCache(_cacheKey);
 
-      return Result.success();
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('商品創建失敗', e);
-      return Result.failure('新增商品失敗，請稍後再試');
+      return const Err('新增商品失敗，請稍後再試');
     }
   }
 
   /// 更新商品
-  static Future<Result<void>> updateProduct({
+  static Future<Result<void, String>> updateProduct({
     required final Product original,
     required final Product target,
     final File? newImage,
@@ -118,7 +118,7 @@ class ProductService {
     try {
       final store = _supabase.auth.currentUser;
       if (store == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       // 1. 取得變更的欄位 (Dirty Checking)
@@ -164,15 +164,15 @@ class ProductService {
       // 清除快取以確保下次獲取最新資料
       await CacheService.deleteCache(_cacheKey);
 
-      return Result.success();
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('商品更新失敗', e);
-      return Result.failure('更新商品失敗，請稍後再試');
+      return const Err('更新商品失敗，請稍後再試');
     }
   }
 
   /// 刪除商品
-  static Future<Result<void>> deleteProduct(final Product product) async {
+  static Future<Result<void, String>> deleteProduct(final Product product) async {
     try {
       // 刪除圖片（Supabase Storage 和本地）
       if (product.imagePath.isNotEmpty) {
@@ -185,31 +185,32 @@ class ProductService {
       // 清除快取以確保下次獲取最新資料
       await CacheService.deleteCache(_cacheKey);
 
-      return Result.success();
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('商品刪除失敗', e);
-      return Result.failure('刪除商品失敗，請稍後再試');
+      return const Err('刪除商品失敗，請稍後再試');
     }
   }
 
   /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File>> getProductImage(final String imagePath) async {
+  static Future<Result<File, String>> getProductImage(final String imagePath) async {
     try {
       // 1. 先檢查本地是否有該圖片
       final cachedProductImage = await CacheService.getImage(imagePath);
       if (cachedProductImage != null) {
-        return Result.success(data: cachedProductImage);
+        return Ok(cachedProductImage);
       }
 
       // 2. 本地沒有，從 Supabase 取得 Public URL 下載
       final url = _supabase.storage.from(_productImagesBucket).getPublicUrl(imagePath);
 
       final productImage = await CacheService.getImage(imagePath, downloadUrl: url);
+      if (productImage == null) return const Err('無法載入商品圖片，請稍後再試');
 
-      return Result.success(data: productImage);
+      return Ok(productImage);
     } catch (e) {
       AppLogger.error('商品圖片載入失敗', e);
-      return Result.failure('無法載入商品圖片，請稍後再試');
+      return const Err('無法載入商品圖片，請稍後再試');
     }
   }
 

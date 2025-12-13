@@ -1,10 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class ChatService {
   static final _supabase = Supabase.instance.client;
-  static Future<Result<String>> getLLMRecommendation(
+  static Future<Result<String, String>> getLLMRecommendation(
     final Map<String, String> answers,
   ) async {
     try {
@@ -22,10 +22,10 @@ class ChatService {
         'chat',
         body: {'userRequirement': userRequirement},
       );
-      return Result.success(data: response.data['text']);
+      return Ok(response.data['text']);
     } catch (e) {
       AppLogger.error('穿搭建議獲取失敗', e);
-      return Result.failure('無法取得穿搭建議，請稍後再試');
+      return const Err('無法取得穿搭建議，請稍後再試');
     }
   }
 }

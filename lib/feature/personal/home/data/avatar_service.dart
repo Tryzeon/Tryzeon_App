@@ -3,22 +3,22 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class AvatarService {
   static final _supabase = Supabase.instance.client;
   static const _bucket = 'avatars';
 
   /// 獲取頭像
-  static Future<Result<({String avatarPath, File avatarFile})>> getAvatar({
+  static Future<Result<({String avatarPath, File avatarFile})?, String>> getAvatar({
     final bool forceRefresh = false,
   }) async {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       if (forceRefresh) {
@@ -28,33 +28,33 @@ class AvatarService {
 
       final avatarPath = user.userMetadata?['avatar_path'] as String?;
       if (avatarPath == null || avatarPath.isEmpty) {
-        return Result.success();
+        return const Ok(null);
       }
 
       final cachedAvatar = await CacheService.getImage(avatarPath);
       if (cachedAvatar != null) {
-        return Result.success(data: (avatarPath: avatarPath, avatarFile: cachedAvatar));
+        return Ok((avatarPath: avatarPath, avatarFile: cachedAvatar));
       }
 
       // Download from Supabase Storage
       final url = await _supabase.storage.from(_bucket).createSignedUrl(avatarPath, 60);
       final avatar = await CacheService.getImage(avatarPath, downloadUrl: url);
 
-      return Result.success(data: (avatarPath: avatarPath, avatarFile: avatar!));
+      return Ok((avatarPath: avatarPath, avatarFile: avatar!));
     } catch (e) {
       AppLogger.error('頭像獲取失敗', e);
-      return Result.failure('無法取得頭像，請稍後再試');
+      return const Err('無法取得頭像，請稍後再試');
     }
   }
 
   /// 上傳頭像
-  static Future<Result<({String avatarPath, File avatarFile})>> uploadAvatar(
+  static Future<Result<({String avatarPath, File avatarFile})?, String>> uploadAvatar(
     final File image,
   ) async {
     try {
       var user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       final response = await _supabase.auth.refreshSession();
@@ -87,10 +87,10 @@ class AvatarService {
       // 4. 保存到本地緩存
       final avatar = await CacheService.saveImage(bytes, avatarPath);
 
-      return Result.success(data: (avatarPath: avatarPath, avatarFile: avatar));
+      return Ok((avatarPath: avatarPath, avatarFile: avatar));
     } catch (e) {
       AppLogger.error('頭像上傳失敗', e);
-      return Result.failure('頭像上傳失敗，請稍後再試');
+      return const Err('頭像上傳失敗，請稍後再試');
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import 'home/presentation/pages/home_page.dart';
 import 'home/presentation/pages/settings/data/profile_service.dart';
@@ -39,7 +40,7 @@ class _StoreEntryState extends State<StoreEntry> {
     });
 
     if (result.isSuccess) {
-      if (result.data != null) {
+      if (result.get() != null) {
         setState(() {
           _needsOnboarding = false;
         });
@@ -47,7 +48,7 @@ class _StoreEntryState extends State<StoreEntry> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/wardrobe_item_model.dart';
 import '../../data/wardrobe_service.dart';
@@ -56,7 +57,7 @@ class _PersonalPageState extends State<PersonalPage> {
 
     setState(() {
       if (result.isSuccess) {
-        username = result.data!.name;
+        username = result.get()!.name;
         _isLoading = false;
       }
     });
@@ -80,13 +81,13 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (result.isSuccess) {
       setState(() {
-        wardrobeItem = result.data!;
+        wardrobeItem = result.get()!;
         wardrobeCategories = ['全部', ...categories];
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -110,7 +111,7 @@ class _PersonalPageState extends State<PersonalPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

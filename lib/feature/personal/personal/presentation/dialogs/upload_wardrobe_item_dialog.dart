@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/wardrobe_service.dart';
 
@@ -60,7 +61,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

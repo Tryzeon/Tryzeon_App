@@ -1,7 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
+
 import '../../data/profile_service.dart';
 
 class StoreProfileSettingsPage extends StatefulWidget {
@@ -41,14 +44,14 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
     if (result.isSuccess) {
       setState(() {
-        _storeProfile = result.data;
-        storeNameController.text = result.data!.name;
-        storeAddressController.text = result.data!.address;
+        _storeProfile = result.get();
+        storeNameController.text = result.get()!.name;
+        storeAddressController.text = result.get()!.address;
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -94,7 +97,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -283,13 +286,13 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                     );
                                                   }
 
-                                                  if (result.data != null) {
+                                                  if (result.get() != null) {
                                                     return ClipRRect(
                                                       borderRadius: BorderRadius.circular(
                                                         60,
                                                       ),
                                                       child: Image.file(
-                                                        result.data!,
+                                                        result.get()!,
                                                         fit: BoxFit.cover,
                                                         errorBuilder:
                                                             (

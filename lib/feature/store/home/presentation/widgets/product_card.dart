@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
+
 import '../pages/product_detail_page.dart';
 
 class StoreProductCard extends StatelessWidget {
@@ -42,9 +44,9 @@ class StoreProductCard extends StatelessWidget {
                     future: product.loadImage(),
                     builder: (final context, final snapshot) {
                       final result = snapshot.data;
-                      if (result != null && result.isSuccess && result.data != null) {
+                      if (result != null && result.isSuccess && result.get() != null) {
                         return Image.file(
-                          result.data!,
+                          result.get()!,
                           fit: BoxFit.cover,
                           errorBuilder: (final context, final error, final stackTrace) =>
                               const Icon(Icons.image_not_supported),
@@ -54,7 +56,7 @@ class StoreProductCard extends StatelessWidget {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           TopNotification.show(
                             context,
-                            message: result.errorMessage!,
+                            message: result.getError()!,
                             type: NotificationType.error,
                           );
                         });

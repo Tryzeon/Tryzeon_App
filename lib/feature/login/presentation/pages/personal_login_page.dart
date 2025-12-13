@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/login/presentation/widgets/customize_scaffold.da
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 class PersonalLoginPage extends StatefulWidget {
   const PersonalLoginPage({super.key});
@@ -37,11 +38,6 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
     }
   }
 
-  void _showError(final String message) {
-    if (!mounted) return;
-    TopNotification.show(context, message: message, type: NotificationType.error);
-  }
-
   Future<void> _handleSignIn(final String provider) async {
     setState(() => _isLoading = true);
 
@@ -50,17 +46,20 @@ class _PersonalLoginPageState extends State<PersonalLoginPage>
       userType: UserType.personal,
     );
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-    if (result.isSuccess && mounted) {
+    if (result.isSuccess) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (final context) => const PersonalEntry()),
       );
-    } else if (!result.isSuccess) {
-      _showError(result.errorMessage!);
+    } else {
+      TopNotification.show(
+        context,
+        message: result.getError()!,
+        type: NotificationType.error,
+      );
     }
   }
 

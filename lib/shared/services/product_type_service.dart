@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class ProductTypeService {
   static final _supabase = Supabase.instance.client;
@@ -9,7 +9,7 @@ class ProductTypeService {
 
   static const _cacheKey = 'product_types_cache';
 
-  static Future<Result<List<String>>> getProductTypes({
+  static Future<Result<List<String>, String>> getProductTypes({
     final bool forceRefresh = false,
   }) async {
     try {
@@ -17,7 +17,7 @@ class ProductTypeService {
         final cachedData = await CacheService.loadFromCache(_cacheKey);
         if (cachedData != null) {
           final cachedProductTypes = List<String>.from(cachedData);
-          return Result.success(data: cachedProductTypes);
+          return Ok(cachedProductTypes);
         }
       }
 
@@ -32,10 +32,10 @@ class ProductTypeService {
 
       await CacheService.saveToCache(_cacheKey, productTypes);
 
-      return Result.success(data: productTypes);
+      return Ok(productTypes);
     } catch (e) {
       AppLogger.error('商品類型取得失敗', e);
-      return Result.failure('無法取得商品分類，請稍後再試');
+      return const Err('無法取得商品分類，請稍後再試');
     }
   }
 }

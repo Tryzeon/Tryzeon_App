@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
-import 'package:tryzeon/shared/models/result.dart';
+import 'package:typed_result/typed_result.dart';
 
 class ProductSize {
   ProductSize({this.id, this.productId, required this.name, required this.measurements});
@@ -123,7 +123,7 @@ class Product {
   }
 
   /// 按需載入圖片，使用快取機制
-  Future<Result<File>> loadImage() async {
+  Future<Result<File, String>> loadImage() async {
     return ProductService.getProductImage(imagePath);
   }
 

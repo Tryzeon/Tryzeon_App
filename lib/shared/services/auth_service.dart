@@ -1,8 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 enum UserType { personal, store }
 
@@ -29,7 +29,7 @@ class AuthService {
   }
 
   /// 通用第三方登入
-  static Future<Result<User>> signInWithProvider({
+  static Future<Result<User, String>> signInWithProvider({
     required final String provider,
     required final UserType userType,
   }) async {
@@ -47,7 +47,7 @@ class AuthService {
           oauthProvider = OAuthProvider.apple;
           break;
         default:
-          return Result.failure('目前不支援 $provider 登入');
+          return Err('目前不支援 $provider 登入');
       }
 
       final success = await _supabase.auth.signInWithOAuth(
@@ -57,7 +57,7 @@ class AuthService {
       );
 
       if (!success) {
-        return Result.failure('$provider 登入失敗，請稍後再試');
+        return Err('$provider 登入失敗，請稍後再試');
       }
 
       // 等待認證狀態變化
@@ -66,21 +66,21 @@ class AuthService {
           .then((final state) => state.session?.user);
 
       if (user == null) {
-        return Result.failure('$provider 登入失敗，無法取得用戶資訊，請稍後再試');
+        return Err('$provider 登入失敗，無法取得用戶資訊，請稍後再試');
       }
 
       // 儲存登入類型
       await setLastLoginType(userType);
 
-      return Result.success(data: user);
+      return Ok(user);
     } catch (e) {
       AppLogger.error('$provider 登入失敗', e);
-      return Result.failure('$provider 登入失敗，請稍後再試');
+      return Err('$provider 登入失敗，請稍後再試');
     }
   }
 
   /// 登出
-  static Future<Result<void>> signOut() async {
+  static Future<Result<void, String>> signOut() async {
     try {
       // 清除所有 SharedPreferences and Cache
       await CacheService.clearCache();
@@ -88,10 +88,10 @@ class AuthService {
       // 執行 Supabase 登出
       await _supabase.auth.signOut();
 
-      return Result.success();
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('登出失敗', e);
-      return Result.failure('登出失敗，請稍後再試');
+      return const Err('登出失敗，請稍後再試');
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/shop_service.dart';
 import '../dialogs/filter_dialog.dart';
@@ -62,12 +63,12 @@ class _ShopPageState extends State<ShopPage> {
 
     if (result.isSuccess) {
       setState(() {
-        _productTypes = result.data!;
+        _productTypes = result.get()!;
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -91,14 +92,14 @@ class _ShopPageState extends State<ShopPage> {
 
     if (result.isSuccess) {
       setState(() {
-        displayedProducts = result.data!;
+        displayedProducts = result.get()!;
         isLoading = false;
       });
     } else {
       setState(() => isLoading = false);
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

@@ -7,6 +7,7 @@ import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/product_service.dart';
 
@@ -94,12 +95,12 @@ class _AddProductPageState extends State<AddProductPage> {
 
     if (result.isSuccess) {
       setState(() {
-        productTypes = result.data!;
+        productTypes = result.get()!;
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -158,7 +159,7 @@ class _AddProductPageState extends State<AddProductPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/tryon_service.dart';
 
@@ -59,30 +60,30 @@ class HomePageState extends State<HomePage> {
       clothesPath: clothesPath,
     );
 
-    if (mounted) {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    // Check if success
+    if (result.isSuccess) {
+      // 解碼 base64 並儲存為 bytes
+      final base64String = result.get()!.split(',')[1];
+      final imageBytes = base64Decode(base64String);
+
       setState(() {
-        _isLoading = false;
+        _tryonImages.add(imageBytes);
+        _currentTryonIndex = _tryonImages.length - 1;
       });
 
-      // Check if success
-      if (result.isSuccess) {
-        // 解碼 base64 並儲存為 bytes
-        final base64String = result.data!.split(',')[1];
-        final imageBytes = base64Decode(base64String);
-
-        setState(() {
-          _tryonImages.add(imageBytes);
-          _currentTryonIndex = _tryonImages.length - 1;
-        });
-
-        TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
-      } else {
-        TopNotification.show(
-          context,
-          message: result.errorMessage!,
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
+    } else {
+      TopNotification.show(
+        context,
+        message: result.getError()!,
+        type: NotificationType.error,
+      );
     }
   }
 
@@ -116,13 +117,13 @@ class HomePageState extends State<HomePage> {
 
     if (result.isSuccess) {
       setState(() {
-        _avatarPath = result.data!.avatarPath;
-        _avatarFile = result.data!.avatarFile;
+        _avatarPath = result.get()!.avatarPath;
+        _avatarFile = result.get()!.avatarFile;
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -145,8 +146,8 @@ class HomePageState extends State<HomePage> {
 
     if (result.isSuccess) {
       setState(() {
-        _avatarPath = result.data!.avatarPath;
-        _avatarFile = result.data!.avatarFile;
+        _avatarPath = result.get()!.avatarPath;
+        _avatarFile = result.get()!.avatarFile;
         _tryonImages.clear();
         _currentTryonIndex = -1;
         _customAvatarIndex = null;
@@ -156,7 +157,7 @@ class HomePageState extends State<HomePage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

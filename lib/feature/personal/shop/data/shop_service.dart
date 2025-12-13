@@ -1,14 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products';
 
   /// 獲取所有商品（包含店家資訊）
-  static Future<Result<List<Product>>> getProducts({
+  static Future<Result<List<Product>, String>> getProducts({
     final String? searchQuery,
     final String sortBy = 'created_at',
     final bool ascending = false,
@@ -52,10 +52,10 @@ class ShopService {
           .map((final item) => Product.fromJson(item))
           .toList();
 
-      return Result.success(data: searchResult);
+      return Ok(searchResult);
     } catch (e) {
       AppLogger.error('商品列表獲取失敗', e);
-      return Result.failure('無法取得商品列表，請稍後再試');
+      return const Err('無法取得商品列表，請稍後再試');
     }
   }
 

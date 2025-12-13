@@ -5,6 +5,7 @@ import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/shop_service.dart';
@@ -28,10 +29,18 @@ class _ProductCardState extends State<ProductCard> {
 
   Future<void> _loadUserProfile() async {
     final result = await UserProfileService.getUserProfile();
-    if (result.isSuccess && mounted) {
+    if (!mounted) return;
+
+    if (result.isSuccess) {
       setState(() {
-        _userProfile = result.data;
+        _userProfile = result.get();
       });
+    } else {
+      TopNotification.show(
+        context,
+        message: result.getError()!,
+        type: NotificationType.error,
+      );
     }
   }
 

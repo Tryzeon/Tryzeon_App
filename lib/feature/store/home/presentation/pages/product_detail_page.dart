@@ -6,10 +6,10 @@ import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 class ProductDetailPage extends StatefulWidget {
   const ProductDetailPage({super.key, required this.product});
@@ -21,7 +21,7 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  late Future<Result<File>> productImage;
+  late Future<Result<File, String>> productImage;
   late TextEditingController nameController;
   late TextEditingController priceController;
   late TextEditingController purchaseLinkController;
@@ -59,12 +59,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (result.isSuccess) {
       setState(() {
-        clothesTypes = result.data!;
+        clothesTypes = result.get()!;
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -109,7 +109,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -157,7 +157,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }
@@ -233,7 +233,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   final result = snapshot.data;
                                   if (result != null && result.isSuccess) {
                                     return Image.file(
-                                      result.data!,
+                                      result.get()!,
                                       fit: BoxFit.contain,
                                       width: double.infinity,
                                       errorBuilder:
@@ -255,7 +255,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       if (mounted) {
                                         TopNotification.show(
                                           context,
-                                          message: result.errorMessage!,
+                                          message: result.getError()!,
                                           type: NotificationType.error,
                                         );
                                       }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/product_service.dart';
 import '../dialogs/sort_dialog.dart';
@@ -66,12 +67,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
     if (result.isSuccess) {
       setState(() {
-        products = result.data!;
+        products = result.get()!;
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

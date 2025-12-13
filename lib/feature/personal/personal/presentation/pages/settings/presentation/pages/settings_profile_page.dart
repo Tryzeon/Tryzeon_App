@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../data/profile_service.dart';
 
@@ -36,9 +37,14 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     });
 
     final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (result.isSuccess) {
-      final profile = result.data!;
+      final profile = result.get()!;
       _currentUserProfile = profile;
       _nameController.text = profile.name;
 
@@ -48,31 +54,19 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
             profile.measurements[type]?.toString() ?? '';
       }
     } else {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: result.errorMessage!,
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(
+        context,
+        message: result.getError()!,
+        type: NotificationType.error,
+      );
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Future<void> _updateProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_currentUserProfile == null) {
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: '無法取得原始個人資料',
-          type: NotificationType.error,
-        );
-      }
+      TopNotification.show(context, message: '無法取得原始個人資料', type: NotificationType.error);
       return;
     }
 
@@ -96,22 +90,21 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     );
 
     final result = await UserProfileService.updateUserProfile(target: targetProfile);
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
     });
 
-    if (mounted) {
-      if (result.isSuccess) {
-        Navigator.pop(context, true);
-        TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
-      } else {
-        TopNotification.show(
-          context,
-          message: result.errorMessage!,
-          type: NotificationType.error,
-        );
-      }
+    if (result.isSuccess) {
+      Navigator.pop(context, true);
+      TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
+    } else {
+      TopNotification.show(
+        context,
+        message: result.getError()!,
+        type: NotificationType.error,
+      );
     }
   }
 

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:typed_result/typed_result.dart';
+
 import '../../data/wardrobe_item_model.dart';
 
 class WardrobeItemCard extends StatefulWidget {
@@ -46,12 +48,12 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
 
     if (result.isSuccess) {
       setState(() {
-        _imageFile = result.data;
+        _imageFile = result.get();
       });
     } else {
       TopNotification.show(
         context,
-        message: result.errorMessage!,
+        message: result.getError()!,
         type: NotificationType.error,
       );
     }

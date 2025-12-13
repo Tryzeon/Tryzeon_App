@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
-import 'package:tryzeon/shared/models/result.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class UserProfileService {
   static final _supabase = Supabase.instance.client;
@@ -12,13 +12,13 @@ class UserProfileService {
   static const _cacheKey = 'user_profile_cache';
 
   /// 取得使用者個人資料
-  static Future<Result<UserProfile>> getUserProfile({
+  static Future<Result<UserProfile, String>> getUserProfile({
     final bool forceRefresh = false,
   }) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       if (!forceRefresh) {
@@ -27,7 +27,7 @@ class UserProfileService {
           final cachedUserProfile = UserProfile.fromJson(
             Map<String, dynamic>.from(cachedData as Map),
           );
-          return Result.success(data: cachedUserProfile);
+          return Ok(cachedUserProfile);
         }
       }
 
@@ -40,37 +40,37 @@ class UserProfileService {
       await CacheService.saveToCache(_cacheKey, response);
 
       final userProfile = UserProfile.fromJson(response);
-      return Result.success(data: userProfile);
+      return Ok(userProfile);
     } catch (e) {
       AppLogger.error('個人資料取得失敗', e);
-      return Result.failure('無法取得個人資料，請稍後再試');
+      return const Err('無法取得個人資料，請稍後再試');
     }
   }
 
   /// 更新使用者個人資料
-  static Future<Result<UserProfile>> updateUserProfile({
+  static Future<Result<UserProfile, String>> updateUserProfile({
     required final UserProfile target,
   }) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        return Result.failure('無法獲取使用者資訊，請重新登入');
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getUserProfile();
       if (!currentProfileResult.isSuccess) {
-        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.errorMessage}');
-        return Result.failure('資料同步錯誤，請重新刷新頁面');
+        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.getError()}');
+        return const Err('資料同步錯誤，請重新刷新頁面');
       }
-      final original = currentProfileResult.data!;
+      final original = currentProfileResult.get()!;
 
       // 2. 取得變更欄位 (直接比對傳入的 target 與 original)
       final updateData = original.getDirtyFields(target);
 
       // 如果沒有變更，直接返回原資料
       if (updateData.isEmpty) {
-        return Result.success(data: original);
+        return Ok(original);
       }
 
       final response = await _supabase
@@ -83,10 +83,10 @@ class UserProfileService {
       await CacheService.saveToCache(_cacheKey, response);
 
       final userProfile = UserProfile.fromJson(response);
-      return Result.success(data: userProfile);
+      return Ok(userProfile);
     } catch (e) {
       AppLogger.error('個人資料更新失敗', e);
-      return Result.failure('個人資料更新失敗，請稍後再試');
+      return const Err('個人資料更新失敗，請稍後再試');
     }
   }
 }
