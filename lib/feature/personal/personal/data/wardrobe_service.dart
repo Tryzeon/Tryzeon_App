@@ -43,7 +43,7 @@ class WardrobeService {
       // 從資料庫獲取資料
       final response = await _supabase
           .from(_wardrobeTable)
-          .select()
+          .select('id, image_path, category, tags')
           .eq('user_id', user.id)
           .order('created_at', ascending: false);
 

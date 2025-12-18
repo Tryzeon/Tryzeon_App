@@ -29,7 +29,7 @@ class AuthService {
   }
 
   /// 通用第三方登入
-  static Future<Result<User, String>> signInWithProvider({
+  static Future<Result<void, String>> signInWithProvider({
     required final String provider,
     required final UserType userType,
   }) async {
@@ -72,7 +72,7 @@ class AuthService {
       // 儲存登入類型
       await setLastLoginType(userType);
 
-      return Ok(user);
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('$provider 登入失敗', e);
       return Err('$provider 登入失敗，請稍後再試');

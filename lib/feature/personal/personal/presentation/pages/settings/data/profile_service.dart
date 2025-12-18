@@ -33,7 +33,9 @@ class UserProfileService {
 
       final response = await _supabase
           .from(_userProfileTable)
-          .select()
+          .select(
+            'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
+          )
           .eq('user_id', user.id)
           .single();
 
@@ -48,7 +50,7 @@ class UserProfileService {
   }
 
   /// 更新使用者個人資料
-  static Future<Result<UserProfile, String>> updateUserProfile({
+  static Future<Result<void, String>> updateUserProfile({
     required final UserProfile target,
   }) async {
     try {
@@ -70,20 +72,17 @@ class UserProfileService {
 
       // 如果沒有變更，直接返回原資料
       if (updateData.isEmpty) {
-        return Ok(original);
+        return const Ok(null);
       }
 
-      final response = await _supabase
+      await _supabase
           .from(_userProfileTable)
           .update(updateData)
-          .eq('user_id', user.id)
-          .select()
-          .single();
+          .eq('user_id', user.id);
 
-      await CacheService.saveToCache(_cacheKey, response);
+      await CacheService.deleteCache(_cacheKey);
 
-      final userProfile = UserProfile.fromJson(response);
-      return Ok(userProfile);
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('個人資料更新失敗', e);
       return const Err('個人資料更新失敗，請稍後再試');

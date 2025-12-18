@@ -39,7 +39,7 @@ class StoreProfileService {
       // 從後端抓取資料
       final response = await _supabase
           .from(_storesProfileTable)
-          .select()
+          .select('store_id, name, address, logo_path')
           .eq('store_id', store.id)
           .maybeSingle();
 
@@ -64,7 +64,7 @@ class StoreProfileService {
   }
 
   /// 更新店家資料
-  static Future<Result<StoreProfile, String>> updateStoreProfile({
+  static Future<Result<void, String>> updateStoreProfile({
     required final StoreProfile target,
     final File? logo,
   }) async {
@@ -94,20 +94,17 @@ class StoreProfileService {
 
       // 如果沒有變更，直接返回原資料
       if (updateData.isEmpty) {
-        return Ok(original);
+        return const Ok(null);
       }
 
-      final response = await _supabase
+      await _supabase
           .from(_storesProfileTable)
           .update(updateData)
-          .eq('store_id', store.id)
-          .select()
-          .single();
+          .eq('store_id', store.id);
 
-      await CacheService.saveToCache(_cachedKey, response);
+      await CacheService.deleteCache(_cachedKey);
 
-      final storeProfile = StoreProfile.fromJson(response);
-      return Ok(storeProfile);
+      return const Ok(null);
     } catch (e) {
       AppLogger.error('店家資料更新失敗', e);
       return const Err('店家資料更新失敗，請稍後再試');

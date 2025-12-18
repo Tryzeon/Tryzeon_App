@@ -81,7 +81,7 @@ class ProductService {
       final response = await _supabase
           .from(_productsTable)
           .insert(productData)
-          .select()
+          .select('id')
           .single();
 
       final productId = response['id'];
