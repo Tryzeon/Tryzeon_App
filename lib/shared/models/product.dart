@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
-import 'package:tryzeon/feature/store/home/data/product_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
-import 'package:typed_result/typed_result.dart';
 
 class ProductSize {
   ProductSize({this.id, this.productId, required this.name, required this.measurements});
@@ -122,10 +119,9 @@ class Product {
     };
   }
 
-  /// 按需載入圖片，使用快取機制
-  Future<Result<File, String>> loadImage() async {
-    return ProductService.getProductImage(imagePath);
-  }
+  /// 取得圖片的完整 URL (用於 CachedNetworkImage)
+  String get imageUrl =>
+      Supabase.instance.client.storage.from('store').getPublicUrl(imagePath);
 
   final String storeId;
   final String name;

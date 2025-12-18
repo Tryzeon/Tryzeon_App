@@ -1,5 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
@@ -132,9 +132,6 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(final BuildContext context) {
     final product = widget.product;
-    final imageUrl = Supabase.instance.client.storage
-        .from('store')
-        .getPublicUrl(product.imagePath);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -154,31 +151,19 @@ class _ProductCardState extends State<ProductCard> {
                       topLeft: Radius.circular(12),
                       topRight: Radius.circular(12),
                     ),
-                    child: imageUrl.isNotEmpty
-                        ? Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            loadingBuilder:
-                                (final context, final child, final loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      color: colorScheme.primary,
-                                    ),
-                                  );
-                                },
-                            errorBuilder:
-                                (final context, final error, final stackTrace) =>
-                                    Container(
-                                      color: colorScheme.surfaceContainer,
-                                      child: const Icon(Icons.image_not_supported),
-                                    ),
-                          )
-                        : Container(
-                            color: colorScheme.surfaceContainer,
-                            child: const Icon(Icons.image),
-                          ),
+                    child: CachedNetworkImage(
+                      imageUrl: product.imageUrl,
+                      cacheKey: product.imagePath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      placeholder: (final context, final url) => Center(
+                        child: CircularProgressIndicator(color: colorScheme.primary),
+                      ),
+                      errorWidget: (final context, final url, final error) => Container(
+                        color: colorScheme.surfaceContainer,
+                        child: const Icon(Icons.image_not_supported),
+                      ),
+                    ),
                   ),
                   // Try-on button with fit color at bottom right
                   Positioned(

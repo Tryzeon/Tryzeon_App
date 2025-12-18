@@ -75,10 +75,7 @@ class UserProfileService {
         return const Ok(null);
       }
 
-      await _supabase
-          .from(_userProfileTable)
-          .update(updateData)
-          .eq('user_id', user.id);
+      await _supabase.from(_userProfileTable).update(updateData).eq('user_id', user.id);
 
       await CacheService.deleteCache(_cacheKey);
 

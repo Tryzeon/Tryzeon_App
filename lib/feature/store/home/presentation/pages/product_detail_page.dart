@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
@@ -21,7 +22,6 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  late Future<Result<File, String>> productImage;
   late TextEditingController nameController;
   late TextEditingController priceController;
   late TextEditingController purchaseLinkController;
@@ -42,7 +42,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     priceController = TextEditingController(text: widget.product.price.toString());
     purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
     selectedTypes = Set<String>.from(widget.product.types);
-    productImage = widget.product.loadImage();
     _loadProductTypes();
 
     // 從商品資料中載入尺寸（因為 getProducts 已經包含了 product_sizes）
@@ -227,53 +226,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 fit: BoxFit.contain,
                                 width: double.infinity,
                               )
-                            : FutureBuilder(
-                                future: productImage,
-                                builder: (final context, final snapshot) {
-                                  final result = snapshot.data;
-                                  if (result != null && result.isSuccess) {
-                                    return Image.file(
-                                      result.get()!,
-                                      fit: BoxFit.contain,
-                                      width: double.infinity,
-                                      errorBuilder:
-                                          (
-                                            final context,
-                                            final error,
-                                            final stackTrace,
-                                          ) => Center(
-                                            child: Icon(
-                                              Icons.image_outlined,
-                                              size: 48,
-                                              color: colorScheme.outline,
-                                            ),
-                                          ),
-                                    );
-                                  }
-                                  if (result != null && !result.isSuccess) {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        TopNotification.show(
-                                          context,
-                                          message: result.getError()!,
-                                          type: NotificationType.error,
-                                        );
-                                      }
-                                    });
-                                    return Center(
+                            : CachedNetworkImage(
+                                imageUrl: widget.product.imageUrl,
+                                cacheKey: widget.product.imagePath,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                placeholder: (final context, final url) => Center(
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.outline,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                errorWidget: (final context, final url, final error) =>
+                                    Center(
                                       child: Icon(
                                         Icons.error_outline,
                                         color: colorScheme.error,
                                       ),
-                                    );
-                                  }
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      color: colorScheme.outline,
-                                      strokeWidth: 2,
                                     ),
-                                  );
-                                },
                               ),
                       ),
                       Positioned(

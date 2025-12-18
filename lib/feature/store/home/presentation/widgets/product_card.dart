@@ -1,7 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:typed_result/typed_result.dart';
 
 import '../pages/product_detail_page.dart';
 
@@ -40,32 +39,15 @@ class StoreProductCard extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                  child: FutureBuilder(
-                    future: product.loadImage(),
-                    builder: (final context, final snapshot) {
-                      final result = snapshot.data;
-                      if (result != null && result.isSuccess && result.get() != null) {
-                        return Image.file(
-                          result.get()!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (final context, final error, final stackTrace) =>
-                              const Icon(Icons.image_not_supported),
-                        );
-                      }
-                      if (result != null && !result.isSuccess) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          TopNotification.show(
-                            context,
-                            message: result.getError()!,
-                            type: NotificationType.error,
-                          );
-                        });
-                        return Center(
-                          child: Icon(Icons.error_outline, color: colorScheme.error),
-                        );
-                      }
-                      return const Center(child: CircularProgressIndicator());
-                    },
+                  child: CachedNetworkImage(
+                    imageUrl: product.imageUrl,
+                    cacheKey: product.imagePath,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    placeholder: (final context, final url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (final context, final url, final error) =>
+                        const Center(child: Icon(Icons.error_outline)),
                   ),
                 ),
               ),

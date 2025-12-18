@@ -192,28 +192,6 @@ class ProductService {
     }
   }
 
-  /// 載入商品圖片（優先從本地獲取，本地沒有才從後端拿）
-  static Future<Result<File, String>> getProductImage(final String imagePath) async {
-    try {
-      // 1. 先檢查本地是否有該圖片
-      final cachedProductImage = await CacheService.getImage(imagePath);
-      if (cachedProductImage != null) {
-        return Ok(cachedProductImage);
-      }
-
-      // 2. 本地沒有，從 Supabase 取得 Public URL 下載
-      final url = _supabase.storage.from(_productImagesBucket).getPublicUrl(imagePath);
-
-      final productImage = await CacheService.getImage(imagePath, downloadUrl: url);
-      if (productImage == null) return const Err('無法載入商品圖片，請稍後再試');
-
-      return Ok(productImage);
-    } catch (e) {
-      AppLogger.error('商品圖片載入失敗', e);
-      return const Err('無法載入商品圖片，請稍後再試');
-    }
-  }
-
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
   static Future<String> _uploadProductImage(final store, final File image) async {
     // 使用圖片本身的檔案名稱
