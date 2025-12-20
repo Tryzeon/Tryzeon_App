@@ -1,15 +1,12 @@
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class UserProfileService {
   static final _supabase = Supabase.instance.client;
   static const _userProfileTable = 'user_profile';
-
-  // SharedPreferences key
-  static const _cacheKey = 'user_profile_cache';
 
   /// 取得使用者個人資料
   static Future<Result<UserProfile, String>> getUserProfile({
@@ -21,28 +18,30 @@ class UserProfileService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      if (!forceRefresh) {
-        final cachedData = await CacheService.loadFromCache(_cacheKey);
-        if (cachedData != null) {
-          final cachedUserProfile = UserProfile.fromJson(
-            Map<String, dynamic>.from(cachedData as Map),
-          );
-          return Ok(cachedUserProfile);
-        }
+      final query = Query<UserProfile>(
+        key: ['user_profile', user.id],
+
+        queryFn: () async {
+          final response = await _supabase
+              .from(_userProfileTable)
+              .select(
+                'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
+              )
+              .eq('user_id', user.id)
+              .single();
+
+          return UserProfile.fromJson(response);
+        },
+      );
+
+      final state = forceRefresh ? await query.refetch() : await query.fetch();
+
+      if (state.error != null) {
+        AppLogger.error('個人資料取得失敗', state.error);
+        return const Err('無法取得個人資料，請稍後再試');
       }
 
-      final response = await _supabase
-          .from(_userProfileTable)
-          .select(
-            'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
-          )
-          .eq('user_id', user.id)
-          .single();
-
-      await CacheService.saveToCache(_cacheKey, response);
-
-      final userProfile = UserProfile.fromJson(response);
-      return Ok(userProfile);
+      return Ok(state.data!);
     } catch (e) {
       AppLogger.error('個人資料取得失敗', e);
       return const Err('無法取得個人資料，請稍後再試');
@@ -77,7 +76,12 @@ class UserProfileService {
 
       await _supabase.from(_userProfileTable).update(updateData).eq('user_id', user.id);
 
-      await CacheService.deleteCache(_cacheKey);
+      // 更新 Cache
+      CachedQuery.instance.updateQuery(
+        key: ['user_profile', user.id],
+
+        updateFn: (final dynamic old) => target,
+      );
 
       return const Ok(null);
     } catch (e) {

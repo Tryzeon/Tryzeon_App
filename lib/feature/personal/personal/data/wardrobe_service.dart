@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,8 +15,6 @@ class WardrobeService {
   static const _wardrobeTable = 'wardrobe_items';
   static const _bucket = 'wardrobe';
 
-  static const _cacheKey = 'wardrobe_items_cache';
-
   static Future<Result<List<WardrobeItem>, String>> getWardrobeItems({
     final bool forceRefresh = false,
   }) async {
@@ -25,36 +24,30 @@ class WardrobeService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      // 如果不是強制刷新，先嘗試從快取讀取
-      if (!forceRefresh) {
-        final cachedData = await CacheService.loadFromCache(_cacheKey);
-        if (cachedData != null) {
-          final cachedWardrobeItems = cachedData
-              .map(
-                (final json) =>
-                    WardrobeItem.fromJson(Map<String, dynamic>.from(json as Map)),
-              )
+      final query = Query<List<WardrobeItem>>(
+        key: ['wardrobe_items', user.id],
+        queryFn: () async {
+          final response = await _supabase
+              .from(_wardrobeTable)
+              .select('id, image_path, category, tags')
+              .eq('user_id', user.id)
+              .order('created_at', ascending: false);
+
+          return (response as List)
+              .map((final json) => WardrobeItem.fromJson(json))
               .toList()
               .cast<WardrobeItem>();
-          return Ok(cachedWardrobeItems);
-        }
+        },
+      );
+
+      final state = forceRefresh ? await query.refetch() : await query.fetch();
+
+      if (state.error != null) {
+        AppLogger.error('衣櫃列表獲取失敗', state.error);
+        return const Err('無法取得衣櫃資料，請稍後再試');
       }
 
-      // 從資料庫獲取資料
-      final response = await _supabase
-          .from(_wardrobeTable)
-          .select('id, image_path, category, tags')
-          .eq('user_id', user.id)
-          .order('created_at', ascending: false);
-
-      await CacheService.saveToCache(_cacheKey, response);
-
-      final wardrobeItems = (response as List)
-          .map((final json) => WardrobeItem.fromJson(json))
-          .toList()
-          .cast<WardrobeItem>();
-
-      return Ok(wardrobeItems);
+      return Ok(state.data!);
     } catch (e) {
       AppLogger.error('衣櫃列表獲取失敗', e);
       return const Err('無法取得衣櫃資料，請稍後再試');
@@ -84,7 +77,7 @@ class WardrobeService {
       });
 
       // 4. 清除快取以確保下次獲取最新資料
-      await CacheService.deleteCache(_cacheKey);
+      CachedQuery.instance.invalidateCache(key: ['wardrobe_items', user.id]);
 
       return const Ok(null);
     } catch (e) {
@@ -95,6 +88,7 @@ class WardrobeService {
 
   static Future<Result<void, String>> deleteWardrobeItem(final WardrobeItem item) async {
     try {
+      final user = _supabase.auth.currentUser;
       // 1. 刪除 DB 記錄
       await _supabase.from(_wardrobeTable).delete().eq('id', item.id!);
 
@@ -105,7 +99,9 @@ class WardrobeService {
       await CacheService.deleteImage(item.imagePath);
 
       // 4. 清除快取以確保下次獲取最新資料
-      await CacheService.deleteCache(_cacheKey);
+      if (user != null) {
+        CachedQuery.instance.invalidateCache(key: ['wardrobe_items', user.id]);
+      }
 
       return const Ok(null);
     } catch (e) {

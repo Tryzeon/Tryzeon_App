@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,7 +14,6 @@ class ProductService {
   static const _productsTable = 'products';
   static const _productSizesTable = 'product_sizes';
   static const _productImagesBucket = 'store';
-  static const _cacheKey = 'products_cache';
 
   /// 獲取店家的所有商品
   static Future<Result<List<Product>, String>> getProducts({
@@ -27,29 +27,28 @@ class ProductService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      if (!forceRefresh) {
-        final cachedData = await CacheService.loadFromCache(_cacheKey);
-        if (cachedData != null) {
-          final List<Product> cachedProducts = cachedData
+      final query = Query<List<Product>>(
+        key: ['products', store.id],
+        queryFn: () async {
+          final response = await _supabase
+              .from(_productsTable)
+              .select('*, product_sizes(*)')
+              .eq('store_id', store.id);
+          return response
               .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
               .toList()
               .cast<Product>();
-          return Ok(_sortProducts(cachedProducts, sortBy, ascending));
-        }
+        },
+      );
+
+      final state = forceRefresh ? await query.refetch() : await query.fetch();
+
+      if (state.error != null) {
+        AppLogger.error('商品列表獲取失敗', state.error);
+        return const Err('無法取得商品列表，請稍後再試');
       }
 
-      final response = await _supabase
-          .from(_productsTable)
-          .select('*, product_sizes(*)')
-          .eq('store_id', store.id);
-
-      await CacheService.saveToCache(_cacheKey, response);
-
-      final List<Product> products = response
-          .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
-          .toList()
-          .cast<Product>();
-      return Ok(_sortProducts(products, sortBy, ascending));
+      return Ok(_sortProducts(state.data!, sortBy, ascending));
     } catch (e) {
       AppLogger.error('商品列表獲取失敗', e);
       return const Err('無法取得商品列表，請稍後再試');
@@ -100,7 +99,7 @@ class ProductService {
       }
 
       // 清除快取以確保下次獲取最新資料
-      await CacheService.deleteCache(_cacheKey);
+      CachedQuery.instance.invalidateCache(key: ['products', store.id]);
 
       return const Ok(null);
     } catch (e) {
@@ -162,7 +161,7 @@ class ProductService {
       }
 
       // 清除快取以確保下次獲取最新資料
-      await CacheService.deleteCache(_cacheKey);
+      CachedQuery.instance.invalidateCache(key: ['products', store.id]);
 
       return const Ok(null);
     } catch (e) {
@@ -174,6 +173,7 @@ class ProductService {
   /// 刪除商品
   static Future<Result<void, String>> deleteProduct(final Product product) async {
     try {
+      final store = _supabase.auth.currentUser;
       // 刪除圖片（Supabase Storage 和本地）
       if (product.imagePath.isNotEmpty) {
         await _deleteProductImage(product.imagePath);
@@ -183,7 +183,9 @@ class ProductService {
       await _supabase.from(_productsTable).delete().eq('id', product.id!);
 
       // 清除快取以確保下次獲取最新資料
-      await CacheService.deleteCache(_cacheKey);
+      if (store != null) {
+        CachedQuery.instance.invalidateCache(key: ['products', store.id]);
+      }
 
       return const Ok(null);
     } catch (e) {

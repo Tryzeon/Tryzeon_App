@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,9 +13,6 @@ class StoreProfileService {
   static const _storesProfileTable = 'store_profile';
   static const _logoBucket = 'store';
 
-  // SharedPreferences key
-  static const _cachedKey = 'store_profile_cache';
-
   /// 獲取店家資料
   static Future<Result<StoreProfile?, String>> getStoreProfile({
     final bool forceRefresh = false,
@@ -25,32 +23,30 @@ class StoreProfileService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      // 讀取 cache
-      if (!forceRefresh) {
-        final cachedData = await CacheService.loadFromCache(_cachedKey);
-        if (cachedData != null) {
-          final cachedStoreProfile = StoreProfile.fromJson(
-            Map<String, dynamic>.from(cachedData as Map),
-          );
-          return Ok(cachedStoreProfile);
-        }
+      final query = Query<StoreProfile?>(
+        key: ['store_profile', store.id],
+        queryFn: () async {
+          final response = await _supabase
+              .from(_storesProfileTable)
+              .select('store_id, name, address, logo_path')
+              .eq('store_id', store.id)
+              .maybeSingle();
+
+          if (response == null) {
+            return null;
+          }
+          return StoreProfile.fromJson(response);
+        },
+      );
+
+      final state = forceRefresh ? await query.refetch() : await query.fetch();
+
+      if (state.error != null) {
+        AppLogger.error('店家資料取得失敗', state.error);
+        return const Err('無法取得店家資料，請稍後再試');
       }
 
-      // 從後端抓取資料
-      final response = await _supabase
-          .from(_storesProfileTable)
-          .select('store_id, name, address, logo_path')
-          .eq('store_id', store.id)
-          .maybeSingle();
-
-      if (response == null) {
-        return const Ok(null);
-      }
-
-      await CacheService.saveToCache(_cachedKey, response);
-
-      final storeProfile = StoreProfile.fromJson(response);
-      return Ok(storeProfile);
+      return Ok(state.data);
     } catch (e) {
       AppLogger.error('店家資料取得失敗', e);
       return const Err('無法取得店家資料，請稍後再試');
@@ -77,10 +73,14 @@ class StoreProfileService {
       // 1. 取得目前資料以進行比對
       final currentProfileResult = await getStoreProfile();
       if (!currentProfileResult.isSuccess) {
-        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.getError()}');
         return const Err('資料同步錯誤，請重新刷新頁面');
       }
-      final original = currentProfileResult.get()!;
+      final original = currentProfileResult.get();
+
+      if (original == null) {
+        // Should not happen if store exists, but handle creation logic if needed or error
+        return const Err('無法找到店家資料');
+      }
 
       // 2. 處理 Logo 上傳 (這裡會更新 target 的 logoPath)
       StoreProfile finalTarget = target;
@@ -102,7 +102,7 @@ class StoreProfileService {
           .update(updateData)
           .eq('store_id', store.id);
 
-      await CacheService.deleteCache(_cachedKey);
+      CachedQuery.instance.invalidateCache(key: ['store_profile', store.id]);
 
       return const Ok(null);
     } catch (e) {

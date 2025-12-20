@@ -1,3 +1,4 @@
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/services/cache_service.dart';
@@ -88,6 +89,9 @@ class AuthService {
     }
 
     try {
+      // 清除 API 資料快取
+      CachedQuery.instance.deleteCache();
+      // 清除檔案快取
       await CacheService.clearCache();
     } catch (e) {
       AppLogger.error('清除快取失敗 (已忽略)', e);

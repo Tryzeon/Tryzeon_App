@@ -23,14 +23,14 @@ dependencies:
   gal: ^2.3.2
   google_fonts: ^6.3.2
   flutter_cache_manager: ^3.4.1
-  stash: ^5.2.0
-  stash_shared_preferences: ^5.2.0
   flutter_image_compress: ^2.4.0
   mime: ^2.0.0
 
   path: any
   typed_result: ^2.0.0
   cached_network_image: ^3.4.1
+  cached_query_flutter: ^3.3.1
+  cached_storage: ^3.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
