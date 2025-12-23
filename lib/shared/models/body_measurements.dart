@@ -29,13 +29,13 @@ class BodyMeasurements {
 
   factory BodyMeasurements.fromJson(final Map<String, dynamic> json) {
     return BodyMeasurements(
-      height: json['height']?.toDouble(),
-      weight: json['weight']?.toDouble(),
-      chest: json['chest']?.toDouble(),
-      waist: json['waist']?.toDouble(),
-      hips: json['hips']?.toDouble(),
-      shoulderWidth: json['shoulder_width']?.toDouble(),
-      sleeveLength: json['sleeve_length']?.toDouble(),
+      height: (json['height'] as num?)?.toDouble(),
+      weight: (json['weight'] as num?)?.toDouble(),
+      chest: (json['chest'] as num?)?.toDouble(),
+      waist: (json['waist'] as num?)?.toDouble(),
+      hips: (json['hips'] as num?)?.toDouble(),
+      shoulderWidth: (json['shoulder_width'] as num?)?.toDouble(),
+      sleeveLength: (json['sleeve_length'] as num?)?.toDouble(),
     );
   }
 

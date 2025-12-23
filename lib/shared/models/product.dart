@@ -82,7 +82,7 @@ class Product {
       storeId: json['store_id'],
       name: json['name'],
       types: (json['type'] as List).map((final e) => e.toString()).toSet(),
-      price: json['price'].toInt(),
+      price: (json['price'] as num).toDouble(),
       imagePath: json['image_path'],
 
       id: json['id'],
@@ -126,7 +126,7 @@ class Product {
   final String storeId;
   final String name;
   final Set<String> types;
-  final int price;
+  final double price;
   final String imagePath;
 
   final String? id;
@@ -142,7 +142,7 @@ class Product {
     final String? storeId,
     final String? name,
     final Set<String>? types,
-    final int? price,
+    final double? price,
     final String? imagePath,
     final String? id,
     final String? purchaseLink,

@@ -137,7 +137,7 @@ class _AddProductPageState extends State<AddProductPage> {
       storeId: '',
       name: nameController.text,
       types: selectedTypes,
-      price: int.parse(priceController.text),
+      price: double.parse(priceController.text),
       purchaseLink: purchaseLinkController.text,
       imagePath: '',
       sizes: _buildProductSizes(),
@@ -427,8 +427,12 @@ class _AddProductPageState extends State<AddProductPage> {
                                 filled: true,
                                 fillColor: colorScheme.surfaceContainer,
                               ),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                              ],
                               validator: AppValidators.validatePrice,
                             ),
 
