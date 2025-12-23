@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
+import 'package:tryzeon/shared/utils/validators.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -247,6 +248,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                         RegExp(r'^\d*\.?\d*'),
                                       ),
                                     ],
+                                    validator: AppValidators.validateMeasurement,
                                   ),
                                 );
                               }).toList(),

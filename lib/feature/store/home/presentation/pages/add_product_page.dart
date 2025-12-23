@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
+import 'package:tryzeon/shared/utils/validators.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -428,12 +429,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               ),
                               keyboardType: TextInputType.number,
                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                              validator: (final value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return '請輸入價格';
-                                }
-                                return null;
-                              },
+                              validator: AppValidators.validatePrice,
                             ),
 
                             const SizedBox(height: 12),
@@ -473,15 +469,7 @@ class _AddProductPageState extends State<AddProductPage> {
                                 fillColor: colorScheme.surfaceContainer,
                               ),
                               keyboardType: TextInputType.url,
-                              validator: (final value) {
-                                if (value != null && value.isNotEmpty) {
-                                  // Optional: Check for valid URL format if needed
-                                  if (!Uri.parse(value).isAbsolute) {
-                                    return '請輸入有效的網址';
-                                  }
-                                }
-                                return null;
-                              },
+                              validator: AppValidators.validateUrl,
                             ),
                           ],
                         ),
@@ -802,14 +790,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               inputFormatters: [
                                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                               ],
-                              validator: (final value) {
-                                if (value != null && value.isNotEmpty) {
-                                  if (double.tryParse(value) == null) {
-                                    return '請輸入有效數字';
-                                  }
-                                }
-                                return null;
-                              },
+                              validator: AppValidators.validateMeasurement,
                             ),
                           );
                         }).toList(),
