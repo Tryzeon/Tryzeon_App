@@ -197,12 +197,7 @@ class _PersonalPageState extends State<PersonalPage> {
               // 衣櫃內容
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () async {
-                    await Future.wait([
-                      UserProfileService.userProfileQuery().refetch(),
-                      WardrobeService.wardrobeItemsQuery().refetch(),
-                    ]);
-                  },
+                  onRefresh: () => WardrobeService.wardrobeItemsQuery().refetch(),
                   child: QueryBuilder(
                     query: WardrobeService.wardrobeItemsQuery(),
                     builder: (final context, final state) {
