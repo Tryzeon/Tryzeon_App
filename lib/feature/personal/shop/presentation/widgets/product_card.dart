@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:typed_result/typed_result.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/shop_service.dart';
@@ -19,34 +19,14 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  UserProfile? _userProfile;
-
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
-  }
-
-  Future<void> _loadUserProfile() async {
-    final result = await UserProfileService.getUserProfile();
-    if (!mounted) return;
-
-    if (result.isSuccess) {
-      setState(() {
-        _userProfile = result.get();
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
   }
 
   // 計算契合度等級：返回 'green', 'yellow', 'red' 或 null
-  String? _calculateFitLevel() {
-    if (_userProfile == null || widget.product.sizes == null) {
+  String? _calculateFitLevel(final UserProfile? userProfile) {
+    if (userProfile == null || widget.product.sizes == null) {
       return null; // 無法計算
     }
 
@@ -57,7 +37,7 @@ class _ProductCardState extends State<ProductCard> {
       int comparisonCount = 0;
 
       for (final type in MeasurementType.values) {
-        final userValue = _userProfile!.measurements[type];
+        final userValue = userProfile.measurements[type];
         final sizeValue = size.measurements[type];
 
         if (userValue != null && sizeValue != null) {
@@ -174,9 +154,10 @@ class _ProductCardState extends State<ProductCard> {
                       child: InkWell(
                         onTap: _handleTryon,
                         borderRadius: BorderRadius.circular(20),
-                        child: Builder(
-                          builder: (final context) {
-                            final fitLevel = _calculateFitLevel();
+                        child: QueryBuilder(
+                          query: UserProfileService.userProfileQuery(),
+                          builder: (final context, final state) {
+                            final fitLevel = _calculateFitLevel(state.data);
                             final buttonColor = fitLevel == null
                                 ? colorScheme.primary
                                 : _getFitColor(fitLevel);

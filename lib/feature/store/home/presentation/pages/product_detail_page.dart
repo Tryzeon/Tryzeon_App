@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
@@ -30,7 +31,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool isLoading = false;
 
   // 衣服種類選項
-  List<String> clothesTypes = [];
   Set<String> selectedTypes = {};
 
   // 尺寸列表
@@ -43,30 +43,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     priceController = TextEditingController(text: widget.product.price.toString());
     purchaseLinkController = TextEditingController(text: widget.product.purchaseLink);
     selectedTypes = Set<String>.from(widget.product.types);
-    _loadProductTypes();
 
     // 從商品資料中載入尺寸（因為 getProducts 已經包含了 product_sizes）
     if (widget.product.sizes != null) {
       for (final size in widget.product.sizes!) {
         _sizeEntries.add(_SizeEntry.fromProductSize(size));
       }
-    }
-  }
-
-  Future<void> _loadProductTypes() async {
-    final result = await ProductTypeService.getProductTypes();
-    if (!mounted) return;
-
-    if (result.isSuccess) {
-      setState(() {
-        clothesTypes = result.get()!;
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
     }
   }
 
@@ -516,62 +498,70 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return QueryBuilder(
+      query: ProductTypeService.productTypesQuery(),
+      builder: (final context, final state) {
+        final clothesTypes = state.data ?? [];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.category_outlined, color: colorScheme.outline, size: 20),
-            const SizedBox(width: 8),
-            Text('商品類型', style: textTheme.bodyMedium),
-            const SizedBox(width: 8),
-            Text('(可多選)', style: textTheme.bodySmall),
+            Row(
+              children: [
+                Icon(Icons.category_outlined, color: colorScheme.outline, size: 20),
+                const SizedBox(width: 8),
+                Text('商品類型', style: textTheme.bodyMedium),
+                const SizedBox(width: 8),
+                Text('(可多選)', style: textTheme.bodySmall),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorScheme.outlineVariant),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: clothesTypes.map((final type) {
+                  final isSelected = selectedTypes.contains(type);
+                  return FilterChip(
+                    label: Text(type),
+                    selected: isSelected,
+                    onSelected: (final selected) {
+                      setState(() {
+                        if (selected) {
+                          selectedTypes.add(type);
+                        } else {
+                          selectedTypes.remove(type);
+                        }
+                      });
+                    },
+                    backgroundColor: colorScheme.surface,
+                    selectedColor: colorScheme.primary,
+                    checkmarkColor: colorScheme.onPrimary,
+                    labelStyle: textTheme.bodyMedium?.copyWith(
+                      color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.outlineVariant,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: clothesTypes.map((final type) {
-              final isSelected = selectedTypes.contains(type);
-              return FilterChip(
-                label: Text(type),
-                selected: isSelected,
-                onSelected: (final selected) {
-                  setState(() {
-                    if (selected) {
-                      selectedTypes.add(type);
-                    } else {
-                      selectedTypes.remove(type);
-                    }
-                  });
-                },
-                backgroundColor: colorScheme.surface,
-                selectedColor: colorScheme.primary,
-                checkmarkColor: colorScheme.onPrimary,
-                labelStyle: textTheme.bodyMedium?.copyWith(
-                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(
-                    color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

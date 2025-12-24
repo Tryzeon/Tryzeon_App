@@ -13,50 +13,37 @@ class StoreProfileService {
   static const _storesProfileTable = 'store_profile';
   static const _logoBucket = 'store';
 
-  /// 獲取店家資料
-  static Future<Result<StoreProfile?, String>> getStoreProfile({
-    final bool forceRefresh = false,
-  }) async {
-    try {
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
-        return const Err('無法獲取使用者資訊，請重新登入');
-      }
+  /// 獲取店家資料 Query
+  static Query<StoreProfile?> storeProfileQuery() {
+    final store = _supabase.auth.currentUser;
+    final id = store?.id;
 
-      final query = Query<StoreProfile?>(
-        key: ['store_profile', store.id],
-        queryFn: () async {
-          final response = await _supabase
-              .from(_storesProfileTable)
-              .select('store_id, name, address, logo_path')
-              .eq('store_id', store.id)
-              .maybeSingle();
+    return Query<StoreProfile?>(key: ['store_profile', id], queryFn: fetchStoreProfile);
+  }
 
-          if (response == null) {
-            return null;
-          }
-          return StoreProfile.fromJson(response);
-        },
-      );
-
-      final state = forceRefresh ? await query.refetch() : await query.fetch();
-
-      if (state.error != null) {
-        AppLogger.error('店家資料取得失敗', state.error);
-        return const Err('無法取得店家資料，請稍後再試');
-      }
-
-      return Ok(state.data);
-    } catch (e) {
-      AppLogger.error('店家資料取得失敗', e);
-      return const Err('無法取得店家資料，請稍後再試');
+  /// 獲取店家資料 (Internal Fetcher)
+  static Future<StoreProfile?> fetchStoreProfile() async {
+    final store = _supabase.auth.currentUser;
+    if (store == null) {
+      throw '無法獲取使用者資訊，請重新登入';
     }
+
+    final response = await _supabase
+        .from(_storesProfileTable)
+        .select('store_id, name, address, logo_path')
+        .eq('store_id', store.id)
+        .maybeSingle();
+
+    if (response == null) {
+      return null;
+    }
+    return StoreProfile.fromJson(response);
   }
 
   /// 獲取店家名稱
-  static Future<String> getStoreName({final bool forceRefresh = false}) async {
-    final response = await getStoreProfile(forceRefresh: forceRefresh);
-    return response.get()?.name ?? '店家';
+  static Future<String> getStoreName() async {
+    final state = await storeProfileQuery().fetch();
+    return state.data?.name ?? '店家';
   }
 
   /// 更新店家資料
@@ -71,11 +58,11 @@ class StoreProfileService {
       }
 
       // 1. 取得目前資料以進行比對
-      final currentProfileResult = await getStoreProfile();
-      if (!currentProfileResult.isSuccess) {
+      final currentProfileState = await storeProfileQuery().fetch();
+      if (currentProfileState.error != null) {
         return const Err('資料同步錯誤，請重新刷新頁面');
       }
-      final original = currentProfileResult.get();
+      final original = currentProfileState.data;
 
       if (original == null) {
         // Should not happen if store exists, but handle creation logic if needed or error
@@ -112,14 +99,14 @@ class StoreProfileService {
   }
 
   /// 獲取店家 Logo
-  static Future<Result<File?, String>> _getLogo({final bool forceRefresh = false}) async {
+  static Future<Result<File?, String>> _getLogo() async {
     try {
-      final storeProfile = await getStoreProfile(forceRefresh: forceRefresh);
-      if (!storeProfile.isSuccess) {
-        return Err(storeProfile.getError()!);
+      final state = await storeProfileQuery().fetch();
+      if (state.error != null) {
+        return Err(state.error!);
       }
 
-      final logoPath = storeProfile.get()?.logoPath;
+      final logoPath = state.data?.logoPath;
       if (logoPath == null || logoPath.isEmpty) {
         return const Ok(null);
       }
@@ -144,8 +131,8 @@ class StoreProfileService {
   /// 上傳店家 Logo 到 Storage 並返回路徑
   static Future<String> _uploadLogo(final User store, final File image) async {
     // 1. 刪除舊 Logo
-    final storeProfile = await getStoreProfile();
-    final oldLogoPath = storeProfile.get()?.logoPath;
+    final state = await storeProfileQuery().fetch();
+    final oldLogoPath = state.data?.logoPath;
     if (oldLogoPath != null && oldLogoPath.isNotEmpty) {
       await _supabase.storage.from(_logoBucket).remove([oldLogoPath]);
     }

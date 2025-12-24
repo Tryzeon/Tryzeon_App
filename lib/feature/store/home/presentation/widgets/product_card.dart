@@ -5,9 +5,8 @@ import 'package:tryzeon/shared/models/product.dart';
 import '../pages/product_detail_page.dart';
 
 class StoreProductCard extends StatelessWidget {
-  const StoreProductCard({super.key, required this.product, required this.onUpdate});
+  const StoreProductCard({super.key, required this.product});
   final Product product;
-  final VoidCallback onUpdate;
 
   @override
   Widget build(final BuildContext context) {
@@ -15,16 +14,13 @@ class StoreProductCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
-      onTap: () async {
-        final result = await Navigator.push<bool>(
+      onTap: () {
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (final context) => ProductDetailPage(product: product),
           ),
         );
-        if (result == true) {
-          onUpdate();
-        }
       },
       child: Card(
         elevation: 2,

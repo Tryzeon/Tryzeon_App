@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
@@ -21,76 +22,21 @@ class PersonalPage extends StatefulWidget {
 }
 
 class _PersonalPageState extends State<PersonalPage> {
-  String username = '';
   List<String> wardrobeCategories = [];
   String selectedCategory = '全部';
-  List<WardrobeItem> wardrobeItem = [];
   final ScrollController _categoryScrollController = ScrollController();
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPersonalData();
+    final categories = WardrobeService.getWardrobeTypesList();
+    wardrobeCategories = ['全部', ...categories];
   }
 
   @override
   void dispose() {
     _categoryScrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadPersonalData({final bool forceRefresh = false}) async {
-    await _loadUsername(forceRefresh: forceRefresh);
-    await _loadWardrobeItems(forceRefresh: forceRefresh);
-  }
-
-  Future<void> _loadUsername({final bool forceRefresh = false}) async {
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-      });
-    }
-
-    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
-    if (!mounted) return;
-
-    setState(() {
-      if (result.isSuccess) {
-        username = result.get()!.name;
-        _isLoading = false;
-      }
-    });
-  }
-
-  Future<void> _loadWardrobeItems({final bool forceRefresh = false}) async {
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-      });
-    }
-
-    final categories = WardrobeService.getWardrobeTypesList();
-    final result = await WardrobeService.getWardrobeItems(forceRefresh: forceRefresh);
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      setState(() {
-        wardrobeItem = result.get()!;
-        wardrobeCategories = ['全部', ...categories];
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
   }
 
   Future<void> _showDeleteDialog(final WardrobeItem item) async {
@@ -106,9 +52,7 @@ class _PersonalPageState extends State<PersonalPage> {
     final result = await WardrobeService.deleteWardrobeItem(item);
     if (!mounted) return;
 
-    if (result.isSuccess) {
-      await _loadWardrobeItems();
-    } else {
+    if (!result.isSuccess) {
       TopNotification.show(
         context,
         message: result.getError()!,
@@ -121,17 +65,13 @@ class _PersonalPageState extends State<PersonalPage> {
     final File? image = await ImagePickerHelper.pickImage(context);
 
     if (image != null && mounted) {
-      final result = await showDialog<bool>(
+      await showDialog<bool>(
         context: context,
         builder: (final context) => UploadWardrobeItemDialog(
           image: image,
           categories: WardrobeService.getWardrobeTypesList(),
         ),
       );
-
-      if (result == true) {
-        await _loadWardrobeItems();
-      }
     }
   }
 
@@ -175,15 +115,21 @@ class _PersonalPageState extends State<PersonalPage> {
                               shaderCallback: (final bounds) => LinearGradient(
                                 colors: [colorScheme.primary, colorScheme.secondary],
                               ).createShader(bounds),
-                              child: Text(
-                                '您好, $username',
-                                style: textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: QueryBuilder(
+                                query: UserProfileService.userProfileQuery(),
+                                builder: (final context, final state) {
+                                  final username = state.data?.name ?? '';
+                                  return Text(
+                                    '您好, $username',
+                                    style: textTheme.headlineMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -206,17 +152,14 @@ class _PersonalPageState extends State<PersonalPage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () async {
-                                final hasChanges = await Navigator.push<bool>(
+                              onTap: () {
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (final context) =>
                                         const PersonalSettingsPage(),
                                   ),
                                 );
-                                if (hasChanges == true) {
-                                  await _loadPersonalData();
-                                }
                               },
                               borderRadius: BorderRadius.circular(22),
                               child: Icon(
@@ -254,8 +197,90 @@ class _PersonalPageState extends State<PersonalPage> {
               // 衣櫃內容
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => _loadPersonalData(forceRefresh: true),
-                  child: _buildWardrobeItemGrid(),
+                  onRefresh: () async {
+                    await Future.wait([
+                      UserProfileService.userProfileQuery().refetch(),
+                      WardrobeService.wardrobeItemsQuery().refetch(),
+                    ]);
+                  },
+                  child: QueryBuilder(
+                    query: WardrobeService.wardrobeItemsQuery(),
+                    builder: (final context, final state) {
+                      if (state is QueryLoading || state is QueryInitial) {
+                        return Center(
+                          child: CircularProgressIndicator(color: colorScheme.primary),
+                        );
+                      }
+
+                      final wardrobeItem = state.data ?? [];
+
+                      final filteredWardrobeItem = selectedCategory == '全部'
+                          ? wardrobeItem
+                          : wardrobeItem
+                                .where((final item) => item.category == selectedCategory)
+                                .toList();
+
+                      if (filteredWardrobeItem.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.checkroom_rounded,
+                                  size: 50,
+                                  color: colorScheme.primary.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                selectedCategory == '全部' ? '衣櫃是空的' : '此類別沒有衣物',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '點擊右下角按鈕新增衣物',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurfaceVariant.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.7,
+                          ),
+                          itemCount: filteredWardrobeItem.length,
+                          itemBuilder: (final context, final index) {
+                            return WardrobeItemCard(
+                              item: filteredWardrobeItem[index],
+                              onDelete: () =>
+                                  _showDeleteDialog(filteredWardrobeItem[index]),
+                            );
+                          },
+                        );
+                      }
+                    },
+                  ),
                 ),
               ),
             ],
@@ -364,75 +389,5 @@ class _PersonalPageState extends State<PersonalPage> {
         ),
       ),
     );
-  }
-
-  Widget _buildWardrobeItemGrid() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: colorScheme.primary));
-    }
-
-    final filteredWardrobeItem = selectedCategory == '全部'
-        ? wardrobeItem
-        : wardrobeItem.where((final item) => item.category == selectedCategory).toList();
-
-    if (filteredWardrobeItem.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.checkroom_rounded,
-                size: 50,
-                color: colorScheme.primary.withValues(alpha: 0.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              selectedCategory == '全部' ? '衣櫃是空的' : '此類別沒有衣物',
-              style: textTheme.titleMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '點擊右下角按鈕新增衣物',
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.7,
-        ),
-        itemCount: filteredWardrobeItem.length,
-        itemBuilder: (final context, final index) {
-          return WardrobeItemCard(
-            item: filteredWardrobeItem[index],
-            onDelete: () => _showDeleteDialog(filteredWardrobeItem[index]),
-          );
-        },
-      );
-    }
   }
 }

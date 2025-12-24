@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/services/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:typed_result/typed_result.dart';
 
 import 'home/presentation/pages/home_page.dart';
 import 'home/presentation/pages/settings/data/profile_service.dart';
@@ -32,25 +31,21 @@ class _StoreEntryState extends State<StoreEntry> {
       _isChecking = true;
     });
 
-    final result = await StoreProfileService.getStoreProfile(forceRefresh: true);
+    final state = await StoreProfileService.storeProfileQuery().refetch();
     if (!mounted) return;
 
     setState(() {
       _isChecking = false;
     });
 
-    if (result.isSuccess) {
-      if (result.get() != null) {
-        setState(() {
-          _needsOnboarding = false;
-        });
-      }
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
+    if (state.error != null) {
+      TopNotification.show(context, message: state.error, type: NotificationType.error);
+    }
+
+    if (state.data != null) {
+      setState(() {
+        _needsOnboarding = false;
+      });
     }
   }
 

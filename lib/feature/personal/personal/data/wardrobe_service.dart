@@ -15,43 +15,32 @@ class WardrobeService {
   static const _wardrobeTable = 'wardrobe_items';
   static const _bucket = 'wardrobe';
 
-  static Future<Result<List<WardrobeItem>, String>> getWardrobeItems({
-    final bool forceRefresh = false,
-  }) async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
-        return const Err('無法獲取使用者資訊，請重新登入');
-      }
+  static Query<List<WardrobeItem>> wardrobeItemsQuery() {
+    final user = _supabase.auth.currentUser;
+    final id = user?.id;
 
-      final query = Query<List<WardrobeItem>>(
-        key: ['wardrobe_items', user.id],
-        queryFn: () async {
-          final response = await _supabase
-              .from(_wardrobeTable)
-              .select('id, image_path, category, tags')
-              .eq('user_id', user.id)
-              .order('created_at', ascending: false);
+    return Query<List<WardrobeItem>>(
+      key: ['wardrobe_items', id],
+      queryFn: fetchWardrobeItems,
+    );
+  }
 
-          return (response as List)
-              .map((final json) => WardrobeItem.fromJson(json))
-              .toList()
-              .cast<WardrobeItem>();
-        },
-      );
-
-      final state = forceRefresh ? await query.refetch() : await query.fetch();
-
-      if (state.error != null) {
-        AppLogger.error('衣櫃列表獲取失敗', state.error);
-        return const Err('無法取得衣櫃資料，請稍後再試');
-      }
-
-      return Ok(state.data!);
-    } catch (e) {
-      AppLogger.error('衣櫃列表獲取失敗', e);
-      return const Err('無法取得衣櫃資料，請稍後再試');
+  static Future<List<WardrobeItem>> fetchWardrobeItems() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw '無法獲取使用者資訊，請重新登入';
     }
+
+    final response = await _supabase
+        .from(_wardrobeTable)
+        .select('id, image_path, category, tags')
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false);
+
+    return (response as List)
+        .map((final json) => WardrobeItem.fromJson(json))
+        .toList()
+        .cast<WardrobeItem>();
   }
 
   static Future<Result<void, String>> createWardrobeItem(

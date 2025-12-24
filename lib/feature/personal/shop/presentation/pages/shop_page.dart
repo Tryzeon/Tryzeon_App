@@ -1,3 +1,4 @@
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
@@ -32,7 +33,6 @@ class _ShopPageState extends State<ShopPage> {
   String? _searchQuery;
 
   // 商品類型列表
-  List<String> _productTypes = [];
   final Set<String> _selectedTypes = {};
 
   @override
@@ -43,8 +43,10 @@ class _ShopPageState extends State<ShopPage> {
 
   /// 初始化所有資料
   Future<void> _initializeData({final bool forceRefresh = false}) async {
+    if (forceRefresh) {
+      ProductTypeService.productTypesQuery().refetch();
+    }
     await _loadAdImages(forceRefresh: forceRefresh);
-    await _loadProductTypes(forceRefresh: forceRefresh);
     await _loadProducts();
   }
 
@@ -55,23 +57,6 @@ class _ShopPageState extends State<ShopPage> {
     setState(() {
       adImages = response;
     });
-  }
-
-  Future<void> _loadProductTypes({final bool forceRefresh = false}) async {
-    final result = await ProductTypeService.getProductTypes(forceRefresh: forceRefresh);
-    if (!mounted) return;
-
-    if (result.isSuccess) {
-      setState(() {
-        _productTypes = result.get()!;
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
   }
 
   Future<void> _loadProducts() async {
@@ -325,16 +310,22 @@ class _ShopPageState extends State<ShopPage> {
                         const SizedBox(height: 24),
 
                         // 商品類型篩選標籤
-                        ProductTypeFilter(
-                          productTypes: _productTypes,
-                          selectedTypes: _selectedTypes,
-                          onTypeToggle: (final type) {
-                            setState(
-                              () => _selectedTypes.contains(type)
-                                  ? _selectedTypes.remove(type)
-                                  : _selectedTypes.add(type),
+                        QueryBuilder(
+                          query: ProductTypeService.productTypesQuery(),
+                          builder: (final context, final state) {
+                            final types = state.data ?? [];
+                            return ProductTypeFilter(
+                              productTypes: types,
+                              selectedTypes: _selectedTypes,
+                              onTypeToggle: (final type) {
+                                setState(
+                                  () => _selectedTypes.contains(type)
+                                      ? _selectedTypes.remove(type)
+                                      : _selectedTypes.add(type),
+                                );
+                                _loadProducts();
+                              },
                             );
-                            _loadProducts();
                           },
                         ),
 

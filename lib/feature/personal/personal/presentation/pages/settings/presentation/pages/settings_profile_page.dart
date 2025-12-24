@@ -1,4 +1,6 @@
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
@@ -21,6 +23,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
   bool _isLoading = false;
   UserProfile? _currentUserProfile;
+  bool _isControllersInitialized = false;
 
   @override
   void initState() {
@@ -28,38 +31,6 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
     // 初始化所有身型數據的控制器
     for (final type in MeasurementType.values) {
       _measurementControllers[type] = TextEditingController();
-    }
-    _loadProfile(forceRefresh: true);
-  }
-
-  Future<void> _loadProfile({final bool forceRefresh = false}) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final result = await UserProfileService.getUserProfile(forceRefresh: forceRefresh);
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      final profile = result.get()!;
-      _currentUserProfile = profile;
-      _nameController.text = profile.name;
-
-      // 使用 Enum 遍歷更新數值
-      for (final type in MeasurementType.values) {
-        _measurementControllers[type]?.text =
-            profile.measurements[type]?.toString() ?? '';
-      }
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
     }
   }
 
@@ -189,143 +160,186 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
               // 表單內容
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
+                child: QueryBuilder(
+                  query: UserProfileService.userProfileQuery(),
+                  builder: (final context, final state) {
+                    if (state is QueryLoading || state is QueryInitial) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                        // 基本資料卡片
-                        _buildSectionCard(
-                          context: context,
-                          icon: Icons.person_outline_rounded,
-                          title: '基本資料',
+                    if (state is QueryError) {
+                      SchedulerBinding.instance.addPostFrameCallback((final _) {
+                        TopNotification.show(
+                          context,
+                          message: state.error,
+                          type: NotificationType.error,
+                        );
+                      });
+                    }
+
+                    final profile = state.data;
+                    if (profile != null && !_isControllersInitialized) {
+                      _currentUserProfile = profile;
+                      _nameController.text = profile.name;
+                      for (final type in MeasurementType.values) {
+                        _measurementControllers[type]?.text =
+                            profile.measurements[type]?.toString() ?? '';
+                      }
+                      _isControllersInitialized = true;
+                    }
+
+                    if (profile == null) {
+                      return const Center(child: Text('無法載入個人資料，請稍後再試'));
+                    }
+
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildTextField(
-                              controller: _nameController,
-                              label: '姓名',
+                            const SizedBox(height: 8),
+
+                            // 基本資料卡片
+                            _buildSectionCard(
+                              context: context,
                               icon: Icons.person_outline_rounded,
-                              validator: (final value) {
-                                if (value == null || value.isEmpty) {
-                                  return '請輸入姓名';
-                                }
-                                return null;
-                              },
+                              title: '基本資料',
+                              children: [
+                                _buildTextField(
+                                  controller: _nameController,
+                                  label: '姓名',
+                                  icon: Icons.person_outline_rounded,
+                                  validator: (final value) {
+                                    if (value == null || value.isEmpty) {
+                                      return '請輸入姓名';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
-                        // 身體測量卡片
-                        _buildSectionCard(
-                          context: context,
-                          icon: Icons.straighten_rounded,
-                          title: '身型資料',
-                          children: [
-                            Wrap(
-                              spacing: 12,
-                              runSpacing: 16,
-                              children: MeasurementType.values.map((final type) {
-                                return SizedBox(
-                                  // 使用 LayoutBuilder 或固定寬度來實現類似 Grid 的效果，
-                                  // 這裡簡單地除以 2 減去間距的一半，讓它一行兩個
-                                  width:
-                                      (MediaQuery.of(context).size.width - 48 - 40 - 12) /
-                                      2,
-                                  // 48(page padding) + 40(card padding) + 12(spacing)
-                                  child: _buildTextField(
-                                    controller: _measurementControllers[type]!,
-                                    label: type.label,
-                                    icon: type.icon,
-                                    keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                    validator: AppValidators.validateMeasurement,
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // 儲存按鈕
-                        Container(
-                          width: double.infinity,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            gradient: _isLoading
-                                ? LinearGradient(
-                                    colors: [
-                                      colorScheme.outline,
-                                      colorScheme.outlineVariant,
-                                    ],
-                                  )
-                                : LinearGradient(
-                                    colors: [colorScheme.primary, colorScheme.secondary],
-                                  ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: _isLoading
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color: colorScheme.primary.withValues(alpha: 0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: _isLoading ? null : _updateProfile,
-                              borderRadius: BorderRadius.circular(16),
-                              child: Center(
-                                child: _isLoading
-                                    ? SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          color: colorScheme.onPrimary,
-                                          strokeWidth: 2.5,
-                                        ),
-                                      )
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.save_rounded,
-                                            color: colorScheme.onPrimary,
-                                            size: 24,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '儲存',
-                                            style: textTheme.titleMedium?.copyWith(
-                                              color: colorScheme.onPrimary,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: 0.5,
+                            // 身體測量卡片
+                            _buildSectionCard(
+                              context: context,
+                              icon: Icons.straighten_rounded,
+                              title: '身型資料',
+                              children: [
+                                Wrap(
+                                  spacing: 12,
+                                  runSpacing: 16,
+                                  children: MeasurementType.values.map((final type) {
+                                    return SizedBox(
+                                      // 使用 LayoutBuilder 或固定寬度來實現類似 Grid 的效果，
+                                      // 這裡簡單地除以 2 減去間距的一半，讓它一行兩個
+                                      width:
+                                          (MediaQuery.of(context).size.width -
+                                              48 -
+                                              40 -
+                                              12) /
+                                          2,
+                                      // 48(page padding) + 40(card padding) + 12(spacing)
+                                      child: _buildTextField(
+                                        controller: _measurementControllers[type]!,
+                                        label: type.label,
+                                        icon: type.icon,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
                                             ),
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'^\d*\.?\d*'),
                                           ),
                                         ],
+                                        validator: AppValidators.validateMeasurement,
                                       ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // 儲存按鈕
+                            Container(
+                              width: double.infinity,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: _isLoading
+                                    ? LinearGradient(
+                                        colors: [
+                                          colorScheme.outline,
+                                          colorScheme.outlineVariant,
+                                        ],
+                                      )
+                                    : LinearGradient(
+                                        colors: [
+                                          colorScheme.primary,
+                                          colorScheme.secondary,
+                                        ],
+                                      ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: _isLoading
+                                    ? []
+                                    : [
+                                        BoxShadow(
+                                          color: colorScheme.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _isLoading ? null : _updateProfile,
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Center(
+                                    child: _isLoading
+                                        ? SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              color: colorScheme.onPrimary,
+                                              strokeWidth: 2.5,
+                                            ),
+                                          )
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.save_rounded,
+                                                color: colorScheme.onPrimary,
+                                                size: 24,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '儲存',
+                                                style: textTheme.titleMedium?.copyWith(
+                                                  color: colorScheme.onPrimary,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

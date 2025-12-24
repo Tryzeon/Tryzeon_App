@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
@@ -26,7 +27,6 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController purchaseLinkController = TextEditingController();
 
   File? selectedImage;
-  List<String> productTypes = [];
   Set<String> selectedTypes = {};
   List<Map<String, TextEditingController>> sizeControllers = [];
 
@@ -35,7 +35,6 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   void initState() {
     super.initState();
-    _loadProductTypes();
   }
 
   @override
@@ -88,23 +87,6 @@ class _AddProductPageState extends State<AddProductPage> {
         measurements: BodyMeasurements.fromJson(measurementsJson),
       );
     }).toList();
-  }
-
-  Future<void> _loadProductTypes() async {
-    final result = await ProductTypeService.getProductTypes();
-    if (!mounted) return;
-
-    if (result.isSuccess) {
-      setState(() {
-        productTypes = result.get()!;
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
   }
 
   bool _validateProductForm() {
@@ -558,67 +540,73 @@ class _AddProductPageState extends State<AddProductPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return QueryBuilder(
+      query: ProductTypeService.productTypesQuery(),
+      builder: (final context, final state) {
+        final productTypes = state.data ?? [];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              '商品類型',
-              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            Row(
+              children: [
+                Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  '商品類型',
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(width: 8),
+                Text('(可多選)', style: textTheme.bodySmall),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text('(可多選)', style: textTheme.bodySmall),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: productTypes.map((final type) {
+                  final isSelected = selectedTypes.contains(type);
+                  return FilterChip(
+                    label: Text(type),
+                    selected: isSelected,
+                    onSelected: (final selected) {
+                      setState(() {
+                        if (selected) {
+                          selectedTypes.add(type);
+                        } else {
+                          selectedTypes.remove(type);
+                        }
+                      });
+                    },
+                    backgroundColor: colorScheme.surface,
+                    selectedColor: colorScheme.primary,
+                    checkmarkColor: colorScheme.onPrimary,
+                    labelStyle: textTheme.labelLarge?.copyWith(
+                      color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.outline.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
-          ),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: productTypes.map((final type) {
-              final isSelected = selectedTypes.contains(type);
-              return FilterChip(
-                label: Text(type),
-                selected: isSelected,
-                onSelected: (final selected) {
-                  setState(() {
-                    if (selected) {
-                      selectedTypes.add(type);
-                    } else {
-                      selectedTypes.remove(type);
-                    }
-                  });
-                },
-                backgroundColor: colorScheme.surface,
-                selectedColor: colorScheme.primary,
-                checkmarkColor: colorScheme.onPrimary,
-                labelStyle: textTheme.labelLarge?.copyWith(
-                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.outline.withValues(alpha: 0.3),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

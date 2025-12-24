@@ -8,44 +8,30 @@ class UserProfileService {
   static final _supabase = Supabase.instance.client;
   static const _userProfileTable = 'user_profile';
 
-  /// 取得使用者個人資料
-  static Future<Result<UserProfile, String>> getUserProfile({
-    final bool forceRefresh = false,
-  }) async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
-        return const Err('無法獲取使用者資訊，請重新登入');
-      }
+  /// 取得使用者個人資料 Query
+  static Query<UserProfile> userProfileQuery() {
+    final user = _supabase.auth.currentUser;
+    final id = user?.id;
 
-      final query = Query<UserProfile>(
-        key: ['user_profile', user.id],
+    return Query<UserProfile>(key: ['user_profile', id], queryFn: fetchUserProfile);
+  }
 
-        queryFn: () async {
-          final response = await _supabase
-              .from(_userProfileTable)
-              .select(
-                'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
-              )
-              .eq('user_id', user.id)
-              .single();
-
-          return UserProfile.fromJson(response);
-        },
-      );
-
-      final state = forceRefresh ? await query.refetch() : await query.fetch();
-
-      if (state.error != null) {
-        AppLogger.error('個人資料取得失敗', state.error);
-        return const Err('無法取得個人資料，請稍後再試');
-      }
-
-      return Ok(state.data!);
-    } catch (e) {
-      AppLogger.error('個人資料取得失敗', e);
-      return const Err('無法取得個人資料，請稍後再試');
+  /// 取得使用者個人資料 (Internal Fetcher)
+  static Future<UserProfile> fetchUserProfile() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw '無法獲取使用者資訊，請重新登入';
     }
+
+    final response = await _supabase
+        .from(_userProfileTable)
+        .select(
+          'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
+        )
+        .eq('user_id', user.id)
+        .single();
+
+    return UserProfile.fromJson(response);
   }
 
   /// 更新使用者個人資料
@@ -59,12 +45,11 @@ class UserProfileService {
       }
 
       // 1. 取得目前資料以進行比對
-      final currentProfileResult = await getUserProfile();
-      if (!currentProfileResult.isSuccess) {
-        AppLogger.error('無法取得目前資料以進行更新比對: ${currentProfileResult.getError()}');
+      final currentProfileState = await userProfileQuery().fetch();
+      if (currentProfileState.error != null) {
         return const Err('資料同步錯誤，請重新刷新頁面');
       }
-      final original = currentProfileResult.get()!;
+      final original = currentProfileState.data!;
 
       // 2. 取得變更欄位 (直接比對傳入的 target 與 original)
       final updateData = original.getDirtyFields(target);
@@ -79,7 +64,6 @@ class UserProfileService {
       // 更新 Cache
       CachedQuery.instance.updateQuery(
         key: ['user_profile', user.id],
-
         updateFn: (final dynamic old) => target,
       );
 
