@@ -3,7 +3,7 @@ import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/pages/base_settings_page.dart';
 
 import '../../../../../../../personal/personal_entry.dart';
-import 'settings_profile_page.dart';
+import 'profile_setting_page.dart';
 
 class StoreSettingsPage extends BaseSettingsPage {
   const StoreSettingsPage({super.key});
