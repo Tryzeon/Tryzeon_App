@@ -156,7 +156,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                       SchedulerBinding.instance.addPostFrameCallback((final _) {
                         TopNotification.show(
                           context,
-                          message: state.error,
+                          message: state.error.toString(),
                           type: NotificationType.error,
                         );
                       });

@@ -171,7 +171,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                       SchedulerBinding.instance.addPostFrameCallback((final _) {
                         TopNotification.show(
                           context,
-                          message: state.error,
+                          message: state.error.toString(),
                           type: NotificationType.error,
                         );
                       });

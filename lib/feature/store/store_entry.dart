@@ -38,9 +38,11 @@ class _StoreEntryState extends State<StoreEntry> {
       _isChecking = false;
     });
 
-    if (state.error != null) {
-      TopNotification.show(context, message: state.error, type: NotificationType.error);
-    }
+    TopNotification.show(
+      context,
+      message: state.error.toString(),
+      type: NotificationType.error,
+    );
 
     if (state.data != null) {
       setState(() {
