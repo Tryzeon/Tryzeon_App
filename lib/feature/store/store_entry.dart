@@ -31,7 +31,7 @@ class _StoreEntryState extends State<StoreEntry> {
       _isChecking = true;
     });
 
-    final state = await StoreProfileService.storeProfileQuery().refetch();
+    final state = await StoreProfileService.storeProfileQuery().fetch();
     if (!mounted) return;
 
     setState(() {

@@ -18,8 +18,16 @@ Future<void> main() async {
     authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
   );
 
-  CachedQuery.instance.configFlutter(storage: await CachedStorage.ensureInitialized());
-
+  final storage = await CachedStorage.ensureInitialized();
+  CachedQuery.instance.configFlutter(
+    storage: storage,
+    config: const GlobalQueryConfig(
+      staleDuration: Duration(days: 7),
+      storageDuration: Duration(days: 30),
+      storeQuery: true,
+    ),
+  );
+  
   runApp(const Tryzeon());
 }
 

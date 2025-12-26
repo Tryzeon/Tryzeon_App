@@ -18,7 +18,16 @@ class StoreProfileService {
     final store = _supabase.auth.currentUser;
     final id = store?.id;
 
-    return Query<StoreProfile?>(key: ['store_profile', id], queryFn: fetchStoreProfile);
+    return Query<StoreProfile?>(
+      key: ['store_profile', id],
+      queryFn: fetchStoreProfile,
+      config: QueryConfig(
+        storageDeserializer: (final dynamic json) {
+          if (json == null) return null;
+          return StoreProfile.fromJson(json);
+        },
+      ),
+    );
   }
 
   /// 獲取店家資料 (Internal Fetcher)
