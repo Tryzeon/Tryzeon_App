@@ -1,5 +1,6 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
@@ -400,20 +401,29 @@ class _ShopPageState extends State<ShopPage> {
                         else
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: displayedProducts.length,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 16,
-                                    crossAxisSpacing: 16,
-                                    childAspectRatio: 0.7,
-                                  ),
-                              itemBuilder: (final context, final index) {
-                                final product = displayedProducts[index];
-                                return ProductCard(product: product);
+                            child: QueryBuilder(
+                              query: UserProfileService.userProfileQuery(),
+                              builder: (final context, final state) {
+                                final userProfile = state.data;
+                                return GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: displayedProducts.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 16,
+                                        crossAxisSpacing: 16,
+                                        childAspectRatio: 0.7,
+                                      ),
+                                  itemBuilder: (final context, final index) {
+                                    final product = displayedProducts[index];
+                                    return ProductCard(
+                                      product: product,
+                                      userProfile: userProfile,
+                                    );
+                                  },
+                                );
                               },
                             ),
                           ),

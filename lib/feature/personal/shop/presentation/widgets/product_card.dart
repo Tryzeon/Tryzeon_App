@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
@@ -11,8 +10,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/shop_service.dart';
 
 class ProductCard extends StatefulWidget {
-  const ProductCard({super.key, required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.userProfile,
+  });
+
   final Product product;
+  final UserProfile? userProfile;
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -154,10 +159,9 @@ class _ProductCardState extends State<ProductCard> {
                       child: InkWell(
                         onTap: _handleTryon,
                         borderRadius: BorderRadius.circular(20),
-                        child: QueryBuilder(
-                          query: UserProfileService.userProfileQuery(),
-                          builder: (final context, final state) {
-                            final fitLevel = _calculateFitLevel(state.data);
+                        child: Builder(
+                          builder: (final context) {
+                            final fitLevel = _calculateFitLevel(widget.userProfile);
                             final buttonColor = fitLevel == null
                                 ? colorScheme.primary
                                 : _getFitColor(fitLevel);
