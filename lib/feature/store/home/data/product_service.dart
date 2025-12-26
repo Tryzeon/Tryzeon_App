@@ -93,8 +93,22 @@ class ProductService {
         await _supabase.from(_productSizesTable).insert(sizesData);
       }
 
-      // 清除快取以確保下次獲取最新資料
-      CachedQuery.instance.invalidateCache(key: ['products', store.id]);
+      // 4. 取得完整資料並更新本地快取
+      final newProductJson = await _supabase
+          .from(_productsTable)
+          .select('*, product_sizes(*)')
+          .eq('id', productId)
+          .single();
+
+      final newProduct = Product.fromJson(Map<String, dynamic>.from(newProductJson));
+
+      CachedQuery.instance.updateQuery(
+        key: ['products', store.id],
+        updateFn: (final dynamic oldList) {
+          if (oldList == null) return [newProduct];
+          return [newProduct, ...(oldList as List<Product>)];
+        },
+      );
 
       return const Ok(null);
     } catch (e) {
@@ -117,6 +131,12 @@ class ProductService {
 
       // 1. 取得變更的欄位 (Dirty Checking)
       final updateData = original.getDirtyFields(target);
+      final sizeChanges = original.sizes.getDirtyFields(target.sizes);
+
+      // 如果完全沒有變動，直接回傳
+      if (updateData.isEmpty && newImage == null && !sizeChanges.hasChanges) {
+        return const Ok(null);
+      }
 
       // 如果有新圖片，則處理圖片上傳與舊圖刪除
       if (newImage != null) {
@@ -130,8 +150,6 @@ class ProductService {
       }
 
       // 2. 處理尺寸變更
-      final sizeChanges = original.sizes.getDirtyFields(target.sizes);
-
       if (sizeChanges.hasChanges) {
         // A. 刪除
         for (final id in sizeChanges.toDeleteIds) {
@@ -155,8 +173,26 @@ class ProductService {
         }
       }
 
-      // 清除快取以確保下次獲取最新資料
-      CachedQuery.instance.invalidateCache(key: ['products', store.id]);
+      // 3. 取得完整資料並更新本地快取
+      final updatedProductJson = await _supabase
+          .from(_productsTable)
+          .select('*, product_sizes(*)')
+          .eq('id', original.id!)
+          .single();
+
+      final updatedProduct = Product.fromJson(
+        Map<String, dynamic>.from(updatedProductJson),
+      );
+
+      CachedQuery.instance.updateQuery(
+        key: ['products', store.id],
+        updateFn: (final dynamic oldList) {
+          if (oldList == null) return [updatedProduct];
+          return (oldList as List<Product>)
+              .map((final p) => p.id == updatedProduct.id ? updatedProduct : p)
+              .toList();
+        },
+      );
 
       return const Ok(null);
     } catch (e) {
@@ -177,9 +213,17 @@ class ProductService {
       // 刪除商品資料
       await _supabase.from(_productsTable).delete().eq('id', product.id!);
 
-      // 清除快取以確保下次獲取最新資料
+      // 更新本地快取
       if (store != null) {
-        CachedQuery.instance.invalidateCache(key: ['products', store.id]);
+        CachedQuery.instance.updateQuery(
+          key: ['products', store.id],
+          updateFn: (final dynamic oldList) {
+            if (oldList == null) return [];
+            return (oldList as List<Product>)
+                .where((final p) => p.id != product.id)
+                .toList();
+          },
+        );
       }
 
       return const Ok(null);

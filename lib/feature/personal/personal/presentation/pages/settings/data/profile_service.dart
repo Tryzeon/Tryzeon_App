@@ -65,12 +65,19 @@ class UserProfileService {
         return const Ok(null);
       }
 
-      await _supabase.from(_userProfileTable).update(updateData).eq('user_id', user.id);
+      final response = await _supabase
+          .from(_userProfileTable)
+          .update(updateData)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+      final updatedProfile = UserProfile.fromJson(response);
 
       // 更新 Cache
       CachedQuery.instance.updateQuery(
         key: ['user_profile', user.id],
-        updateFn: (final dynamic old) => target,
+        updateFn: (final dynamic old) => updatedProfile,
       );
 
       return const Ok(null);

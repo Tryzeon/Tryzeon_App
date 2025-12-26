@@ -90,12 +90,20 @@ class StoreProfileService {
         return const Ok(null);
       }
 
-      await _supabase
+      final response = await _supabase
           .from(_storesProfileTable)
           .update(updateData)
-          .eq('store_id', store.id);
+          .eq('store_id', store.id)
+          .select()
+          .single();
 
-      CachedQuery.instance.invalidateCache(key: ['store_profile', store.id]);
+      final updatedProfile = StoreProfile.fromJson(response);
+
+      // 直接更新本地快取
+      CachedQuery.instance.updateQuery(
+        key: ['store_profile', store.id],
+        updateFn: (final dynamic old) => updatedProfile,
+      );
 
       return const Ok(null);
     } catch (e) {

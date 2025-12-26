@@ -63,16 +63,27 @@ class WardrobeService {
       final categoryCode = getWardrobeTypesEnglishCode(category);
       final imagePath = await _uploadWardrobeItemImage(user, image, categoryCode);
 
-      // 3. 新增 DB 記錄
-      await _supabase.from(_wardrobeTable).insert({
-        'user_id': user.id,
-        'category': category,
-        'image_path': imagePath,
-        'tags': tags,
-      });
+      // 3. 新增 DB 記錄並回傳最新資料
+      final response = await _supabase
+          .from(_wardrobeTable)
+          .insert({
+            'user_id': user.id,
+            'category': category,
+            'image_path': imagePath,
+            'tags': tags,
+          })
+          .select()
+          .single();
 
-      // 4. 清除快取以確保下次獲取最新資料
-      CachedQuery.instance.invalidateCache(key: ['wardrobe_items', user.id]);
+      // 4. 更新本地快取
+      final newItem = WardrobeItem.fromJson(response);
+      CachedQuery.instance.updateQuery(
+        key: ['wardrobe_items', user.id],
+        updateFn: (final dynamic oldList) {
+          if (oldList == null) return [newItem];
+          return [newItem, ...(oldList as List<WardrobeItem>)];
+        },
+      );
 
       return const Ok(null);
     } catch (e) {
@@ -93,9 +104,17 @@ class WardrobeService {
       // 3. 刪除本地快取的圖片
       await CacheService.deleteImage(item.imagePath);
 
-      // 4. 清除快取以確保下次獲取最新資料
+      // 4. 更新本地快取
       if (user != null) {
-        CachedQuery.instance.invalidateCache(key: ['wardrobe_items', user.id]);
+        CachedQuery.instance.updateQuery(
+          key: ['wardrobe_items', user.id],
+          updateFn: (final dynamic oldList) {
+            if (oldList == null) return [];
+            return (oldList as List<WardrobeItem>)
+                .where((final i) => i.id != item.id)
+                .toList();
+          },
+        );
       }
 
       return const Ok(null);
