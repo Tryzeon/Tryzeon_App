@@ -38,16 +38,8 @@ class _ShopPageState extends State<ShopPage> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
-  }
-
-  /// 初始化所有資料
-  Future<void> _initializeData({final bool forceRefresh = false}) async {
-    if (forceRefresh) {
-      ProductTypeService.productTypesQuery().refetch();
-    }
-    await _loadAdImages(forceRefresh: forceRefresh);
-    await _loadProducts();
+    _loadAdImages();
+    _loadProducts();
   }
 
   Future<void> _loadAdImages({final bool forceRefresh = false}) async {
@@ -284,7 +276,7 @@ class _ShopPageState extends State<ShopPage> {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => _initializeData(forceRefresh: true),
+                  onRefresh: _loadProducts,
                   color: colorScheme.primary,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
