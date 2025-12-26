@@ -90,7 +90,7 @@ class AuthService {
 
     try {
       // 清除 API 資料快取
-      CachedQuery.instance.deleteCache();
+      CachedQuery.instance.deleteCache(deleteStorage: true);
       // 清除檔案快取
       await CacheService.clearCache();
     } catch (e) {

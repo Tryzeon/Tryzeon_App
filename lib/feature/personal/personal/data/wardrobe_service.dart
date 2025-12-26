@@ -22,6 +22,12 @@ class WardrobeService {
     return Query<List<WardrobeItem>>(
       key: ['wardrobe_items', id],
       queryFn: fetchWardrobeItems,
+      config: QueryConfig(
+        storageDeserializer: (final dynamic json) {
+          if (json == null) return [];
+          return (json as List).map((final e) => WardrobeItem.fromJson(e)).toList();
+        },
+      ),
     );
   }
 

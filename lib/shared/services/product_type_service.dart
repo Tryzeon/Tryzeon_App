@@ -6,7 +6,11 @@ class ProductTypeService {
   static const _typesTable = 'product_types';
 
   static Query<List<String>> productTypesQuery() {
-    return Query<List<String>>(key: ['product_types'], queryFn: fetchProductTypes);
+    return Query<List<String>>(
+      key: ['product_types'],
+      queryFn: fetchProductTypes,
+      config: QueryConfig(storageDeserializer: (final json) => List<String>.from(json)),
+    );
   }
 
   static Future<List<String>> fetchProductTypes() async {

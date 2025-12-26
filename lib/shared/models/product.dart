@@ -114,7 +114,7 @@ class Product {
       if (purchaseClickCount != null) 'purchase_click_count': purchaseClickCount,
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
-      if (sizes != null) 'product_sizes': sizes!.map((e) => e.toJson()).toList(),
+      if (sizes != null) 'product_sizes': sizes!.map((final e) => e.toJson()).toList(),
       if (storeName != null) 'store_name': storeName,
     };
   }

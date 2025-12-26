@@ -20,7 +20,16 @@ class ProductService {
     final store = _supabase.auth.currentUser;
     final id = store?.id;
 
-    return Query<List<Product>>(key: ['products', id], queryFn: fetchProducts);
+    return Query<List<Product>>(
+      key: ['products', id],
+      queryFn: fetchProducts,
+      config: QueryConfig(
+        storageDeserializer: (final dynamic json) {
+          if (json == null) return [];
+          return (json as List).map((final e) => Product.fromJson(e)).toList();
+        },
+      ),
+    );
   }
 
   /// 獲取商品列表 (Internal Fetcher)

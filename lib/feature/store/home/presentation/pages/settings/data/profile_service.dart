@@ -22,10 +22,7 @@ class StoreProfileService {
       key: ['store_profile', id],
       queryFn: fetchStoreProfile,
       config: QueryConfig(
-        storageDeserializer: (final dynamic json) {
-          if (json == null) return null;
-          return StoreProfile.fromJson(json);
-        },
+        storageDeserializer: (final json) => StoreProfile.fromJson(json),
       ),
     );
   }

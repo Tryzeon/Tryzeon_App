@@ -27,7 +27,7 @@ Future<void> main() async {
       storeQuery: true,
     ),
   );
-  
+
   runApp(const Tryzeon());
 }
 

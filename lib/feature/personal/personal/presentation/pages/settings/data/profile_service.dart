@@ -13,7 +13,13 @@ class UserProfileService {
     final user = _supabase.auth.currentUser;
     final id = user?.id;
 
-    return Query<UserProfile>(key: ['user_profile', id], queryFn: fetchUserProfile);
+    return Query<UserProfile>(
+      key: ['user_profile', id],
+      queryFn: fetchUserProfile,
+      config: QueryConfig(
+        storageDeserializer: (final json) => UserProfile.fromJson(json),
+      ),
+    );
   }
 
   /// 取得使用者個人資料 (Internal Fetcher)
