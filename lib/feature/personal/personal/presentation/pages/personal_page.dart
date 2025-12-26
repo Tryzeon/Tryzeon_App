@@ -25,6 +25,7 @@ class _PersonalPageState extends State<PersonalPage> {
   List<String> wardrobeCategories = [];
   String selectedCategory = '全部';
   final ScrollController _categoryScrollController = ScrollController();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -49,8 +50,17 @@ class _PersonalPageState extends State<PersonalPage> {
 
     if (confirmed != true || !mounted) return;
 
+    setState(() {
+      _isLoading = true;
+    });
+
     final result = await WardrobeService.deleteWardrobeItem(item);
+
     if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (!result.isSuccess) {
       TopNotification.show(
@@ -81,206 +91,226 @@ class _PersonalPageState extends State<PersonalPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.05),
-                colorScheme.surface,
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colorScheme.surface,
+                  Color.alphaBlend(
+                    colorScheme.primary.withValues(alpha: 0.05),
+                    colorScheme.surface,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // 頂部標題區
-              Container(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    // 設定按鈕和使用者名稱
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // 頂部標題區
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
                       children: [
-                        // 使用者名稱
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 20.0),
-                            child: ShaderMask(
-                              shaderCallback: (final bounds) => LinearGradient(
-                                colors: [colorScheme.primary, colorScheme.secondary],
-                              ).createShader(bounds),
-                              child: QueryBuilder(
-                                query: UserProfileService.userProfileQuery(),
-                                builder: (final context, final state) {
-                                  final username = state.data?.name ?? '';
-                                  return Text(
-                                    '您好, $username',
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        // 設定按鈕
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainer,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (final context) =>
-                                        const PersonalSettingsPage(),
+                        // 設定按鈕和使用者名稱
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // 使用者名稱
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 20.0),
+                                child: ShaderMask(
+                                  shaderCallback: (final bounds) => LinearGradient(
+                                    colors: [colorScheme.primary, colorScheme.secondary],
+                                  ).createShader(bounds),
+                                  child: QueryBuilder(
+                                    query: UserProfileService.userProfileQuery(),
+                                    builder: (final context, final state) {
+                                      final username = state.data?.name ?? '';
+                                      return Text(
+                                        '您好, $username',
+                                        style: textTheme.headlineMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                              borderRadius: BorderRadius.circular(22),
-                              child: Icon(
-                                Icons.settings_rounded,
-                                color: colorScheme.onSurface,
-                                size: 20,
+                                ),
                               ),
                             ),
+                            // 設定按鈕
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: colorScheme.surfaceContainer,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (final context) =>
+                                            const PersonalSettingsPage(),
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(22),
+                                  child: Icon(
+                                    Icons.settings_rounded,
+                                    color: colorScheme.onSurface,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 我的衣櫃標題
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.checkroom_rounded,
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '我的衣櫃',
+                          style: textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              // 我的衣櫃標題
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Row(
-                  children: [
-                    Icon(Icons.checkroom_rounded, color: colorScheme.primary, size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      '我的衣櫃',
-                      style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 分類選單
-              _buildCategoryBar(),
-
-              // 衣櫃內容
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () => WardrobeService.wardrobeItemsQuery().refetch(),
-                  child: QueryBuilder(
-                    query: WardrobeService.wardrobeItemsQuery(),
-                    builder: (final context, final state) {
-                      if (state is QueryLoading || state is QueryInitial) {
-                        return Center(
-                          child: CircularProgressIndicator(color: colorScheme.primary),
-                        );
-                      }
-
-                      final wardrobeItem = state.data ?? [];
-
-                      final filteredWardrobeItem = selectedCategory == '全部'
-                          ? wardrobeItem
-                          : wardrobeItem
-                                .where((final item) => item.category == selectedCategory)
-                                .toList();
-
-                      if (filteredWardrobeItem.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 100,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary.withValues(alpha: 0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.checkroom_rounded,
-                                  size: 50,
-                                  color: colorScheme.primary.withValues(alpha: 0.5),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                selectedCategory == '全部' ? '衣櫃是空的' : '此類別沒有衣物',
-                                style: textTheme.titleMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '點擊右下角按鈕新增衣物',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        return GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 0.7,
-                          ),
-                          itemCount: filteredWardrobeItem.length,
-                          itemBuilder: (final context, final index) {
-                            return WardrobeItemCard(
-                              item: filteredWardrobeItem[index],
-                              onDelete: () =>
-                                  _showDeleteDialog(filteredWardrobeItem[index]),
-                            );
-                          },
-                        );
-                      }
-                    },
                   ),
-                ),
+
+                  // 分類選單
+                  _buildCategoryBar(),
+
+                  // 衣櫃內容
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => WardrobeService.wardrobeItemsQuery().refetch(),
+                      child: QueryBuilder(
+                        query: WardrobeService.wardrobeItemsQuery(),
+                        builder: (final context, final state) {
+                          if (state is QueryLoading || state is QueryInitial) {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: colorScheme.primary,
+                              ),
+                            );
+                          }
+
+                          final wardrobeItem = state.data ?? [];
+
+                          final filteredWardrobeItem = selectedCategory == '全部'
+                              ? wardrobeItem
+                              : wardrobeItem
+                                    .where(
+                                      (final item) => item.category == selectedCategory,
+                                    )
+                                    .toList();
+
+                          if (filteredWardrobeItem.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.primary.withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.checkroom_rounded,
+                                      size: 50,
+                                      color: colorScheme.primary.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    selectedCategory == '全部' ? '衣櫃是空的' : '此類別沒有衣物',
+                                    style: textTheme.titleMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '點擊右下角按鈕新增衣物',
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            return GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    childAspectRatio: 0.7,
+                                  ),
+                              itemCount: filteredWardrobeItem.length,
+                              itemBuilder: (final context, final index) {
+                                return WardrobeItemCard(
+                                  item: filteredWardrobeItem[index],
+                                  onDelete: () =>
+                                      _showDeleteDialog(filteredWardrobeItem[index]),
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withValues(alpha: 0.3),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 60),

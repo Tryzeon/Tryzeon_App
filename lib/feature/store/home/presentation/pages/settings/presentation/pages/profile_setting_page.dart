@@ -23,6 +23,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   final TextEditingController storeNameController = TextEditingController();
   final TextEditingController storeAddressController = TextEditingController();
   bool _isControllersInitialized = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -43,6 +44,10 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     final targetProfile = _storeProfile!.copyWith(
       name: storeNameController.text.trim(),
       address: storeAddressController.text.trim(),
@@ -54,6 +59,10 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     );
 
     if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (result.isSuccess) {
       Navigator.pop(context, true);
@@ -456,42 +465,65 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                               width: double.infinity,
                               height: 56,
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [colorScheme.primary, colorScheme.secondary],
-                                ),
+                                gradient: _isLoading
+                                    ? null
+                                    : LinearGradient(
+                                        colors: [
+                                          colorScheme.primary,
+                                          colorScheme.secondary,
+                                        ],
+                                      ),
+                                color: _isLoading
+                                    ? colorScheme.surfaceContainerHighest
+                                    : null,
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colorScheme.primary.withValues(alpha: 0.3),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
+                                boxShadow: _isLoading
+                                    ? null
+                                    : [
+                                        BoxShadow(
+                                          color: colorScheme.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
                               ),
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: _updateProfile,
+                                  onTap: _isLoading ? null : _updateProfile,
                                   borderRadius: BorderRadius.circular(16),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.save_rounded,
-                                        color: colorScheme.onPrimary,
-                                        size: 24,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '儲存',
-                                        style: textTheme.titleMedium?.copyWith(
-                                          color: colorScheme.onPrimary,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
+                                  child: Center(
+                                    child: _isLoading
+                                        ? SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: colorScheme.primary,
+                                            ),
+                                          )
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.save_rounded,
+                                                color: colorScheme.onPrimary,
+                                                size: 24,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '儲存',
+                                                style: textTheme.titleMedium?.copyWith(
+                                                  color: colorScheme.onPrimary,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                   ),
                                 ),
                               ),
