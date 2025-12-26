@@ -22,8 +22,8 @@ Future<void> main() async {
   CachedQuery.instance.configFlutter(
     storage: storage,
     config: const GlobalQueryConfig(
-      staleDuration: Duration(days: 7),
-      storageDuration: Duration(days: 30),
+      staleDuration: Duration(days: 30),
+      storageDuration: Duration(days: 60),
       storeQuery: true,
     ),
   );
