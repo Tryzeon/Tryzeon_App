@@ -145,63 +145,57 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
               // 內容區域
               Expanded(
-                child: AppQueryBuilder<List<Product>>(
-                  query: ProductService.productsQuery(),
-                  builder: (final context, final data) {
-                    final products = ProductService.sortProducts(
-                      data,
-                      _sortBy,
-                      _ascending,
-                    );
-
-                    return RefreshIndicator(
-                      onRefresh: () => ProductService.productsQuery().refetch(),
-                      color: colorScheme.primary,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
-                            // 我的商品標題
-                            Row(
-                              children: [
-                                Container(
-                                  width: 4,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        colorScheme.primary,
-                                        colorScheme.secondary,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text('我的商品', style: textTheme.titleLarge),
-                                const Spacer(),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.sort_rounded,
-                                      color: colorScheme.primary,
-                                    ),
-                                    onPressed: _showSortOptions,
-                                    tooltip: '排序',
-                                  ),
-                                ),
-                              ],
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      // 我的商品標題
+                      Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [colorScheme.primary, colorScheme.secondary],
+                              ),
+                              borderRadius: BorderRadius.circular(2),
                             ),
-                            const SizedBox(height: 16),
-                            Expanded(
+                          ),
+                          const SizedBox(width: 12),
+                          Text('我的商品', style: textTheme.titleLarge),
+                          const Spacer(),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.sort_rounded, color: colorScheme.primary),
+                              onPressed: _showSortOptions,
+                              tooltip: '排序',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: AppQueryBuilder<List<Product>>(
+                          query: ProductService.productsQuery(),
+                          builder: (final context, final data) {
+                            final products = ProductService.sortProducts(
+                              data,
+                              _sortBy,
+                              _ascending,
+                            );
+
+                            return RefreshIndicator(
+                              onRefresh: () => ProductService.productsQuery().refetch(),
+                              color: colorScheme.primary,
                               child: products.isEmpty
                                   ? Center(
                                       child: Column(
@@ -260,12 +254,12 @@ class _StoreHomePageState extends State<StoreHomePage> {
                                         return StoreProductCard(product: product);
                                       },
                                     ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
               ),
             ],

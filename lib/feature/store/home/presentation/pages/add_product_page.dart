@@ -540,27 +540,27 @@ class _AddProductPageState extends State<AddProductPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return AppQueryBuilder<List<String>>(
-      query: ProductTypeService.productTypesQuery(),
-      isCompact: true,
-      builder: (final context, final productTypes) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  '商品類型',
-                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(width: 8),
-                Text('(可多選)', style: textTheme.bodySmall),
-              ],
+            Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              '商品類型',
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 12),
-            Container(
+            const SizedBox(width: 8),
+            Text('(可多選)', style: textTheme.bodySmall),
+          ],
+        ),
+        const SizedBox(height: 12),
+        AppQueryBuilder<List<String>>(
+          query: ProductTypeService.productTypesQuery(),
+          isCompact: true,
+          builder: (final context, final productTypes) {
+            return Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -603,10 +603,10 @@ class _AddProductPageState extends State<AddProductPage> {
                   );
                 }).toList(),
               ),
-            ),
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ],
     );
   }
 
