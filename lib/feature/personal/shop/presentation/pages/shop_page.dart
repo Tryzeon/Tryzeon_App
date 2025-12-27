@@ -1,9 +1,9 @@
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
+import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -25,6 +25,7 @@ class _ShopPageState extends State<ShopPage> {
   List<String> adImages = [];
   List<Product> displayedProducts = [];
   bool isLoading = true;
+  UserProfile? _userProfile;
 
   // 過濾和排序狀態
   String _sortBy = 'tryon_count';
@@ -41,6 +42,15 @@ class _ShopPageState extends State<ShopPage> {
     super.initState();
     _loadAdImages();
     _loadProducts();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final state = await UserProfileService.userProfileQuery().fetch();
+    if (!mounted) return;
+    setState(() {
+      _userProfile = state.data;
+    });
   }
 
   Future<void> _loadAdImages({final bool forceRefresh = false}) async {
@@ -303,10 +313,10 @@ class _ShopPageState extends State<ShopPage> {
                         const SizedBox(height: 24),
 
                         // 商品類型篩選標籤
-                        QueryBuilder(
+                        AppQueryBuilder<List<String>>(
                           query: ProductTypeService.productTypesQuery(),
-                          builder: (final context, final state) {
-                            final types = state.data ?? [];
+                          isCompact: true,
+                          builder: (final context, final types) {
                             return ProductTypeFilter(
                               productTypes: types,
                               selectedTypes: _selectedTypes,
@@ -401,28 +411,22 @@ class _ShopPageState extends State<ShopPage> {
                         else
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: QueryBuilder(
-                              query: UserProfileService.userProfileQuery(),
-                              builder: (final context, final state) {
-                                final userProfile = state.data;
-                                return GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: displayedProducts.length,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        mainAxisSpacing: 16,
-                                        crossAxisSpacing: 16,
-                                        childAspectRatio: 0.7,
-                                      ),
-                                  itemBuilder: (final context, final index) {
-                                    final product = displayedProducts[index];
-                                    return ProductCard(
-                                      product: product,
-                                      userProfile: userProfile,
-                                    );
-                                  },
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: displayedProducts.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 16,
+                                    crossAxisSpacing: 16,
+                                    childAspectRatio: 0.7,
+                                  ),
+                              itemBuilder: (final context, final index) {
+                                final product = displayedProducts[index];
+                                return ProductCard(
+                                  product: product,
+                                  userProfile: _userProfile,
                                 );
                               },
                             ),

@@ -48,7 +48,6 @@ class _StoreEntryState extends State<StoreEntry> {
     });
   }
 
-
   @override
   Widget build(final BuildContext context) {
     if (_isChecking) {

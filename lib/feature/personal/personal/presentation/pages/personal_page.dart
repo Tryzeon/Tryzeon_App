@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -216,19 +217,9 @@ class _PersonalPageState extends State<PersonalPage> {
                   Expanded(
                     child: RefreshIndicator(
                       onRefresh: () => WardrobeService.wardrobeItemsQuery().refetch(),
-                      child: QueryBuilder(
+                      child: AppQueryBuilder<List<WardrobeItem>>(
                         query: WardrobeService.wardrobeItemsQuery(),
-                        builder: (final context, final state) {
-                          if (state is QueryLoading || state is QueryInitial) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: colorScheme.primary,
-                              ),
-                            );
-                          }
-
-                          final wardrobeItem = state.data ?? [];
-
+                        builder: (final context, final wardrobeItem) {
                           final filteredWardrobeItem = selectedCategory == '全部'
                               ? wardrobeItem
                               : wardrobeItem

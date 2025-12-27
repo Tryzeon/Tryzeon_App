@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -169,32 +169,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
               // 內容
               Expanded(
-                child: QueryBuilder(
+                child: AppQueryBuilder<StoreProfile?>(
                   query: StoreProfileService.storeProfileQuery(),
-                  builder: (final context, final state) {
-                    if (state is QueryLoading || state is QueryInitial) {
-                      return Center(
-                        child: CircularProgressIndicator(color: colorScheme.primary),
-                      );
-                    }
-
-                    if (state is QueryError) {
-                      SchedulerBinding.instance.addPostFrameCallback((final _) {
-                        TopNotification.show(
-                          context,
-                          message: state.error.toString(),
-                          type: NotificationType.error,
-                        );
-                      });
-                    }
-
-                    final profile = state.data;
-                    if (profile == null) {
-                      return const Center(child: Text('無法載入店家資料，請稍後再試'));
-                    }
-
+                  builder: (final context, final profile) {
                     // Initialize controllers only once
-                    if (!_isControllersInitialized) {
+                    if (!_isControllersInitialized && profile != null) {
                       _storeProfile = profile;
                       storeNameController.text = profile.name;
                       storeAddressController.text = profile.address;
@@ -263,7 +242,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                               ),
                                             )
                                           : FutureBuilder(
-                                              future: profile.loadLogo(),
+                                              future: profile!.loadLogo(),
                                               builder: (final context, final snapshot) {
                                                 if (snapshot.connectionState ==
                                                     ConnectionState.waiting) {
@@ -274,33 +253,36 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
 
                                                 final result = snapshot.data!;
                                                 if (result.isFailure) {
-                                                  SchedulerBinding.instance.addPostFrameCallback((final _) {
-                                                    TopNotification.show(
-                                                      context,
-                                                      message: result.getError()!,
-                                                      type: NotificationType.error,
-                                                    );
-                                                  });
+                                                  SchedulerBinding.instance
+                                                      .addPostFrameCallback((final _) {
+                                                        TopNotification.show(
+                                                          context,
+                                                          message: result.getError()!,
+                                                          type: NotificationType.error,
+                                                        );
+                                                      });
                                                 }
 
                                                 if (result.get() != null) {
                                                   return ClipRRect(
-                                                    borderRadius: BorderRadius.circular(60),
+                                                    borderRadius: BorderRadius.circular(
+                                                      60,
+                                                    ),
                                                     child: Image.file(
                                                       result.get()!,
                                                       fit: BoxFit.cover,
                                                       errorBuilder:
-                                                        (
-                                                          final context,
-                                                          final error,
-                                                          final stackTrace,
-                                                        ) {
-                                                          return Icon(
-                                                            Icons.error_rounded,
-                                                            size: 50,
-                                                            color: colorScheme.primary,
-                                                          );
-                                                        },
+                                                          (
+                                                            final context,
+                                                            final error,
+                                                            final stackTrace,
+                                                          ) {
+                                                            return Icon(
+                                                              Icons.error_rounded,
+                                                              size: 50,
+                                                              color: colorScheme.primary,
+                                                            );
+                                                          },
                                                     ),
                                                   );
                                                 }

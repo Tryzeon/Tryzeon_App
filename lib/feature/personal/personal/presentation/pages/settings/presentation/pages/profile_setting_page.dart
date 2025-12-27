@@ -1,9 +1,8 @@
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
+import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -163,25 +162,10 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
 
               // 表單內容
               Expanded(
-                child: QueryBuilder(
+                child: AppQueryBuilder<UserProfile>(
                   query: UserProfileService.userProfileQuery(),
-                  builder: (final context, final state) {
-                    if (state is QueryLoading || state is QueryInitial) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (state is QueryError) {
-                      SchedulerBinding.instance.addPostFrameCallback((final _) {
-                        TopNotification.show(
-                          context,
-                          message: state.error.toString(),
-                          type: NotificationType.error,
-                        );
-                      });
-                    }
-
-                    final profile = state.data;
-                    if (profile != null && !_isControllersInitialized) {
+                  builder: (final context, final profile) {
+                    if (!_isControllersInitialized) {
                       _currentUserProfile = profile;
                       _nameController.text = profile.name;
                       for (final type in MeasurementType.values) {
@@ -189,10 +173,6 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                             profile.measurements[type]?.toString() ?? '';
                       }
                       _isControllersInitialized = true;
-                    }
-
-                    if (profile == null) {
-                      return const Center(child: Text('無法載入個人資料，請稍後再試'));
                     }
 
                     return SingleChildScrollView(

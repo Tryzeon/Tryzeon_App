@@ -1,7 +1,8 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:tryzeon/shared/models/product.dart';
+import 'package:tryzeon/shared/widgets/app_query_builder.dart';
+
 import '../../data/product_service.dart';
 import '../dialogs/sort_dialog.dart';
 import '../widgets/product_card.dart';
@@ -144,26 +145,11 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
               // 內容區域
               Expanded(
-                child: QueryBuilder(
+                child: AppQueryBuilder<List<Product>>(
                   query: ProductService.productsQuery(),
-                  builder: (final context, final state) {
-                    if (state is QueryLoading || state is QueryInitial) {
-                      return Center(
-                        child: CircularProgressIndicator(color: colorScheme.primary),
-                      );
-                    }
-                    if (state is QueryError) {
-                      SchedulerBinding.instance.addPostFrameCallback((final _) {
-                        TopNotification.show(
-                          context,
-                          message: state.error.toString(),
-                          type: NotificationType.error,
-                        );
-                      });
-                    }
-
+                  builder: (final context, final data) {
                     final products = ProductService.sortProducts(
-                      state.data ?? [],
+                      data,
                       _sortBy,
                       _ascending,
                     );

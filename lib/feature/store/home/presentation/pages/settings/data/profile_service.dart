@@ -86,9 +86,7 @@ class StoreProfileService {
           .single();
 
       // 成功上傳新圖並更新 DB 後，才非同步清理舊圖
-      if (logo != null &&
-          original.logoPath != null &&
-          original.logoPath!.isNotEmpty) {
+      if (logo != null && original.logoPath != null && original.logoPath!.isNotEmpty) {
         _deleteLogo(original.logoPath!).ignore();
       }
 

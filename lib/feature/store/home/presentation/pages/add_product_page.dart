@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
+import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -540,10 +540,10 @@ class _AddProductPageState extends State<AddProductPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return QueryBuilder(
+    return AppQueryBuilder<List<String>>(
       query: ProductTypeService.productTypesQuery(),
-      builder: (final context, final state) {
-        final productTypes = state.data ?? [];
+      isCompact: true,
+      builder: (final context, final productTypes) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
