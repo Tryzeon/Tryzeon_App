@@ -4,8 +4,6 @@ import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
-import 'package:typed_result/typed_result.dart';
 
 import '../../data/shop_service.dart';
 import '../dialogs/filter_dialog.dart';
@@ -23,8 +21,6 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   List<String> adImages = [];
-  List<Product> displayedProducts = [];
-  bool isLoading = true;
   UserProfile? _userProfile;
 
   // 過濾和排序狀態
@@ -41,7 +37,6 @@ class _ShopPageState extends State<ShopPage> {
   void initState() {
     super.initState();
     _loadAdImages();
-    _loadProducts();
     _loadUserProfile();
   }
 
@@ -62,44 +57,12 @@ class _ShopPageState extends State<ShopPage> {
     });
   }
 
-  Future<void> _loadProducts() async {
-    if (mounted) {
-      setState(() => isLoading = true);
-    }
-
-    final result = await ShopService.getProducts(
-      searchQuery: _searchQuery,
-      sortBy: _sortBy,
-      ascending: _ascending,
-      minPrice: _minPrice,
-      maxPrice: _maxPrice,
-      types: _selectedTypes.isEmpty ? null : _selectedTypes,
-    );
-
-    if (!mounted) return;
-
-    if (result.isSuccess) {
-      setState(() {
-        displayedProducts = result.get()!;
-        isLoading = false;
-      });
-    } else {
-      setState(() => isLoading = false);
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
   void _handleSortByTryonCount() {
     if (_sortBy == 'tryon_count') return;
     setState(() {
       _sortBy = 'tryon_count';
       _ascending = false;
     });
-    _loadProducts();
   }
 
   void _handleSortByPrice() {
@@ -107,7 +70,6 @@ class _ShopPageState extends State<ShopPage> {
       _sortBy = 'price';
       _ascending = !_ascending;
     });
-    _loadProducts();
   }
 
   void _handleShowFilterDialog() {
@@ -120,7 +82,6 @@ class _ShopPageState extends State<ShopPage> {
           _minPrice = minPrice;
           _maxPrice = maxPrice;
         });
-        _loadProducts();
       },
     );
   }
@@ -220,6 +181,15 @@ class _ShopPageState extends State<ShopPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final productsQuery = ShopService.productsQuery(
+      searchQuery: _searchQuery,
+      sortBy: _sortBy,
+      ascending: _ascending,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice,
+      types: _selectedTypes,
+    );
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -287,7 +257,7 @@ class _ShopPageState extends State<ShopPage> {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _loadProducts,
+                  onRefresh: productsQuery.fetch,
                   color: colorScheme.primary,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -298,9 +268,8 @@ class _ShopPageState extends State<ShopPage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: ShopSearchBar(
-                            onSearch: (final query) {
+                            onSearch: (final query) async {
                               setState(() => _searchQuery = query.isEmpty ? null : query);
-                              return _loadProducts();
                             },
                           ),
                         ),
@@ -326,7 +295,6 @@ class _ShopPageState extends State<ShopPage> {
                                       ? _selectedTypes.remove(type)
                                       : _selectedTypes.add(type),
                                 );
-                                _loadProducts();
                               },
                             );
                           },
@@ -376,61 +344,57 @@ class _ShopPageState extends State<ShopPage> {
                         const SizedBox(height: 16),
 
                         // 商品 Grid（可滾動）
-                        if (isLoading)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(48.0),
-                              child: CircularProgressIndicator(
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          )
-                        else if (displayedProducts.isEmpty)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(48.0),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.shopping_bag_outlined,
-                                    size: 64,
-                                    color: colorScheme.outlineVariant,
+                        AppQueryBuilder<List<Product>>(
+                          query: productsQuery,
+                          builder: (final context, final displayedProducts) {
+                            if (displayedProducts.isEmpty) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(48.0),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.shopping_bag_outlined,
+                                        size: 64,
+                                        color: colorScheme.outlineVariant,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        '目前沒有商品符合搜尋條件',
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          fontSize: 16,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    '目前沒有商品符合搜尋條件',
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontSize: 16,
-                                      color: colorScheme.onSurfaceVariant,
+                                ),
+                              );
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: displayedProducts.length,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 16,
+                                      crossAxisSpacing: 16,
+                                      childAspectRatio: 0.7,
                                     ),
-                                  ),
-                                ],
+                                itemBuilder: (final context, final index) {
+                                  final product = displayedProducts[index];
+                                  return ProductCard(
+                                    product: product,
+                                    userProfile: _userProfile,
+                                  );
+                                },
                               ),
-                            ),
-                          )
-                        else
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: displayedProducts.length,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 16,
-                                    crossAxisSpacing: 16,
-                                    childAspectRatio: 0.7,
-                                  ),
-                              itemBuilder: (final context, final index) {
-                                final product = displayedProducts[index];
-                                return ProductCard(
-                                  product: product,
-                                  userProfile: _userProfile,
-                                );
-                              },
-                            ),
-                          ),
+                            );
+                          },
+                        ),
 
                         const SizedBox(height: 32),
                       ],

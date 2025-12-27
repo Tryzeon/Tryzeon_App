@@ -1,14 +1,47 @@
+import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
-import 'package:typed_result/typed_result.dart';
 
 class ShopService {
   static final _supabase = Supabase.instance.client;
   static const _productsTable = 'products';
 
+  static Query<List<Product>> productsQuery({
+    final String? searchQuery,
+    final String sortBy = 'created_at',
+    final bool ascending = false,
+    final int? minPrice,
+    final int? maxPrice,
+    final Set<String>? types,
+  }) {
+    return Query<List<Product>>(
+      key: [
+        'products',
+        searchQuery,
+        sortBy,
+        ascending,
+        minPrice,
+        maxPrice,
+        if (types != null) ...(types.toList()..sort()),
+      ],
+      config: const QueryConfig(
+        staleDuration: Duration(seconds: 10),
+        storeQuery: false,
+      ),
+      queryFn: () => getProducts(
+        searchQuery: searchQuery,
+        sortBy: sortBy,
+        ascending: ascending,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        types: types,
+      ),
+    );
+  }
+
   /// 獲取所有商品（包含店家資訊）
-  static Future<Result<List<Product>, String>> getProducts({
+  static Future<List<Product>> getProducts({
     final String? searchQuery,
     final String sortBy = 'created_at',
     final bool ascending = false,
@@ -48,14 +81,12 @@ class ShopService {
       // 排序
       final response = await query.order(sortBy, ascending: ascending);
 
-      final searchResult = (response as List)
+      return (response as List)
           .map((final item) => Product.fromJson(item))
           .toList();
-
-      return Ok(searchResult);
     } catch (e) {
       AppLogger.error('商品列表獲取失敗', e);
-      return const Err('無法取得商品列表，請稍後再試');
+      throw '無法取得商品列表，請稍後再試';
     }
   }
 
