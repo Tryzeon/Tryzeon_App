@@ -18,7 +18,7 @@ class StoreProfileSettingsPage extends StatefulWidget {
 
 class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
   final _formKey = GlobalKey<FormState>();
-  File? _logoImage;
+  File? _newLogoImage;
   StoreProfile? _storeProfile;
   final TextEditingController storeNameController = TextEditingController();
   final TextEditingController storeAddressController = TextEditingController();
@@ -56,7 +56,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     final result = await StoreProfileService.updateStoreProfile(
       original: _storeProfile!,
       target: targetProfile,
-      logo: _logoImage,
+      logo: _newLogoImage,
     );
 
     if (!mounted) return;
@@ -82,7 +82,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     if (image == null) return;
 
     setState(() {
-      _logoImage = image;
+      _newLogoImage = image;
     });
   }
 
@@ -254,11 +254,11 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                           width: 2,
                                         ),
                                       ),
-                                      child: _logoImage != null
+                                      child: _newLogoImage != null
                                           ? ClipRRect(
                                               borderRadius: BorderRadius.circular(60),
                                               child: Image.file(
-                                                _logoImage!,
+                                                _newLogoImage!,
                                                 fit: BoxFit.cover,
                                               ),
                                             )
@@ -272,35 +272,35 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                                   );
                                                 }
 
-                                                final result = snapshot.data;
-                                                if (result == null || !result.isSuccess) {
-                                                  return Icon(
-                                                    Icons.camera_alt_rounded,
-                                                    size: 50,
-                                                    color: colorScheme.primary,
-                                                  );
+                                                final result = snapshot.data!;
+                                                if (result.isFailure) {
+                                                  SchedulerBinding.instance.addPostFrameCallback((final _) {
+                                                    TopNotification.show(
+                                                      context,
+                                                      message: result.getError()!,
+                                                      type: NotificationType.error,
+                                                    );
+                                                  });
                                                 }
 
                                                 if (result.get() != null) {
                                                   return ClipRRect(
-                                                    borderRadius: BorderRadius.circular(
-                                                      60,
-                                                    ),
+                                                    borderRadius: BorderRadius.circular(60),
                                                     child: Image.file(
                                                       result.get()!,
                                                       fit: BoxFit.cover,
                                                       errorBuilder:
-                                                          (
-                                                            final context,
-                                                            final error,
-                                                            final stackTrace,
-                                                          ) {
-                                                            return Icon(
-                                                              Icons.store_rounded,
-                                                              size: 50,
-                                                              color: colorScheme.primary,
-                                                            );
-                                                          },
+                                                        (
+                                                          final context,
+                                                          final error,
+                                                          final stackTrace,
+                                                        ) {
+                                                          return Icon(
+                                                            Icons.error_rounded,
+                                                            size: 50,
+                                                            color: colorScheme.primary,
+                                                          );
+                                                        },
                                                     ),
                                                   );
                                                 }
