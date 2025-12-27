@@ -1,5 +1,6 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ProductTypeService {
   static final _supabase = Supabase.instance.client;
@@ -14,11 +15,16 @@ class ProductTypeService {
   }
 
   static Future<List<String>> fetchProductTypes() async {
-    final response = await _supabase
-        .from(_typesTable)
-        .select('name_zh')
-        .order('priority', ascending: true);
+    try {
+      final response = await _supabase
+          .from(_typesTable)
+          .select('name_zh')
+          .order('priority', ascending: true);
 
-    return (response as List).map((final item) => item['name_zh'] as String).toList();
+      return (response as List).map((final item) => item['name_zh'] as String).toList();
+    } catch (e) {
+      AppLogger.error('商品類型獲取失敗', e);
+      throw '無法載入商品類型，請檢查網路連線';
+    }
   }
 }

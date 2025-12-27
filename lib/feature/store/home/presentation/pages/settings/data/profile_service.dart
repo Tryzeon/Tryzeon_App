@@ -29,21 +29,27 @@ class StoreProfileService {
 
   /// 獲取店家資料 (Internal Fetcher)
   static Future<StoreProfile?> fetchStoreProfile() async {
-    final store = _supabase.auth.currentUser;
-    if (store == null) {
-      throw '無法獲取使用者資訊，請重新登入';
-    }
+    try {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
+        throw '無法獲取使用者資訊，請重新登入';
+      }
 
-    final response = await _supabase
-        .from(_storesProfileTable)
-        .select('store_id, name, address, logo_path')
-        .eq('store_id', store.id)
-        .maybeSingle();
+      final response = await _supabase
+          .from(_storesProfileTable)
+          .select('store_id, name, address, logo_path')
+          .eq('store_id', store.id)
+          .maybeSingle();
 
-    if (response == null) {
-      return null;
+      if (response == null) {
+        return null;
+      }
+      return StoreProfile.fromJson(response);
+    } catch (e) {
+      if (e is String) rethrow;
+      AppLogger.error('店家資料獲取失敗', e);
+      throw '無法載入店家資料，請檢查網路連線';
     }
-    return StoreProfile.fromJson(response);
   }
 
   /// 獲取店家名稱

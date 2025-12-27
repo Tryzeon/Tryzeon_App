@@ -34,20 +34,26 @@ class ProductService {
 
   /// 獲取商品列表 (Internal Fetcher)
   static Future<List<Product>> fetchProducts() async {
-    final store = _supabase.auth.currentUser;
-    if (store == null) {
-      throw '無法獲取使用者資訊，請重新登入';
+    try {
+      final store = _supabase.auth.currentUser;
+      if (store == null) {
+        throw '無法獲取使用者資訊，請重新登入';
+      }
+
+      final response = await _supabase
+          .from(_productsTable)
+          .select('*, product_sizes(*)')
+          .eq('store_id', store.id);
+
+      return response
+          .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
+          .toList()
+          .cast<Product>();
+    } catch (e) {
+      if (e is String) rethrow;
+      AppLogger.error('商品列表獲取失敗', e);
+      throw '無法載入商品列表，請檢查網路連線';
     }
-
-    final response = await _supabase
-        .from(_productsTable)
-        .select('*, product_sizes(*)')
-        .eq('store_id', store.id);
-
-    return response
-        .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
-        .toList()
-        .cast<Product>();
   }
 
   /// 創建新商品

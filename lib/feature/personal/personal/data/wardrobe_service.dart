@@ -32,21 +32,27 @@ class WardrobeService {
   }
 
   static Future<List<WardrobeItem>> fetchWardrobeItems() async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) {
-      throw '無法獲取使用者資訊，請重新登入';
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw '無法獲取使用者資訊，請重新登入';
+      }
+
+      final response = await _supabase
+          .from(_wardrobeTable)
+          .select('id, image_path, category, tags')
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
+
+      return (response as List)
+          .map((final json) => WardrobeItem.fromJson(json))
+          .toList()
+          .cast<WardrobeItem>();
+    } catch (e) {
+      if (e is String) rethrow;
+      AppLogger.error('衣櫃列表獲取失敗', e);
+      throw '無法載入衣櫃列表，請檢查網路連線';
     }
-
-    final response = await _supabase
-        .from(_wardrobeTable)
-        .select('id, image_path, category, tags')
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false);
-
-    return (response as List)
-        .map((final json) => WardrobeItem.fromJson(json))
-        .toList()
-        .cast<WardrobeItem>();
   }
 
   static Future<Result<void, String>> createWardrobeItem(

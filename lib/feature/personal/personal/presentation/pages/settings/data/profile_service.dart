@@ -24,20 +24,26 @@ class UserProfileService {
 
   /// 取得使用者個人資料 (Internal Fetcher)
   static Future<UserProfile> fetchUserProfile() async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) {
-      throw '無法獲取使用者資訊，請重新登入';
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw '無法獲取使用者資訊，請重新登入';
+      }
+
+      final response = await _supabase
+          .from(_userProfileTable)
+          .select(
+            'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
+          )
+          .eq('user_id', user.id)
+          .single();
+
+      return UserProfile.fromJson(response);
+    } catch (e) {
+      if (e is String) rethrow;
+      AppLogger.error('個人資料獲取失敗', e);
+      throw '無法載入個人資料，請檢查網路連線';
     }
-
-    final response = await _supabase
-        .from(_userProfileTable)
-        .select(
-          'user_id, name, height, weight, chest, waist, hips, shoulder_width, sleeve_length',
-        )
-        .eq('user_id', user.id)
-        .single();
-
-    return UserProfile.fromJson(response);
   }
 
   /// 更新使用者個人資料
