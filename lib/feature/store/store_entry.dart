@@ -34,22 +34,20 @@ class _StoreEntryState extends State<StoreEntry> {
     final state = await StoreProfileService.storeProfileQuery().fetch();
     if (!mounted) return;
 
+    if (state.error != null) {
+      TopNotification.show(
+        context,
+        message: state.error.toString(),
+        type: NotificationType.error,
+      );
+    }
+
     setState(() {
+      _needsOnboarding = (state.data == null);
       _isChecking = false;
     });
-
-    TopNotification.show(
-      context,
-      message: state.error.toString(),
-      type: NotificationType.error,
-    );
-
-    if (state.data != null) {
-      setState(() {
-        _needsOnboarding = false;
-      });
-    }
   }
+
 
   @override
   Widget build(final BuildContext context) {
