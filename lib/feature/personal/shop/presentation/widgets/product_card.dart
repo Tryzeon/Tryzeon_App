@@ -10,11 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/shop_service.dart';
 
 class ProductCard extends StatefulWidget {
-  const ProductCard({
-    super.key,
-    required this.product,
-    this.userProfile,
-  });
+  const ProductCard({super.key, required this.product, this.userProfile});
 
   final Product product;
   final UserProfile? userProfile;
@@ -86,8 +82,8 @@ class _ProductCardState extends State<ProductCard> {
 
   Future<void> _handleTryon() async {
     final product = widget.product;
-    // 記錄虛擬試穿點擊次數（不等待結果）
-    ShopService.incrementTryonCount(product.id!);
+    // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
+    ShopService.incrementTryonCount(product.id!).ignore();
 
     final personalEntry = PersonalEntry.of(context);
     await personalEntry?.tryOnFromStorage(product.imagePath);
@@ -109,8 +105,8 @@ class _ProductCardState extends State<ProductCard> {
       return;
     }
 
-    // 記錄購買連結點擊次數（不等待結果）
-    ShopService.incrementPurchaseClickCount(product.id!);
+    // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
+    ShopService.incrementPurchaseClickCount(product.id!).ignore();
     await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 

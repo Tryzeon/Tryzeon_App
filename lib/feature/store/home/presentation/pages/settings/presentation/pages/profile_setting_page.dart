@@ -54,6 +54,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
     );
 
     final result = await StoreProfileService.updateStoreProfile(
+      original: _storeProfile!,
       target: targetProfile,
       logo: _logoImage,
     );

@@ -54,6 +54,7 @@ class StoreProfileService {
 
   /// 更新店家資料
   static Future<Result<void, String>> updateStoreProfile({
+    required final StoreProfile original,
     required final StoreProfile target,
     final File? logo,
   }) async {
@@ -63,23 +64,15 @@ class StoreProfileService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      // 1. 取得目前資料以進行比對
-      final currentProfileState = await storeProfileQuery().fetch();
-      if (currentProfileState.error != null) {
-        return const Err('資料同步錯誤，請重新刷新頁面');
-      }
-      final original = currentProfileState.data;
-
-      if (original == null) {
-        // Should not happen if store exists, but handle creation logic if needed or error
-        return const Err('無法找到店家資料');
-      }
-
-      // 2. 處理 Logo 上傳 (這裡會更新 target 的 logoPath)
       StoreProfile finalTarget = target;
       if (logo != null) {
         final newLogoPath = await _uploadLogo(store, logo);
         finalTarget = target.copyWith(logoPath: newLogoPath);
+
+        // 成功上傳新圖後，非同步清理舊圖
+        if (original.logoPath != null && original.logoPath!.isNotEmpty) {
+          _deleteLogo(original.logoPath!).ignore();
+        }
       }
 
       // 3. 取得變更欄位
@@ -113,27 +106,18 @@ class StoreProfileService {
   }
 
   /// 獲取店家 Logo
-  static Future<Result<File?, String>> _getLogo() async {
+  static Future<Result<File, String>> _getLogo(final String logoPath) async {
     try {
-      final state = await storeProfileQuery().fetch();
-      if (state.error != null) {
-        return Err(state.error!);
-      }
-
-      final logoPath = state.data?.logoPath;
-      if (logoPath == null || logoPath.isEmpty) {
-        return const Ok(null);
-      }
-
-      final cachedLogo = await CacheService.getImage(logoPath);
-      if (cachedLogo != null) {
-        return Ok(cachedLogo);
-      }
-
-      // Download from Supabase Storage
+      // Supabase getPublicUrl 是同步操作，開銷極低
+      // 且因為是 Public URL，其 URL 對於相同路徑是固定的，CacheManager 內部可有效處理緩存
       final url = _supabase.storage.from(_logoBucket).getPublicUrl(logoPath);
 
+      // 交由 CacheService (CacheManager) 處理緩存邏輯：有緩存讀緩存，無緩存則下載
       final logo = await CacheService.getImage(logoPath, downloadUrl: url);
+
+      if (logo == null) {
+        return const Err('無法獲取 Logo 圖片，請稍後再試');
+      }
 
       return Ok(logo);
     } catch (e) {
@@ -142,30 +126,39 @@ class StoreProfileService {
     }
   }
 
-  /// 上傳店家 Logo 到 Storage 並返回路徑
   static Future<String> _uploadLogo(final User store, final File image) async {
-    // 1. 刪除舊 Logo
-    final state = await storeProfileQuery().fetch();
-    final oldLogoPath = state.data?.logoPath;
-    if (oldLogoPath != null && oldLogoPath.isNotEmpty) {
-      await _supabase.storage.from(_logoBucket).remove([oldLogoPath]);
+    try {
+      final imageName = p.basename(image.path);
+      final logoPath = '${store.id}/logo/$imageName';
+
+      final mimeType = lookupMimeType(image.path);
+
+      // 上傳到 Storage (先上傳，確保成功)
+      final bytes = await image.readAsBytes();
+      await _supabase.storage
+          .from(_logoBucket)
+          .uploadBinary(logoPath, bytes, fileOptions: FileOptions(contentType: mimeType));
+
+      // 保存圖片到本地緩存 (樂觀更新)
+      await CacheService.saveImage(bytes, logoPath);
+
+      return logoPath;
+    } catch (e) {
+      AppLogger.error('Logo 上傳失敗', e);
+      rethrow;
     }
+  }
 
-    final imageName = p.basename(image.path);
-    final logoPath = '${store.id}/logo/$imageName';
-
-    final mimeType = lookupMimeType(image.path);
-
-    // 2. 上傳到 Storage
-    final bytes = await image.readAsBytes();
-    await _supabase.storage
-        .from(_logoBucket)
-        .uploadBinary(logoPath, bytes, fileOptions: FileOptions(contentType: mimeType));
-
-    // 3. 保存圖片到本地緩存
-    await CacheService.saveImage(bytes, logoPath);
-
-    return logoPath;
+  /// 刪除舊 Logo (清理操作)
+  static Future<void> _deleteLogo(final String logoPath) async {
+    try {
+      await _supabase.storage.from(_logoBucket).remove([logoPath]);
+      // 同步清理本地舊緩存
+      await CacheService.deleteImage(logoPath);
+    } catch (e) {
+      // 僅記錄錯誤，不中斷流程
+      AppLogger.error('Logo 刪除失敗: $logoPath', e);
+    }
   }
 }
 
@@ -193,7 +186,10 @@ class StoreProfile {
 
   /// 按需載入 Logo，使用快取機制
   Future<Result<File?, String>> loadLogo() async {
-    return StoreProfileService._getLogo();
+    if (logoPath == null || logoPath!.isEmpty) {
+      return const Ok(null);
+    }
+    return StoreProfileService._getLogo(logoPath!);
   }
 
   Map<String, dynamic> toJson() {

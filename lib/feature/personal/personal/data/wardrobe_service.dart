@@ -95,27 +95,26 @@ class WardrobeService {
   static Future<Result<void, String>> deleteWardrobeItem(final WardrobeItem item) async {
     try {
       final user = _supabase.auth.currentUser;
+      if (user == null) {
+        return const Err('無法獲取使用者資訊，請重新登入');
+      }
+
       // 1. 刪除 DB 記錄
       await _supabase.from(_wardrobeTable).delete().eq('id', item.id!);
 
-      // 2. 刪除 Supabase Storage 中的圖片
-      await _supabase.storage.from(_bucket).remove([item.imagePath]);
+      // 2. 非同步清理圖片 (不阻塞主流程)
+      _deleteWardrobeItemImage(item.imagePath).ignore();
 
-      // 3. 刪除本地快取的圖片
-      await CacheService.deleteImage(item.imagePath);
-
-      // 4. 更新本地快取
-      if (user != null) {
-        CachedQuery.instance.updateQuery(
-          key: ['wardrobe_items', user.id],
-          updateFn: (final dynamic oldList) {
-            if (oldList == null) return [];
-            return (oldList as List<WardrobeItem>)
-                .where((final i) => i.id != item.id)
-                .toList();
-          },
-        );
-      }
+      // 3. 更新本地快取
+      CachedQuery.instance.updateQuery(
+        key: ['wardrobe_items', user.id],
+        updateFn: (final dynamic oldList) {
+          if (oldList == null) return [];
+          return (oldList as List<WardrobeItem>)
+              .where((final i) => i.id != item.id)
+              .toList();
+        },
+      );
 
       return const Ok(null);
     } catch (e) {
@@ -133,11 +132,14 @@ class WardrobeService {
       }
 
       // 2. 本地沒有，從 Supabase 取得 Signed URL 下載
-      final url = await _supabase.storage.from(_bucket).createSignedUrl(imagePath, 60);
+      final url = await _supabase.storage.from(_bucket).createSignedUrl(imagePath, 3600);
 
       final image = await CacheService.getImage(imagePath, downloadUrl: url);
 
-      if (image == null) return const Err('無法載入衣物圖片，請稍後再試');
+      if (image == null) {
+        return const Err('無法獲取衣物圖片，請稍後再試');
+      }
+
       return Ok(image);
     } catch (e) {
       AppLogger.error('衣櫃圖片載入失敗', e);
@@ -151,23 +153,43 @@ class WardrobeService {
     final File image,
     final String categoryCode,
   ) async {
-    // 生成唯一的檔案名稱
-    final imageName = p.basename(image.path);
-    final imagePath = '${user.id}/$categoryCode/$imageName';
+    try {
+      // 生成唯一的檔案名稱
+      final imageName = p.basename(image.path);
+      final imagePath = '${user.id}/$categoryCode/$imageName';
 
-    final bytes = await image.readAsBytes();
-    final mimeType = lookupMimeType(image.path);
+      final bytes = await image.readAsBytes();
+      final mimeType = lookupMimeType(image.path);
 
-    // 上傳到 Supabase Storage
-    await _supabase.storage
-        .from(_bucket)
-        .uploadBinary(imagePath, bytes, fileOptions: FileOptions(contentType: mimeType));
+      // 上傳到 Supabase Storage
+      await _supabase.storage
+          .from(_bucket)
+          .uploadBinary(
+            imagePath,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType),
+          );
 
-    // 保存到本地緩存
-    await CacheService.saveImage(bytes, imagePath);
+      // 保存到本地緩存
+      await CacheService.saveImage(bytes, imagePath);
 
-    // 返回檔案路徑
-    return imagePath;
+      // 返回檔案路徑
+      return imagePath;
+    } catch (e) {
+      AppLogger.error('衣物圖片上傳失敗', e);
+      rethrow;
+    }
+  }
+
+  static Future<void> _deleteWardrobeItemImage(final String imagePath) async {
+    try {
+      // 刪除 Supabase Storage 中的圖片
+      await _supabase.storage.from(_bucket).remove([imagePath]);
+      // 刪除本地快取的圖片
+      await CacheService.deleteImage(imagePath);
+    } catch (e) {
+      AppLogger.error('衣櫃圖片清理失敗: $imagePath', e);
+    }
   }
 
   static List<String> getWardrobeTypesList() {

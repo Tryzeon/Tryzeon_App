@@ -138,10 +138,13 @@ class ProductService {
         return const Ok(null);
       }
 
-      // 如果有新圖片，則處理圖片上傳與舊圖刪除
+      // 如果有新圖片，則處理圖片上傳與舊圖刪除 (Upload First 策略)
       if (newImage != null) {
-        await _deleteProductImage(original.imagePath);
-        updateData['image_path'] = await _uploadProductImage(store, newImage);
+        final newImagePath = await _uploadProductImage(store, newImage);
+        updateData['image_path'] = newImagePath;
+
+        // 成功上傳新圖後，非同步清理舊圖
+        _deleteProductImage(original.imagePath).ignore();
       }
 
       // 如果有一般欄位需要更新
@@ -205,26 +208,31 @@ class ProductService {
   static Future<Result<void, String>> deleteProduct(final Product product) async {
     try {
       final store = _supabase.auth.currentUser;
-      // 刪除圖片（Supabase Storage 和本地）
-      if (product.imagePath.isNotEmpty) {
-        await _deleteProductImage(product.imagePath);
+      if (store == null) {
+        return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      // 刪除商品資料
+      // 刪除商品主資料
       await _supabase.from(_productsTable).delete().eq('id', product.id!);
 
-      // 更新本地快取
-      if (store != null) {
-        CachedQuery.instance.updateQuery(
-          key: ['products', store.id],
-          updateFn: (final dynamic oldList) {
-            if (oldList == null) return [];
-            return (oldList as List<Product>)
-                .where((final p) => p.id != product.id)
-                .toList();
-          },
-        );
+      // 刪除關聯的尺寸資料
+      await _supabase.from(_productSizesTable).delete().eq('product_id', product.id!);
+
+      // 非同步清理圖片 (不阻塞主流程)
+      if (product.imagePath.isNotEmpty) {
+        _deleteProductImage(product.imagePath).ignore();
       }
+
+      // 更新本地快取
+      CachedQuery.instance.updateQuery(
+        key: ['products', store.id],
+        updateFn: (final dynamic oldList) {
+          if (oldList == null) return [];
+          return (oldList as List<Product>)
+              .where((final p) => p.id != product.id)
+              .toList();
+        },
+      );
 
       return const Ok(null);
     } catch (e) {
@@ -234,39 +242,47 @@ class ProductService {
   }
 
   /// 上傳商品圖片（先上傳到後端，成功後才保存到本地）
-  static Future<String> _uploadProductImage(final store, final File image) async {
-    // 使用圖片本身的檔案名稱
-    final imageName = p.basename(image.path);
-    final productImagePath = '${store.id}/products/$imageName';
+  static Future<String> _uploadProductImage(final dynamic store, final File image) async {
+    try {
+      final imageName = p.basename(image.path);
+      final productImagePath = '${store.id}/products/$imageName';
 
-    final bytes = await image.readAsBytes();
-    final mimeType = lookupMimeType(image.path);
+      final bytes = await image.readAsBytes();
+      final mimeType = lookupMimeType(image.path);
 
-    // 上傳到 Supabase Storage
-    await _supabase.storage
-        .from(_productImagesBucket)
-        .uploadBinary(
-          productImagePath,
-          bytes,
-          fileOptions: FileOptions(contentType: mimeType),
-        );
+      // 上傳到 Supabase Storage
+      await _supabase.storage
+          .from(_productImagesBucket)
+          .uploadBinary(
+            productImagePath,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType),
+          );
 
-    // 保存到本地緩存
-    await CacheService.saveImage(bytes, productImagePath);
+      // 保存到本地緩存
+      await CacheService.saveImage(bytes, productImagePath);
 
-    // 返回檔案路徑
-    return productImagePath;
+      // 返回檔案路徑
+      return productImagePath;
+    } catch (e) {
+      AppLogger.error('商品圖片上傳失敗', e);
+      rethrow;
+    }
   }
 
   /// 刪除商品圖片（Supabase 和本地）
   static Future<void> _deleteProductImage(final String imagePath) async {
-    if (imagePath.isEmpty) return;
+    try {
+      if (imagePath.isEmpty) return;
 
-    // 1. 刪除 Supabase Storage 中的圖片
-    await _supabase.storage.from(_productImagesBucket).remove([imagePath]);
+      // 1. 刪除 Supabase Storage 中的圖片
+      await _supabase.storage.from(_productImagesBucket).remove([imagePath]);
 
-    // 2. 刪除本地緩存的圖片
-    await CacheService.deleteImage(imagePath);
+      // 2. 刪除本地緩存的圖片
+      await CacheService.deleteImage(imagePath);
+    } catch (e) {
+      AppLogger.error('商品圖片清理失敗: $imagePath', e);
+    }
   }
 
   /// 本地排序產品

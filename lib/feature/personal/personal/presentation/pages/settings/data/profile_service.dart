@@ -42,6 +42,7 @@ class UserProfileService {
 
   /// 更新使用者個人資料
   static Future<Result<void, String>> updateUserProfile({
+    required final UserProfile original,
     required final UserProfile target,
   }) async {
     try {
@@ -50,14 +51,7 @@ class UserProfileService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
-      // 1. 取得目前資料以進行比對
-      final currentProfileState = await userProfileQuery().fetch();
-      if (currentProfileState.error != null) {
-        return const Err('資料同步錯誤，請重新刷新頁面');
-      }
-      final original = currentProfileState.data!;
-
-      // 2. 取得變更欄位 (直接比對傳入的 target 與 original)
+      // 1.取得變更欄位
       final updateData = original.getDirtyFields(target);
 
       // 如果沒有變更，直接返回原資料

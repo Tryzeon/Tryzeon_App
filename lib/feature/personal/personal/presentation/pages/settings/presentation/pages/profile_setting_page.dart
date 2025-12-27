@@ -61,7 +61,10 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
       measurements: newMeasurements,
     );
 
-    final result = await UserProfileService.updateUserProfile(target: targetProfile);
+    final result = await UserProfileService.updateUserProfile(
+      original: _currentUserProfile!,
+      target: targetProfile,
+    );
     if (!mounted) return;
 
     setState(() {
