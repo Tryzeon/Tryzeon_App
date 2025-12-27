@@ -129,27 +129,29 @@ class ProductService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
+      Product finalTarget = target;
+      if (newImage != null) {
+        final newImagePath = await _uploadProductImage(store, newImage);
+        finalTarget = target.copyWith(imagePath: newImagePath);
+      }
+
       // 1. 取得變更的欄位 (Dirty Checking)
-      final updateData = original.getDirtyFields(target);
+      final updateData = original.getDirtyFields(finalTarget);
       final sizeChanges = original.sizes.getDirtyFields(target.sizes);
 
       // 如果完全沒有變動，直接回傳
-      if (updateData.isEmpty && newImage == null && !sizeChanges.hasChanges) {
+      if (updateData.isEmpty && !sizeChanges.hasChanges) {
         return const Ok(null);
-      }
-
-      // 如果有新圖片，則處理圖片上傳與舊圖刪除 (Upload First 策略)
-      if (newImage != null) {
-        final newImagePath = await _uploadProductImage(store, newImage);
-        updateData['image_path'] = newImagePath;
-
-        // 成功上傳新圖後，非同步清理舊圖
-        _deleteProductImage(original.imagePath).ignore();
       }
 
       // 如果有一般欄位需要更新
       if (updateData.isNotEmpty) {
         await _supabase.from(_productsTable).update(updateData).eq('id', original.id!);
+      }
+
+      // 成功上傳新圖並更新 DB 後，才非同步清理舊圖
+      if (newImage != null) {
+        _deleteProductImage(original.imagePath).ignore();
       }
 
       // 2. 處理尺寸變更

@@ -68,17 +68,12 @@ class StoreProfileService {
       if (logo != null) {
         final newLogoPath = await _uploadLogo(store, logo);
         finalTarget = target.copyWith(logoPath: newLogoPath);
-
-        // 成功上傳新圖後，非同步清理舊圖
-        if (original.logoPath != null && original.logoPath!.isNotEmpty) {
-          _deleteLogo(original.logoPath!).ignore();
-        }
       }
 
       // 3. 取得變更欄位
       final updateData = original.getDirtyFields(finalTarget);
 
-      // 如果沒有變更，直接返回原資料
+      // 如果沒有任何變更，直接返回
       if (updateData.isEmpty) {
         return const Ok(null);
       }
@@ -89,6 +84,13 @@ class StoreProfileService {
           .eq('store_id', store.id)
           .select()
           .single();
+
+      // 成功上傳新圖並更新 DB 後，才非同步清理舊圖
+      if (logo != null &&
+          original.logoPath != null &&
+          original.logoPath!.isNotEmpty) {
+        _deleteLogo(original.logoPath!).ignore();
+      }
 
       final updatedProfile = StoreProfile.fromJson(response);
 
