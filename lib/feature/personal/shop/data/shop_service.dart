@@ -25,10 +25,7 @@ class ShopService {
         maxPrice,
         if (types != null) ...(types.toList()..sort()),
       ],
-      config: const QueryConfig(
-        staleDuration: Duration(seconds: 10),
-        storeQuery: false,
-      ),
+      config: const QueryConfig(staleDuration: Duration(seconds: 10), storeQuery: false),
       queryFn: () => getProducts(
         searchQuery: searchQuery,
         sortBy: sortBy,
@@ -81,9 +78,7 @@ class ShopService {
       // 排序
       final response = await query.order(sortBy, ascending: ascending);
 
-      return (response as List)
-          .map((final item) => Product.fromJson(item))
-          .toList();
+      return (response as List).map((final item) => Product.fromJson(item)).toList();
     } catch (e) {
       AppLogger.error('商品列表獲取失敗', e);
       throw '無法取得商品列表，請稍後再試';
