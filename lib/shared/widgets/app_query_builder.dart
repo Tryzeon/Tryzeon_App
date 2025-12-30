@@ -35,17 +35,6 @@ class AppQueryBuilder<T> extends StatelessWidget {
         // Use dynamic to avoid type mismatch issues with package versions
         final dynamic s = state;
 
-        // Handle loading state
-        if (s is QueryLoading || s is QueryInitial) {
-          return loader ??
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: CircularProgressIndicator(),
-                ),
-              );
-        }
-
         // Side Effect: Show Toast on Error
         if (s.error != null) {
           SchedulerBinding.instance.addPostFrameCallback((final _) {
@@ -60,10 +49,21 @@ class AppQueryBuilder<T> extends StatelessWidget {
           });
         }
 
-        // Handle success state
+        // Handle success state (Prioritize cached data)
         final data = s.data as T?;
         if (data != null) {
           return builder(context, data);
+        }
+
+        // Handle loading state
+        if (s is QueryLoading || s is QueryInitial) {
+          return loader ??
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: CircularProgressIndicator(),
+                ),
+              );
         }
 
         // Handle error state
