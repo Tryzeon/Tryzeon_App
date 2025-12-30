@@ -10,7 +10,10 @@ class ProductTypeService {
     return Query<List<String>>(
       key: ['product_types'],
       queryFn: fetchProductTypes,
-      config: QueryConfig(storageDeserializer: (final json) => List<String>.from(json)),
+      config: QueryConfig(
+        staleDuration: const Duration(days: 7),
+        storageDeserializer: (final json) => List<String>.from(json),
+      ),
     );
   }
 
@@ -19,6 +22,7 @@ class ProductTypeService {
       final response = await _supabase
           .from(_typesTable)
           .select('name_zh')
+          .eq('is_active', true)
           .order('priority', ascending: true);
 
       return (response as List).map((final item) => item['name_zh'] as String).toList();
