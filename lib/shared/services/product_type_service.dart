@@ -4,11 +4,11 @@ import 'package:tryzeon/shared/utils/app_logger.dart';
 
 class ProductTypeService {
   static final _supabase = Supabase.instance.client;
-  static const _typesTable = 'product_types';
+  static const _typesTable = 'product_categories';
 
   static Query<List<String>> productTypesQuery() {
     return Query<List<String>>(
-      key: ['product_types'],
+      key: ['product_categories'],
       queryFn: fetchProductTypes,
       config: QueryConfig(
         staleDuration: const Duration(days: 7),
