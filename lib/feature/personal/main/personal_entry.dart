@@ -6,7 +6,7 @@ import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import '../chat/presentation/pages/chat_page.dart';
 import '../community/presentation/pages/community_page.dart';
 import '../home/presentation/pages/home_page.dart';
-import '../personal/presentation/pages/personal_page.dart';
+import '../wardrobe/presentation/pages/wardrobe_page.dart';
 import '../shop/presentation/pages/shop_page.dart';
 
 class PersonalEntry extends StatefulWidget {

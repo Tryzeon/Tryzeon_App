@@ -12,8 +12,8 @@ import '../../data/wardrobe_item_model.dart';
 import '../../data/wardrobe_service.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
 import '../widgets/wardrobe_item_card.dart';
-import 'settings/data/profile_service.dart';
-import 'settings/presentation/pages/settings_page.dart';
+import '../../../settings/data/profile_service.dart';
+import '../../../settings/presentation/pages/settings_page.dart';
 
 class PersonalPage extends StatefulWidget {
   const PersonalPage({super.key});

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:tryzeon/feature/personal/personal/data/wardrobe_service.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/wardrobe_service.dart';
 import 'package:typed_result/typed_result.dart';
 
 class WardrobeItemType {

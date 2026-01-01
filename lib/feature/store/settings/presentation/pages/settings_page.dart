@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/pages/base_settings_page.dart';
 
-import '../../../../../../../personal/main/personal_entry.dart';
+import '../../../../personal/main/personal_entry.dart';
 import 'profile_setting_page.dart';
 
 class StoreSettingsPage extends BaseSettingsPage {

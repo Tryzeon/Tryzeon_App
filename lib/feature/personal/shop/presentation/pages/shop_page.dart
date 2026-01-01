@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
+import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
