@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
-import 'home/presentation/pages/home_page.dart';
-import 'home/presentation/pages/settings/data/profile_service.dart';
-import 'onboarding/presentation/pages/store_onboarding_page.dart';
+import '../home/presentation/pages/home_page.dart';
+import '../home/presentation/pages/settings/data/profile_service.dart';
+import '../onboarding/presentation/pages/store_onboarding_page.dart';
 
 /// 店家入口 - 負責判斷是否需要 onboarding
 class StoreEntry extends StatefulWidget {

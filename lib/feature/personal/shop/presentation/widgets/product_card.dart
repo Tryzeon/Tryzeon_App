@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/personal/personal/presentation/pages/settings/data/profile_service.dart';
-import 'package:tryzeon/feature/personal/personal_entry.dart';
+import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';

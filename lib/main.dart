@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/feature/personal/personal_entry.dart';
-import 'package:tryzeon/feature/store/store_entry.dart';
+import 'package:tryzeon/feature/personal/main/personal_entry.dart';
+import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 
 Future<void> main() async {

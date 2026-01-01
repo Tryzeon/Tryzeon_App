@@ -3,11 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 
-import 'chat/presentation/pages/chat_page.dart';
-import 'community/presentation/pages/community_page.dart';
-import 'home/presentation/pages/home_page.dart';
-import 'personal/presentation/pages/personal_page.dart';
-import 'shop/presentation/pages/shop_page.dart';
+import '../chat/presentation/pages/chat_page.dart';
+import '../community/presentation/pages/community_page.dart';
+import '../home/presentation/pages/home_page.dart';
+import '../personal/presentation/pages/personal_page.dart';
+import '../shop/presentation/pages/shop_page.dart';
 
 class PersonalEntry extends StatefulWidget {
   const PersonalEntry({super.key});
