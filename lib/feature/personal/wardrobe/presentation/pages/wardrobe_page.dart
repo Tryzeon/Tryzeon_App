@@ -229,44 +229,61 @@ class _PersonalPageState extends State<PersonalPage> {
                                     .toList();
 
                           if (filteredWardrobeItem.isEmpty) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.primary.withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
+                            return LayoutBuilder(
+                              builder: (final context, final constraints) {
+                                return SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: constraints.maxHeight,
                                     ),
-                                    child: Icon(
-                                      Icons.checkroom_rounded,
-                                      size: 50,
-                                      color: colorScheme.primary.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Text(
-                                    selectedCategory == '全部' ? '衣櫃是空的' : '此類別沒有衣物',
-                                    style: textTheme.titleMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '點擊右下角按鈕新增衣物',
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant.withValues(
-                                        alpha: 0.8,
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 100,
+                                            height: 100,
+                                            decoration: BoxDecoration(
+                                              color: colorScheme.primary.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.checkroom_rounded,
+                                              size: 50,
+                                              color: colorScheme.primary.withValues(
+                                                alpha: 0.5,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 24),
+                                          Text(
+                                            selectedCategory == '全部'
+                                                ? '衣櫃是空的'
+                                                : '此類別沒有衣物',
+                                            style: textTheme.titleMedium?.copyWith(
+                                              color: colorScheme.onSurfaceVariant,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            '點擊右下角按鈕新增衣物',
+                                            style: textTheme.bodyMedium?.copyWith(
+                                              color: colorScheme.onSurfaceVariant
+                                                  .withValues(alpha: 0.8),
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      fontSize: 14,
                                     ),
                                   ),
-                                ],
-                              ),
+                                );
+                              },
                             );
                           } else {
                             return GridView.builder(

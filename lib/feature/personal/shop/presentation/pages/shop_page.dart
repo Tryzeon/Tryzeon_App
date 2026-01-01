@@ -259,146 +259,159 @@ class _ShopPageState extends State<ShopPage> {
                 child: RefreshIndicator(
                   onRefresh: productsQuery.fetch,
                   color: colorScheme.primary,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 🔍 搜尋欄
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: ShopSearchBar(
-                            onSearch: (final query) async {
-                              setState(() => _searchQuery = query.isEmpty ? null : query);
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // 📢 廣告輪播
-                        AdBanner(adImages: adImages),
-
-                        const SizedBox(height: 24),
-
-                        // 商品類型篩選標籤
-                        AppQueryBuilder<List<String>>(
-                          query: ProductTypeService.productTypesQuery(),
-                          isCompact: true,
-                          builder: (final context, final types) {
-                            return ProductTypeFilter(
-                              productTypes: types,
-                              selectedTypes: _selectedTypes,
-                              onTypeToggle: (final type) {
-                                setState(
-                                  () => _selectedTypes.contains(type)
-                                      ? _selectedTypes.remove(type)
-                                      : _selectedTypes.add(type),
-                                );
-                              },
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // 推薦商品標題
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
+                  child: LayoutBuilder(
+                    builder: (final context, final constraints) {
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 4,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [colorScheme.primary, colorScheme.secondary],
-                                  ),
-                                  borderRadius: BorderRadius.circular(2),
+                              // 🔍 搜尋欄
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: ShopSearchBar(
+                                  onSearch: (final query) async {
+                                    setState(
+                                      () => _searchQuery = query.isEmpty ? null : query,
+                                    );
+                                  },
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '推薦商品',
-                                style: textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildComprehensiveSortButton(),
-                                  const SizedBox(width: 8),
-                                  _buildPriceSortButton(),
-                                  const SizedBox(width: 8),
-                                  _buildFilterButton(),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
 
-                        const SizedBox(height: 16),
+                              const SizedBox(height: 20),
 
-                        // 商品 Grid（可滾動）
-                        AppQueryBuilder<List<Product>>(
-                          query: productsQuery,
-                          builder: (final context, final displayedProducts) {
-                            if (displayedProducts.isEmpty) {
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(48.0),
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        Icons.shopping_bag_outlined,
-                                        size: 64,
-                                        color: colorScheme.outlineVariant,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        '目前沒有商品符合搜尋條件',
-                                        style: textTheme.bodyMedium?.copyWith(
-                                          fontSize: 16,
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: displayedProducts.length,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 16,
-                                      crossAxisSpacing: 16,
-                                      childAspectRatio: 0.7,
-                                    ),
-                                itemBuilder: (final context, final index) {
-                                  final product = displayedProducts[index];
-                                  return ProductCard(
-                                    product: product,
-                                    userProfile: _userProfile,
+                              // 📢 廣告輪播
+                              AdBanner(adImages: adImages),
+
+                              const SizedBox(height: 24),
+
+                              // 商品類型篩選標籤
+                              AppQueryBuilder<List<String>>(
+                                query: ProductTypeService.productTypesQuery(),
+                                isCompact: true,
+                                builder: (final context, final types) {
+                                  return ProductTypeFilter(
+                                    productTypes: types,
+                                    selectedTypes: _selectedTypes,
+                                    onTypeToggle: (final type) {
+                                      setState(
+                                        () => _selectedTypes.contains(type)
+                                            ? _selectedTypes.remove(type)
+                                            : _selectedTypes.add(type),
+                                      );
+                                    },
                                   );
                                 },
                               ),
-                            );
-                          },
-                        ),
 
-                        const SizedBox(height: 32),
-                      ],
-                    ),
+                              const SizedBox(height: 24),
+
+                              // 推薦商品標題
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 4,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            colorScheme.primary,
+                                            colorScheme.secondary,
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      '推薦商品',
+                                      style: textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        _buildComprehensiveSortButton(),
+                                        const SizedBox(width: 8),
+                                        _buildPriceSortButton(),
+                                        const SizedBox(width: 8),
+                                        _buildFilterButton(),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // 商品 Grid（可滾動）
+                              AppQueryBuilder<List<Product>>(
+                                query: productsQuery,
+                                builder: (final context, final displayedProducts) {
+                                  if (displayedProducts.isEmpty) {
+                                    return Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(48.0),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.shopping_bag_outlined,
+                                              size: 64,
+                                              color: colorScheme.outlineVariant,
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              '目前沒有商品符合搜尋條件',
+                                              style: textTheme.bodyMedium?.copyWith(
+                                                fontSize: 16,
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: displayedProducts.length,
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            mainAxisSpacing: 16,
+                                            crossAxisSpacing: 16,
+                                            childAspectRatio: 0.7,
+                                          ),
+                                      itemBuilder: (final context, final index) {
+                                        final product = displayedProducts[index];
+                                        return ProductCard(
+                                          product: product,
+                                          userProfile: _userProfile,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: 32),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

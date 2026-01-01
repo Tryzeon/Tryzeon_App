@@ -197,48 +197,57 @@ class _StoreHomePageState extends State<StoreHomePage> {
                               onRefresh: () => ProductService.productsQuery().refetch(),
                               color: colorScheme.primary,
                               child: products.isEmpty
-                                  ? Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 100,
-                                            height: 100,
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.primary.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              shape: BoxShape.circle,
+                                  ? LayoutBuilder(
+                                      builder: (final context, final constraints) {
+                                        return SingleChildScrollView(
+                                          physics: const AlwaysScrollableScrollPhysics(),
+                                          child: ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              minHeight: constraints.maxHeight,
                                             ),
-                                            child: Icon(
-                                              Icons.inventory_2_outlined,
-                                              size: 50,
-                                              color: colorScheme.primary.withValues(
-                                                alpha: 0.5,
+                                            child: Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Container(
+                                                    width: 100,
+                                                    height: 100,
+                                                    decoration: BoxDecoration(
+                                                      color: colorScheme.primary
+                                                          .withValues(alpha: 0.1),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.inventory_2_outlined,
+                                                      size: 50,
+                                                      color: colorScheme.primary
+                                                          .withValues(alpha: 0.5),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 24),
+                                                  Text(
+                                                    '還沒有商品',
+                                                    style: textTheme.titleSmall?.copyWith(
+                                                      color: colorScheme.onSurface
+                                                          .withValues(alpha: 0.6),
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    '點擊右下角按鈕新增商品',
+                                                    style: textTheme.bodyMedium?.copyWith(
+                                                      color: colorScheme.onSurface
+                                                          .withValues(alpha: 0.5),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(height: 24),
-                                          Text(
-                                            '還沒有商品',
-                                            style: textTheme.titleSmall?.copyWith(
-                                              color: colorScheme.onSurface.withValues(
-                                                alpha: 0.6,
-                                              ),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            '點擊右下角按鈕新增商品',
-                                            style: textTheme.bodyMedium?.copyWith(
-                                              color: colorScheme.onSurface.withValues(
-                                                alpha: 0.5,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     )
                                   : GridView.builder(
                                       gridDelegate:
