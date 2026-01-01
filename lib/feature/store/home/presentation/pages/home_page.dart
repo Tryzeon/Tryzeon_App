@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 
+import '../../../settings/data/profile_service.dart';
+import '../../../settings/presentation/pages/settings_page.dart';
 import '../../data/product_service.dart';
 import '../dialogs/sort_dialog.dart';
 import '../widgets/product_card.dart';
 import 'add_product_page.dart';
-import '../../../settings/data/profile_service.dart';
-import '../../../settings/presentation/pages/settings_page.dart';
 
 class StoreHomePage extends StatefulWidget {
   const StoreHomePage({super.key});
