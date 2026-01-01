@@ -25,6 +25,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   flutter_image_compress: ^2.4.0
   mime: ^2.0.0
+  flutter_dotenv: ^5.2.1
 
   path: any
   typed_result: ^2.0.0
@@ -39,6 +40,7 @@ dev_dependencies:
 
 flutter:
   assets:
+    - .env
     - assets/images/ads/
     - assets/images/profile/
     - assets/images/logo/
