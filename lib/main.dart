@@ -11,7 +11,7 @@ import 'package:tryzeon/feature/store/main/store_entry.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await dotenv.load();
 
   await Supabase.initialize(

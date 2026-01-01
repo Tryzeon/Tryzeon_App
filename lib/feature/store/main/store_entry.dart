@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../home/presentation/pages/home_page.dart';
@@ -22,8 +21,6 @@ class _StoreEntryState extends State<StoreEntry> {
   void initState() {
     super.initState();
     _checkStoreInfo();
-
-    AuthService.setLastLoginType(UserType.store);
   }
 
   Future<void> _checkStoreInfo() async {

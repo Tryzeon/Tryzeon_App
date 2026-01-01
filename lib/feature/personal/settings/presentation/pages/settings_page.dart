@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/pages/base_settings_page.dart';
@@ -36,15 +37,15 @@ class _PersonalSettingsPageState extends BaseSettingsPageState<PersonalSettingsP
       title: '切換帳號',
       content: '你確定要切換到店家版帳號嗎？',
     );
-
     if (confirmed != true) return;
 
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const StoreEntry()),
-        (final route) => false,
-      );
-    }
+    await AuthService.setLastLoginType(UserType.store);
+
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (final context) => const StoreEntry()),
+      (final route) => false,
+    );
   }
 
   Future<void> _navigateToProfile() async {
