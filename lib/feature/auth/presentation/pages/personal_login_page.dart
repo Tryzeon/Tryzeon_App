@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:tryzeon/feature/login/presentation/widgets/customize_scaffold.dart';
+import 'package:tryzeon/feature/auth/presentation/widgets/customize_scaffold.dart';
 import 'package:tryzeon/feature/personal/personal_entry.dart';
-import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 

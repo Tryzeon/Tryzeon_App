@@ -1,7 +1,7 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/feature/auth/data/auth_service.dart';
 
 import 'chat/presentation/pages/chat_page.dart';
 import 'community/presentation/pages/community_page.dart';

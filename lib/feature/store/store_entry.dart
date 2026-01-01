@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import 'home/presentation/pages/home_page.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/login/presentation/pages/login_page.dart';
+import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/shared/services/auth_service.dart';
+import 'package:tryzeon/feature/auth/data/auth_service.dart';
 
 /// 設定頁面的選單項目
 class SettingsMenuItem {
