@@ -1,56 +1,50 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class AdBanner extends StatefulWidget {
+class AdBanner extends HookWidget {
   const AdBanner({super.key, required this.adImages});
   final List<String> adImages;
 
   @override
-  State<AdBanner> createState() => _AdBannerState();
-}
-
-class _AdBannerState extends State<AdBanner> {
-  late PageController _pageController;
-  int _currentPage = 0;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _pageController = PageController(initialPage: _currentPage);
-
-    // 自動輪播邏輯
-    _timer = Timer.periodic(const Duration(seconds: 3), (final Timer timer) {
-      if (_currentPage < widget.adImages.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-
-      _pageController.animateToPage(
-        _currentPage,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final pageController = usePageController();
+    final currentPage = useState(0);
+
+    useEffect(() {
+      if (adImages.isEmpty) return null;
+
+      final timer = Timer.periodic(const Duration(seconds: 3), (final timer) {
+        if (!pageController.hasClients) return;
+
+        if (currentPage.value < adImages.length - 1) {
+          currentPage.value++;
+        } else {
+          currentPage.value = 0;
+        }
+
+        pageController.animateToPage(
+          currentPage.value,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      });
+      return timer.cancel;
+    }, [adImages]); // Re-run effect when adImages changes
+
+    if (adImages.isEmpty) {
+      return const SizedBox(height: 180);
+    }
+
     return SizedBox(
       height: 180,
       child: PageView.builder(
-        controller: _pageController,
-        itemCount: widget.adImages.length,
+        controller: pageController,
+        itemCount: adImages.length,
+        onPageChanged: (final index) {
+          currentPage.value = index;
+        },
         itemBuilder: (final context, final index) {
           return GestureDetector(
             onTap: () {
@@ -61,7 +55,7 @@ class _AdBannerState extends State<AdBanner> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
-                  image: AssetImage(widget.adImages[index]),
+                  image: AssetImage(adImages[index]),
                   fit: BoxFit.cover,
                 ),
               ),

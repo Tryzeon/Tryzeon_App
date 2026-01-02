@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
@@ -9,115 +10,101 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/shop_service.dart';
 
-class ProductCard extends StatefulWidget {
+class ProductCard extends HookWidget {
   const ProductCard({super.key, required this.product, this.userProfile});
 
   final Product product;
   final UserProfile? userProfile;
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  // 計算契合度等級：返回 'green', 'yellow', 'red' 或 null
-  String? _calculateFitLevel(final UserProfile? userProfile) {
-    if (userProfile == null || widget.product.sizes == null) {
-      return null; // 無法計算
-    }
-
-    double? bestDiff;
-    // 對每個商品尺寸進行比對
-    for (final size in widget.product.sizes!) {
-      double totalDiff = 0;
-      int comparisonCount = 0;
-
-      for (final type in MeasurementType.values) {
-        final userValue = userProfile.measurements[type];
-        final sizeValue = size.measurements[type];
-
-        if (userValue != null && sizeValue != null) {
-          totalDiff += (userValue - sizeValue).abs();
-          comparisonCount++;
-        }
-      }
-
-      // 如果有比對到資料，記錄最佳差值
-      if (comparisonCount > 0) {
-        if (bestDiff == null || totalDiff < bestDiff) {
-          bestDiff = totalDiff;
-        }
-      }
-    }
-
-    // 根據最佳差值返回等級
-    if (bestDiff == null) {
-      return null; // 沒有可比對的資料
-    } else if (bestDiff <= 5) {
-      return 'green';
-    } else if (bestDiff <= 10) {
-      return 'yellow';
-    } else {
-      return 'red';
-    }
-  }
-
-  Color _getFitColor(final String level) {
-    switch (level) {
-      case 'green':
-        return Colors.green;
-      case 'yellow':
-        return Colors.amber;
-      case 'red':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Future<void> _handleTryon() async {
-    final product = widget.product;
-    // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
-    ShopService.incrementTryonCount(product.id!).ignore();
-
-    final personalEntry = PersonalEntry.of(context);
-    await personalEntry?.tryOnFromStorage(product.imagePath);
-  }
-
-  Future<void> _handlePurchase() async {
-    final product = widget.product;
-
-    if (product.purchaseLink == null || product.purchaseLink!.isEmpty) {
-      TopNotification.show(context, message: '此商品尚無購買連結', type: NotificationType.info);
-      return;
-    }
-
-    final Uri url = Uri.parse(product.purchaseLink!);
-    if (!await canLaunchUrl(url)) {
-      if (!mounted) return;
-
-      TopNotification.show(context, message: '無法開啟購買連結', type: NotificationType.error);
-      return;
-    }
-
-    // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
-    ShopService.incrementPurchaseClickCount(product.id!).ignore();
-    await launchUrl(url, mode: LaunchMode.externalApplication);
-  }
-
-  @override
   Widget build(final BuildContext context) {
-    final product = widget.product;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    // 計算契合度等級：返回 'green', 'yellow', 'red' 或 null
+    String? calculateFitLevel(final UserProfile? userProfile) {
+      if (userProfile == null || product.sizes == null) {
+        return null; // 無法計算
+      }
+
+      double? bestDiff;
+      // 對每個商品尺寸進行比對
+      for (final size in product.sizes!) {
+        double totalDiff = 0;
+        int comparisonCount = 0;
+
+        for (final type in MeasurementType.values) {
+          final userValue = userProfile.measurements[type];
+          final sizeValue = size.measurements[type];
+
+          if (userValue != null && sizeValue != null) {
+            totalDiff += (userValue - sizeValue).abs();
+            comparisonCount++;
+          }
+        }
+
+        // 如果有比對到資料，記錄最佳差值
+        if (comparisonCount > 0) {
+          if (bestDiff == null || totalDiff < bestDiff) {
+            bestDiff = totalDiff;
+          }
+        }
+      }
+
+      // 根據最佳差值返回等級
+      if (bestDiff == null) {
+        return null; // 沒有可比對的資料
+      } else if (bestDiff <= 5) {
+        return 'green';
+      } else if (bestDiff <= 10) {
+        return 'yellow';
+      } else {
+        return 'red';
+      }
+    }
+
+    Color getFitColor(final String level) {
+      switch (level) {
+        case 'green':
+          return Colors.green;
+        case 'yellow':
+          return Colors.amber;
+        case 'red':
+          return Colors.red;
+        default:
+          return Colors.grey;
+      }
+    }
+
+    Future<void> handleTryon() async {
+      // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
+      ShopService.incrementTryonCount(product.id!).ignore();
+
+      final personalEntry = PersonalEntry.of(context);
+      await personalEntry?.tryOnFromStorage(product.imagePath);
+    }
+
+    Future<void> handlePurchase() async {
+      if (product.purchaseLink == null || product.purchaseLink!.isEmpty) {
+        TopNotification.show(context, message: '此商品尚無購買連結', type: NotificationType.info);
+        return;
+      }
+
+      final Uri url = Uri.parse(product.purchaseLink!);
+      if (!await canLaunchUrl(url)) {
+        if (!context.mounted) return;
+
+        TopNotification.show(context, message: '無法開啟購買連結', type: NotificationType.error);
+        return;
+      }
+
+      // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
+      ShopService.incrementPurchaseClickCount(product.id!).ignore();
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+
     return GestureDetector(
-      onTap: _handlePurchase,
+      onTap: handlePurchase,
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -153,14 +140,14 @@ class _ProductCardState extends State<ProductCard> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _handleTryon,
+                        onTap: handleTryon,
                         borderRadius: BorderRadius.circular(20),
                         child: Builder(
                           builder: (final context) {
-                            final fitLevel = _calculateFitLevel(widget.userProfile);
+                            final fitLevel = calculateFitLevel(userProfile);
                             final buttonColor = fitLevel == null
                                 ? colorScheme.primary
-                                : _getFitColor(fitLevel);
+                                : getFitColor(fitLevel);
 
                             return Container(
                               padding: const EdgeInsets.all(8),

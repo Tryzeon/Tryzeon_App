@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 const double kMaxPrice = 3000;
 
@@ -28,50 +29,35 @@ class FilterDialog {
   final Function(int? minPrice, int? maxPrice) onApply;
 }
 
-class _FilterDialogContent extends StatefulWidget {
+class _FilterDialogContent extends HookWidget {
   const _FilterDialogContent({this.minPrice, this.maxPrice, required this.onApply});
   final int? minPrice;
   final int? maxPrice;
   final Function(int? minPrice, int? maxPrice) onApply;
 
   @override
-  State<_FilterDialogContent> createState() => _FilterDialogContentState();
-}
-
-class _FilterDialogContentState extends State<_FilterDialogContent> {
-  late RangeValues _priceRange;
-  late int? _minPrice;
-  late int? _maxPrice;
-
-  @override
-  void initState() {
-    super.initState();
-    _minPrice = widget.minPrice;
-    _maxPrice = widget.maxPrice;
-    _priceRange = RangeValues(
-      widget.minPrice?.toDouble() ?? 0,
-      widget.maxPrice?.toDouble() ?? kMaxPrice,
-    );
-  }
-
-  void _resetFilters() {
-    setState(() {
-      _minPrice = null;
-      _maxPrice = null;
-      _priceRange = const RangeValues(0, kMaxPrice);
-    });
-    _applyFilters();
-  }
-
-  void _applyFilters() {
-    widget.onApply(_minPrice, _maxPrice);
-    Navigator.pop(context);
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final initialMin = minPrice?.toDouble() ?? 0;
+    final initialMax = maxPrice?.toDouble() ?? kMaxPrice;
+
+    final priceRange = useState(RangeValues(initialMin, initialMax));
+    final currentMinPrice = useState(minPrice);
+    final currentMaxPrice = useState(maxPrice);
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    void applyFilters() {
+      onApply(currentMinPrice.value, currentMaxPrice.value);
+      Navigator.pop(context);
+    }
+
+    void resetFilters() {
+      currentMinPrice.value = null;
+      currentMaxPrice.value = null;
+      priceRange.value = const RangeValues(0, kMaxPrice);
+      applyFilters();
+    }
 
     return Container(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -115,13 +101,13 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '\$${_priceRange.start.round()}',
+                  '\$${priceRange.value.start.round()}',
                   style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                 ),
                 Text(
-                  _priceRange.end.round() >= kMaxPrice
+                  priceRange.value.end.round() >= kMaxPrice
                       ? '\$${kMaxPrice.round()}+'
-                      : '\$${_priceRange.end.round()}',
+                      : '\$${priceRange.value.end.round()}',
                   style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                 ),
               ],
@@ -137,16 +123,16 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
               ),
               child: RangeSlider(
-                values: _priceRange,
+                values: priceRange.value,
                 min: 0,
                 max: kMaxPrice,
                 divisions: 100,
                 onChanged: (final RangeValues values) {
-                  setState(() {
-                    _priceRange = values;
-                    _minPrice = values.start.round();
-                    _maxPrice = values.end >= kMaxPrice ? null : values.end.round();
-                  });
+                  priceRange.value = values;
+                  currentMinPrice.value = values.start.round();
+                  currentMaxPrice.value = values.end >= kMaxPrice
+                      ? null
+                      : values.end.round();
                 },
               ),
             ),
@@ -166,7 +152,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _resetFilters,
+                        onTap: resetFilters,
                         borderRadius: BorderRadius.circular(12),
                         child: Center(
                           child: Text(
@@ -200,7 +186,7 @@ class _FilterDialogContentState extends State<_FilterDialogContent> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _applyFilters,
+                        onTap: applyFilters,
                         borderRadius: BorderRadius.circular(12),
                         child: Center(
                           child: Text(

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
@@ -15,81 +16,126 @@ import '../../data/wardrobe_service.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
 import '../widgets/wardrobe_item_card.dart';
 
-class PersonalPage extends StatefulWidget {
+class PersonalPage extends HookWidget {
   const PersonalPage({super.key});
 
   @override
-  State<PersonalPage> createState() => _PersonalPageState();
-}
+  Widget build(final BuildContext context) {
+    final isLoading = useState(false);
+    final selectedCategory = useState('全部');
+    final categoryScrollController = useScrollController();
 
-class _PersonalPageState extends State<PersonalPage> {
-  List<String> wardrobeCategories = [];
-  String selectedCategory = '全部';
-  final ScrollController _categoryScrollController = ScrollController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final categories = WardrobeService.getWardrobeTypesList();
-    wardrobeCategories = ['全部', ...categories];
-  }
-
-  @override
-  void dispose() {
-    _categoryScrollController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _showDeleteDialog(final WardrobeItem item) async {
-    final confirmed = await ConfirmationDialog.show(
-      context: context,
-      title: '刪除衣物',
-      content: '你確定要刪除這件衣物嗎？',
-      confirmText: '刪除',
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    setState(() {
-      _isLoading = true;
+    final wardrobeCategories = useMemoized(() {
+      final categories = WardrobeService.getWardrobeTypesList();
+      return ['全部', ...categories];
     });
 
-    final result = await WardrobeService.deleteWardrobeItem(item);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (!result.isSuccess) {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
-  Future<void> _showUploadDialog() async {
-    final File? image = await ImagePickerHelper.pickImage(context);
-
-    if (image != null && mounted) {
-      await showDialog<bool>(
+    Future<void> showDeleteDialog(final WardrobeItem item) async {
+      final confirmed = await ConfirmationDialog.show(
         context: context,
-        builder: (final context) => UploadWardrobeItemDialog(
-          image: image,
-          categories: WardrobeService.getWardrobeTypesList(),
+        title: '刪除衣物',
+        content: '你確定要刪除這件衣物嗎？',
+        confirmText: '刪除',
+      );
+
+      if (confirmed != true || !context.mounted) return;
+
+      isLoading.value = true;
+
+      final result = await WardrobeService.deleteWardrobeItem(item);
+
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (!result.isSuccess) {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    Future<void> showUploadDialog() async {
+      final File? image = await ImagePickerHelper.pickImage(context);
+
+      if (image != null && context.mounted) {
+        await showDialog<bool>(
+          context: context,
+          builder: (final context) => UploadWardrobeItemDialog(
+            image: image,
+            categories: WardrobeService.getWardrobeTypesList(),
+          ),
+        );
+      }
+    }
+
+    Widget buildCategoryChip(final String category, final bool isSelected) {
+      return Container(
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(colors: [colorScheme.primary, colorScheme.secondary])
+              : null,
+          color: isSelected ? null : colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              selectedCategory.value = category;
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Center(
+                child: Text(
+                  category,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontSize: 14,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       );
     }
-  }
 
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    Widget buildCategoryBar() {
+      return Container(
+        height: 50,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        child: ListView.builder(
+          controller: categoryScrollController,
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: wardrobeCategories.length,
+          itemBuilder: (final context, final index) {
+            final category = wardrobeCategories[index];
+            final isSelected = selectedCategory.value == category;
+            return buildCategoryChip(category, isSelected);
+          },
+        ),
+      );
+    }
 
     return Scaffold(
       body: Stack(
@@ -211,7 +257,7 @@ class _PersonalPageState extends State<PersonalPage> {
                   ),
 
                   // 分類選單
-                  _buildCategoryBar(),
+                  buildCategoryBar(),
 
                   // 衣櫃內容
                   Expanded(
@@ -220,11 +266,12 @@ class _PersonalPageState extends State<PersonalPage> {
                       child: AppQueryBuilder<List<WardrobeItem>>(
                         query: WardrobeService.wardrobeItemsQuery(),
                         builder: (final context, final wardrobeItem) {
-                          final filteredWardrobeItem = selectedCategory == '全部'
+                          final filteredWardrobeItem = selectedCategory.value == '全部'
                               ? wardrobeItem
                               : wardrobeItem
                                     .where(
-                                      (final item) => item.category == selectedCategory,
+                                      (final item) =>
+                                          item.category == selectedCategory.value,
                                     )
                                     .toList();
 
@@ -260,7 +307,7 @@ class _PersonalPageState extends State<PersonalPage> {
                                           ),
                                           const SizedBox(height: 24),
                                           Text(
-                                            selectedCategory == '全部'
+                                            selectedCategory.value == '全部'
                                                 ? '衣櫃是空的'
                                                 : '此類別沒有衣物',
                                             style: textTheme.titleMedium?.copyWith(
@@ -300,7 +347,7 @@ class _PersonalPageState extends State<PersonalPage> {
                                 return WardrobeItemCard(
                                   item: filteredWardrobeItem[index],
                                   onDelete: () =>
-                                      _showDeleteDialog(filteredWardrobeItem[index]),
+                                      showDeleteDialog(filteredWardrobeItem[index]),
                                 );
                               },
                             );
@@ -313,7 +360,7 @@ class _PersonalPageState extends State<PersonalPage> {
               ),
             ),
           ),
-          if (_isLoading)
+          if (isLoading.value)
             Container(
               color: Colors.black.withValues(alpha: 0.3),
               child: const Center(child: CircularProgressIndicator()),
@@ -342,80 +389,12 @@ class _PersonalPageState extends State<PersonalPage> {
             color: Colors.transparent,
             shape: const CircleBorder(),
             child: InkWell(
-              onTap: _showUploadDialog,
+              onTap: showUploadDialog,
               customBorder: const CircleBorder(),
               child: SizedBox(
                 width: 56,
                 height: 56,
                 child: Icon(Icons.add_rounded, color: colorScheme.onPrimary, size: 28),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryBar() {
-    return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListView.builder(
-        controller: _categoryScrollController,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: wardrobeCategories.length,
-        itemBuilder: (final context, final index) {
-          final category = wardrobeCategories[index];
-          final isSelected = selectedCategory == category;
-          return _buildCategoryChip(category, isSelected);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCategoryChip(final String category, final bool isSelected) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      decoration: BoxDecoration(
-        gradient: isSelected
-            ? LinearGradient(colors: [colorScheme.primary, colorScheme.secondary])
-            : null,
-        color: isSelected ? null : colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              selectedCategory = category;
-            });
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Center(
-              child: Text(
-                category,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  fontSize: 14,
-                  height: 1.0,
-                ),
               ),
             ),
           ),

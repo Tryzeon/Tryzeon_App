@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../data/wardrobe_service.dart';
 
-class UploadWardrobeItemDialog extends StatefulWidget {
+class UploadWardrobeItemDialog extends HookWidget {
   const UploadWardrobeItemDialog({
     super.key,
     required this.image,
@@ -14,16 +15,6 @@ class UploadWardrobeItemDialog extends StatefulWidget {
   });
   final File image;
   final List<String> categories;
-
-  @override
-  State<UploadWardrobeItemDialog> createState() => _UploadWardrobeItemDialogState();
-}
-
-class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
-  String? _selectedCategory;
-  final List<String> _selectedTags = [];
-  bool _isUploading = false;
-  final TextEditingController _customTagController = TextEditingController();
 
   // 預設的 tag 類別
   static const Map<String, List<String>> _defaultTagCategories = {
@@ -34,43 +25,324 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
   };
 
   @override
-  void dispose() {
-    _customTagController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleUpload() async {
-    setState(() {
-      _isUploading = true;
-    });
-
-    final result = await WardrobeService.createWardrobeItem(
-      widget.image,
-      _selectedCategory!,
-      tags: _selectedTags,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _isUploading = false;
-    });
-
-    if (result.isSuccess) {
-      Navigator.pop(context, true);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final selectedCategory = useState<String?>(null);
+    final selectedTags = useState<List<String>>([]);
+    final isUploading = useState(false);
+    final customTagController = useTextEditingController();
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    Future<void> handleUpload() async {
+      isUploading.value = true;
+
+      final result = await WardrobeService.createWardrobeItem(
+        image,
+        selectedCategory.value!,
+        tags: selectedTags.value,
+      );
+
+      if (!context.mounted) return;
+
+      isUploading.value = false;
+
+      if (result.isSuccess) {
+        Navigator.pop(context, true);
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    void toggleTag(final String tag) {
+      if (selectedTags.value.contains(tag)) {
+        selectedTags.value = selectedTags.value.where((final t) => t != tag).toList();
+      } else {
+        selectedTags.value = [...selectedTags.value, tag];
+      }
+    }
+
+    void addCustomTag() {
+      final tag = customTagController.text.trim();
+      if (tag.isEmpty) return;
+
+      if (!selectedTags.value.contains(tag)) {
+        selectedTags.value = [...selectedTags.value, tag];
+      }
+      customTagController.clear();
+    }
+
+    Widget buildImagePreview() {
+      return Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.file(image, fit: BoxFit.cover),
+        ),
+      );
+    }
+
+    Widget buildCategorySelector() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '選擇類別',
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: categories.map((final category) {
+              final isSelected = selectedCategory.value == category;
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [colorScheme.primary, colorScheme.secondary],
+                        )
+                      : null,
+                  color: isSelected ? null : colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      selectedCategory.value = isSelected ? null : category;
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      child: Text(
+                        category,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurface,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }
+
+    Widget buildTagSelector() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                '選擇標籤',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '(可選)',
+                style: textTheme.bodySmall?.copyWith(
+                  fontSize: 14,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 顯示已選擇的 tags
+          if (selectedTags.value.isNotEmpty) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: selectedTags.value.map((final tag) {
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [colorScheme.primary, colorScheme.secondary],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => toggleTag(tag),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              tag,
+                              style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onPrimary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.close, color: colorScheme.onPrimary, size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
+          // 預設 tags 分類顯示
+          ..._defaultTagCategories.entries.map((final entry) {
+            final category = entry.key;
+            final tags = entry.value;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  category,
+                  style: textTheme.labelLarge?.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: tags.map((final tag) {
+                    final isSelected = selectedTags.value.contains(tag);
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: isSelected
+                            ? LinearGradient(
+                                colors: [
+                                  colorScheme.primary.withValues(alpha: 0.2),
+                                  colorScheme.secondary.withValues(alpha: 0.2),
+                                ],
+                              )
+                            : null,
+                        color: isSelected ? null : colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(16),
+                        border: isSelected
+                            ? Border.all(color: colorScheme.primary, width: 1.5)
+                            : null,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => toggleTag(tag),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            child: Text(
+                              tag,
+                              style: textTheme.bodySmall?.copyWith(
+                                color: isSelected
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurface,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 12),
+              ],
+            );
+          }),
+          // 自訂 tag 輸入框 (移到最下面)
+          Text(
+            '自訂標籤',
+            style: textTheme.labelLarge?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: customTagController,
+                  decoration: InputDecoration(
+                    hintText: '輸入自訂標籤',
+                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainer,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  onSubmitted: (final _) => addCustomTag(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [colorScheme.primary, colorScheme.secondary],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: addCustomTag,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Icon(Icons.add, color: colorScheme.onPrimary, size: 20),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
 
     return Dialog(
       backgroundColor: colorScheme.surface,
@@ -109,11 +381,11 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                 ],
               ),
               const SizedBox(height: 24),
-              _buildImagePreview(),
+              buildImagePreview(),
               const SizedBox(height: 24),
-              _buildCategorySelector(),
+              buildCategorySelector(),
               const SizedBox(height: 24),
-              _buildTagSelector(),
+              buildTagSelector(),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -128,19 +400,19 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                   const SizedBox(width: 12),
                   Container(
                     decoration: BoxDecoration(
-                      gradient: _selectedCategory != null && !_isUploading
+                      gradient: selectedCategory.value != null && !isUploading.value
                           ? LinearGradient(
                               colors: [colorScheme.primary, colorScheme.secondary],
                             )
                           : null,
-                      color: _selectedCategory == null || _isUploading
+                      color: selectedCategory.value == null || isUploading.value
                           ? colorScheme.surfaceContainerHighest
                           : null,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ElevatedButton(
-                      onPressed: _selectedCategory != null && !_isUploading
-                          ? _handleUpload
+                      onPressed: selectedCategory.value != null && !isUploading.value
+                          ? handleUpload
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
@@ -151,7 +423,7 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: _isUploading
+                      child: isUploading.value
                           ? SizedBox(
                               width: 16,
                               height: 16,
@@ -169,301 +441,6 @@ class _UploadWardrobeItemDialogState extends State<UploadWardrobeItemDialog> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildImagePreview() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 200,
-      height: 200,
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.file(widget.image, fit: BoxFit.cover),
-      ),
-    );
-  }
-
-  Widget _buildCategorySelector() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '選擇類別',
-          style: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: widget.categories.map((final category) {
-            final isSelected = _selectedCategory == category;
-            return Container(
-              decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(colors: [colorScheme.primary, colorScheme.secondary])
-                    : null,
-                color: isSelected ? null : colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _selectedCategory = isSelected ? null : category;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    child: Text(
-                      category,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  void _toggleTag(final String tag) {
-    setState(() {
-      if (_selectedTags.contains(tag)) {
-        _selectedTags.remove(tag);
-      } else {
-        _selectedTags.add(tag);
-      }
-    });
-  }
-
-  void _addCustomTag() {
-    final tag = _customTagController.text.trim();
-    if (tag.isEmpty) return;
-
-    setState(() {
-      if (!_selectedTags.contains(tag)) {
-        _selectedTags.add(tag);
-      }
-    });
-    _customTagController.clear();
-  }
-
-  Widget _buildTagSelector() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              '選擇標籤',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '(可選)',
-              style: textTheme.bodySmall?.copyWith(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        // 顯示已選擇的 tags
-        if (_selectedTags.isNotEmpty) ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _selectedTags.map((final tag) {
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [colorScheme.primary, colorScheme.secondary],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => _toggleTag(tag),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            tag,
-                            style: textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.close, color: colorScheme.onPrimary, size: 14),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-        ],
-        // 預設 tags 分類顯示
-        ..._defaultTagCategories.entries.map((final entry) {
-          final category = entry.key;
-          final tags = entry.value;
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category,
-                style: textTheme.labelLarge?.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: tags.map((final tag) {
-                  final isSelected = _selectedTags.contains(tag);
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: isSelected
-                          ? LinearGradient(
-                              colors: [
-                                colorScheme.primary.withValues(alpha: 0.2),
-                                colorScheme.secondary.withValues(alpha: 0.2),
-                              ],
-                            )
-                          : null,
-                      color: isSelected ? null : colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(16),
-                      border: isSelected
-                          ? Border.all(color: colorScheme.primary, width: 1.5)
-                          : null,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _toggleTag(tag),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          child: Text(
-                            tag,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: isSelected
-                                  ? colorScheme.primary
-                                  : colorScheme.onSurface,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
-            ],
-          );
-        }),
-        // 自訂 tag 輸入框 (移到最下面)
-        Text(
-          '自訂標籤',
-          style: textTheme.labelLarge?.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _customTagController,
-                decoration: InputDecoration(
-                  hintText: '輸入自訂標籤',
-                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-                  filled: true,
-                  fillColor: colorScheme.surfaceContainer,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onSubmitted: (final _) => _addCustomTag(),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colorScheme.primary, colorScheme.secondary],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _addCustomTag,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(Icons.add, color: colorScheme.onPrimary, size: 20),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class ShopSearchBar extends StatefulWidget {
+class ShopSearchBar extends HookWidget {
   const ShopSearchBar({super.key, required this.onSearch});
   final Future<void> Function(String query) onSearch;
 
   @override
-  State<ShopSearchBar> createState() => _ShopSearchBarState();
-}
-
-class _ShopSearchBarState extends State<ShopSearchBar> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final controller = useTextEditingController();
+    useListenable(controller);
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -39,7 +30,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
               ],
             ),
             child: TextField(
-              controller: _controller,
+              controller: controller,
               style: textTheme.bodyMedium,
               decoration: InputDecoration(
                 hintText: '搜尋品牌或商品',
@@ -47,7 +38,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                   color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 prefixIcon: Icon(Icons.search, color: colorScheme.primary),
-                suffixIcon: _controller.text.isEmpty
+                suffixIcon: controller.text.isEmpty
                     ? null
                     : IconButton(
                         icon: Icon(
@@ -55,9 +46,8 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                           color: colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                         onPressed: () {
-                          _controller.clear();
-                          widget.onSearch('');
-                          setState(() {});
+                          controller.clear();
+                          onSearch('');
                         },
                       ),
                 border: OutlineInputBorder(
@@ -68,8 +58,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
                 fillColor: colorScheme.surface,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
-              onChanged: (final value) => setState(() {}),
-              onSubmitted: widget.onSearch,
+              onSubmitted: onSearch,
             ),
           ),
         ),
@@ -89,7 +78,7 @@ class _ShopSearchBarState extends State<ShopSearchBar> {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => widget.onSearch(_controller.text),
+              onTap: () => onSearch(controller.text),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

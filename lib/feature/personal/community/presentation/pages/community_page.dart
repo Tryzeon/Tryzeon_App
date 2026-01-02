@@ -1,12 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class CommunityPage extends StatelessWidget {
+class CommunityPage extends HookWidget {
   const CommunityPage({super.key});
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    Widget buildFeatureItem({
+      required final IconData icon,
+      required final String title,
+      required final String subtitle,
+    }) {
+      return Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: colorScheme.tertiary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: colorScheme.tertiary),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: textTheme.titleSmall),
+                Text(
+                  subtitle,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -100,22 +137,19 @@ class CommunityPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _buildFeatureItem(
-                      context: context,
+                    buildFeatureItem(
                       icon: Icons.share_outlined,
                       title: '分享穿搭',
                       subtitle: '與朋友分享你的時尚品味',
                     ),
                     const SizedBox(height: 16),
-                    _buildFeatureItem(
-                      context: context,
+                    buildFeatureItem(
                       icon: Icons.favorite_outline_rounded,
                       title: '按讚收藏',
                       subtitle: '收藏喜歡的穿搭靈感',
                     ),
                     const SizedBox(height: 16),
-                    _buildFeatureItem(
-                      context: context,
+                    buildFeatureItem(
                       icon: Icons.comment_outlined,
                       title: '互動交流',
                       subtitle: '與其他用戶交流心得',
@@ -127,46 +161,6 @@ class CommunityPage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildFeatureItem({
-    required final BuildContext context,
-    required final IconData icon,
-    required final String title,
-    required final String subtitle,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: colorScheme.tertiary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: colorScheme.tertiary),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: textTheme.titleSmall),
-              Text(
-                subtitle,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

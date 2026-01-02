@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
@@ -8,93 +9,162 @@ import 'package:typed_result/typed_result.dart';
 
 import '../../data/profile_service.dart';
 
-class PersonalProfileSettingsPage extends StatefulWidget {
+class PersonalProfileSettingsPage extends HookWidget {
   const PersonalProfileSettingsPage({super.key});
 
   @override
-  State<PersonalProfileSettingsPage> createState() => _PersonalProfileSettingsPageState();
-}
+  Widget build(final BuildContext context) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final nameController = useTextEditingController();
 
-class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _measurementControllers = <MeasurementType, TextEditingController>{};
-
-  bool _isLoading = false;
-  UserProfile? _currentUserProfile;
-  bool _isControllersInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
     // 初始化所有身型數據的控制器
+    final measurementControllers = <MeasurementType, TextEditingController>{};
     for (final type in MeasurementType.values) {
-      _measurementControllers[type] = TextEditingController();
-    }
-  }
-
-  Future<void> _updateProfile() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_currentUserProfile == null) {
-      TopNotification.show(context, message: '無法取得原始個人資料', type: NotificationType.error);
-      return;
+      measurementControllers[type] = useTextEditingController();
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final isLoading = useState(false);
+    final currentUserProfile = useState<UserProfile?>(null);
+    final isControllersInitialized = useState(false);
 
-    // 收集所有控制器的值並轉換為 Map
-    final measurementsJson = <String, dynamic>{};
-    for (final entry in _measurementControllers.entries) {
-      if (entry.value.text.isNotEmpty) {
-        measurementsJson[entry.key.key] = double.tryParse(entry.value.text);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    Future<void> updateProfile() async {
+      if (!formKey.currentState!.validate()) return;
+
+      if (currentUserProfile.value == null) {
+        TopNotification.show(
+          context,
+          message: '無法取得原始個人資料',
+          type: NotificationType.error,
+        );
+        return;
+      }
+
+      isLoading.value = true;
+
+      // 收集所有控制器的值並轉換為 Map
+      final measurementsJson = <String, dynamic>{};
+      for (final entry in measurementControllers.entries) {
+        if (entry.value.text.isNotEmpty) {
+          measurementsJson[entry.key.key] = double.tryParse(entry.value.text);
+        }
+      }
+
+      final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(
+        measurementsJson,
+      );
+
+      final targetProfile = currentUserProfile.value!.copyWith(
+        name: nameController.text.trim(),
+        measurements: newMeasurements,
+      );
+
+      final result = await UserProfileService.updateUserProfile(
+        original: currentUserProfile.value!,
+        target: targetProfile,
+      );
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        Navigator.pop(context, true);
+        TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
       }
     }
 
-    final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(measurementsJson);
-
-    final targetProfile = _currentUserProfile!.copyWith(
-      name: _nameController.text.trim(),
-      measurements: newMeasurements,
-    );
-
-    final result = await UserProfileService.updateUserProfile(
-      original: _currentUserProfile!,
-      target: targetProfile,
-    );
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      Navigator.pop(context, true);
-      TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
+    Widget buildTextField({
+      required final TextEditingController controller,
+      required final String label,
+      required final IconData icon,
+      final TextInputType? keyboardType,
+      final List<TextInputFormatter>? inputFormatters,
+      final String? Function(String?)? validator,
+    }) {
+      return TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        style: textTheme.bodyLarge,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: textTheme.bodyMedium,
+          prefixIcon: Icon(icon, color: colorScheme.primary),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.outlineVariant),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.outlineVariant),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          ),
+          filled: true,
+          fillColor: colorScheme.surfaceContainerLow,
+        ),
+        validator: validator,
       );
     }
-  }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    for (final controller in _measurementControllers.values) {
-      controller.dispose();
+    Widget buildSectionCard({
+      required final IconData icon,
+      required final String title,
+      required final List<Widget> children,
+    }) {
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 圖示標題
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.primary.withValues(alpha: 0.1),
+                        colorScheme.secondary.withValues(alpha: 0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: colorScheme.primary, size: 28),
+                ),
+                const SizedBox(width: 12),
+                Text(title, style: textTheme.titleMedium),
+              ],
+            ),
+            const SizedBox(height: 24),
+            ...children,
+          ],
+        ),
+      );
     }
-    super.dispose();
-  }
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: Container(
@@ -165,33 +235,32 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                 child: AppQueryBuilder<UserProfile>(
                   query: UserProfileService.userProfileQuery(),
                   builder: (final context, final profile) {
-                    if (!_isControllersInitialized) {
-                      _currentUserProfile = profile;
-                      _nameController.text = profile.name;
+                    if (!isControllersInitialized.value) {
+                      currentUserProfile.value = profile;
+                      nameController.text = profile.name;
                       for (final type in MeasurementType.values) {
-                        _measurementControllers[type]?.text =
+                        measurementControllers[type]?.text =
                             profile.measurements[type]?.toString() ?? '';
                       }
-                      _isControllersInitialized = true;
+                      isControllersInitialized.value = true;
                     }
 
                     return SingleChildScrollView(
                       padding: const EdgeInsets.all(24.0),
                       child: Form(
-                        key: _formKey,
+                        key: formKey,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 8),
 
                             // 基本資料卡片
-                            _buildSectionCard(
-                              context: context,
+                            buildSectionCard(
                               icon: Icons.person_outline_rounded,
                               title: '基本資料',
                               children: [
-                                _buildTextField(
-                                  controller: _nameController,
+                                buildTextField(
+                                  controller: nameController,
                                   label: '姓名',
                                   icon: Icons.person_outline_rounded,
                                   validator: (final value) {
@@ -206,8 +275,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                             const SizedBox(height: 16),
 
                             // 身體測量卡片
-                            _buildSectionCard(
-                              context: context,
+                            buildSectionCard(
                               icon: Icons.straighten_rounded,
                               title: '身型資料',
                               children: [
@@ -225,8 +293,8 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                               12) /
                                           2,
                                       // 48(page padding) + 40(card padding) + 12(spacing)
-                                      child: _buildTextField(
-                                        controller: _measurementControllers[type]!,
+                                      child: buildTextField(
+                                        controller: measurementControllers[type]!,
                                         label: type.label,
                                         icon: type.icon,
                                         keyboardType:
@@ -253,7 +321,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                               width: double.infinity,
                               height: 56,
                               decoration: BoxDecoration(
-                                gradient: _isLoading
+                                gradient: isLoading.value
                                     ? LinearGradient(
                                         colors: [
                                           colorScheme.outline,
@@ -267,7 +335,7 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                                         ],
                                       ),
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: _isLoading
+                                boxShadow: isLoading.value
                                     ? []
                                     : [
                                         BoxShadow(
@@ -282,10 +350,10 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: _isLoading ? null : _updateProfile,
+                                  onTap: isLoading.value ? null : updateProfile,
                                   borderRadius: BorderRadius.circular(16),
                                   child: Center(
-                                    child: _isLoading
+                                    child: isLoading.value
                                         ? SizedBox(
                                             width: 24,
                                             height: 24,
@@ -329,98 +397,6 @@ class _PersonalProfileSettingsPageState extends State<PersonalProfileSettingsPag
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionCard({
-    required final BuildContext context,
-    required final IconData icon,
-    required final String title,
-    required final List<Widget> children,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 圖示標題
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colorScheme.primary.withValues(alpha: 0.1),
-                      colorScheme.secondary.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: colorScheme.primary, size: 28),
-              ),
-              const SizedBox(width: 12),
-              Text(title, style: textTheme.titleMedium),
-            ],
-          ),
-          const SizedBox(height: 24),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required final TextEditingController controller,
-    required final String label,
-    required final IconData icon,
-    final TextInputType? keyboardType,
-    final List<TextInputFormatter>? inputFormatters,
-    final String? Function(String?)? validator,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      style: textTheme.bodyLarge,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: textTheme.bodyMedium,
-        prefixIcon: Icon(icon, color: colorScheme.primary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerLow,
-      ),
-      validator: validator,
     );
   }
 }

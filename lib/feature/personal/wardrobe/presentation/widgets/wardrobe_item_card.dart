@@ -1,68 +1,48 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../data/wardrobe_item_model.dart';
 
-class WardrobeItemCard extends StatefulWidget {
+class WardrobeItemCard extends HookWidget {
   const WardrobeItemCard({super.key, required this.item, required this.onDelete});
   final WardrobeItem item;
   final VoidCallback onDelete;
 
   @override
-  State<WardrobeItemCard> createState() => _WardrobeItemCardState();
-}
-
-class _WardrobeItemCardState extends State<WardrobeItemCard> {
-  File? _imageFile;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadImage();
-  }
-
-  @override
-  void didUpdateWidget(final WardrobeItemCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // 當 item 改變時重新載入圖片
-    if (oldWidget.item.imagePath != widget.item.imagePath) {
-      _loadImage();
-    }
-  }
-
-  Future<void> _loadImage() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final result = await widget.item.loadImage();
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      setState(() {
-        _imageFile = result.get();
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final imageFile = useState<File?>(null);
+    final isLoading = useState(true);
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    Future<void> loadImage() async {
+      isLoading.value = true;
+
+      final result = await item.loadImage();
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        imageFile.value = result.get();
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    useEffect(() {
+      loadImage();
+      return null;
+    }, [item.imagePath]);
 
     return Container(
       decoration: BoxDecoration(
@@ -84,13 +64,13 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: Stack(
                 children: [
-                  _isLoading
+                  isLoading.value
                       ? Center(
                           child: CircularProgressIndicator(color: colorScheme.primary),
                         )
-                      : _imageFile != null
+                      : imageFile.value != null
                       ? Image.file(
-                          _imageFile!,
+                          imageFile.value!,
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
@@ -130,7 +110,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                             child: Icon(Icons.error_outline, color: colorScheme.outline),
                           ),
                         ),
-                  if (!_isLoading)
+                  if (!isLoading.value)
                     // 刪除按鈕
                     Positioned(
                       top: 8,
@@ -138,7 +118,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: widget.onDelete,
+                          onTap: onDelete,
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -181,7 +161,7 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        widget.item.category,
+                        item.category,
                         style: textTheme.labelMedium?.copyWith(
                           color: colorScheme.primary,
                         ),
@@ -189,12 +169,12 @@ class _WardrobeItemCardState extends State<WardrobeItemCard> {
                     ),
                   ],
                 ),
-                if (widget.item.tags.isNotEmpty) ...[
+                if (item.tags.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 4,
                     runSpacing: 4,
-                    children: widget.item.tags.take(3).map((final tag) {
+                    children: item.tags.take(3).map((final tag) {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(

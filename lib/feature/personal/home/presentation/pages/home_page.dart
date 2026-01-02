@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
@@ -12,478 +13,469 @@ import 'package:typed_result/typed_result.dart';
 
 import '../../data/tryon_service.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePageController {
+  Future<void> Function(String clothesPath)? tryOnFromStorage;
 
-  @override
-  State<HomePage> createState() => HomePageState();
+  void dispose() {
+    tryOnFromStorage = null;
+  }
 }
 
-class HomePageState extends State<HomePage> {
-  String? _avatarPath;
-  File? _avatarFile;
-  final List<Uint8List> _tryonImages = []; // 試穿後的圖片列表（已解碼的 bytes）
-  int _currentTryonIndex = -1; // 當前顯示的試穿圖片索引，-1表示沒有試穿圖片
-  bool _isLoading = true;
-  int? _customAvatarIndex; // 記錄哪張試穿照片被設為自訂 avatar
+class HomePage extends HookWidget {
+  const HomePage({super.key, this.controller});
+  final HomePageController? controller;
 
   @override
-  void initState() {
-    super.initState();
-    _loadAvatar();
-  }
+  Widget build(final BuildContext context) {
+    final avatarPath = useState<String?>(null);
+    final avatarFile = useState<File?>(null);
+    final tryonImages = useState<List<Uint8List>>([]);
+    final currentTryonIndex = useState(-1);
+    final isLoading = useState(true);
+    final customAvatarIndex = useState<int?>(null);
 
-  /// 核心試穿邏輯 - 處理本地檔案或儲存路徑的試穿
-  Future<void> _performTryOn({
-    final String? clothesBase64,
-    final String? clothesPath,
-  }) async {
-    if (_avatarFile == null) {
-      TopNotification.show(context, message: '請先上傳您的照片', type: NotificationType.warning);
-      return;
-    }
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    // 如果有自訂 avatar，轉換為 base64
-    String? customAvatarBase64;
-    if (_customAvatarIndex != null) {
-      customAvatarBase64 = base64Encode(_tryonImages[_customAvatarIndex!]);
-    }
+    Future<void> loadAvatar({final bool forceRefresh = false}) async {
+      isLoading.value = true;
 
-    setState(() {
-      _isLoading = true;
-    });
+      final result = await AvatarService.getAvatar(forceRefresh: forceRefresh);
+      if (!context.mounted) return;
 
-    final result = await TryonService.tryon(
-      avatarBase64: customAvatarBase64,
-      avatarPath: _avatarPath,
-      clothesBase64: clothesBase64,
-      clothesPath: clothesPath,
-    );
+      isLoading.value = false;
 
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    // Check if success
-    if (result.isSuccess) {
-      // 解碼 base64 並儲存為 bytes
-      final base64String = result.get()!.split(',')[1];
-      final imageBytes = base64Decode(base64String);
-
-      setState(() {
-        _tryonImages.add(imageBytes);
-        _currentTryonIndex = _tryonImages.length - 1;
-      });
-
-      TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
-  /// 從本地選擇衣服進行試穿
-  Future<void> tryOnFromLocal() async {
-    final File? clothesImage = await ImagePickerHelper.pickImage(context);
-    if (clothesImage == null) return;
-
-    final clothesBytes = await clothesImage.readAsBytes();
-    final clothesBase64 = base64Encode(clothesBytes);
-
-    await _performTryOn(clothesBase64: clothesBase64);
-  }
-
-  /// 從儲存路徑進行試穿
-  Future<void> tryOnFromStorage(final String clothesPath) async {
-    await _performTryOn(clothesPath: clothesPath);
-  }
-
-  Future<void> _loadAvatar({final bool forceRefresh = false}) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final result = await AvatarService.getAvatar(forceRefresh: forceRefresh);
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      setState(() {
-        _avatarPath = result.get()!.avatarPath;
-        _avatarFile = result.get()!.avatarFile;
-      });
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
-  Future<void> _uploadAvatar() async {
-    final File? imageFile = await ImagePickerHelper.pickImage(context);
-    if (imageFile == null) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final result = await AvatarService.uploadAvatar(imageFile);
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      setState(() {
-        _avatarPath = result.get()!.avatarPath;
-        _avatarFile = result.get()!.avatarFile;
-        _tryonImages.clear();
-        _currentTryonIndex = -1;
-        _customAvatarIndex = null;
-      });
-
-      TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
-
-  void _previousTryon() {
-    setState(() {
-      _currentTryonIndex--;
-    });
-  }
-
-  void _nextTryon() {
-    setState(() {
-      _currentTryonIndex++;
-    });
-  }
-
-  Future<void> _downloadCurrentImage() async {
-    try {
-      final imageBytes = _tryonImages[_currentTryonIndex];
-
-      // 儲存到相簿
-      await Gal.putImageBytes(
-        imageBytes,
-        name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
-      );
-
-      if (mounted) {
+      if (result.isSuccess) {
+        avatarPath.value = result.get()!.avatarPath;
+        avatarFile.value = result.get()!.avatarFile;
+      } else {
         TopNotification.show(
           context,
-          message: '照片已儲存到相簿',
-          type: NotificationType.success,
+          message: result.getError()!,
+          type: NotificationType.error,
         );
       }
-    } catch (e) {
-      if (mounted) {
-        TopNotification.show(context, message: '儲存失敗：$e', type: NotificationType.error);
+    }
+
+    Future<void> performTryOn({
+      final String? clothesBase64,
+      final String? clothesPath,
+    }) async {
+      if (avatarFile.value == null) {
+        TopNotification.show(
+          context,
+          message: '請先上傳您的照片',
+          type: NotificationType.warning,
+        );
+        return;
+      }
+
+      // 如果有自訂 avatar，轉換為 base64
+      String? customAvatarBase64;
+      if (customAvatarIndex.value != null) {
+        customAvatarBase64 = base64Encode(tryonImages.value[customAvatarIndex.value!]);
+      }
+
+      isLoading.value = true;
+
+      final result = await TryonService.tryon(
+        avatarBase64: customAvatarBase64,
+        avatarPath: avatarPath.value,
+        clothesBase64: clothesBase64,
+        clothesPath: clothesPath,
+      );
+
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      // Check if success
+      if (result.isSuccess) {
+        // 解碼 base64 並儲存為 bytes
+        final base64String = result.get()!.split(',')[1];
+        final imageBytes = base64Decode(base64String);
+
+        tryonImages.value = [...tryonImages.value, imageBytes];
+        currentTryonIndex.value = tryonImages.value.length - 1;
+
+        TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
       }
     }
-  }
 
-  Future<void> _toggleAvatar() async {
-    try {
-      final isCurrentlySet = _customAvatarIndex == _currentTryonIndex;
+    Future<void> tryOnFromLocal() async {
+      final File? clothesImage = await ImagePickerHelper.pickImage(context);
+      if (clothesImage == null) return;
 
-      setState(() {
+      final clothesBytes = await clothesImage.readAsBytes();
+      final clothesBase64 = base64Encode(clothesBytes);
+
+      await performTryOn(clothesBase64: clothesBase64);
+    }
+
+    Future<void> tryOnFromStorage(final String clothesPath) async {
+      await performTryOn(clothesPath: clothesPath);
+    }
+
+    Future<void> uploadAvatar() async {
+      final File? imageFile = await ImagePickerHelper.pickImage(context);
+      if (imageFile == null) return;
+
+      isLoading.value = true;
+
+      final result = await AvatarService.uploadAvatar(imageFile);
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        avatarPath.value = result.get()!.avatarPath;
+        avatarFile.value = result.get()!.avatarFile;
+        tryonImages.value = [];
+        currentTryonIndex.value = -1;
+        customAvatarIndex.value = null;
+
+        TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    void previousTryon() {
+      currentTryonIndex.value--;
+    }
+
+    void nextTryon() {
+      currentTryonIndex.value++;
+    }
+
+    Future<void> downloadCurrentImage() async {
+      try {
+        final imageBytes = tryonImages.value[currentTryonIndex.value];
+
+        // 儲存到相簿
+        await Gal.putImageBytes(
+          imageBytes,
+          name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
+        );
+
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: '照片已儲存到相簿',
+            type: NotificationType.success,
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          TopNotification.show(context, message: '儲存失敗：$e', type: NotificationType.error);
+        }
+      }
+    }
+
+    Future<void> toggleAvatar() async {
+      try {
+        final isCurrentlySet = customAvatarIndex.value == currentTryonIndex.value;
+
         if (isCurrentlySet) {
           // 取消設定
-          _customAvatarIndex = null;
+          customAvatarIndex.value = null;
         } else {
           // 設定為 avatar
-          _customAvatarIndex = _currentTryonIndex;
+          customAvatarIndex.value = currentTryonIndex.value;
         }
-      });
 
-      if (mounted) {
-        TopNotification.show(
-          context,
-          message: isCurrentlySet ? '已取消試穿形象' : '已設定為試穿形象',
-          type: NotificationType.success,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        TopNotification.show(context, message: '操作失敗：$e', type: NotificationType.error);
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: isCurrentlySet ? '已取消試穿形象' : '已設定為試穿形象',
+            type: NotificationType.success,
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          TopNotification.show(context, message: '操作失敗：$e', type: NotificationType.error);
+        }
       }
     }
-  }
 
-  Future<void> _deleteCurrentTryon() async {
-    final confirmed = await ConfirmationDialog.show(
-      context: context,
-      content: '確定要刪除這張試穿照片嗎？',
-      confirmText: '刪除',
-    );
+    Future<void> deleteCurrentTryon() async {
+      final confirmed = await ConfirmationDialog.show(
+        context: context,
+        content: '確定要刪除這張試穿照片嗎？',
+        confirmText: '刪除',
+      );
 
-    if (confirmed == true) {
-      final deletedIndex = _currentTryonIndex;
+      if (confirmed == true) {
+        final deletedIndex = currentTryonIndex.value;
 
-      setState(() {
-        _tryonImages.removeAt(_currentTryonIndex);
+        final newImages = List<Uint8List>.from(tryonImages.value);
+        newImages.removeAt(deletedIndex);
+        tryonImages.value = newImages;
 
         // 如果刪除的照片是自訂 avatar，清除設定
-        if (_customAvatarIndex == deletedIndex) {
-          _customAvatarIndex = null;
-        } else if (_customAvatarIndex != null && _customAvatarIndex! > deletedIndex) {
+        if (customAvatarIndex.value == deletedIndex) {
+          customAvatarIndex.value = null;
+        } else if (customAvatarIndex.value != null &&
+            customAvatarIndex.value! > deletedIndex) {
           // 如果自訂 avatar 在刪除照片之後，索引需要 -1
-          _customAvatarIndex = _customAvatarIndex! - 1;
+          customAvatarIndex.value = customAvatarIndex.value! - 1;
         }
 
         // 調整當前索引
-        if (_tryonImages.isEmpty) {
+        if (tryonImages.value.isEmpty) {
           // 如果沒有試穿照片了，回到原圖
-          _currentTryonIndex = -1;
-        } else if (_currentTryonIndex >= _tryonImages.length) {
+          currentTryonIndex.value = -1;
+        } else if (currentTryonIndex.value >= tryonImages.value.length) {
           // 如果刪除的是最後一張，往前移一張
-          _currentTryonIndex = _tryonImages.length - 1;
+          currentTryonIndex.value = tryonImages.value.length - 1;
         }
         // 否則保持當前索引，會自動顯示下一張
-      });
 
-      if (mounted) {
-        TopNotification.show(context, message: '已刪除試穿照片', type: NotificationType.success);
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: '已刪除試穿照片',
+            type: NotificationType.success,
+          );
+        }
       }
     }
-  }
 
-  Widget _buildMoreOptionsButton() {
-    return Positioned(
-      top: 16,
-      right: 16,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              backgroundColor: Colors.transparent,
-              builder: (final context) => Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
+    useEffect(() {
+      loadAvatar();
+      return null;
+    }, []);
+
+    useEffect(() {
+      if (controller != null) {
+        controller!.tryOnFromStorage = tryOnFromStorage;
+        return () => controller!.tryOnFromStorage = null;
+      }
+      return null;
+    }, [controller]);
+
+    Widget buildOptionButton({
+      required final String title,
+      required final String subtitle,
+      required final IconData icon,
+      required final VoidCallback onTap,
+    }) {
+      return ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle),
+        onTap: onTap,
+      );
+    }
+
+    Widget buildMoreOptionsButton() {
+      return Positioned(
+        top: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (final context) => Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildOptionButton(
-                        title: '下載照片',
-                        subtitle: '儲存到相簿',
-                        icon: Icons.download_rounded,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _downloadCurrentImage();
-                        },
-                      ),
-                      _buildOptionButton(
-                        title: _customAvatarIndex == _currentTryonIndex
-                            ? '取消我的形象'
-                            : '設為我的形象',
-                        subtitle: _customAvatarIndex == _currentTryonIndex
-                            ? '取消使用此照片作為試穿形象'
-                            : '使用此照片作為試穿形象',
-                        icon: _customAvatarIndex == _currentTryonIndex
-                            ? Icons.person_off_outlined
-                            : Icons.person_outline_rounded,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _toggleAvatar();
-                        },
-                      ),
-                      _buildOptionButton(
-                        title: '刪除此試穿',
-                        subtitle: '移除這張試穿照片',
-                        icon: Icons.delete_outline_rounded,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _deleteCurrentTryon();
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        const SizedBox(height: 16),
+                        buildOptionButton(
+                          title: '下載照片',
+                          subtitle: '儲存到相簿',
+                          icon: Icons.download_rounded,
+                          onTap: () {
+                            Navigator.pop(context);
+                            downloadCurrentImage();
+                          },
+                        ),
+                        buildOptionButton(
+                          title: customAvatarIndex.value == currentTryonIndex.value
+                              ? '取消我的形象'
+                              : '設為我的形象',
+                          subtitle: customAvatarIndex.value == currentTryonIndex.value
+                              ? '取消使用此照片作為試穿形象'
+                              : '使用此照片作為試穿形象',
+                          icon: customAvatarIndex.value == currentTryonIndex.value
+                              ? Icons.person_off_outlined
+                              : Icons.person_outline_rounded,
+                          onTap: () {
+                            Navigator.pop(context);
+                            toggleAvatar();
+                          },
+                        ),
+                        buildOptionButton(
+                          title: '刪除此試穿',
+                          subtitle: '移除這張試穿照片',
+                          icon: Icons.delete_outline_rounded,
+                          onTap: () {
+                            Navigator.pop(context);
+                            deleteCurrentTryon();
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
               ),
-            );
-          },
+              child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 24),
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget buildNavButton({
+      required final IconData icon,
+      required final bool isEnabled,
+      required final VoidCallback? onTap,
+    }) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: isEnabled
+                  ? Colors.black.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 24),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOptionButton({
-    required final String title,
-    required final String subtitle,
-    required final IconData icon,
-    required final VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle),
-      onTap: onTap,
-    );
-  }
-
-  Widget _buildNavigationButtons() {
-    return Positioned(
-      left: 16,
-      right: 16,
-      bottom: 16,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // 上一步按鈕
-          _buildNavButton(
-            icon: Icons.arrow_back_ios_rounded,
-            isEnabled: _currentTryonIndex >= 0,
-            onTap: _currentTryonIndex >= 0 ? _previousTryon : null,
-          ),
-
-          // 頁數指示器
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
+            child: Icon(
+              icon,
+              color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
+              size: 24,
             ),
-            child: Text(
-              _currentTryonIndex >= 0
-                  ? '${_currentTryonIndex + 1} / ${_tryonImages.length}'
-                  : '原圖',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    Widget buildNavigationButtons() {
+      return Positioned(
+        left: 16,
+        right: 16,
+        bottom: 16,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // 上一步按鈕
+            buildNavButton(
+              icon: Icons.arrow_back_ios_rounded,
+              isEnabled: currentTryonIndex.value >= 0,
+              onTap: currentTryonIndex.value >= 0 ? previousTryon : null,
+            ),
+
+            // 頁數指示器
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                currentTryonIndex.value >= 0
+                    ? '${currentTryonIndex.value + 1} / ${tryonImages.value.length}'
+                    : '原圖',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
 
-          // 下一步按鈕
-          _buildNavButton(
-            icon: Icons.arrow_forward_ios_rounded,
-            isEnabled: _currentTryonIndex < _tryonImages.length - 1,
-            onTap: _currentTryonIndex < _tryonImages.length - 1 ? _nextTryon : null,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavButton({
-    required final IconData icon,
-    required final bool isEnabled,
-    required final VoidCallback? onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isEnabled
-                ? Colors.black.withValues(alpha: 0.5)
-                : Colors.black.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(
-            icon,
-            color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
-            size: 24,
-          ),
+            // 下一步按鈕
+            buildNavButton(
+              icon: Icons.arrow_forward_ios_rounded,
+              isEnabled: currentTryonIndex.value < tryonImages.value.length - 1,
+              onTap: currentTryonIndex.value < tryonImages.value.length - 1
+                  ? nextTryon
+                  : null,
+            ),
+          ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _buildAvatarImage() {
-    // 如果有試穿圖片，顯示試穿圖片
-    if (_currentTryonIndex >= 0 && _currentTryonIndex < _tryonImages.length) {
-      return Image.memory(
-        _tryonImages[_currentTryonIndex],
+    Widget buildAvatarImage() {
+      // 如果有試穿圖片，顯示試穿圖片
+      if (currentTryonIndex.value >= 0 &&
+          currentTryonIndex.value < tryonImages.value.length) {
+        return Image.memory(
+          tryonImages.value[currentTryonIndex.value],
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+        );
+      }
+
+      // 沒有試穿圖片，顯示原始頭像
+      if (avatarFile.value != null) {
+        return Image.file(
+          avatarFile.value!,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (final context, final error, final stackTrace) =>
+              const Icon(Icons.image_not_supported),
+        );
+      }
+
+      // 沒有頭像，顯示預設圖片
+      return Image.asset(
+        'assets/images/profile/default.png',
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
       );
     }
-
-    // 沒有試穿圖片，顯示原始頭像
-    if (_avatarFile != null) {
-      return Image.file(
-        _avatarFile!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (final context, final error, final stackTrace) =>
-            const Icon(Icons.image_not_supported),
-      );
-    }
-
-    // 沒有頭像，顯示預設圖片
-    return Image.asset(
-      'assets/images/profile/default.png',
-      width: double.infinity,
-      height: double.infinity,
-      fit: BoxFit.cover,
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: Container(
@@ -505,7 +497,7 @@ class HomePageState extends State<HomePage> {
           ),
         ),
         child: RefreshIndicator(
-          onRefresh: () => _loadAvatar(forceRefresh: true),
+          onRefresh: () => loadAvatar(forceRefresh: true),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: SafeArea(
@@ -547,7 +539,7 @@ class HomePageState extends State<HomePage> {
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.6,
                       child: GestureDetector(
-                        onTap: _uploadAvatar,
+                        onTap: uploadAvatar,
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -574,10 +566,10 @@ class HomePageState extends State<HomePage> {
                             child: Stack(
                               children: [
                                 // 主要圖片
-                                _buildAvatarImage(),
+                                buildAvatarImage(),
 
                                 // 載入遮罩
-                                if (_isLoading)
+                                if (isLoading.value)
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
@@ -622,12 +614,12 @@ class HomePageState extends State<HomePage> {
                                   ),
 
                                 // 更多選項按鈕（僅在顯示試穿結果時顯示）
-                                if (!_isLoading && _currentTryonIndex >= 0)
-                                  _buildMoreOptionsButton(),
+                                if (!isLoading.value && currentTryonIndex.value >= 0)
+                                  buildMoreOptionsButton(),
 
                                 // 上一步/下一步按鈕（僅在有試穿結果時顯示）
-                                if (!_isLoading && _tryonImages.isNotEmpty)
-                                  _buildNavigationButtons(),
+                                if (!isLoading.value && tryonImages.value.isNotEmpty)
+                                  buildNavigationButtons(),
                               ],
                             ),
                           ),
@@ -641,7 +633,7 @@ class HomePageState extends State<HomePage> {
                     Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        gradient: _isLoading
+                        gradient: isLoading.value
                             ? LinearGradient(
                                 colors: [
                                   colorScheme.surfaceContainer,
@@ -657,7 +649,7 @@ class HomePageState extends State<HomePage> {
                                 ],
                               ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: _isLoading
+                        boxShadow: isLoading.value
                             ? []
                             : [
                                 BoxShadow(
@@ -670,7 +662,7 @@ class HomePageState extends State<HomePage> {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: _isLoading ? null : tryOnFromLocal,
+                          onTap: isLoading.value ? null : tryOnFromLocal,
                           borderRadius: BorderRadius.circular(16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,

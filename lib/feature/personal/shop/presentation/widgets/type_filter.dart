@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class ProductTypeFilter extends StatelessWidget {
+class ProductTypeFilter extends HookWidget {
   const ProductTypeFilter({
     super.key,
     required this.productTypes,

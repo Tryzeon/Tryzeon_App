@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
@@ -23,7 +24,7 @@ class ChatMessage {
 }
 
 // ChatBubble widget
-class ChatBubble extends StatelessWidget {
+class ChatBubble extends HookWidget {
   const ChatBubble({super.key, required this.message, this.child});
   final ChatMessage message;
   final Widget? child;
@@ -141,7 +142,7 @@ class QAConfig {
 }
 
 // Quick reply button widget
-class QuickReplyButton extends StatelessWidget {
+class QuickReplyButton extends HookWidget {
   const QuickReplyButton({super.key, required this.text, required this.onTap});
   final String text;
   final VoidCallback onTap;
@@ -187,189 +188,177 @@ class QuickReplyButton extends StatelessWidget {
 }
 
 // ChatPage widget
-class ChatPage extends StatefulWidget {
+class ChatPage extends HookWidget {
   const ChatPage({super.key});
 
   @override
-  State<ChatPage> createState() => _ChatPageState();
-}
-
-class _ChatPageState extends State<ChatPage> {
-  List<ChatMessage> messages = [];
-  TextEditingController controller = TextEditingController();
-  final ScrollController scrollController = ScrollController();
-  int currentQuestionIndex = 0;
-  Map<String, String> answers = {};
-  bool isWaitingForAnswer = true;
-  bool isLoadingRecommendation = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Add greeting message first
-    messages.add(ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false));
-    // Start Q&A after a short delay
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        _askNextQuestion();
-      }
-    });
-  }
-
-  void _askNextQuestion() {
-    if (currentQuestionIndex < QAConfig.questions.length) {
-      final question = QAConfig.questions[currentQuestionIndex];
-      setState(() {
-        messages.add(
-          ChatMessage(text: question.text, isUser: false, questionId: question.id),
-        );
-        isWaitingForAnswer = true;
-      });
-      scrollToBottom();
-    } else {
-      _showSummary();
-    }
-  }
-
-  void _handleAnswer(final String answer, final String questionId) {
-    if (!isWaitingForAnswer) return;
-
-    setState(() {
-      messages.add(ChatMessage(text: answer, isUser: true));
-      answers[questionId] = answer;
-      isWaitingForAnswer = false;
-      currentQuestionIndex++;
-    });
-    scrollToBottom();
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) {
-        _askNextQuestion();
-      }
-    });
-  }
-
-  void _showSummary() {
-    setState(() {
-      isWaitingForAnswer = false;
-    });
-
-    // Call LLM API directly without showing summary
-    _getLLMRecommendation();
-  }
-
-  Future<void> _getLLMRecommendation() async {
-    if (!mounted) return;
-
-    setState(() {
-      isLoadingRecommendation = true;
-      messages.add(ChatMessage(text: '正在尋求穿搭大神...', isUser: false));
-    });
-
-    scrollToBottom();
-
-    // 使用 ChatService 獲取 LLM 建議
-    final result = await ChatService.getLLMRecommendation(answers);
-
-    if (!mounted) return;
-
-    // Remove loading message
-    setState(() {
-      messages.removeLast();
-      isLoadingRecommendation = false;
-    });
-
-    if (result.isSuccess) {
-      // Add LLM response
-      setState(() {
-        messages.add(ChatMessage(text: result.get()!, isUser: false));
-      });
-    } else {
-      // Show error message
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-
-    scrollToBottom();
-  }
-
-  void sendMessage(final String text) {
-    if (text.trim().isEmpty || !isWaitingForAnswer) return;
-
-    final currentQuestion = currentQuestionIndex < QAConfig.questions.length
-        ? QAConfig.questions[currentQuestionIndex]
-        : null;
-
-    if (currentQuestion != null) {
-      _handleAnswer(text, currentQuestion.id);
-    }
-
-    controller.clear();
-  }
-
-  Widget _buildQuickReplies() {
-    if (!isWaitingForAnswer || currentQuestionIndex >= QAConfig.questions.length) {
-      return const SizedBox.shrink();
-    }
-
-    final currentQuestion = QAConfig.questions[currentQuestionIndex];
-
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: currentQuestion.quickReplies
-            .map(
-              (final reply) => QuickReplyButton(
-                text: reply,
-                onTap: () => _handleAnswer(reply, currentQuestion.id),
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
-
-  void scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted && scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  void _resetChat() {
-    setState(() {
-      messages.clear();
-      currentQuestionIndex = 0;
-      answers.clear();
-      isWaitingForAnswer = true;
-      isLoadingRecommendation = false;
-
-      // Add greeting message
-      messages.add(ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false));
-    });
-
-    // Start Q&A after a short delay
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        _askNextQuestion();
-      }
-    });
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final messages = useState<List<ChatMessage>>([]);
+    final controller = useTextEditingController();
+    final scrollController = useScrollController();
+    final currentQuestionIndex = useState(0);
+    final answers = useState<Map<String, String>>({});
+    final isWaitingForAnswer = useState(true);
+    final isLoadingRecommendation = useState(false);
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    void scrollToBottom() {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (context.mounted && scrollController.hasClients) {
+          scrollController.animateTo(
+            scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+
+    Future<void> getLLMRecommendation() async {
+      if (!context.mounted) return;
+
+      isLoadingRecommendation.value = true;
+      messages.value = [
+        ...messages.value,
+        ChatMessage(text: '正在尋求穿搭大神...', isUser: false),
+      ];
+
+      scrollToBottom();
+
+      // 使用 ChatService 獲取 LLM 建議
+      final result = await ChatService.getLLMRecommendation(answers.value);
+
+      if (!context.mounted) return;
+
+      // Remove loading message
+      messages.value = List.from(messages.value)..removeLast();
+      isLoadingRecommendation.value = false;
+
+      if (result.isSuccess) {
+        // Add LLM response
+        messages.value = [
+          ...messages.value,
+          ChatMessage(text: result.get()!, isUser: false),
+        ];
+      } else {
+        // Show error message
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+
+      scrollToBottom();
+    }
+
+    void showSummary() {
+      isWaitingForAnswer.value = false;
+
+      // Call LLM API directly without showing summary
+      getLLMRecommendation();
+    }
+
+    void askNextQuestion() {
+      if (currentQuestionIndex.value < QAConfig.questions.length) {
+        final question = QAConfig.questions[currentQuestionIndex.value];
+        messages.value = [
+          ...messages.value,
+          ChatMessage(text: question.text, isUser: false, questionId: question.id),
+        ];
+        isWaitingForAnswer.value = true;
+        scrollToBottom();
+      } else {
+        showSummary();
+      }
+    }
+
+    void handleAnswer(final String answer, final String questionId) {
+      if (!isWaitingForAnswer.value) return;
+
+      messages.value = [...messages.value, ChatMessage(text: answer, isUser: true)];
+      answers.value = {...answers.value, questionId: answer};
+      isWaitingForAnswer.value = false;
+      currentQuestionIndex.value++;
+      scrollToBottom();
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (context.mounted) {
+          askNextQuestion();
+        }
+      });
+    }
+
+    void sendMessage(final String text) {
+      if (text.trim().isEmpty || !isWaitingForAnswer.value) return;
+
+      final currentQuestion = currentQuestionIndex.value < QAConfig.questions.length
+          ? QAConfig.questions[currentQuestionIndex.value]
+          : null;
+
+      if (currentQuestion != null) {
+        handleAnswer(text, currentQuestion.id);
+      }
+
+      controller.clear();
+    }
+
+    void resetChat() {
+      messages.value = [];
+      currentQuestionIndex.value = 0;
+      answers.value = {};
+      isWaitingForAnswer.value = true;
+      isLoadingRecommendation.value = false;
+
+      // Add greeting message
+      messages.value = [ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
+
+      // Start Q&A after a short delay
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (context.mounted) {
+          askNextQuestion();
+        }
+      });
+    }
+
+    useEffect(() {
+      // Add greeting message first
+      messages.value = [ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
+      // Start Q&A after a short delay
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (context.mounted) {
+          askNextQuestion();
+        }
+      });
+      return null;
+    }, []);
+
+    Widget buildQuickReplies() {
+      if (!isWaitingForAnswer.value ||
+          currentQuestionIndex.value >= QAConfig.questions.length) {
+        return const SizedBox.shrink();
+      }
+
+      final currentQuestion = QAConfig.questions[currentQuestionIndex.value];
+
+      return Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: currentQuestion.quickReplies
+              .map(
+                (final reply) => QuickReplyButton(
+                  text: reply,
+                  onTap: () => handleAnswer(reply, currentQuestion.id),
+                ),
+              )
+              .toList(),
+        ),
+      );
+    }
 
     return Scaffold(
       body: Container(
@@ -443,7 +432,7 @@ class _ChatPageState extends State<ChatPage> {
                         );
 
                         if (confirmed == true) {
-                          _resetChat();
+                          resetChat();
                         }
                       },
                     ),
@@ -456,15 +445,15 @@ class _ChatPageState extends State<ChatPage> {
                 child: ListView.builder(
                   controller: scrollController,
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                  itemCount: messages.length,
+                  itemCount: messages.value.length,
                   itemBuilder: (final context, final index) {
-                    return ChatBubble(message: messages[index]);
+                    return ChatBubble(message: messages.value[index]);
                   },
                 ),
               ),
 
               // 快速回覆
-              _buildQuickReplies(),
+              buildQuickReplies(),
 
               // 輸入框
               Padding(
@@ -493,11 +482,11 @@ class _ChatPageState extends State<ChatPage> {
                           child: TextField(
                             controller: controller,
                             decoration: InputDecoration(
-                              hintText: isWaitingForAnswer ? '請輸入您的回答...' : '',
+                              hintText: isWaitingForAnswer.value ? '請輸入您的回答...' : '',
                               hintStyle: textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
-                              enabled: !isLoadingRecommendation,
+                              enabled: !isLoadingRecommendation.value,
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 20,
@@ -505,7 +494,6 @@ class _ChatPageState extends State<ChatPage> {
                               ),
                             ),
                             onSubmitted: sendMessage,
-                            enabled: !isLoadingRecommendation,
                           ),
                         ),
                       ),
@@ -515,7 +503,7 @@ class _ChatPageState extends State<ChatPage> {
                         height: 48,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: isLoadingRecommendation
+                            colors: isLoadingRecommendation.value
                                 ? [colorScheme.outlineVariant, colorScheme.outline]
                                 : [colorScheme.primary, colorScheme.secondary],
                           ),
@@ -524,7 +512,7 @@ class _ChatPageState extends State<ChatPage> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: isLoadingRecommendation
+                            onTap: isLoadingRecommendation.value
                                 ? null
                                 : () => sendMessage(controller.text),
                             borderRadius: BorderRadius.circular(24),

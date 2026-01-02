@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
@@ -12,182 +13,162 @@ import '../widgets/product_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/type_filter.dart';
 
-class ShopPage extends StatefulWidget {
+class ShopPage extends HookWidget {
   const ShopPage({super.key});
 
   @override
-  State<ShopPage> createState() => _ShopPageState();
-}
+  Widget build(final BuildContext context) {
+    final adImages = useState<List<String>>([]);
+    final userProfile = useState<UserProfile?>(null);
 
-class _ShopPageState extends State<ShopPage> {
-  List<String> adImages = [];
-  UserProfile? _userProfile;
+    // 過濾和排序狀態
+    final sortBy = useState('tryon_count');
+    final ascending = useState(false);
+    final minPrice = useState<int?>(null);
+    final maxPrice = useState<int?>(null);
+    final searchQuery = useState<String?>(null);
 
-  // 過濾和排序狀態
-  String _sortBy = 'tryon_count';
-  bool _ascending = false;
-  int? _minPrice;
-  int? _maxPrice;
-  String? _searchQuery;
+    // 商品類型列表
+    final selectedTypes = useState<Set<String>>({});
 
-  // 商品類型列表
-  final Set<String> _selectedTypes = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAdImages();
-    _loadUserProfile();
-  }
-
-  Future<void> _loadUserProfile() async {
-    final state = await UserProfileService.userProfileQuery().fetch();
-    if (!mounted) return;
-    setState(() {
-      _userProfile = state.data;
-    });
-  }
-
-  Future<void> _loadAdImages({final bool forceRefresh = false}) async {
-    final response = await AdService.getAdImages(forceRefresh: forceRefresh);
-    if (!mounted) return;
-
-    setState(() {
-      adImages = response;
-    });
-  }
-
-  void _handleSortByTryonCount() {
-    if (_sortBy == 'tryon_count') return;
-    setState(() {
-      _sortBy = 'tryon_count';
-      _ascending = false;
-    });
-  }
-
-  void _handleSortByPrice() {
-    setState(() {
-      _sortBy = 'price';
-      _ascending = !_ascending;
-    });
-  }
-
-  void _handleShowFilterDialog() {
-    FilterDialog(
-      context: context,
-      minPrice: _minPrice,
-      maxPrice: _maxPrice,
-      onApply: (final minPrice, final maxPrice) {
-        setState(() {
-          _minPrice = minPrice;
-          _maxPrice = maxPrice;
-        });
-      },
-    );
-  }
-
-  Widget _buildComprehensiveSortButton() {
-    final isActive = _sortBy != 'price';
-    return _buildSortButton(
-      label: '綜合',
-      icon: Icons.emoji_events_outlined,
-      isActive: isActive,
-      onTap: _handleSortByTryonCount,
-    );
-  }
-
-  Widget _buildPriceSortButton() {
-    final isActive = _sortBy == 'price';
-    return _buildSortButton(
-      label: '價格',
-      icon: _ascending ? Icons.arrow_upward : Icons.arrow_downward,
-      isActive: isActive,
-      onTap: _handleSortByPrice,
-    );
-  }
-
-  Widget _buildSortButton({
-    required final String label,
-    required final IconData icon,
-    required final bool isActive,
-    required final VoidCallback onTap,
-  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isActive
-            ? colorScheme.primary
-            : colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
+    Future<void> loadUserProfile() async {
+      final state = await UserProfileService.userProfileQuery().fetch();
+      if (!context.mounted) return;
+      userProfile.value = state.data;
+    }
+
+    Future<void> loadAdImages({final bool forceRefresh = false}) async {
+      final response = await AdService.getAdImages(forceRefresh: forceRefresh);
+      if (!context.mounted) return;
+      adImages.value = response;
+    }
+
+    useEffect(() {
+      loadAdImages();
+      loadUserProfile();
+      return null;
+    }, []);
+
+    void handleSortByTryonCount() {
+      if (sortBy.value == 'tryon_count') return;
+      sortBy.value = 'tryon_count';
+      ascending.value = false;
+    }
+
+    void handleSortByPrice() {
+      sortBy.value = 'price';
+      ascending.value = !ascending.value;
+    }
+
+    void handleShowFilterDialog() {
+      FilterDialog(
+        context: context,
+        minPrice: minPrice.value,
+        maxPrice: maxPrice.value,
+        onApply: (final newMin, final newMax) {
+          minPrice.value = newMin;
+          maxPrice.value = newMax;
+        },
+      );
+    }
+
+    Widget buildSortButton({
+      required final String label,
+      required final IconData icon,
+      required final bool isActive,
+      required final VoidCallback onTap,
+    }) {
+      return Container(
+        decoration: BoxDecoration(
+          color: isActive
+              ? colorScheme.primary
+              : colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  color: isActive ? colorScheme.onPrimary : colorScheme.primary,
-                  size: 18,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  label,
-                  style: textTheme.labelLarge?.copyWith(
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
                     color: isActive ? colorScheme.onPrimary : colorScheme.primary,
-                    fontWeight: FontWeight.w600,
+                    size: 18,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    label,
+                    style: textTheme.labelLarge?.copyWith(
+                      color: isActive ? colorScheme.onPrimary : colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _buildFilterButton() {
-    return Container(
-      width: 34,
-      height: 34,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _handleShowFilterDialog,
+    Widget buildComprehensiveSortButton() {
+      final isActive = sortBy.value != 'price';
+      return buildSortButton(
+        label: '綜合',
+        icon: Icons.emoji_events_outlined,
+        isActive: isActive,
+        onTap: handleSortByTryonCount,
+      );
+    }
+
+    Widget buildPriceSortButton() {
+      final isActive = sortBy.value == 'price';
+      return buildSortButton(
+        label: '價格',
+        icon: ascending.value ? Icons.arrow_upward : Icons.arrow_downward,
+        isActive: isActive,
+        onTap: handleSortByPrice,
+      );
+    }
+
+    Widget buildFilterButton() {
+      return Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          child: Icon(
-            Icons.filter_list_rounded,
-            color: Theme.of(context).colorScheme.primary,
-            size: 18,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: handleShowFilterDialog,
+            borderRadius: BorderRadius.circular(12),
+            child: Icon(
+              Icons.filter_list_rounded,
+              color: Theme.of(context).colorScheme.primary,
+              size: 18,
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+      );
+    }
 
     final productsQuery = ShopService.productsQuery(
-      searchQuery: _searchQuery,
-      sortBy: _sortBy,
-      ascending: _ascending,
-      minPrice: _minPrice,
-      maxPrice: _maxPrice,
-      types: _selectedTypes,
+      searchQuery: searchQuery.value,
+      sortBy: sortBy.value,
+      ascending: ascending.value,
+      minPrice: minPrice.value,
+      maxPrice: maxPrice.value,
+      types: selectedTypes.value,
     );
 
     return Scaffold(
@@ -274,9 +255,7 @@ class _ShopPageState extends State<ShopPage> {
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
                                 child: ShopSearchBar(
                                   onSearch: (final query) async {
-                                    setState(
-                                      () => _searchQuery = query.isEmpty ? null : query,
-                                    );
+                                    searchQuery.value = query.isEmpty ? null : query;
                                   },
                                 ),
                               ),
@@ -284,7 +263,7 @@ class _ShopPageState extends State<ShopPage> {
                               const SizedBox(height: 20),
 
                               // 📢 廣告輪播
-                              AdBanner(adImages: adImages),
+                              AdBanner(adImages: adImages.value),
 
                               const SizedBox(height: 24),
 
@@ -295,13 +274,18 @@ class _ShopPageState extends State<ShopPage> {
                                 builder: (final context, final types) {
                                   return ProductTypeFilter(
                                     productTypes: types,
-                                    selectedTypes: _selectedTypes,
+                                    selectedTypes: selectedTypes.value,
                                     onTypeToggle: (final type) {
-                                      setState(
-                                        () => _selectedTypes.contains(type)
-                                            ? _selectedTypes.remove(type)
-                                            : _selectedTypes.add(type),
-                                      );
+                                      if (selectedTypes.value.contains(type)) {
+                                        selectedTypes.value = selectedTypes.value
+                                            .where((final t) => t != type)
+                                            .toSet();
+                                      } else {
+                                        selectedTypes.value = {
+                                          ...selectedTypes.value,
+                                          type,
+                                        };
+                                      }
                                     },
                                   );
                                 },
@@ -340,11 +324,11 @@ class _ShopPageState extends State<ShopPage> {
                                     Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        _buildComprehensiveSortButton(),
+                                        buildComprehensiveSortButton(),
                                         const SizedBox(width: 8),
-                                        _buildPriceSortButton(),
+                                        buildPriceSortButton(),
                                         const SizedBox(width: 8),
-                                        _buildFilterButton(),
+                                        buildFilterButton(),
                                       ],
                                     ),
                                   ],
@@ -398,7 +382,7 @@ class _ShopPageState extends State<ShopPage> {
                                         final product = displayedProducts[index];
                                         return ProductCard(
                                           product: product,
-                                          userProfile: _userProfile,
+                                          userProfile: userProfile.value,
                                         );
                                       },
                                     ),
