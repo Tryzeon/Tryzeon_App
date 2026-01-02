@@ -1,36 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 // Import AppTheme to access static colors if needed, or just use Theme.of(context)
 
 import 'personal_login_page.dart';
 import 'store_login_page.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends HookWidget {
   const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  void _navigateToPersonalLogin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (final context) => const PersonalLoginPage()),
-    );
-  }
-
-  void _navigateToStoreLogin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (final context) => const StoreLoginPage()),
-    );
-  }
 
   @override
   Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final colorScheme = Theme.of(context).colorScheme;
+
+    void navigateToPersonalLogin() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (final context) => const PersonalLoginPage()),
+      );
+    }
+
+    void navigateToStoreLogin() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (final context) => const StoreLoginPage()),
+      );
+    }
 
     return CustomizeScaffold(
       body: Padding(
@@ -56,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                     title: 'User Login',
                     subtitle: 'Virtual Try-On',
                     color: colorScheme.secondary,
-                    onTap: _navigateToPersonalLogin,
+                    onTap: navigateToPersonalLogin,
                   ),
 
                   const SizedBox(height: 24),
@@ -67,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                     title: 'Store Login',
                     subtitle: 'Manage Products',
                     color: colorScheme.primary,
-                    onTap: _navigateToStoreLogin,
+                    onTap: navigateToStoreLogin,
                   ),
                 ],
               ),

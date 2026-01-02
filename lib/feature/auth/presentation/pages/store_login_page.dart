@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
@@ -6,66 +7,136 @@ import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
-class StoreLoginPage extends StatefulWidget {
+class StoreLoginPage extends HookWidget {
   const StoreLoginPage({super.key});
-
-  @override
-  State<StoreLoginPage> createState() => _StoreLoginPageState();
-}
-
-class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObserver {
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(final AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (_isLoading) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Future<void> _handleSignIn(final String provider) async {
-    setState(() => _isLoading = true);
-
-    final result = await AuthService.signInWithProvider(
-      provider: provider,
-      userType: UserType.store,
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result.isSuccess) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (final context) => const StoreEntry()),
-      );
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
-    }
-  }
 
   @override
   Widget build(final BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final isLoading = useState(false);
+    final appLifecycleState = useAppLifecycleState();
+
+    useEffect(() {
+      if (appLifecycleState == AppLifecycleState.resumed) {
+        if (isLoading.value) {
+          isLoading.value = false;
+        }
+      }
+      return null;
+    }, [appLifecycleState]);
+
+    Future<void> handleSignIn(final String provider) async {
+      isLoading.value = true;
+
+      final result = await AuthService.signInWithProvider(
+        provider: provider,
+        userType: UserType.store,
+      );
+
+      // Check if widget is still mounted (HookWidget handles this generally, but safety is good)
+      if (!context.mounted) return;
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (final context) => const StoreEntry()),
+        );
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    Widget buildHeader(final BuildContext context) {
+      return Column(
+        children: [
+          // Logo Icon
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: colorScheme.surface, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.2),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Icon(Icons.store_rounded, size: 48, color: colorScheme.primary),
+          ),
+          const SizedBox(height: 32),
+
+          // Title
+          Text(
+            'Welcome!',
+            style: textTheme.displaySmall?.copyWith(
+              color: colorScheme.primary,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+
+          Text(
+            'Start managing your store',
+            style: textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      );
+    }
+
+    Widget buildLoginButton(final String provider, final VoidCallback onTap) {
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(32),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/logo/$provider.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Text('Continue with $provider', style: textTheme.titleMedium),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return CustomizeScaffold(
       body: Stack(
@@ -95,22 +166,22 @@ class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObse
                 SizedBox(height: screenHeight * 0.05),
 
                 // Header
-                _buildHeader(context),
+                buildHeader(context),
 
                 const Spacer(),
 
                 // Login Buttons
-                _buildLoginButton('Google', () => _handleSignIn('Google')),
+                buildLoginButton('Google', () => handleSignIn('Google')),
                 const SizedBox(height: 16),
-                _buildLoginButton('Facebook', () => _handleSignIn('Facebook')),
+                buildLoginButton('Facebook', () => handleSignIn('Facebook')),
                 const SizedBox(height: 16),
-                _buildLoginButton('Apple', () => _handleSignIn('Apple')),
+                buildLoginButton('Apple', () => handleSignIn('Apple')),
 
                 SizedBox(height: screenHeight * 0.1),
               ],
             ),
           ),
-          if (_isLoading)
+          if (isLoading.value)
             Container(
               color: Colors.black.withValues(alpha: 0.5),
               child: Center(
@@ -118,95 +189,6 @@ class _StoreLoginPageState extends State<StoreLoginPage> with WidgetsBindingObse
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      children: [
-        // Logo Icon
-        Container(
-          width: 88,
-          height: 88,
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: colorScheme.surface, width: 4),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.2),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: Icon(Icons.store_rounded, size: 48, color: colorScheme.primary),
-        ),
-        const SizedBox(height: 32),
-
-        // Title
-        Text(
-          'Welcome!',
-          style: textTheme.displaySmall?.copyWith(
-            color: colorScheme.primary,
-            letterSpacing: -0.5,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-
-        Text(
-          'Start managing your store',
-          style: textTheme.titleMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-            letterSpacing: 0.2,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLoginButton(final String provider, final VoidCallback onTap) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(32),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/images/logo/$provider.svg',
-                  height: 24,
-                  width: 24,
-                ),
-                const SizedBox(width: 12),
-                Text('Continue with $provider', style: textTheme.titleMedium),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
