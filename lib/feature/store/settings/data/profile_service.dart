@@ -172,7 +172,7 @@ class StoreProfile {
   StoreProfile({
     required this.storeId,
     required this.name,
-    required this.address,
+    this.address,
     this.logoPath,
   });
 
@@ -187,7 +187,7 @@ class StoreProfile {
 
   final String storeId;
   final String name;
-  final String address;
+  final String? address;
   final String? logoPath;
 
   /// 按需載入 Logo，使用快取機制

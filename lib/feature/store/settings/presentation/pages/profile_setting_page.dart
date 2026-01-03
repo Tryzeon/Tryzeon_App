@@ -167,7 +167,7 @@ class StoreProfileSettingsPage extends HookWidget {
                       SchedulerBinding.instance.addPostFrameCallback((_) {
                         storeProfile.value = profile;
                         storeNameController.text = profile.name;
-                        storeAddressController.text = profile.address;
+                        storeAddressController.text = profile.address ?? '';
                         isControllersInitialized.value = true;
                       });
                     }
@@ -419,12 +419,6 @@ class StoreProfileSettingsPage extends HookWidget {
                                       filled: true,
                                       fillColor: colorScheme.surfaceContainerLow,
                                     ),
-                                    validator: (final value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return '請輸入店家地址';
-                                      }
-                                      return null;
-                                    },
                                   ),
                                 ],
                               ),
