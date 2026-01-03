@@ -132,7 +132,9 @@ class _PersonalProfileForm extends HookConsumerWidget {
         }
       }
 
-      final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(measurementsJson);
+      final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(
+        measurementsJson,
+      );
 
       final targetProfile = profile.copyWith(
         name: nameController.text.trim(),
@@ -276,22 +278,23 @@ class _PersonalProfileForm extends HookConsumerWidget {
                 Wrap(
                   spacing: 12,
                   runSpacing: 16,
-                  children:
-                      MeasurementType.values.map((final type) {
-                        return SizedBox(
-                          width: (MediaQuery.of(context).size.width - 48 - 40 - 12) / 2,
-                          child: buildTextField(
-                            controller: measurementControllers[type]!,
-                            label: type.label,
-                            icon: type.icon,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                            ],
-                            validator: AppValidators.validateMeasurement,
-                          ),
-                        );
-                      }).toList(),
+                  children: MeasurementType.values.map((final type) {
+                    return SizedBox(
+                      width: (MediaQuery.of(context).size.width - 48 - 40 - 12) / 2,
+                      child: buildTextField(
+                        controller: measurementControllers[type]!,
+                        label: type.label,
+                        icon: type.icon,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        ],
+                        validator: AppValidators.validateMeasurement,
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
@@ -303,25 +306,23 @@ class _PersonalProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient:
-                    isLoading.value
-                        ? LinearGradient(
-                          colors: [colorScheme.outline, colorScheme.outlineVariant],
-                        )
-                        : LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
+                gradient: isLoading.value
+                    ? LinearGradient(
+                        colors: [colorScheme.outline, colorScheme.outlineVariant],
+                      )
+                    : LinearGradient(
+                        colors: [colorScheme.primary, colorScheme.secondary],
+                      ),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow:
-                    isLoading.value
-                        ? []
-                        : [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                boxShadow: isLoading.value
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
               ),
               child: Material(
                 color: Colors.transparent,
@@ -329,36 +330,35 @@ class _PersonalProfileForm extends HookConsumerWidget {
                   onTap: isLoading.value ? null : updateProfile,
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
-                    child:
-                        isLoading.value
-                            ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: colorScheme.onPrimary,
-                                strokeWidth: 2.5,
-                              ),
-                            )
-                            : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.save_rounded,
-                                  color: colorScheme.onPrimary,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '儲存',
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
+                    child: isLoading.value
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: colorScheme.onPrimary,
+                              strokeWidth: 2.5,
                             ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.save_rounded,
+                                color: colorScheme.onPrimary,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '儲存',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),

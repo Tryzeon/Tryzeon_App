@@ -233,10 +233,7 @@ class _LogoutButton extends StatelessWidget {
             children: [
               Icon(Icons.logout_rounded, color: colorScheme.error, size: 24),
               const SizedBox(width: 8),
-              Text(
-                '登出',
-                style: textTheme.titleSmall?.copyWith(color: colorScheme.error),
-              ),
+              Text('登出', style: textTheme.titleSmall?.copyWith(color: colorScheme.error)),
             ],
           ),
         ),

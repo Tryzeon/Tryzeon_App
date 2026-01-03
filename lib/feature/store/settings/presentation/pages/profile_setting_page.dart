@@ -189,15 +189,11 @@ class _StoreProfileForm extends HookConsumerWidget {
           prefixIcon: Icon(icon, color: colorScheme.primary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.outline.withValues(alpha: 0.3),
-            ),
+            borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.outline.withValues(alpha: 0.3),
-            ),
+            borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -263,60 +259,57 @@ class _StoreProfileForm extends HookConsumerWidget {
                       ),
                       child: newLogoImage.value != null
                           ? ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
-                          )
+                              borderRadius: BorderRadius.circular(60),
+                              child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
+                            )
                           : FutureBuilder(
-                            future: profile.loadLogo(),
-                            builder: (final context, final snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return CircularProgressIndicator(
+                              future: profile.loadLogo(),
+                              builder: (final context, final snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return CircularProgressIndicator(
+                                    color: colorScheme.primary,
+                                  );
+                                }
+
+                                final result = snapshot.data!;
+                                if (result.isFailure) {
+                                  // Only show notification, don't setState
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (context.mounted) {
+                                      TopNotification.show(
+                                        context,
+                                        message: result.getError()!,
+                                        type: NotificationType.error,
+                                      );
+                                    }
+                                  });
+                                }
+
+                                if (result.get() != null) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(60),
+                                    child: Image.file(
+                                      result.get()!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (final context, final error, final stackTrace) {
+                                            return Icon(
+                                              Icons.error_rounded,
+                                              size: 50,
+                                              color: colorScheme.primary,
+                                            );
+                                          },
+                                    ),
+                                  );
+                                }
+
+                                return Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 50,
                                   color: colorScheme.primary,
                                 );
-                              }
-
-                              final result = snapshot.data!;
-                              if (result.isFailure) {
-                                // Only show notification, don't setState
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (context.mounted) {
-                                    TopNotification.show(
-                                      context,
-                                      message: result.getError()!,
-                                      type: NotificationType.error,
-                                    );
-                                  }
-                                });
-                              }
-
-                              if (result.get() != null) {
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(60),
-                                  child: Image.file(
-                                    result.get()!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (
-                                      final context,
-                                      final error,
-                                      final stackTrace,
-                                    ) {
-                                      return Icon(
-                                        Icons.error_rounded,
-                                        size: 50,
-                                        color: colorScheme.primary,
-                                      );
-                                    },
-                                  ),
-                                );
-                              }
-
-                              return Icon(
-                                Icons.camera_alt_rounded,
-                                size: 50,
-                                color: colorScheme.primary,
-                              );
-                            },
-                          ),
+                              },
+                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -386,24 +379,22 @@ class _StoreProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient:
-                    isLoading.value
-                        ? null
-                        : LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
+                gradient: isLoading.value
+                    ? null
+                    : LinearGradient(
+                        colors: [colorScheme.primary, colorScheme.secondary],
+                      ),
                 color: isLoading.value ? colorScheme.surfaceContainerHighest : null,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow:
-                    isLoading.value
-                        ? null
-                        : [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                boxShadow: isLoading.value
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
               ),
               child: Material(
                 color: Colors.transparent,
@@ -411,36 +402,35 @@ class _StoreProfileForm extends HookConsumerWidget {
                   onTap: isLoading.value ? null : updateProfile,
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
-                    child:
-                        isLoading.value
-                            ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.primary,
-                              ),
-                            )
-                            : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.save_rounded,
-                                  color: colorScheme.onPrimary,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '儲存',
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
+                    child: isLoading.value
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.primary,
                             ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.save_rounded,
+                                color: colorScheme.onPrimary,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '儲存',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),

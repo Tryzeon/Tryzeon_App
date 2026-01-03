@@ -54,15 +54,21 @@ class _TopNotificationWidget extends HookConsumerWidget {
       duration: const Duration(milliseconds: 400),
     );
 
-    final slideAnimation = useMemoized(() => Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOutCubic)), [controller]);
+    final slideAnimation = useMemoized(
+      () => Tween<Offset>(
+        begin: const Offset(0, -1),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOutCubic)),
+      [controller],
+    );
 
-    final fadeAnimation = useMemoized(() => Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)), [controller]);
+    final fadeAnimation = useMemoized(
+      () => Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
+      [controller],
+    );
 
     final dragOffset = useState(0.0);
 
@@ -85,20 +91,18 @@ class _TopNotificationWidget extends HookConsumerWidget {
 
     // 處理手勢
     final handleDragUpdate = useCallback((final DragUpdateDetails details) {
-        dragOffset.value += details.delta.dy;
-        if (dragOffset.value > 0) dragOffset.value = 0;
+      dragOffset.value += details.delta.dy;
+      if (dragOffset.value > 0) dragOffset.value = 0;
     }, []);
 
     final handleDragEnd = useCallback((final DragEndDetails details) {
-       if (dragOffset.value < -50 ||
-          (details.primaryVelocity != null &&
-              details.primaryVelocity! < -300)) {
+      if (dragOffset.value < -50 ||
+          (details.primaryVelocity != null && details.primaryVelocity! < -300)) {
         dismiss();
       } else {
         dragOffset.value = 0;
       }
     }, [dismiss]);
-
 
     final (color, icon) = _getStyle(type);
 

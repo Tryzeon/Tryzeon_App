@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/auth/data/auth_service.dart';
+import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -54,7 +54,8 @@ class StoreOnboardingPage extends HookConsumerWidget {
       );
 
       if (confirmed == true) {
-        await AuthService.signOut();
+        final signOutUseCase = await ref.read(signOutUseCaseProvider.future);
+        await signOutUseCase();
         if (!context.mounted) return;
         // 登出後會自動回到登入頁面（main.dart 會處理）
         Navigator.of(context).pushAndRemoveUntil(

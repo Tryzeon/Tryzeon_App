@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/auth/data/auth_service.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
+import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/pages/base_settings_page.dart';
@@ -20,7 +21,8 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      await AuthService.setLastLoginType(UserType.personal);
+      final setLoginTypeUseCase = await ref.read(setLastLoginTypeUseCaseProvider.future);
+      await setLoginTypeUseCase(UserType.personal);
       if (!context.mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
@@ -38,7 +40,8 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      await AuthService.signOut();
+      final signOutUseCase = await ref.read(signOutUseCaseProvider.future);
+      await signOutUseCase();
       if (!context.mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(

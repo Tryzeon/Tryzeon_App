@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/auth/data/auth_service.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
+import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -32,10 +33,8 @@ class PersonalLoginPage extends HookConsumerWidget {
     Future<void> handleSignIn(final String provider) async {
       isLoading.value = true;
 
-      final result = await AuthService.signInWithProvider(
-        provider: provider,
-        userType: UserType.personal,
-      );
+      final signInUseCase = await ref.read(signInWithProviderUseCaseProvider.future);
+      final result = await signInUseCase(provider: provider, userType: UserType.personal);
 
       // Check if widget is still mounted (HookWidget handles this generally, but safety is good)
       if (!context.mounted) return;

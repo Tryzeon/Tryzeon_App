@@ -6,10 +6,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/auth/data/auth_service.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
+import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
+import 'package:typed_result/typed_result.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +52,16 @@ class Tryzeon extends HookConsumerWidget {
 
         UserType? type;
         if (user != null) {
-          type = await AuthService.getLastLoginType();
+          final getLoginTypeUseCase = await ref.read(
+            getLastLoginTypeUseCaseProvider.future,
+          );
+          final result = await getLoginTypeUseCase();
+          switch (result) {
+            case Ok(:final value):
+              type = value;
+            case Err():
+              type = null;
+          }
         }
 
         userType.value = type;
