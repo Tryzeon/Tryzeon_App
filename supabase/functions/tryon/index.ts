@@ -4,7 +4,7 @@ import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 // --- Configuration & Constants ---
 const CONFIG = {
-  API_KEY: Deno.env.get("API_KEY"),
+  GEMINI_API_KEY: Deno.env.get("GEMINI_API_KEY"),
   SUPABASE_URL: Deno.env.get("SUPABASE_URL"),
   SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
   MODEL_NAME: "models/gemini-2.5-flash-image",
@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
     const clothesImage = clothesBase64 ? clothesBase64 : await storageService.fetchImage(clothesPath!);
 
     // 5. Generate Try-on
-    const aiService = new AIService(CONFIG.API_KEY, CONFIG.MODEL_NAME);
+    const aiService = new AIService(CONFIG.GEMINI_API_KEY, CONFIG.MODEL_NAME);
     const resultImageBase64 = await aiService.generateTryOn(avatarImage, clothesImage);
 
     // 6. Response

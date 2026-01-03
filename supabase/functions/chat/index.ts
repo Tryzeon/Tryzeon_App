@@ -10,7 +10,7 @@ class UserError extends Error {
 
 Deno.serve(async (req) => {
   try {
-    const genAI = new GoogleGenerativeAI(Deno.env.get("API_KEY"));
+    const genAI = new GoogleGenerativeAI(Deno.env.get("GEMINI_API_KEY"));
     const LLM_Model = "gemini-2.5-flash";
 
     const { userRequirement } = await req.json();
