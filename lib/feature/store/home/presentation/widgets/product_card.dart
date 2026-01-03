@@ -1,16 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/models/product.dart';
 
 import '../pages/product_detail_page.dart';
 
-class StoreProductCard extends HookWidget {
+class StoreProductCard extends HookConsumerWidget {
   const StoreProductCard({super.key, required this.product});
   final Product product;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 

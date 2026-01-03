@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ConfirmationDialog extends StatelessWidget {
+class ConfirmationDialog extends HookConsumerWidget {
   const ConfirmationDialog({
     super.key,
     this.title,
@@ -14,7 +15,7 @@ class ConfirmationDialog extends StatelessWidget {
   final String confirmText;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Dialog(

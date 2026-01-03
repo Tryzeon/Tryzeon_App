@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class CustomizeScaffold extends StatelessWidget {
+class CustomizeScaffold extends HookConsumerWidget {
   const CustomizeScaffold({super.key, required this.body});
 
   final Widget body;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(

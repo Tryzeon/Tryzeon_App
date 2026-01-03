@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
@@ -14,11 +15,11 @@ import 'package:typed_result/typed_result.dart';
 
 import '../../data/product_service.dart';
 
-class AddProductPage extends HookWidget {
+class AddProductPage extends HookConsumerWidget {
   const AddProductPage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController();
     final priceController = useTextEditingController();
@@ -81,11 +82,7 @@ class AddProductPage extends HookWidget {
 
     bool validateProductForm() {
       if (selectedImage.value == null) {
-        TopNotification.show(
-          context,
-          message: '請選擇商品圖片',
-          type: NotificationType.warning,
-        );
+        TopNotification.show(context, message: '請選擇商品圖片', type: NotificationType.warning);
         return false;
       }
 
@@ -128,11 +125,7 @@ class AddProductPage extends HookWidget {
 
       if (result.isSuccess) {
         Navigator.pop(context, true);
-        TopNotification.show(
-          context,
-          message: '商品新增成功',
-          type: NotificationType.success,
-        );
+        TopNotification.show(context, message: '商品新增成功', type: NotificationType.success);
       } else {
         TopNotification.show(
           context,
@@ -192,19 +185,15 @@ class AddProductPage extends HookWidget {
                       selectedColor: colorScheme.primary,
                       checkmarkColor: colorScheme.onPrimary,
                       labelStyle: textTheme.labelLarge?.copyWith(
-                        color:
-                            isSelected
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
+                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
-                          color:
-                              isSelected
-                                  ? colorScheme.primary
-                                  : colorScheme.outline.withValues(alpha: 0.3),
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.outline.withValues(alpha: 0.3),
                         ),
                       ),
                     );
@@ -516,34 +505,33 @@ class AddProductPage extends HookWidget {
                                     width: 2,
                                   ),
                                 ),
-                                child:
-                                    selectedImage.value == null
-                                        ? Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.add_photo_alternate_rounded,
-                                              size: 40,
+                                child: selectedImage.value == null
+                                    ? Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_photo_alternate_rounded,
+                                            size: 40,
+                                            color: colorScheme.primary,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            '點擊選擇圖片',
+                                            style: textTheme.labelLarge?.copyWith(
                                               color: colorScheme.primary,
                                             ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              '點擊選擇圖片',
-                                              style: textTheme.labelLarge?.copyWith(
-                                                color: colorScheme.primary,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                        : ClipRRect(
-                                          borderRadius: BorderRadius.circular(16),
-                                          child: Image.file(
-                                            selectedImage.value!,
-                                            fit: BoxFit.contain,
-                                            width: double.infinity,
-                                            height: double.infinity,
                                           ),
+                                        ],
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.file(
+                                          selectedImage.value!,
+                                          fit: BoxFit.contain,
+                                          width: double.infinity,
+                                          height: double.infinity,
                                         ),
+                                      ),
                               ),
                             ),
                           ],
@@ -712,31 +700,26 @@ class AddProductPage extends HookWidget {
                         width: double.infinity,
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient:
-                              isLoading.value
-                                  ? LinearGradient(
-                                    colors: [
-                                      colorScheme.outline,
-                                      colorScheme.outlineVariant,
-                                    ],
-                                  )
-                                  : LinearGradient(
-                                    colors: [
-                                      colorScheme.primary,
-                                      colorScheme.secondary,
-                                    ],
-                                  ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow:
-                              isLoading.value
-                                  ? []
-                                  : [
-                                    BoxShadow(
-                                      color: colorScheme.primary.withValues(alpha: 0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 8),
-                                    ),
+                          gradient: isLoading.value
+                              ? LinearGradient(
+                                  colors: [
+                                    colorScheme.outline,
+                                    colorScheme.outlineVariant,
                                   ],
+                                )
+                              : LinearGradient(
+                                  colors: [colorScheme.primary, colorScheme.secondary],
+                                ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: isLoading.value
+                              ? []
+                              : [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
                         ),
                         child: Material(
                           color: Colors.transparent,
@@ -744,33 +727,32 @@ class AddProductPage extends HookWidget {
                             onTap: isLoading.value ? null : handleAddProduct,
                             borderRadius: BorderRadius.circular(16),
                             child: Center(
-                              child:
-                                  isLoading.value
-                                      ? SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          color: colorScheme.onPrimary,
-                                          strokeWidth: 2.5,
-                                        ),
-                                      )
-                                      : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.add_rounded,
-                                            color: colorScheme.onPrimary,
-                                            size: 24,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '新增商品',
-                                            style: textTheme.titleMedium?.copyWith(
-                                              color: colorScheme.onPrimary,
-                                            ),
-                                          ),
-                                        ],
+                              child: isLoading.value
+                                  ? SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.onPrimary,
+                                        strokeWidth: 2.5,
                                       ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add_rounded,
+                                          color: colorScheme.onPrimary,
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '新增商品',
+                                          style: textTheme.titleMedium?.copyWith(
+                                            color: colorScheme.onPrimary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                             ),
                           ),
                         ),

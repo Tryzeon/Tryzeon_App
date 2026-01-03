@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SortOptionsDialog {
   SortOptionsDialog({
@@ -30,7 +31,7 @@ class SortOptionsDialog {
   final Function(bool) onAscendingChange;
 }
 
-class _SortOptionsDialogContent extends HookWidget {
+class _SortOptionsDialogContent extends HookConsumerWidget {
   const _SortOptionsDialogContent({
     required this.sortBy,
     required this.ascending,
@@ -43,7 +44,7 @@ class _SortOptionsDialogContent extends HookWidget {
   final Function(bool) onAscendingChange;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final sortByState = useState(sortBy);
     final ascendingState = useState(ascending);
 

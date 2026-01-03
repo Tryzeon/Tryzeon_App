@@ -2,18 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../data/wardrobe_item_model.dart';
 
-class WardrobeItemCard extends HookWidget {
+class WardrobeItemCard extends HookConsumerWidget {
   const WardrobeItemCard({super.key, required this.item, required this.onDelete});
   final WardrobeItem item;
   final VoidCallback onDelete;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final imageFile = useState<File?>(null);
     final isLoading = useState(true);
 

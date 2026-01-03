@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 enum NotificationType { success, error, info, warning }
 
@@ -14,124 +18,106 @@ class TopNotification {
 
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
-    final GlobalKey<_TopNotificationWidgetState> key = GlobalKey();
 
     overlayEntry = OverlayEntry(
       builder: (final context) => _TopNotificationWidget(
-        key: key,
         message: message,
         type: type,
-        onDismiss: () => overlayEntry.remove(),
+        onDismiss: () {
+          if (overlayEntry.mounted) {
+            overlayEntry.remove();
+          }
+        },
+        autoDismissDuration: duration,
       ),
     );
 
     overlay.insert(overlayEntry);
-
-    // 自動移除
-    Future.delayed(duration, () async {
-      if (overlayEntry.mounted && key.currentState != null) {
-        await key.currentState!._dismiss();
-      }
-    });
   }
 }
 
-class _TopNotificationWidget extends StatefulWidget {
+class _TopNotificationWidget extends HookConsumerWidget {
   const _TopNotificationWidget({
-    super.key,
     required this.message,
     required this.type,
     required this.onDismiss,
+    required this.autoDismissDuration,
   });
   final String message;
   final NotificationType type;
   final VoidCallback onDismiss;
+  final Duration autoDismissDuration;
 
   @override
-  State<_TopNotificationWidget> createState() => _TopNotificationWidgetState();
-}
-
-class _TopNotificationWidgetState extends State<_TopNotificationWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-  double _dragOffset = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final controller = useAnimationController(
       duration: const Duration(milliseconds: 400),
-      vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
+    final slideAnimation = useMemoized(() => Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOutCubic)), [controller]);
 
-    _fadeAnimation = Tween<double>(
+    final fadeAnimation = useMemoized(() => Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)), [controller]);
 
-    _controller.forward();
-  }
+    final dragOffset = useState(0.0);
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+    // 用來觸發 dismiss 的 callback，包含反向動畫
+    final dismiss = useCallback(() async {
+      if (context.mounted) {
+        await controller.reverse();
+        onDismiss();
+      }
+    }, [controller, onDismiss]);
 
-  Future<void> _dismiss() async {
-    await _controller.reverse();
-    widget.onDismiss();
-  }
+    useEffect(() {
+      controller.forward();
 
-  (Color, IconData) _getStyle() {
-    return switch (widget.type) {
-      NotificationType.success => (const Color(0xFF10B981), Icons.check_circle),
-      NotificationType.error => (const Color(0xFFEF4444), Icons.cancel),
-      NotificationType.warning => (const Color(0xFFF59E0B), Icons.warning),
-      NotificationType.info => (const Color(0xFF3B82F6), Icons.info),
-    };
-  }
+      // 設定自動移除
+      final timer = Timer(autoDismissDuration, dismiss);
 
-  @override
-  Widget build(final BuildContext context) {
-    final (color, icon) = _getStyle();
+      return timer.cancel;
+    }, []);
+
+    // 處理手勢
+    final handleDragUpdate = useCallback((final DragUpdateDetails details) {
+        dragOffset.value += details.delta.dy;
+        if (dragOffset.value > 0) dragOffset.value = 0;
+    }, []);
+
+    final handleDragEnd = useCallback((final DragEndDetails details) {
+       if (dragOffset.value < -50 ||
+          (details.primaryVelocity != null &&
+              details.primaryVelocity! < -300)) {
+        dismiss();
+      } else {
+        dragOffset.value = 0;
+      }
+    }, [dismiss]);
+
+
+    final (color, icon) = _getStyle(type);
 
     return Positioned(
       top: 0,
       left: 0,
       right: 0,
       child: SlideTransition(
-        position: _slideAnimation,
+        position: slideAnimation,
         child: FadeTransition(
-          opacity: _fadeAnimation,
+          opacity: fadeAnimation,
           child: SafeArea(
             child: Transform.translate(
-              offset: Offset(0, _dragOffset),
+              offset: Offset(0, dragOffset.value),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: GestureDetector(
-                  onVerticalDragUpdate: (final details) {
-                    setState(() {
-                      _dragOffset += details.delta.dy;
-                      if (_dragOffset > 0) _dragOffset = 0;
-                    });
-                  },
-                  onVerticalDragEnd: (final details) {
-                    if (_dragOffset < -50 ||
-                        (details.primaryVelocity != null &&
-                            details.primaryVelocity! < -300)) {
-                      _dismiss();
-                    } else {
-                      setState(() => _dragOffset = 0);
-                    }
-                  },
+                  onVerticalDragUpdate: handleDragUpdate,
+                  onVerticalDragEnd: handleDragEnd,
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -161,7 +147,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
-                                          widget.message,
+                                          message,
                                           style: TextStyle(
                                             color: Colors.grey[900],
                                             fontSize: 15,
@@ -172,7 +158,7 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
                                       ),
                                       const SizedBox(width: 8),
                                       GestureDetector(
-                                        onTap: _dismiss,
+                                        onTap: dismiss,
                                         child: Icon(
                                           Icons.close,
                                           color: Colors.grey[400],
@@ -196,5 +182,14 @@ class _TopNotificationWidgetState extends State<_TopNotificationWidget>
         ),
       ),
     );
+  }
+
+  (Color, IconData) _getStyle(final NotificationType type) {
+    return switch (type) {
+      NotificationType.success => (const Color(0xFF10B981), Icons.check_circle),
+      NotificationType.error => (const Color(0xFFEF4444), Icons.cancel),
+      NotificationType.warning => (const Color(0xFFF59E0B), Icons.warning),
+      NotificationType.info => (const Color(0xFF3B82F6), Icons.info),
+    };
   }
 }

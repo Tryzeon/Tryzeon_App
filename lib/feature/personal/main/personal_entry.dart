@@ -2,6 +2,7 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../chat/presentation/pages/chat_page.dart';
 import '../community/presentation/pages/community_page.dart';
@@ -28,7 +29,7 @@ class PersonalEntryScope extends InheritedWidget {
   }
 }
 
-class PersonalEntry extends HookWidget {
+class PersonalEntry extends HookConsumerWidget {
   const PersonalEntry({super.key});
 
   static PersonalEntryScope? of(final BuildContext context) {
@@ -36,7 +37,7 @@ class PersonalEntry extends HookWidget {
   }
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final selectedIndex = useState(2);
     final homePageController = useMemoized(HomePageController.new);
 

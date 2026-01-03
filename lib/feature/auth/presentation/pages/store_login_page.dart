@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
-class StoreLoginPage extends HookWidget {
+class StoreLoginPage extends HookConsumerWidget {
   const StoreLoginPage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final screenHeight = MediaQuery.of(context).size.height;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;

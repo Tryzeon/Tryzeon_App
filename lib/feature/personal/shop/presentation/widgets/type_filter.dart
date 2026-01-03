@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ProductTypeFilter extends HookWidget {
+class ProductTypeFilter extends HookConsumerWidget {
   const ProductTypeFilter({
     super.key,
     required this.productTypes,
@@ -13,7 +13,7 @@ class ProductTypeFilter extends HookWidget {
   final Function(String) onTypeToggle;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
@@ -13,11 +14,11 @@ import '../widgets/product_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/type_filter.dart';
 
-class ShopPage extends HookWidget {
+class ShopPage extends HookConsumerWidget {
   const ShopPage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final adImages = useState<List<String>>([]);
     final userProfile = useState<UserProfile?>(null);
 

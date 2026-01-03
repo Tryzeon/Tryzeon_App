@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AdBanner extends HookWidget {
+class AdBanner extends HookConsumerWidget {
   const AdBanner({super.key, required this.adImages});
   final List<String> adImages;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final pageController = usePageController();
     final currentPage = useState(0);
 

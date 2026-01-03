@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
@@ -8,12 +8,12 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../auth/presentation/pages/login_page.dart';
 import '../../../../personal/main/personal_entry.dart';
 
-class StoreOnboardingPage extends HookWidget {
+class StoreOnboardingPage extends HookConsumerWidget {
   const StoreOnboardingPage({super.key, this.onRefresh});
   final Future<void> Function()? onRefresh;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -26,11 +26,7 @@ class StoreOnboardingPage extends HookWidget {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        TopNotification.show(
-          context,
-          message: '無法開啟表單連結',
-          type: NotificationType.error,
-        );
+        TopNotification.show(context, message: '無法開啟表單連結', type: NotificationType.error);
       }
     }
 

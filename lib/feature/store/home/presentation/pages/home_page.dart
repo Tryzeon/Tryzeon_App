@@ -1,6 +1,7 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 
@@ -11,11 +12,11 @@ import '../dialogs/sort_dialog.dart';
 import '../widgets/product_card.dart';
 import 'add_product_page.dart';
 
-class StoreHomePage extends HookWidget {
+class StoreHomePage extends HookConsumerWidget {
   const StoreHomePage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final sortBy = useState('created_at');
     final ascending = useState(false);
 

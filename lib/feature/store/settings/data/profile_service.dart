@@ -169,12 +169,7 @@ class StoreProfileService {
 }
 
 class StoreProfile {
-  StoreProfile({
-    required this.storeId,
-    required this.name,
-    this.address,
-    this.logoPath,
-  });
+  StoreProfile({required this.storeId, required this.name, this.address, this.logoPath});
 
   factory StoreProfile.fromJson(final Map<String, dynamic> json) {
     return StoreProfile(

@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// A standardized error view for the Tryzeon App.
-///
-/// Used to display errors on page (inline) instead of just using toasts,
-/// providing a better UX for enterprise-grade applications.
-class ErrorView extends StatelessWidget {
+class ErrorView extends HookConsumerWidget {
   const ErrorView({super.key, this.onRetry, this.isCompact = false});
 
   final VoidCallback? onRetry;
   final bool isCompact;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 

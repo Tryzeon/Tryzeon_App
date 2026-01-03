@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
@@ -16,11 +17,11 @@ import '../../data/wardrobe_service.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
 import '../widgets/wardrobe_item_card.dart';
 
-class PersonalPage extends HookWidget {
+class PersonalPage extends HookConsumerWidget {
   const PersonalPage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final isLoading = useState(false);
     final selectedCategory = useState('全部');
     final categoryScrollController = useScrollController();

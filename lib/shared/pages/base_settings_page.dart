@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/feature/auth/data/auth_service.dart';
-import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// 設定頁面的選單項目
+/// 設定頁面的選單項目資料模型
 class SettingsMenuItem {
   const SettingsMenuItem({
     required this.icon,
@@ -19,45 +17,25 @@ class SettingsMenuItem {
   final Gradient? gradient;
 }
 
-/// 基礎設定頁面
-abstract class BaseSettingsPage extends StatefulWidget {
-  const BaseSettingsPage({super.key});
-}
+/// 共用的設定頁面骨架
+///
+/// 負責統一的 UI 風格，包含背景漸層、AppBar、選單列表樣式與登出按鈕樣式。
+/// 具體的業務邏輯（如導航、登出行為）由外部傳入。
+class SettingsPageScaffold extends HookConsumerWidget {
+  const SettingsPageScaffold({
+    super.key,
+    required this.menuItems,
+    required this.onLogout,
+    required this.onBack,
+  });
 
-abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T> {
-  bool _hasChanges = false;
-
-  // 子類需要實作這個方法
-  List<SettingsMenuItem> buildMenuItems();
-
-  void markAsChanged() {
-    setState(() {
-      _hasChanges = true;
-    });
-  }
-
-  Future<void> handleSignOut(final BuildContext context) async {
-    final confirmed = await ConfirmationDialog.show(
-      context: context,
-      title: '登出',
-      content: '你確定要登出嗎？',
-      confirmText: '登出',
-    );
-
-    if (confirmed == true) {
-      await AuthService.signOut();
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (final context) => const LoginPage()),
-          (final route) => false,
-        );
-      }
-    }
-  }
+  final List<SettingsMenuItem> menuItems;
+  final VoidCallback onLogout;
+  final VoidCallback onBack;
 
   @override
-  Widget build(final BuildContext context) {
-    final menuItems = buildMenuItems();
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: Container(
@@ -66,10 +44,10 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.surface,
+              colorScheme.surface,
               Color.alphaBlend(
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                Theme.of(context).colorScheme.surface,
+                colorScheme.primary.withValues(alpha: 0.05),
+                colorScheme.surface,
               ),
             ],
           ),
@@ -95,14 +73,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
                         return Column(
                           children: [
                             if (index > 0) const SizedBox(height: 12),
-                            _buildMenuCard(
-                              context: context,
-                              icon: item.icon,
-                              title: item.title,
-                              subtitle: item.subtitle,
-                              onTap: item.onTap,
-                              gradient: item.gradient,
-                            ),
+                            _MenuCard(item: item),
                           ],
                         );
                       }),
@@ -110,7 +81,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
                       const Spacer(),
 
                       // 登出按鈕
-                      _buildLogoutButton(context),
+                      _LogoutButton(onTap: onLogout),
 
                       const SizedBox(height: 16),
                     ],
@@ -145,7 +116,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
                 color: colorScheme.primary,
                 size: 20,
               ),
-              onPressed: () => Navigator.pop(context, _hasChanges),
+              onPressed: onBack,
               padding: EdgeInsets.zero,
             ),
           ),
@@ -155,15 +126,15 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
       ),
     );
   }
+}
 
-  Widget _buildMenuCard({
-    required final BuildContext context,
-    required final IconData icon,
-    required final String title,
-    required final String subtitle,
-    required final VoidCallback onTap,
-    final Gradient? gradient,
-  }) {
+class _MenuCard extends StatelessWidget {
+  const _MenuCard({required this.item});
+
+  final SettingsMenuItem item;
+
+  @override
+  Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -182,7 +153,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: item.onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -193,7 +164,7 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
                   height: 56,
                   decoration: BoxDecoration(
                     gradient:
-                        gradient ??
+                        item.gradient ??
                         LinearGradient(
                           colors: [
                             colorScheme.primary.withValues(alpha: 0.1),
@@ -202,19 +173,19 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
                         ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(icon, color: colorScheme.primary, size: 28),
+                  child: Icon(item.icon, color: colorScheme.primary, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: textTheme.titleSmall),
+                      Text(item.title, style: textTheme.titleSmall),
                       const SizedBox(height: 4),
                       Text(
-                        subtitle,
+                        item.subtitle,
                         style: textTheme.bodySmall?.copyWith(
-                          fontSize: 13, // Keep original size
+                          fontSize: 13,
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -233,8 +204,15 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
       ),
     );
   }
+}
 
-  Widget _buildLogoutButton(final BuildContext context) {
+class _LogoutButton extends StatelessWidget {
+  const _LogoutButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -248,14 +226,17 @@ abstract class BaseSettingsPageState<T extends BaseSettingsPage> extends State<T
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => handleSignOut(context),
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.logout_rounded, color: colorScheme.error, size: 24),
               const SizedBox(width: 8),
-              Text('登出', style: textTheme.titleSmall?.copyWith(color: colorScheme.error)),
+              Text(
+                '登出',
+                style: textTheme.titleSmall?.copyWith(color: colorScheme.error),
+              ),
             ],
           ),
         ),

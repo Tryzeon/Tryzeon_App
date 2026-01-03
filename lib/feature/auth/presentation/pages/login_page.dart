@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 // Import AppTheme to access static colors if needed, or just use Theme.of(context)
 
 import 'personal_login_page.dart';
 import 'store_login_page.dart';
 
-class LoginPage extends HookWidget {
+class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final screenHeight = MediaQuery.of(context).size.height;
     final colorScheme = Theme.of(context).colorScheme;
 

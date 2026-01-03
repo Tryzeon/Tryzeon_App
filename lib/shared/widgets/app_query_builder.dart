@@ -1,11 +1,11 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/widgets/error_view.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
-/// A wrapper around [QueryBuilder] that handles error and loading states consistently.
-class AppQueryBuilder<T> extends StatelessWidget {
+class AppQueryBuilder<T> extends HookConsumerWidget {
   const AppQueryBuilder({
     super.key,
     required this.query,
@@ -27,7 +27,7 @@ class AppQueryBuilder<T> extends StatelessWidget {
   final bool isCompact;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     // ignore: dynamic_neighbor_all_around
     return QueryBuilder<QueryState<T>>(
       query: query,

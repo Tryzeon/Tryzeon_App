@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/home/data/product_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
@@ -15,18 +16,16 @@ import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
-class ProductDetailPage extends HookWidget {
+class ProductDetailPage extends HookConsumerWidget {
   const ProductDetailPage({super.key, required this.product});
   final Product product;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: product.name);
     final priceController = useTextEditingController(text: product.price.toString());
-    final purchaseLinkController = useTextEditingController(
-      text: product.purchaseLink,
-    );
+    final purchaseLinkController = useTextEditingController(text: product.purchaseLink);
     final newImage = useState<File?>(null);
     final isLoading = useState(false);
     final selectedTypes = useState<Set<String>>(Set<String>.from(product.types));
@@ -70,11 +69,7 @@ class ProductDetailPage extends HookWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        TopNotification.show(
-          context,
-          message: '商品刪除成功',
-          type: NotificationType.success,
-        );
+        TopNotification.show(context, message: '商品刪除成功', type: NotificationType.success);
         Navigator.pop(context, true);
       } else {
         TopNotification.show(
@@ -108,10 +103,7 @@ class ProductDetailPage extends HookWidget {
         imagePath: product.imagePath,
         id: product.id,
         purchaseLink: purchaseLinkController.text,
-        sizes:
-            sizeEntries.value
-                .map((final e) => e.toProductSize(product.id!))
-                .toList(),
+        sizes: sizeEntries.value.map((final e) => e.toProductSize(product.id!)).toList(),
       );
 
       final result = await ProductService.updateProduct(
@@ -126,11 +118,7 @@ class ProductDetailPage extends HookWidget {
 
       if (result.isSuccess) {
         Navigator.pop(context, true);
-        TopNotification.show(
-          context,
-          message: '商品更新成功',
-          type: NotificationType.success,
-        );
+        TopNotification.show(context, message: '商品更新成功', type: NotificationType.success);
       } else {
         TopNotification.show(
           context,
@@ -347,19 +335,15 @@ class ProductDetailPage extends HookWidget {
                       selectedColor: colorScheme.primary,
                       checkmarkColor: colorScheme.onPrimary,
                       labelStyle: textTheme.bodyMedium?.copyWith(
-                        color:
-                            isSelected
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
+                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
-                          color:
-                              isSelected
-                                  ? colorScheme.primary
-                                  : colorScheme.outlineVariant,
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
                         ),
                       ),
                     );
@@ -410,33 +394,31 @@ class ProductDetailPage extends HookWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(15),
-                        child:
-                            newImage.value != null
-                                ? Image.file(
-                                  newImage.value!,
-                                  fit: BoxFit.contain,
-                                  width: double.infinity,
-                                )
-                                : CachedNetworkImage(
-                                  imageUrl: product.imageUrl,
-                                  cacheKey: product.imagePath,
-                                  fit: BoxFit.contain,
-                                  width: double.infinity,
-                                  placeholder:
-                                      (final context, final url) => Center(
-                                        child: CircularProgressIndicator(
-                                          color: colorScheme.outline,
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                  errorWidget:
-                                      (final context, final url, final error) => Center(
-                                        child: Icon(
-                                          Icons.error_outline,
-                                          color: colorScheme.error,
-                                        ),
-                                      ),
+                        child: newImage.value != null
+                            ? Image.file(
+                                newImage.value!,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: product.imageUrl,
+                                cacheKey: product.imagePath,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                placeholder: (final context, final url) => Center(
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.outline,
+                                    strokeWidth: 2,
+                                  ),
                                 ),
+                                errorWidget: (final context, final url, final error) =>
+                                    Center(
+                                      child: Icon(
+                                        Icons.error_outline,
+                                        color: colorScheme.error,
+                                      ),
+                                    ),
+                              ),
                       ),
                       Positioned(
                         bottom: 12,
@@ -512,24 +494,23 @@ class ProductDetailPage extends HookWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child:
-                      isLoading.value
-                          ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                colorScheme.onPrimary,
-                              ),
-                            ),
-                          )
-                          : Text(
-                            '儲存變更',
-                            style: textTheme.titleSmall?.copyWith(
-                              color: colorScheme.onPrimary,
+                  child: isLoading.value
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              colorScheme.onPrimary,
                             ),
                           ),
+                        )
+                      : Text(
+                          '儲存變更',
+                          style: textTheme.titleSmall?.copyWith(
+                            color: colorScheme.onPrimary,
+                          ),
+                        ),
                 ),
               ),
             ],

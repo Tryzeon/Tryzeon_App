@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -24,13 +25,13 @@ class ChatMessage {
 }
 
 // ChatBubble widget
-class ChatBubble extends HookWidget {
+class ChatBubble extends HookConsumerWidget {
   const ChatBubble({super.key, required this.message, this.child});
   final ChatMessage message;
   final Widget? child;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final isUser = message.isUser;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -142,13 +143,13 @@ class QAConfig {
 }
 
 // Quick reply button widget
-class QuickReplyButton extends HookWidget {
+class QuickReplyButton extends HookConsumerWidget {
   const QuickReplyButton({super.key, required this.text, required this.onTap});
   final String text;
   final VoidCallback onTap;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -188,11 +189,11 @@ class QuickReplyButton extends HookWidget {
 }
 
 // ChatPage widget
-class ChatPage extends HookWidget {
+class ChatPage extends HookConsumerWidget {
   const ChatPage({super.key});
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final messages = useState<List<ChatMessage>>([]);
     final controller = useTextEditingController();
     final scrollController = useScrollController();

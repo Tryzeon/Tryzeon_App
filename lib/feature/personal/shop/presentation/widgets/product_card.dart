@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
@@ -10,14 +10,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/shop_service.dart';
 
-class ProductCard extends HookWidget {
+class ProductCard extends HookConsumerWidget {
   const ProductCard({super.key, required this.product, this.userProfile});
 
   final Product product;
   final UserProfile? userProfile;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 

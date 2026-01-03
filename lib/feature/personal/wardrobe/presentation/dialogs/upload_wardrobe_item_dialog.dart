@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../data/wardrobe_service.dart';
 
-class UploadWardrobeItemDialog extends HookWidget {
+class UploadWardrobeItemDialog extends HookConsumerWidget {
   const UploadWardrobeItemDialog({
     super.key,
     required this.image,
@@ -25,7 +26,7 @@ class UploadWardrobeItemDialog extends HookWidget {
   };
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final selectedCategory = useState<String?>(null);
     final selectedTags = useState<List<String>>([]);
     final isUploading = useState(false);

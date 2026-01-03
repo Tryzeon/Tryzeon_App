@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 const double kMaxPrice = 3000;
 
@@ -29,14 +30,14 @@ class FilterDialog {
   final Function(int? minPrice, int? maxPrice) onApply;
 }
 
-class _FilterDialogContent extends HookWidget {
+class _FilterDialogContent extends HookConsumerWidget {
   const _FilterDialogContent({this.minPrice, this.maxPrice, required this.onApply});
   final int? minPrice;
   final int? maxPrice;
   final Function(int? minPrice, int? maxPrice) onApply;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final initialMin = minPrice?.toDouble() ?? 0;
     final initialMax = maxPrice?.toDouble() ?? kMaxPrice;
 
