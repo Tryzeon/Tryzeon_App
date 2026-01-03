@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/shared/utils/validators.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
@@ -367,12 +368,7 @@ class StoreProfileSettingsPage extends HookWidget {
                                       filled: true,
                                       fillColor: colorScheme.surfaceContainerLow,
                                     ),
-                                    validator: (final value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return '請輸入店家名稱';
-                                      }
-                                      return null;
-                                    },
+                                    validator: AppValidators.validateStoreName,
                                   ),
 
                                   const SizedBox(height: 20),

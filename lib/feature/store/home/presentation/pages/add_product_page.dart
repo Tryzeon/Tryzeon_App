@@ -338,12 +338,7 @@ class AddProductPage extends HookWidget {
                             ),
                           ),
                           keyboardType: TextInputType.text,
-                          validator: (final value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return '請輸入尺寸名稱';
-                            }
-                            return null;
-                          },
+                          validator: AppValidators.validateSizeName,
                         ),
                         const SizedBox(height: 12),
                         // 身體測量欄位
@@ -610,12 +605,7 @@ class AddProductPage extends HookWidget {
                                 filled: true,
                                 fillColor: colorScheme.surfaceContainer,
                               ),
-                              validator: (final value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return '請輸入商品名稱';
-                                }
-                                return null;
-                              },
+                              validator: AppValidators.validateProductName,
                             ),
 
                             const SizedBox(height: 12),

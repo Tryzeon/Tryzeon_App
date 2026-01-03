@@ -263,12 +263,7 @@ class PersonalProfileSettingsPage extends HookWidget {
                                   controller: nameController,
                                   label: '姓名',
                                   icon: Icons.person_outline_rounded,
-                                  validator: (final value) {
-                                    if (value == null || value.isEmpty) {
-                                      return '請輸入姓名';
-                                    }
-                                    return null;
-                                  },
+                                  validator: AppValidators.validateUserName,
                                 ),
                               ],
                             ),

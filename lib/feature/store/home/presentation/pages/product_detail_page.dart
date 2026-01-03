@@ -267,12 +267,7 @@ class ProductDetailPage extends HookWidget {
                             label: '尺寸名稱 (如: S, M)',
                             icon: Icons.label_outline,
                             filledColor: colorScheme.surface,
-                            validator: (final value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return '請輸入尺寸名稱';
-                              }
-                              return null;
-                            },
+                            validator: AppValidators.validateSizeName,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -470,12 +465,7 @@ class ProductDetailPage extends HookWidget {
                 controller: nameController,
                 label: '商品名稱',
                 icon: Icons.inventory_2_outlined,
-                validator: (final value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '請輸入商品名稱';
-                  }
-                  return null;
-                },
+                validator: AppValidators.validateProductName,
               ),
               const SizedBox(height: 16),
 

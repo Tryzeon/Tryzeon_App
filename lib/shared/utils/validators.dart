@@ -43,4 +43,32 @@ class AppValidators {
     }
     return null;
   }
+
+  static String? validateSizeName(final String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return '請輸入尺寸名稱';
+    }
+    return null;
+  }
+
+  static String? validateProductName(final String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return '請輸入商品名稱';
+    }
+    return null;
+  }
+
+  static String? validateStoreName(final String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return '請輸入店家名稱';
+    }
+    return null;
+  }
+
+  static String? validateUserName(final String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return '請輸入姓名';
+    }
+    return null;
+  }
 }
