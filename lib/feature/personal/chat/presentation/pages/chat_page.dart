@@ -2,27 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
+import 'package:tryzeon/feature/personal/chat/providers/providers.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../data/chat_service.dart';
-
-// Question data structure
-class Question {
-  const Question({required this.id, required this.text, required this.quickReplies});
-  final String id;
-  final String text;
-  final List<String> quickReplies;
-}
-
-// ChatMessage model
-class ChatMessage {
-  ChatMessage({required this.text, required this.isUser, this.questionId});
-  final String text;
-  final bool isUser;
-  final String? questionId;
-}
 
 // ChatBubble widget
 class ChatBubble extends HookConsumerWidget {
@@ -122,26 +107,6 @@ class ChatBubble extends HookConsumerWidget {
   }
 }
 
-// Q&A configuration
-class QAConfig {
-  static const List<Question> questions = [
-    Question(id: 'when', text: '什麼時候要穿？', quickReplies: ['早上', '下午', '晚上', '週末', '上班日']),
-    Question(id: 'where', text: '在哪穿？', quickReplies: ['辦公室', '咖啡廳', '戶外', '約會', '派對']),
-    Question(id: 'who', text: '和誰？', quickReplies: ['自己', '朋友', '同事', '情人', '家人']),
-    Question(id: 'what', text: '要做什麼？', quickReplies: ['工作', '休閒', '運動', '聚會', '拍照']),
-    Question(
-      id: 'how',
-      text: '想要什麼風格？',
-      quickReplies: ['簡約風', '時尚風', '復古風', '運動風', '混搭風'],
-    ),
-    Question(
-      id: 'why',
-      text: '為什麼想這樣穿？',
-      quickReplies: ['嘗試新風格', '吸引目光', '舒適自在', '展現專業'],
-    ),
-  ];
-}
-
 // Quick reply button widget
 class QuickReplyButton extends HookConsumerWidget {
   const QuickReplyButton({super.key, required this.text, required this.onTap});
@@ -228,8 +193,9 @@ class ChatPage extends HookConsumerWidget {
 
       scrollToBottom();
 
-      // 使用 ChatService 獲取 LLM 建議
-      final result = await ChatService.getLLMRecommendation(answers.value);
+      // 使用 Use Case 獲取 LLM 建議
+      final getLLMRecommendation = ref.read(getLLMRecommendationUseCaseProvider);
+      final result = await getLLMRecommendation(answers.value);
 
       if (!context.mounted) return;
 
