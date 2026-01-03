@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 
 import '../home/presentation/pages/home_page.dart';
@@ -6,55 +7,45 @@ import '../onboarding/presentation/pages/store_onboarding_page.dart';
 import '../settings/data/profile_service.dart';
 
 /// 店家入口 - 負責判斷是否需要 onboarding
-class StoreEntry extends StatefulWidget {
+class StoreEntry extends HookWidget {
   const StoreEntry({super.key});
 
   @override
-  State<StoreEntry> createState() => _StoreEntryState();
-}
+  Widget build(final BuildContext context) {
+    final isChecking = useState(true);
+    final needsOnboarding = useState(true);
 
-class _StoreEntryState extends State<StoreEntry> {
-  bool _isChecking = true;
-  bool _needsOnboarding = true;
+    Future<void> checkStoreInfo() async {
+      isChecking.value = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkStoreInfo();
-  }
+      final state = await StoreProfileService.storeProfileQuery().fetch();
+      if (!context.mounted) return;
 
-  Future<void> _checkStoreInfo() async {
-    setState(() {
-      _isChecking = true;
-    });
+      if (state.error != null) {
+        TopNotification.show(
+          context,
+          message: state.error.toString(),
+          type: NotificationType.error,
+        );
+      }
 
-    final state = await StoreProfileService.storeProfileQuery().fetch();
-    if (!mounted) return;
-
-    if (state.error != null) {
-      TopNotification.show(
-        context,
-        message: state.error.toString(),
-        type: NotificationType.error,
-      );
+      needsOnboarding.value = (state.data == null);
+      isChecking.value = false;
     }
 
-    setState(() {
-      _needsOnboarding = (state.data == null);
-      _isChecking = false;
-    });
-  }
+    useEffect(() {
+      checkStoreInfo();
+      return null;
+    }, []);
 
-  @override
-  Widget build(final BuildContext context) {
-    if (_isChecking) {
+    if (isChecking.value) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (_needsOnboarding) {
+    if (needsOnboarding.value) {
       return PopScope(
         canPop: false,
-        child: StoreOnboardingPage(onRefresh: _checkStoreInfo),
+        child: StoreOnboardingPage(onRefresh: checkStoreInfo),
       );
     } else {
       return const StoreHomePage();

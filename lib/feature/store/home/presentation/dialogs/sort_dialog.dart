@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 class SortOptionsDialog {
   SortOptionsDialog({
@@ -29,7 +30,7 @@ class SortOptionsDialog {
   final Function(bool) onAscendingChange;
 }
 
-class _SortOptionsDialogContent extends StatefulWidget {
+class _SortOptionsDialogContent extends HookWidget {
   const _SortOptionsDialogContent({
     required this.sortBy,
     required this.ascending,
@@ -42,37 +43,131 @@ class _SortOptionsDialogContent extends StatefulWidget {
   final Function(bool) onAscendingChange;
 
   @override
-  State<_SortOptionsDialogContent> createState() => _SortOptionsDialogContentState();
-}
-
-class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
-  late String _sortBy;
-  late bool _ascending;
-
-  @override
-  void initState() {
-    super.initState();
-    _sortBy = widget.sortBy;
-    _ascending = widget.ascending;
-  }
-
-  void _handleSortChange(final String newValue) {
-    setState(() {
-      _sortBy = newValue;
-    });
-    widget.onSortChange(newValue);
-  }
-
-  void _handleAscendingChange(final bool value) {
-    setState(() {
-      _ascending = value;
-    });
-    widget.onAscendingChange(value);
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final sortByState = useState(sortBy);
+    final ascendingState = useState(ascending);
+
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    void handleSortChange(final String newValue) {
+      sortByState.value = newValue;
+      onSortChange(newValue);
+    }
+
+    void handleAscendingChange(final bool value) {
+      ascendingState.value = value;
+      onAscendingChange(value);
+    }
+
+    Widget buildHeader() {
+      return Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [colorScheme.primary, colorScheme.secondary],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.sort_rounded, color: colorScheme.onPrimary, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Text('排序方式', style: textTheme.titleLarge),
+        ],
+      );
+    }
+
+    Widget buildSortOptions() {
+      final options = [
+        {'label': '名稱', 'value': 'name'},
+        {'label': '價格', 'value': 'price'},
+        {'label': '建立時間', 'value': 'created_at'},
+        {'label': '更新時間', 'value': 'updated_at'},
+        {'label': '試穿次數', 'value': 'tryon_count'},
+        {'label': '購買點擊次數', 'value': 'purchase_click_count'},
+      ];
+
+      return RadioGroup<String>(
+        groupValue: sortByState.value,
+        onChanged: (final val) {
+          if (val != null) {
+            handleSortChange(val);
+          }
+        },
+        child: Column(
+          children: options.map((final option) {
+            final label = option['label']!;
+            final value = option['value']!;
+            final isSelected = sortByState.value == value;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          colorScheme.primary.withValues(alpha: 0.1),
+                          colorScheme.secondary.withValues(alpha: 0.1),
+                        ],
+                      )
+                    : null,
+                borderRadius: BorderRadius.circular(12),
+                border: isSelected
+                    ? Border.all(color: colorScheme.primary, width: 2)
+                    : null,
+              ),
+              child: InkWell(
+                onTap: () => handleSortChange(value),
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
+                  title: Text(
+                    label,
+                    style: textTheme.titleSmall?.copyWith(
+                      color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                    ),
+                  ),
+                  leading: Radio<String>(
+                    value: value,
+                    fillColor: WidgetStateProperty.resolveWith((final states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return colorScheme.primary;
+                      }
+                      return null;
+                    }),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }
+
+    Widget buildAscendingSwitch() {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              colorScheme.primary.withValues(alpha: 0.1),
+              colorScheme.secondary.withValues(alpha: 0.1),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: SwitchListTile(
+          title: Text(
+            '排序轉換',
+            style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
+          ),
+          value: ascendingState.value,
+          activeTrackColor: colorScheme.primary,
+          onChanged: handleAscendingChange,
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -93,131 +188,13 @@ class _SortOptionsDialogContentState extends State<_SortOptionsDialogContent> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context),
+            buildHeader(),
             const SizedBox(height: 24),
-            _buildSortOptions(context),
+            buildSortOptions(),
             const SizedBox(height: 16),
-            _buildAscendingSwitch(context),
+            buildAscendingSwitch(),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [colorScheme.primary, colorScheme.secondary],
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(Icons.sort_rounded, color: colorScheme.onPrimary, size: 24),
-        ),
-        const SizedBox(width: 12),
-        Text('排序方式', style: textTheme.titleLarge),
-      ],
-    );
-  }
-
-  Widget _buildSortOptions(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    final options = [
-      {'label': '名稱', 'value': 'name'},
-      {'label': '價格', 'value': 'price'},
-      {'label': '建立時間', 'value': 'created_at'},
-      {'label': '更新時間', 'value': 'updated_at'},
-      {'label': '試穿次數', 'value': 'tryon_count'},
-      {'label': '購買點擊次數', 'value': 'purchase_click_count'},
-    ];
-
-    return RadioGroup<String>(
-      groupValue: _sortBy,
-      onChanged: (final val) {
-        if (val != null) {
-          _handleSortChange(val);
-        }
-      },
-      child: Column(
-        children: options.map((final option) {
-          final label = option['label']!;
-          final value = option['value']!;
-          final isSelected = _sortBy == value;
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              gradient: isSelected
-                  ? LinearGradient(
-                      colors: [
-                        colorScheme.primary.withValues(alpha: 0.1),
-                        colorScheme.secondary.withValues(alpha: 0.1),
-                      ],
-                    )
-                  : null,
-              borderRadius: BorderRadius.circular(12),
-              border: isSelected
-                  ? Border.all(color: colorScheme.primary, width: 2)
-                  : null,
-            ),
-            child: InkWell(
-              onTap: () => _handleSortChange(value),
-              borderRadius: BorderRadius.circular(12),
-              child: ListTile(
-                title: Text(
-                  label,
-                  style: textTheme.titleSmall?.copyWith(
-                    color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                  ),
-                ),
-                leading: Radio<String>(
-                  value: value,
-                  fillColor: WidgetStateProperty.resolveWith((final states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return colorScheme.primary;
-                    }
-                    return null;
-                  }),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildAscendingSwitch(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            colorScheme.primary.withValues(alpha: 0.1),
-            colorScheme.secondary.withValues(alpha: 0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SwitchListTile(
-        title: Text(
-          '排序轉換',
-          style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
-        ),
-        value: _ascending,
-        activeTrackColor: colorScheme.primary,
-        onChanged: _handleAscendingChange,
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 
@@ -10,48 +11,34 @@ import '../dialogs/sort_dialog.dart';
 import '../widgets/product_card.dart';
 import 'add_product_page.dart';
 
-class StoreHomePage extends StatefulWidget {
+class StoreHomePage extends HookWidget {
   const StoreHomePage({super.key});
 
   @override
-  State<StoreHomePage> createState() => _StoreHomePageState();
-}
-
-class _StoreHomePageState extends State<StoreHomePage> {
-  String _sortBy = 'created_at';
-  bool _ascending = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void _handleSortChange(final String newSortBy) {
-    setState(() {
-      _sortBy = newSortBy;
-    });
-  }
-
-  void _handleAscendingChange(final bool value) {
-    setState(() {
-      _ascending = value;
-    });
-  }
-
-  void _showSortOptions() {
-    SortOptionsDialog(
-      context: context,
-      sortBy: _sortBy,
-      ascending: _ascending,
-      onSortChange: _handleSortChange,
-      onAscendingChange: _handleAscendingChange,
-    );
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    final sortBy = useState('created_at');
+    final ascending = useState(false);
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    void handleSortChange(final String newSortBy) {
+      sortBy.value = newSortBy;
+    }
+
+    void handleAscendingChange(final bool value) {
+      ascending.value = value;
+    }
+
+    void showSortOptions() {
+      SortOptionsDialog(
+        context: context,
+        sortBy: sortBy.value,
+        ascending: ascending.value,
+        onSortChange: handleSortChange,
+        onAscendingChange: handleAscendingChange,
+      );
+    }
 
     return Scaffold(
       body: Container(
@@ -176,7 +163,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                             ),
                             child: IconButton(
                               icon: Icon(Icons.sort_rounded, color: colorScheme.primary),
-                              onPressed: _showSortOptions,
+                              onPressed: showSortOptions,
                               tooltip: '排序',
                             ),
                           ),
@@ -189,8 +176,8 @@ class _StoreHomePageState extends State<StoreHomePage> {
                           builder: (final context, final data) {
                             final products = ProductService.sortProducts(
                               data,
-                              _sortBy,
-                              _ascending,
+                              sortBy.value,
+                              ascending.value,
                             );
 
                             return RefreshIndicator(

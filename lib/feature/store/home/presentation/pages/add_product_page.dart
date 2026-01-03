@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
@@ -13,145 +14,399 @@ import 'package:typed_result/typed_result.dart';
 
 import '../../data/product_service.dart';
 
-class AddProductPage extends StatefulWidget {
+class AddProductPage extends HookWidget {
   const AddProductPage({super.key});
 
   @override
-  State<AddProductPage> createState() => _AddProductPageState();
-}
+  Widget build(final BuildContext context) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final nameController = useTextEditingController();
+    final priceController = useTextEditingController();
+    final purchaseLinkController = useTextEditingController();
 
-class _AddProductPageState extends State<AddProductPage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController purchaseLinkController = TextEditingController();
+    final selectedImage = useState<File?>(null);
+    final selectedTypes = useState<Set<String>>({});
+    final sizeControllers = useState<List<Map<String, TextEditingController>>>([]);
+    final isLoading = useState(false);
 
-  File? selectedImage;
-  Set<String> selectedTypes = {};
-  List<Map<String, TextEditingController>> sizeControllers = [];
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-  bool isLoading = false;
+    useEffect(() {
+      return () {
+        for (final controllers in sizeControllers.value) {
+          for (final controller in controllers.values) {
+            controller.dispose();
+          }
+        }
+      };
+    }, const []);
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    priceController.dispose();
-    purchaseLinkController.dispose();
-    for (final controllers in sizeControllers) {
-      for (final controller in controllers.values) {
-        controller.dispose();
-      }
-    }
-    super.dispose();
-  }
-
-  void _addSizeBlock() {
-    setState(() {
+    void addSizeBlock() {
       final Map<String, TextEditingController> newControllers = {
         'name': TextEditingController(),
       };
       for (final type in MeasurementType.values) {
         newControllers[type.name] = TextEditingController();
       }
-      sizeControllers.add(newControllers);
-    });
-  }
+      sizeControllers.value = [...sizeControllers.value, newControllers];
+    }
 
-  void _removeSizeBlock(final int index) {
-    setState(() {
-      for (final controller in sizeControllers[index].values) {
+    void removeSizeBlock(final int index) {
+      for (final controller in sizeControllers.value[index].values) {
         controller.dispose();
       }
-      sizeControllers.removeAt(index);
-    });
-  }
+      final newList = [...sizeControllers.value];
+      newList.removeAt(index);
+      sizeControllers.value = newList;
+    }
 
-  List<ProductSize> _buildProductSizes() {
-    return sizeControllers.map((final controllers) {
-      final Map<String, dynamic> measurementsJson = {};
-      for (final type in MeasurementType.values) {
-        final text = controllers[type.name]?.text;
-        final value = text != null && text.isNotEmpty ? double.tryParse(text) : null;
-        if (value != null) {
-          measurementsJson[type.key] = value;
+    List<ProductSize> buildProductSizes() {
+      return sizeControllers.value.map((final controllers) {
+        final Map<String, dynamic> measurementsJson = {};
+        for (final type in MeasurementType.values) {
+          final text = controllers[type.name]?.text;
+          final value = text != null && text.isNotEmpty ? double.tryParse(text) : null;
+          if (value != null) {
+            measurementsJson[type.key] = value;
+          }
         }
+
+        return ProductSize(
+          name: controllers['name']!.text,
+          measurements: BodyMeasurements.fromJson(measurementsJson),
+        );
+      }).toList();
+    }
+
+    bool validateProductForm() {
+      if (selectedImage.value == null) {
+        TopNotification.show(
+          context,
+          message: '請選擇商品圖片',
+          type: NotificationType.warning,
+        );
+        return false;
       }
 
-      return ProductSize(
-        name: controllers['name']!.text,
-        measurements: BodyMeasurements.fromJson(measurementsJson),
-      );
-    }).toList();
-  }
+      if (selectedTypes.value.isEmpty) {
+        TopNotification.show(
+          context,
+          message: '請至少選擇一種商品類型',
+          type: NotificationType.warning,
+        );
+        return false;
+      }
 
-  bool _validateProductForm() {
-    if (selectedImage == null) {
-      TopNotification.show(context, message: '請選擇商品圖片', type: NotificationType.warning);
-      return false;
+      return true;
     }
 
-    if (selectedTypes.isEmpty) {
-      TopNotification.show(
-        context,
-        message: '請至少選擇一種商品類型',
-        type: NotificationType.warning,
+    Future<void> handleAddProduct() async {
+      if (!formKey.currentState!.validate()) return;
+      if (!validateProductForm()) return;
+
+      isLoading.value = true;
+
+      final newProduct = Product(
+        storeId: '',
+        name: nameController.text,
+        types: selectedTypes.value,
+        price: double.parse(priceController.text),
+        purchaseLink: purchaseLinkController.text,
+        imagePath: '',
+        sizes: buildProductSizes(),
       );
-      return false;
+
+      final result = await ProductService.createProduct(
+        product: newProduct,
+        image: selectedImage.value!,
+      );
+
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        Navigator.pop(context, true);
+        TopNotification.show(
+          context,
+          message: '商品新增成功',
+          type: NotificationType.success,
+        );
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
     }
 
-    return true;
-  }
-
-  Future<void> _handleAddProduct() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (!_validateProductForm()) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    final newProduct = Product(
-      storeId: '',
-      name: nameController.text,
-      types: selectedTypes,
-      price: double.parse(priceController.text),
-      purchaseLink: purchaseLinkController.text,
-      imagePath: '',
-      sizes: _buildProductSizes(),
-    );
-
-    final result = await ProductService.createProduct(
-      product: newProduct,
-      image: selectedImage!,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      Navigator.pop(context, true);
-      TopNotification.show(context, message: '商品新增成功', type: NotificationType.success);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
+    Widget buildTypeSelector() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '商品類型',
+                style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(width: 8),
+              Text('(可多選)', style: textTheme.bodySmall),
+            ],
+          ),
+          const SizedBox(height: 12),
+          AppQueryBuilder<List<String>>(
+            query: ProductTypeService.productTypesQuery(),
+            isCompact: true,
+            builder: (final context, final productTypes) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+                ),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: productTypes.map((final type) {
+                    final isSelected = selectedTypes.value.contains(type);
+                    return FilterChip(
+                      label: Text(type),
+                      selected: isSelected,
+                      onSelected: (final selected) {
+                        final newSet = Set<String>.from(selectedTypes.value);
+                        if (selected) {
+                          newSet.add(type);
+                        } else {
+                          newSet.remove(type);
+                        }
+                        selectedTypes.value = newSet;
+                      },
+                      backgroundColor: colorScheme.surface,
+                      selectedColor: colorScheme.primary,
+                      checkmarkColor: colorScheme.onPrimary,
+                      labelStyle: textTheme.labelLarge?.copyWith(
+                        color:
+                            isSelected
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color:
+                              isSelected
+                                  ? colorScheme.primary
+                                  : colorScheme.outline.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          ),
+        ],
       );
     }
-  }
 
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    Widget buildSizeInputs() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '尺寸列表',
+                    style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                onPressed: addSizeBlock,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('新增尺寸'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (sizeControllers.value.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+              ),
+              child: Center(
+                child: Text(
+                  '尚未新增尺寸',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          else
+            ...List.generate(sizeControllers.value.length, (final index) {
+              final controllers = sizeControllers.value[index];
+              return Column(
+                children: [
+                  if (index > 0) const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: colorScheme.outline.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '尺寸 ${index + 1}',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline_rounded,
+                                color: colorScheme.error,
+                                size: 20,
+                              ),
+                              onPressed: () => removeSizeBlock(index),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // 尺寸名稱
+                        TextFormField(
+                          controller: controllers['name'],
+                          style: textTheme.bodyMedium,
+                          decoration: InputDecoration(
+                            labelText: '尺寸名稱 (如: S, M, XL)',
+                            labelStyle: textTheme.bodySmall,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: colorScheme.outline.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: colorScheme.outline.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: colorScheme.surface,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                          ),
+                          keyboardType: TextInputType.text,
+                          validator: (final value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return '請輸入尺寸名稱';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        // 身體測量欄位
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: MeasurementType.values.map((final type) {
+                            return SizedBox(
+                              width: (MediaQuery.of(context).size.width - 118) / 2,
+                              child: TextFormField(
+                                controller: controllers[type.name],
+                                style: textTheme.bodyMedium,
+                                decoration: InputDecoration(
+                                  labelText: type.label,
+                                  labelStyle: textTheme.bodySmall,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: colorScheme.outline.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: colorScheme.outline.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: colorScheme.surface,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d*'),
+                                  ),
+                                ],
+                                validator: AppValidators.validateMeasurement,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }),
+        ],
+      );
+    }
 
     return Scaffold(
       body: Container(
@@ -220,7 +475,7 @@ class _AddProductPageState extends State<AddProductPage> {
               // 內容
               Expanded(
                 child: Form(
-                  key: _formKey,
+                  key: formKey,
                   child: ListView(
                     padding: const EdgeInsets.all(20.0),
                     children: [
@@ -247,9 +502,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               onTap: () async {
                                 final image = await ImagePickerHelper.pickImage(context);
                                 if (image != null) {
-                                  setState(() {
-                                    selectedImage = image;
-                                  });
+                                  selectedImage.value = image;
                                 }
                               },
                               child: Container(
@@ -268,33 +521,34 @@ class _AddProductPageState extends State<AddProductPage> {
                                     width: 2,
                                   ),
                                 ),
-                                child: selectedImage == null
-                                    ? Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.add_photo_alternate_rounded,
-                                            size: 40,
-                                            color: colorScheme.primary,
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            '點擊選擇圖片',
-                                            style: textTheme.labelLarge?.copyWith(
+                                child:
+                                    selectedImage.value == null
+                                        ? Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.add_photo_alternate_rounded,
+                                              size: 40,
                                               color: colorScheme.primary,
                                             ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              '點擊選擇圖片',
+                                              style: textTheme.labelLarge?.copyWith(
+                                                color: colorScheme.primary,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                        : ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: Image.file(
+                                            selectedImage.value!,
+                                            fit: BoxFit.contain,
+                                            width: double.infinity,
+                                            height: double.infinity,
                                           ),
-                                        ],
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Image.file(
-                                          selectedImage!,
-                                          fit: BoxFit.contain,
-                                          width: double.infinity,
-                                          height: double.infinity,
                                         ),
-                                      ),
                               ),
                             ),
                           ],
@@ -367,12 +621,12 @@ class _AddProductPageState extends State<AddProductPage> {
                             const SizedBox(height: 12),
 
                             // 商品類型（多選）
-                            _buildTypeSelector(),
+                            buildTypeSelector(),
 
                             const SizedBox(height: 16),
 
                             // 尺寸資訊 (列表 + 新增按鈕)
-                            _buildSizeInputs(),
+                            buildSizeInputs(),
 
                             const SizedBox(height: 16),
 
@@ -468,59 +722,65 @@ class _AddProductPageState extends State<AddProductPage> {
                         width: double.infinity,
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient: isLoading
-                              ? LinearGradient(
-                                  colors: [
-                                    colorScheme.outline,
-                                    colorScheme.outlineVariant,
-                                  ],
-                                )
-                              : LinearGradient(
-                                  colors: [colorScheme.primary, colorScheme.secondary],
-                                ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: isLoading
-                              ? []
-                              : [
-                                  BoxShadow(
-                                    color: colorScheme.primary.withValues(alpha: 0.3),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 8),
+                          gradient:
+                              isLoading.value
+                                  ? LinearGradient(
+                                    colors: [
+                                      colorScheme.outline,
+                                      colorScheme.outlineVariant,
+                                    ],
+                                  )
+                                  : LinearGradient(
+                                    colors: [
+                                      colorScheme.primary,
+                                      colorScheme.secondary,
+                                    ],
                                   ),
-                                ],
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow:
+                              isLoading.value
+                                  ? []
+                                  : [
+                                    BoxShadow(
+                                      color: colorScheme.primary.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
                         ),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: isLoading ? null : _handleAddProduct,
+                            onTap: isLoading.value ? null : handleAddProduct,
                             borderRadius: BorderRadius.circular(16),
                             child: Center(
-                              child: isLoading
-                                  ? SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: colorScheme.onPrimary,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.add_rounded,
+                              child:
+                                  isLoading.value
+                                      ? SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
                                           color: colorScheme.onPrimary,
-                                          size: 24,
+                                          strokeWidth: 2.5,
                                         ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '新增商品',
-                                          style: textTheme.titleMedium?.copyWith(
+                                      )
+                                      : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_rounded,
                                             color: colorScheme.onPrimary,
+                                            size: 24,
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '新增商品',
+                                            style: textTheme.titleMedium?.copyWith(
+                                              color: colorScheme.onPrimary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                             ),
                           ),
                         ),
@@ -533,267 +793,6 @@ class _AddProductPageState extends State<AddProductPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTypeSelector() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              '商品類型',
-              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(width: 8),
-            Text('(可多選)', style: textTheme.bodySmall),
-          ],
-        ),
-        const SizedBox(height: 12),
-        AppQueryBuilder<List<String>>(
-          query: ProductTypeService.productTypesQuery(),
-          isCompact: true,
-          builder: (final context, final productTypes) {
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
-              ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: productTypes.map((final type) {
-                  final isSelected = selectedTypes.contains(type);
-                  return FilterChip(
-                    label: Text(type),
-                    selected: isSelected,
-                    onSelected: (final selected) {
-                      setState(() {
-                        if (selected) {
-                          selectedTypes.add(type);
-                        } else {
-                          selectedTypes.remove(type);
-                        }
-                      });
-                    },
-                    backgroundColor: colorScheme.surface,
-                    selectedColor: colorScheme.primary,
-                    checkmarkColor: colorScheme.onPrimary,
-                    labelStyle: textTheme.labelLarge?.copyWith(
-                      color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.outline.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSizeInputs() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  '尺寸列表',
-                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            TextButton.icon(
-              onPressed: _addSizeBlock,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('新增尺寸'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (sizeControllers.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
-            ),
-            child: Center(
-              child: Text(
-                '尚未新增尺寸',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          )
-        else
-          ...List.generate(sizeControllers.length, (final index) {
-            final controllers = sizeControllers[index];
-            return Column(
-              children: [
-                if (index > 0) const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '尺寸 ${index + 1}',
-                            style: textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.delete_outline_rounded,
-                              color: colorScheme.error,
-                              size: 20,
-                            ),
-                            onPressed: () => _removeSizeBlock(index),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      // 尺寸名稱
-                      TextFormField(
-                        controller: controllers['name'],
-                        style: textTheme.bodyMedium,
-                        decoration: InputDecoration(
-                          labelText: '尺寸名稱 (如: S, M, XL)',
-                          labelStyle: textTheme.bodySmall,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: colorScheme.surface,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                        ),
-                        keyboardType: TextInputType.text,
-                        validator: (final value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return '請輸入尺寸名稱';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      // 身體測量欄位
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: MeasurementType.values.map((final type) {
-                          return SizedBox(
-                            width: (MediaQuery.of(context).size.width - 118) / 2,
-                            child: TextFormField(
-                              controller: controllers[type.name],
-                              style: textTheme.bodyMedium,
-                              decoration: InputDecoration(
-                                labelText: type.label,
-                                labelStyle: textTheme.bodySmall,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.primary,
-                                    width: 2,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: colorScheme.surface,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                              ),
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                              ],
-                              validator: AppValidators.validateMeasurement,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }),
-      ],
     );
   }
 }

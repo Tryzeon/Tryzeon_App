@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
@@ -9,87 +10,76 @@ import 'package:typed_result/typed_result.dart';
 
 import '../../data/profile_service.dart';
 
-class StoreProfileSettingsPage extends StatefulWidget {
+class StoreProfileSettingsPage extends HookWidget {
   const StoreProfileSettingsPage({super.key});
 
   @override
-  State<StoreProfileSettingsPage> createState() => _StoreProfileSettingsPageState();
-}
+  Widget build(final BuildContext context) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final newLogoImage = useState<File?>(null);
+    final storeProfile = useState<StoreProfile?>(null);
+    final isControllersInitialized = useState(false);
+    final isLoading = useState(false);
 
-class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
-  final _formKey = GlobalKey<FormState>();
-  File? _newLogoImage;
-  StoreProfile? _storeProfile;
-  final TextEditingController storeNameController = TextEditingController();
-  final TextEditingController storeAddressController = TextEditingController();
-  bool _isControllersInitialized = false;
-  bool _isLoading = false;
+    final storeNameController = useTextEditingController();
+    final storeAddressController = useTextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-  }
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-  Future<void> _updateProfile() async {
-    if (!_formKey.currentState!.validate()) return;
+    Future<void> updateProfile() async {
+      if (!formKey.currentState!.validate()) return;
 
-    if (_storeProfile == null) {
-      if (mounted) {
+      if (storeProfile.value == null) {
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: '無法取得原始店家資料',
+            type: NotificationType.error,
+          );
+        }
+        return;
+      }
+
+      isLoading.value = true;
+
+      final targetProfile = storeProfile.value!.copyWith(
+        name: storeNameController.text.trim(),
+        address: storeAddressController.text.trim(),
+      );
+
+      final result = await StoreProfileService.updateStoreProfile(
+        original: storeProfile.value!,
+        target: targetProfile,
+        logo: newLogoImage.value,
+      );
+
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        Navigator.pop(context, true);
         TopNotification.show(
           context,
-          message: '無法取得原始店家資料',
+          message: '店家資訊已更新',
+          type: NotificationType.success,
+        );
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
           type: NotificationType.error,
         );
       }
-      return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    Future<void> updateLogo() async {
+      final File? image = await ImagePickerHelper.pickImage(context);
+      if (image == null) return;
 
-    final targetProfile = _storeProfile!.copyWith(
-      name: storeNameController.text.trim(),
-      address: storeAddressController.text.trim(),
-    );
-
-    final result = await StoreProfileService.updateStoreProfile(
-      original: _storeProfile!,
-      target: targetProfile,
-      logo: _newLogoImage,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result.isSuccess) {
-      Navigator.pop(context, true);
-      TopNotification.show(context, message: '店家資訊已更新', type: NotificationType.success);
-    } else {
-      TopNotification.show(
-        context,
-        message: result.getError()!,
-        type: NotificationType.error,
-      );
+      newLogoImage.value = image;
     }
-  }
-
-  Future<void> _updateLogo() async {
-    final File? image = await ImagePickerHelper.pickImage(context);
-    if (image == null) return;
-
-    setState(() {
-      _newLogoImage = image;
-    });
-  }
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: Container(
@@ -173,17 +163,19 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                   query: StoreProfileService.storeProfileQuery(),
                   builder: (final context, final profile) {
                     // Initialize controllers only once
-                    if (!_isControllersInitialized && profile != null) {
-                      _storeProfile = profile;
-                      storeNameController.text = profile.name;
-                      storeAddressController.text = profile.address;
-                      _isControllersInitialized = true;
+                    if (!isControllersInitialized.value && profile != null) {
+                      SchedulerBinding.instance.addPostFrameCallback((_) {
+                        storeProfile.value = profile;
+                        storeNameController.text = profile.name;
+                        storeAddressController.text = profile.address;
+                        isControllersInitialized.value = true;
+                      });
                     }
 
                     return SingleChildScrollView(
                       padding: const EdgeInsets.all(24.0),
                       child: Form(
-                        key: _formKey,
+                        key: formKey,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -214,7 +206,7 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                   ),
                                   const SizedBox(height: 20),
                                   GestureDetector(
-                                    onTap: _updateLogo,
+                                    onTap: updateLogo,
                                     child: Container(
                                       width: 120,
                                       height: 120,
@@ -233,67 +225,64 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                                           width: 2,
                                         ),
                                       ),
-                                      child: _newLogoImage != null
+                                      child: newLogoImage.value != null
                                           ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(60),
-                                              child: Image.file(
-                                                _newLogoImage!,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
+                                            borderRadius: BorderRadius.circular(60),
+                                            child: Image.file(
+                                              newLogoImage.value!,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
                                           : FutureBuilder(
-                                              future: profile!.loadLogo(),
-                                              builder: (final context, final snapshot) {
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return CircularProgressIndicator(
-                                                    color: colorScheme.primary,
-                                                  );
-                                                }
-
-                                                final result = snapshot.data!;
-                                                if (result.isFailure) {
-                                                  SchedulerBinding.instance
-                                                      .addPostFrameCallback((final _) {
-                                                        TopNotification.show(
-                                                          context,
-                                                          message: result.getError()!,
-                                                          type: NotificationType.error,
-                                                        );
-                                                      });
-                                                }
-
-                                                if (result.get() != null) {
-                                                  return ClipRRect(
-                                                    borderRadius: BorderRadius.circular(
-                                                      60,
-                                                    ),
-                                                    child: Image.file(
-                                                      result.get()!,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder:
-                                                          (
-                                                            final context,
-                                                            final error,
-                                                            final stackTrace,
-                                                          ) {
-                                                            return Icon(
-                                                              Icons.error_rounded,
-                                                              size: 50,
-                                                              color: colorScheme.primary,
-                                                            );
-                                                          },
-                                                    ),
-                                                  );
-                                                }
-
-                                                return Icon(
-                                                  Icons.camera_alt_rounded,
-                                                  size: 50,
+                                            future: profile!.loadLogo(),
+                                            builder: (final context, final snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return CircularProgressIndicator(
                                                   color: colorScheme.primary,
                                                 );
-                                              },
-                                            ),
+                                              }
+
+                                              final result = snapshot.data!;
+                                              if (result.isFailure) {
+                                                SchedulerBinding.instance
+                                                    .addPostFrameCallback((final _) {
+                                                      TopNotification.show(
+                                                        context,
+                                                        message: result.getError()!,
+                                                        type: NotificationType.error,
+                                                      );
+                                                    });
+                                              }
+
+                                              if (result.get() != null) {
+                                                return ClipRRect(
+                                                  borderRadius: BorderRadius.circular(60),
+                                                  child: Image.file(
+                                                    result.get()!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (
+                                                      final context,
+                                                      final error,
+                                                      final stackTrace,
+                                                    ) {
+                                                      return Icon(
+                                                        Icons.error_rounded,
+                                                        size: 50,
+                                                        color: colorScheme.primary,
+                                                      );
+                                                    },
+                                                  ),
+                                                );
+                                              }
+
+                                              return Icon(
+                                                Icons.camera_alt_rounded,
+                                                size: 50,
+                                                color: colorScheme.primary,
+                                              );
+                                            },
+                                          ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -448,65 +437,69 @@ class _StoreProfileSettingsPageState extends State<StoreProfileSettingsPage> {
                               width: double.infinity,
                               height: 56,
                               decoration: BoxDecoration(
-                                gradient: _isLoading
-                                    ? null
-                                    : LinearGradient(
-                                        colors: [
-                                          colorScheme.primary,
-                                          colorScheme.secondary,
-                                        ],
-                                      ),
-                                color: _isLoading
-                                    ? colorScheme.surfaceContainerHighest
-                                    : null,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: _isLoading
-                                    ? null
-                                    : [
-                                        BoxShadow(
-                                          color: colorScheme.primary.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                          blurRadius: 15,
-                                          offset: const Offset(0, 8),
+                                gradient:
+                                    isLoading.value
+                                        ? null
+                                        : LinearGradient(
+                                          colors: [
+                                            colorScheme.primary,
+                                            colorScheme.secondary,
+                                          ],
                                         ),
-                                      ],
+                                color:
+                                    isLoading.value
+                                        ? colorScheme.surfaceContainerHighest
+                                        : null,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow:
+                                    isLoading.value
+                                        ? null
+                                        : [
+                                          BoxShadow(
+                                            color: colorScheme.primary.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 8),
+                                          ),
+                                        ],
                               ),
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: _isLoading ? null : _updateProfile,
+                                  onTap: isLoading.value ? null : updateProfile,
                                   borderRadius: BorderRadius.circular(16),
                                   child: Center(
-                                    child: _isLoading
-                                        ? SizedBox(
-                                            width: 24,
-                                            height: 24,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: colorScheme.primary,
-                                            ),
-                                          )
-                                        : Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.save_rounded,
-                                                color: colorScheme.onPrimary,
-                                                size: 24,
+                                    child:
+                                        isLoading.value
+                                            ? SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: colorScheme.primary,
                                               ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                '儲存',
-                                                style: textTheme.titleMedium?.copyWith(
+                                            )
+                                            : Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.save_rounded,
                                                   color: colorScheme.onPrimary,
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.5,
+                                                  size: 24,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  '儲存',
+                                                  style: textTheme.titleMedium?.copyWith(
+                                                    color: colorScheme.onPrimary,
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                   ),
                                 ),
                               ),

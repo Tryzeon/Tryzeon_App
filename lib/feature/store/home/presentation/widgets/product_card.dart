@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/shared/models/product.dart';
 
 import '../pages/product_detail_page.dart';
 
-class StoreProductCard extends StatelessWidget {
+class StoreProductCard extends HookWidget {
   const StoreProductCard({super.key, required this.product});
   final Product product;
 

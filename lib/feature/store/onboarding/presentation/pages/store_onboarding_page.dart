@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/auth/data/auth_service.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
@@ -7,66 +8,65 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../auth/presentation/pages/login_page.dart';
 import '../../../../personal/main/personal_entry.dart';
 
-class StoreOnboardingPage extends StatefulWidget {
+class StoreOnboardingPage extends HookWidget {
   const StoreOnboardingPage({super.key, this.onRefresh});
   final Future<void> Function()? onRefresh;
-
-  @override
-  State<StoreOnboardingPage> createState() => _StoreOnboardingPageState();
-}
-
-class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
-  static const String formUrl =
-      'https://docs.google.com/forms/d/e/1FAIpQLScu_hKsOTUVcuB0R3sKnRh9cAbn7zchO7W8izdgG1N9-WC9AQ/viewform';
-
-  Future<void> _openForm() async {
-    final uri = Uri.parse(formUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (!mounted) return;
-      TopNotification.show(context, message: '無法開啟表單連結', type: NotificationType.error);
-    }
-  }
-
-  Future<void> _switchToPersonalAccount() async {
-    final confirmed = await ConfirmationDialog.show(
-      context: context,
-      title: '切換帳號',
-      content: '你確定要切換到個人版帳號嗎？',
-    );
-
-    if (confirmed == true && mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const PersonalEntry()),
-        (final route) => false,
-      );
-    }
-  }
-
-  Future<void> _handleLogout() async {
-    final confirmed = await ConfirmationDialog.show(
-      context: context,
-      title: '登出',
-      content: '你確定要登出嗎？',
-      confirmText: '登出',
-    );
-
-    if (confirmed == true) {
-      await AuthService.signOut();
-      if (!mounted) return;
-      // 登出後會自動回到登入頁面（main.dart 會處理）
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const LoginPage()),
-        (final route) => false,
-      );
-    }
-  }
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    const String formUrl =
+        'https://docs.google.com/forms/d/e/1FAIpQLScu_hKsOTUVcuB0R3sKnRh9cAbn7zchO7W8izdgG1N9-WC9AQ/viewform';
+
+    Future<void> openForm() async {
+      final uri = Uri.parse(formUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (!context.mounted) return;
+        TopNotification.show(
+          context,
+          message: '無法開啟表單連結',
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    Future<void> switchToPersonalAccount() async {
+      final confirmed = await ConfirmationDialog.show(
+        context: context,
+        title: '切換帳號',
+        content: '你確定要切換到個人版帳號嗎？',
+      );
+
+      if (confirmed == true && context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (final context) => const PersonalEntry()),
+          (final route) => false,
+        );
+      }
+    }
+
+    Future<void> handleLogout() async {
+      final confirmed = await ConfirmationDialog.show(
+        context: context,
+        title: '登出',
+        content: '你確定要登出嗎？',
+        confirmText: '登出',
+      );
+
+      if (confirmed == true) {
+        await AuthService.signOut();
+        if (!context.mounted) return;
+        // 登出後會自動回到登入頁面（main.dart 會處理）
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (final context) => const LoginPage()),
+          (final route) => false,
+        );
+      }
+    }
 
     return Scaffold(
       body: Container(
@@ -133,7 +133,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                       ),
                       child: IconButton(
                         icon: Icon(Icons.person_rounded, color: colorScheme.primary),
-                        onPressed: _switchToPersonalAccount,
+                        onPressed: switchToPersonalAccount,
                         tooltip: '切換回個人帳號',
                       ),
                     ),
@@ -145,7 +145,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                       ),
                       child: IconButton(
                         icon: Icon(Icons.logout_rounded, color: colorScheme.primary),
-                        onPressed: _handleLogout,
+                        onPressed: handleLogout,
                         tooltip: '登出',
                       ),
                     ),
@@ -156,7 +156,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: widget.onRefresh ?? () async {},
+                  onRefresh: onRefresh ?? () async {},
                   child: Center(
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -227,7 +227,7 @@ class _StoreOnboardingPageState extends State<StoreOnboardingPage> {
                                   child: Material(
                                     color: Colors.transparent,
                                     child: InkWell(
-                                      onTap: _openForm,
+                                      onTap: openForm,
                                       borderRadius: BorderRadius.circular(16),
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
