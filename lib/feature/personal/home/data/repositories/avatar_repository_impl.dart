@@ -39,7 +39,9 @@ class AvatarRepositoryImpl implements AvatarRepository {
         final cachedFile = await _avatarLocalDataSource.getAvatar(avatarPath);
 
         if (cachedFile != null) {
-          return Ok(AvatarModel.fromRecord(avatarPath: avatarPath, avatarFile: cachedFile));
+          return Ok(
+            AvatarModel.fromRecord(avatarPath: avatarPath, avatarFile: cachedFile),
+          );
         }
       }
 

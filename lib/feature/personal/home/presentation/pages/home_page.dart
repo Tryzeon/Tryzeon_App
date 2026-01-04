@@ -58,6 +58,35 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    Future<void> uploadAvatar() async {
+      final File? imageFile = await ImagePickerHelper.pickImage(context);
+      if (imageFile == null) return;
+
+      isLoading.value = true;
+
+      final uploadAvatarUseCase = ref.read(uploadAvatarUseCaseProvider);
+      final result = await uploadAvatarUseCase(imageFile);
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        final avatar = result.get()!;
+        avatarFile.value = avatar.avatarFile;
+        tryonImages.value = [];
+        currentTryonIndex.value = -1;
+        customAvatarIndex.value = null;
+
+        TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!,
+          type: NotificationType.error,
+        );
+      }
+    }
+
     Future<void> performTryOn({
       final String? clothesBase64,
       final String? clothesPath,
@@ -112,35 +141,6 @@ class HomePage extends HookConsumerWidget {
 
     Future<void> tryOnFromStorage(final String clothesPath) async {
       await performTryOn(clothesPath: clothesPath);
-    }
-
-    Future<void> uploadAvatar() async {
-      final File? imageFile = await ImagePickerHelper.pickImage(context);
-      if (imageFile == null) return;
-
-      isLoading.value = true;
-
-      final uploadAvatarUseCase = ref.read(uploadAvatarUseCaseProvider);
-      final result = await uploadAvatarUseCase(imageFile);
-      if (!context.mounted) return;
-
-      isLoading.value = false;
-
-      if (result.isSuccess) {
-        final avatar = result.get()!;
-        avatarFile.value = avatar.avatarFile;
-        tryonImages.value = [];
-        currentTryonIndex.value = -1;
-        customAvatarIndex.value = null;
-
-        TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!,
-          type: NotificationType.error,
-        );
-      }
     }
 
     void previousTryon() {
