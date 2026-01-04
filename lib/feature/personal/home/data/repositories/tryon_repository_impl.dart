@@ -1,25 +1,32 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
-class TryonService {
-  static final _supabase = Supabase.instance.client;
+class TryOnRepositoryImpl implements TryOnRepository {
+  TryOnRepositoryImpl({required final TryonRemoteDataSource tryonDataSource})
+    : _tryonDataSource = tryonDataSource;
 
-  static Future<Result<String, String>> tryon({
+  final TryonRemoteDataSource _tryonDataSource;
+
+  @override
+  Future<Result<TryonResult, String>> tryon({
     final String? avatarBase64,
     final String? avatarPath,
     final String? clothesBase64,
     final String? clothesPath,
   }) async {
     try {
-      final Map<String, dynamic> body = {};
-      body['avatarBase64'] = avatarBase64;
-      body['avatarPath'] = avatarPath;
-      body['clothesBase64'] = clothesBase64;
-      body['clothesPath'] = clothesPath;
+      final imageBase64 = await _tryonDataSource.tryon(
+        avatarBase64: avatarBase64,
+        avatarPath: avatarPath,
+        clothesBase64: clothesBase64,
+        clothesPath: clothesPath,
+      );
 
-      final response = await _supabase.functions.invoke('tryon', body: body);
-      return Ok(response.data['image']);
+      return Ok(TryonResult(imageBase64: imageBase64));
     } on FunctionException catch (e) {
       String message;
       switch (e.status) {

@@ -6,13 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/personal/home/data/avatar_service.dart';
+import 'package:tryzeon/feature/personal/home/providers/providers.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../data/tryon_service.dart';
 
 class HomePageController {
   Future<void> Function(String clothesPath)? tryOnFromStorage;
@@ -28,7 +26,6 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final avatarPath = useState<String?>(null);
     final avatarFile = useState<File?>(null);
     final tryonImages = useState<List<Uint8List>>([]);
     final currentTryonIndex = useState(-1);
@@ -41,14 +38,17 @@ class HomePage extends HookConsumerWidget {
     Future<void> loadAvatar({final bool forceRefresh = false}) async {
       isLoading.value = true;
 
-      final result = await AvatarService.getAvatar(forceRefresh: forceRefresh);
+      final getAvatarUseCase = ref.read(getAvatarUseCaseProvider);
+      final result = await getAvatarUseCase(forceRefresh: forceRefresh);
       if (!context.mounted) return;
 
       isLoading.value = false;
 
       if (result.isSuccess) {
-        avatarPath.value = result.get()!.avatarPath;
-        avatarFile.value = result.get()!.avatarFile;
+        final avatar = result.get();
+        if (avatar != null) {
+          avatarFile.value = avatar.avatarFile;
+        }
       } else {
         TopNotification.show(
           context,
@@ -62,15 +62,6 @@ class HomePage extends HookConsumerWidget {
       final String? clothesBase64,
       final String? clothesPath,
     }) async {
-      if (avatarFile.value == null) {
-        TopNotification.show(
-          context,
-          message: '請先上傳您的照片',
-          type: NotificationType.warning,
-        );
-        return;
-      }
-
       // 如果有自訂 avatar，轉換為 base64
       String? customAvatarBase64;
       if (customAvatarIndex.value != null) {
@@ -79,9 +70,9 @@ class HomePage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final result = await TryonService.tryon(
-        avatarBase64: customAvatarBase64,
-        avatarPath: avatarPath.value,
+      final tryonUseCase = ref.read(tryonUseCaseProvider);
+      final result = await tryonUseCase(
+        customAvatarBase64: customAvatarBase64,
         clothesBase64: clothesBase64,
         clothesPath: clothesPath,
       );
@@ -93,7 +84,7 @@ class HomePage extends HookConsumerWidget {
       // Check if success
       if (result.isSuccess) {
         // 解碼 base64 並儲存為 bytes
-        final base64String = result.get()!.split(',')[1];
+        final base64String = result.get()!.imageBase64.split(',')[1];
         final imageBytes = base64Decode(base64String);
 
         tryonImages.value = [...tryonImages.value, imageBytes];
@@ -129,14 +120,15 @@ class HomePage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final result = await AvatarService.uploadAvatar(imageFile);
+      final uploadAvatarUseCase = ref.read(uploadAvatarUseCaseProvider);
+      final result = await uploadAvatarUseCase(imageFile);
       if (!context.mounted) return;
 
       isLoading.value = false;
 
       if (result.isSuccess) {
-        avatarPath.value = result.get()!.avatarPath;
-        avatarFile.value = result.get()!.avatarFile;
+        final avatar = result.get()!;
+        avatarFile.value = avatar.avatarFile;
         tryonImages.value = [];
         currentTryonIndex.value = -1;
         customAvatarIndex.value = null;
