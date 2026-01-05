@@ -1,12 +1,9 @@
-import 'package:logger/logger.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 class AppLogger {
-  static final Logger _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 10,
-      errorMethodCount: 10,
-      colors: false,
-      printEmojis: false,
+  static final Talker talker = TalkerFlutter.init(
+    logger: TalkerLogger(
+      settings: TalkerLoggerSettings(enableColors: false),
     ),
   );
 
@@ -15,7 +12,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    _logger.d(message, error: error, stackTrace: stackTrace);
+    talker.debug(message, error, stackTrace);
   }
 
   static void info(
@@ -23,7 +20,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    _logger.i(message, error: error, stackTrace: stackTrace);
+    talker.info(message, error, stackTrace);
   }
 
   static void warning(
@@ -31,7 +28,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    _logger.w(message, error: error, stackTrace: stackTrace);
+    talker.warning(message, error, stackTrace);
   }
 
   static void error(
@@ -39,7 +36,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    _logger.e(message, error: error, stackTrace: stackTrace);
+    talker.error(message, error, stackTrace);
   }
 
   static void fatal(
@@ -47,6 +44,6 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    _logger.f(message, error: error, stackTrace: stackTrace);
+    talker.critical(message, error, stackTrace);
   }
 }

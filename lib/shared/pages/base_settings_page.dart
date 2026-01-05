@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 
 /// 設定頁面的選單項目資料模型
 class SettingsMenuItem {
@@ -121,7 +123,19 @@ class SettingsPageScaffold extends HookConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text('設定', style: textTheme.displaySmall?.copyWith(letterSpacing: 0.5)),
+          GestureDetector(
+            onLongPress: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (final context) => TalkerScreen(talker: AppLogger.talker),
+                ),
+              );
+            },
+            child: Text(
+              '設定',
+              style: textTheme.displaySmall?.copyWith(letterSpacing: 0.5),
+            ),
+          ),
         ],
       ),
     );
