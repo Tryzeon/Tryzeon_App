@@ -17,8 +17,8 @@ class ProductService {
 
   /// 獲取店家的所有商品 Query
   static Query<List<Product>> productsQuery() {
-    final store = _supabase.auth.currentUser;
-    final id = store?.id;
+    final user = _supabase.auth.currentUser;
+    final id = user?.id;
 
     return Query<List<Product>>(
       key: ['products', id],
@@ -35,15 +35,15 @@ class ProductService {
   /// 獲取商品列表 (Internal Fetcher)
   static Future<List<Product>> fetchProducts() async {
     try {
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         throw '無法獲取使用者資訊，請重新登入';
       }
 
       final response = await _supabase
           .from(_productsTable)
           .select('*, product_sizes(*)')
-          .eq('store_id', store.id);
+          .eq('store_id', user.id);
 
       return response
           .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
@@ -63,17 +63,17 @@ class ProductService {
   }) async {
     try {
       // 獲取當前用戶 ID
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       // 先上傳圖片
-      final String imagePath = await _uploadProductImage(store, image);
+      final String imagePath = await _uploadProductImage(user, image);
 
       // 準備商品資料
       final productData = product.toJson();
-      productData['store_id'] = store.id; // 確保 store_id 正確
+      productData['store_id'] = user.id; // 確保 store_id 正確
       productData['image_path'] = imagePath; // 更新圖片路徑
       productData.remove('id'); // 移除 id，讓資料庫自動生成
       productData.remove('product_sizes'); // 移除 sizes，稍後分開處理
@@ -109,7 +109,7 @@ class ProductService {
       final newProduct = Product.fromJson(Map<String, dynamic>.from(newProductJson));
 
       CachedQuery.instance.updateQuery(
-        key: ['products', store.id],
+        key: ['products', user.id],
         updateFn: (final dynamic oldList) {
           if (oldList == null) return [newProduct];
           return [newProduct, ...(oldList as List<Product>)];
@@ -130,14 +130,14 @@ class ProductService {
     final File? newImage,
   }) async {
     try {
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       Product finalTarget = target;
       if (newImage != null) {
-        final newImagePath = await _uploadProductImage(store, newImage);
+        final newImagePath = await _uploadProductImage(user, newImage);
         finalTarget = target.copyWith(imagePath: newImagePath);
       }
 
@@ -196,7 +196,7 @@ class ProductService {
       );
 
       CachedQuery.instance.updateQuery(
-        key: ['products', store.id],
+        key: ['products', user.id],
         updateFn: (final dynamic oldList) {
           if (oldList == null) return [updatedProduct];
           return (oldList as List<Product>)
@@ -215,8 +215,8 @@ class ProductService {
   /// 刪除商品
   static Future<Result<void, String>> deleteProduct(final Product product) async {
     try {
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
@@ -233,7 +233,7 @@ class ProductService {
 
       // 更新本地快取
       CachedQuery.instance.updateQuery(
-        key: ['products', store.id],
+        key: ['products', user.id],
         updateFn: (final dynamic oldList) {
           if (oldList == null) return [];
           return (oldList as List<Product>)

@@ -15,8 +15,8 @@ class StoreProfileService {
 
   /// 獲取店家資料 Query
   static Query<StoreProfile?> storeProfileQuery() {
-    final store = _supabase.auth.currentUser;
-    final id = store?.id;
+    final user = _supabase.auth.currentUser;
+    final id = user?.id;
 
     return Query<StoreProfile?>(
       key: ['store_profile', id],
@@ -30,15 +30,15 @@ class StoreProfileService {
   /// 獲取店家資料 (Internal Fetcher)
   static Future<StoreProfile?> fetchStoreProfile() async {
     try {
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         throw '無法獲取使用者資訊，請重新登入';
       }
 
       final response = await _supabase
           .from(_storesProfileTable)
           .select('store_id, name, address, logo_path')
-          .eq('store_id', store.id)
+          .eq('store_id', user.id)
           .maybeSingle();
 
       if (response == null) {
@@ -65,14 +65,14 @@ class StoreProfileService {
     final File? logo,
   }) async {
     try {
-      final store = _supabase.auth.currentUser;
-      if (store == null) {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
       StoreProfile finalTarget = target;
       if (logo != null) {
-        final newLogoPath = await _uploadLogo(store, logo);
+        final newLogoPath = await _uploadLogo(user, logo);
         finalTarget = target.copyWith(logoPath: newLogoPath);
       }
 
@@ -87,7 +87,7 @@ class StoreProfileService {
       final response = await _supabase
           .from(_storesProfileTable)
           .update(updateData)
-          .eq('store_id', store.id)
+          .eq('store_id', user.id)
           .select()
           .single();
 
@@ -100,7 +100,7 @@ class StoreProfileService {
 
       // 直接更新本地快取
       CachedQuery.instance.updateQuery(
-        key: ['store_profile', store.id],
+        key: ['store_profile', user.id],
         updateFn: (final dynamic old) => updatedProfile,
       );
 

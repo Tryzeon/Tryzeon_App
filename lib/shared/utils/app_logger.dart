@@ -2,9 +2,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 class AppLogger {
   static final Talker talker = TalkerFlutter.init(
-    logger: TalkerLogger(
-      settings: TalkerLoggerSettings(enableColors: false),
-    ),
+    logger: TalkerLogger(settings: TalkerLoggerSettings(enableColors: false)),
   );
 
   static void debug(
