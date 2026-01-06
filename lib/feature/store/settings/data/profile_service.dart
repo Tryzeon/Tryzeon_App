@@ -37,8 +37,8 @@ class StoreProfileService {
 
       final response = await _supabase
           .from(_storesProfileTable)
-          .select('store_id, name, address, logo_path')
-          .eq('store_id', user.id)
+          .select('id, owner_id, name, address, logo_path')
+          .eq('owner_id', user.id)
           .maybeSingle();
 
       if (response == null) {
@@ -87,7 +87,7 @@ class StoreProfileService {
       final response = await _supabase
           .from(_storesProfileTable)
           .update(updateData)
-          .eq('store_id', user.id)
+          .eq('owner_id', user.id)
           .select()
           .single();
 
@@ -169,18 +169,26 @@ class StoreProfileService {
 }
 
 class StoreProfile {
-  StoreProfile({required this.storeId, required this.name, this.address, this.logoPath});
+  StoreProfile({
+    required this.id,
+    required this.ownerId,
+    required this.name,
+    this.address,
+    this.logoPath,
+  });
 
   factory StoreProfile.fromJson(final Map<String, dynamic> json) {
     return StoreProfile(
-      storeId: json['store_id'],
+      id: json['id'],
+      ownerId: json['owner_id'],
       name: json['name'],
       address: json['address'],
       logoPath: json['logo_path'],
     );
   }
 
-  final String storeId;
+  final String id; // store_profile 的主鍵，被 products.store_id 引用
+  final String ownerId; // 關聯到 auth.users.id
   final String name;
   final String? address;
   final String? logoPath;
@@ -194,17 +202,25 @@ class StoreProfile {
   }
 
   Map<String, dynamic> toJson() {
-    return {'store_id': storeId, 'name': name, 'address': address, 'logo_path': logoPath};
+    return {
+      'id': id,
+      'owner_id': ownerId,
+      'name': name,
+      'address': address,
+      'logo_path': logoPath,
+    };
   }
 
   StoreProfile copyWith({
-    final String? storeId,
+    final String? id,
+    final String? ownerId,
     final String? name,
     final String? address,
     final String? logoPath,
   }) {
     return StoreProfile(
-      storeId: storeId ?? this.storeId,
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
       name: name ?? this.name,
       address: address ?? this.address,
       logoPath: logoPath ?? this.logoPath,

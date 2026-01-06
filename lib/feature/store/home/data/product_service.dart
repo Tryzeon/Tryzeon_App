@@ -18,10 +18,10 @@ class ProductService {
   /// 獲取店家的所有商品 Query
   static Query<List<Product>> productsQuery() {
     final user = _supabase.auth.currentUser;
-    final id = user?.id;
+    final ownerId = user?.id;
 
     return Query<List<Product>>(
-      key: ['products', id],
+      key: ['products', ownerId],
       queryFn: fetchProducts,
       config: QueryConfig(
         storageDeserializer: (final dynamic json) {
@@ -33,6 +33,7 @@ class ProductService {
   }
 
   /// 獲取商品列表 (Internal Fetcher)
+  /// 使用 JOIN 查詢：store_profile -> products -> product_sizes
   static Future<List<Product>> fetchProducts() async {
     try {
       final user = _supabase.auth.currentUser;
@@ -40,12 +41,24 @@ class ProductService {
         throw '無法獲取使用者資訊，請重新登入';
       }
 
+      // 使用 JOIN 查詢：從 store_profile 開始，關聯 products 和 product_sizes
+      // 這樣只需一次查詢就能取得所有資料
       final response = await _supabase
-          .from(_productsTable)
-          .select('*, product_sizes(*)')
-          .eq('store_id', user.id);
+          .from('store_profile')
+          .select('''
+            id,
+            products!inner(
+              *,
+              product_sizes(*)
+            )
+          ''')
+          .eq('owner_id', user.id)
+          .single();
 
-      return response
+      // 提取 products 陣列
+      final productsJson = response['products'] as List;
+
+      return productsJson
           .map((final e) => Product.fromJson(Map<String, dynamic>.from(e)))
           .toList()
           .cast<Product>();
@@ -68,12 +81,21 @@ class ProductService {
         return const Err('無法獲取使用者資訊，請重新登入');
       }
 
+      // 使用 JOIN 查詢獲取 store_id
+      final storeProfileResponse = await _supabase
+          .from('store_profile')
+          .select('id')
+          .eq('owner_id', user.id)
+          .single();
+
+      final storeId = storeProfileResponse['id'] as String;
+
       // 先上傳圖片
       final String imagePath = await _uploadProductImage(user, image);
 
       // 準備商品資料
       final productData = product.toJson();
-      productData['store_id'] = user.id; // 確保 store_id 正確
+      productData['store_id'] = storeId; // 使用正確的 store_id
       productData['image_path'] = imagePath; // 更新圖片路徑
       productData.remove('id'); // 移除 id，讓資料庫自動生成
       productData.remove('product_sizes'); // 移除 sizes，稍後分開處理
@@ -108,6 +130,7 @@ class ProductService {
 
       final newProduct = Product.fromJson(Map<String, dynamic>.from(newProductJson));
 
+      // 使用 owner_id 作為快取 key
       CachedQuery.instance.updateQuery(
         key: ['products', user.id],
         updateFn: (final dynamic oldList) {
@@ -195,6 +218,7 @@ class ProductService {
         Map<String, dynamic>.from(updatedProductJson),
       );
 
+      // 使用 owner_id 作為快取 key
       CachedQuery.instance.updateQuery(
         key: ['products', user.id],
         updateFn: (final dynamic oldList) {
