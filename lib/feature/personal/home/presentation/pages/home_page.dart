@@ -497,33 +497,14 @@ class HomePage extends HookConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 標題
-                    ShaderMask(
-                      shaderCallback: (final bounds) => LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      ).createShader(bounds),
-                      child: const Text(
-                        'Tryzeon',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 3.0,
-                          height: 1.2,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(2, 2),
-                              blurRadius: 4,
-                              color: Color.fromARGB(80, 0, 0, 0),
-                            ),
-                            Shadow(
-                              offset: Offset(-1, -1),
-                              blurRadius: 8,
-                              color: Color.fromARGB(40, 255, 255, 255),
-                            ),
-                          ],
-                        ),
+                    // 標題 - 保留簡約風格
+                    Text(
+                      'Tryzeon',
+                      style: textTheme.displayLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1.0,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -637,16 +618,15 @@ class HomePage extends HookConsumerWidget {
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  colorScheme.secondary,
-                                  colorScheme.secondary.withValues(alpha: 0.8),
-                                ],
+                                  colorScheme.primary,
+                                  colorScheme.secondary,                                ],
                               ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: isLoading.value
                             ? []
                             : [
                                 BoxShadow(
-                                  color: colorScheme.secondary.withValues(alpha: 0.3),
+                                  color: colorScheme.primary.withValues(alpha: 0.3),
                                   blurRadius: 15,
                                   offset: const Offset(0, 8),
                                 ),
@@ -662,14 +642,18 @@ class HomePage extends HookConsumerWidget {
                             children: [
                               Icon(
                                 Icons.auto_awesome_rounded,
-                                color: colorScheme.onSecondary,
+                                color: isLoading.value
+                                    ? colorScheme.onSurfaceVariant
+                                    : Colors.white,
                                 size: 24,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 '虛擬試穿',
                                 style: textTheme.titleMedium?.copyWith(
-                                  color: colorScheme.onSecondary,
+                                  color: isLoading.value
+                                      ? colorScheme.onSurfaceVariant
+                                      : Colors.white,
                                   letterSpacing: 0.5,
                                 ),
                               ),
