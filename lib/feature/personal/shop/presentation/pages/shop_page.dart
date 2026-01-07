@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
+import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
@@ -20,7 +20,6 @@ class ShopPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final adImages = useState<List<String>>([]);
-    final userProfile = useState<UserProfile?>(null);
 
     // 過濾和排序狀態
     final sortBy = useState('tryon_count');
@@ -35,12 +34,6 @@ class ShopPage extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    Future<void> loadUserProfile() async {
-      final state = await UserProfileService.userProfileQuery().fetch();
-      if (!context.mounted) return;
-      userProfile.value = state.data;
-    }
-
     Future<void> loadAdImages({final bool forceRefresh = false}) async {
       final response = await AdService.getAdImages(forceRefresh: forceRefresh);
       if (!context.mounted) return;
@@ -49,7 +42,6 @@ class ShopPage extends HookConsumerWidget {
 
     useEffect(() {
       loadAdImages();
-      loadUserProfile();
       return null;
     }, []);
 
@@ -381,9 +373,15 @@ class ShopPage extends HookConsumerWidget {
                                           ),
                                       itemBuilder: (final context, final index) {
                                         final product = displayedProducts[index];
+                                        final profileAsync = ref.watch(
+                                          userProfileProvider,
+                                        );
+                                        final userProfile = profileAsync.hasValue
+                                            ? profileAsync.value
+                                            : null;
                                         return ProductCard(
                                           product: product,
-                                          userProfile: userProfile.value,
+                                          userProfile: userProfile,
                                         );
                                       },
                                     ),

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/personal/settings/data/profile_service.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
-import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -83,12 +83,14 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
 
               // 表單內容
               Expanded(
-                child: AppQueryBuilder<UserProfile>(
-                  query: UserProfileService.userProfileQuery(),
-                  builder: (final context, final profile) {
-                    return _PersonalProfileForm(profile: profile);
-                  },
-                ),
+                child: ref
+                    .watch(userProfileProvider)
+                    .when(
+                      data: (final profile) => _PersonalProfileForm(profile: profile),
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (final error, final stack) =>
+                          Center(child: Text('載入失敗: $error')),
+                    ),
               ),
             ],
           ),
@@ -141,16 +143,15 @@ class _PersonalProfileForm extends HookConsumerWidget {
         measurements: newMeasurements,
       );
 
-      final result = await UserProfileService.updateUserProfile(
-        original: profile,
-        target: targetProfile,
-      );
+      final updateUseCase = ref.read(updateUserProfileUseCaseProvider);
+      final result = await updateUseCase(original: profile, target: targetProfile);
 
       if (!context.mounted) return;
 
       isLoading.value = false;
 
       if (result.isSuccess) {
+        ref.invalidate(userProfileProvider);
         Navigator.pop(context);
         TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
       } else {

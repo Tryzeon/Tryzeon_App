@@ -1,16 +1,15 @@
 import 'dart:io';
 
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
-import '../../../settings/data/profile_service.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../data/wardrobe_item_model.dart';
 import '../../data/wardrobe_service.dart';
@@ -175,21 +174,18 @@ class PersonalPage extends HookConsumerWidget {
                                   shaderCallback: (final bounds) => LinearGradient(
                                     colors: [colorScheme.primary, colorScheme.secondary],
                                   ).createShader(bounds),
-                                  child: QueryBuilder(
-                                    query: UserProfileService.userProfileQuery(),
-                                    builder: (final context, final state) {
-                                      final username = state.data?.name ?? '';
-                                      return Text(
-                                        '您好, $username',
-                                        style: textTheme.headlineMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          letterSpacing: 0.5,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                                    },
+                                  child: Text(
+                                    ref.watch(userProfileProvider).maybeWhen(
+                                      data: (final profile) => '您好, ${profile.name}',
+                                      orElse: () => '您好',
+                                    ),
+                                    style: textTheme.headlineMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
