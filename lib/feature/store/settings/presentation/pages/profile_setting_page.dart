@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/store/settings/data/profile_service.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
+import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
-import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -17,6 +17,8 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final profileAsync = ref.watch(storeProfileProvider);
 
     return Scaffold(
       body: Container(
@@ -96,14 +98,19 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
 
               // 內容
               Expanded(
-                child: AppQueryBuilder<StoreProfile?>(
-                  query: StoreProfileService.storeProfileQuery(),
-                  builder: (final context, final profile) {
+                child: profileAsync.when(
+                  data: (final profile) {
                     if (profile == null) {
                       return const Center(child: Text('無法載入店家資料'));
                     }
                     return _StoreProfileForm(profile: profile);
                   },
+                  loading:
+                      () => Center(
+                        child: CircularProgressIndicator(color: colorScheme.primary),
+                      ),
+                  error:
+                      (final error, final stack) => Center(child: Text('載入失敗: $error')),
                 ),
               ),
             ],
@@ -142,10 +149,11 @@ class _StoreProfileForm extends HookConsumerWidget {
         address: storeAddressController.text.trim(),
       );
 
-      final result = await StoreProfileService.updateStoreProfile(
+      final updateUseCase = ref.read(updateStoreProfileUseCaseProvider);
+      final result = await updateUseCase(
         original: profile,
         target: targetProfile,
-        logo: newLogoImage.value,
+        logoFile: newLogoImage.value,
       );
 
       if (!context.mounted) return;
@@ -153,6 +161,7 @@ class _StoreProfileForm extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
+        ref.invalidate(storeProfileProvider);
         Navigator.pop(context);
         TopNotification.show(context, message: '店家資訊已更新', type: NotificationType.success);
       } else {
@@ -259,57 +268,51 @@ class _StoreProfileForm extends HookConsumerWidget {
                       ),
                       child: newLogoImage.value != null
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(60),
-                              child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
-                            )
+                            borderRadius: BorderRadius.circular(60),
+                            child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
+                          )
                           : FutureBuilder(
-                              future: profile.loadLogo(),
-                              builder: (final context, final snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return CircularProgressIndicator(
+                            future:
+                                profile.logoPath != null
+                                    ? ref.watch(getStoreLogoUseCaseProvider)(
+                                      profile.logoPath!,
+                                    )
+                                    : Future.value(const Ok(null)),
+                            builder: (final context, final snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return CircularProgressIndicator(
+                                  color: colorScheme.primary,
+                                );
+                              }
+
+                              if (snapshot.hasData) {
+                                final result =
+                                    snapshot.data! as Result<File?, String>;
+                                if (result.isFailure) {
+                                  // Log error but show placeholder
+                                  return Icon(
+                                    Icons.error_rounded,
+                                    size: 50,
                                     color: colorScheme.primary,
                                   );
                                 }
 
-                                final result = snapshot.data!;
-                                if (result.isFailure) {
-                                  // Only show notification, don't setState
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                                    if (context.mounted) {
-                                      TopNotification.show(
-                                        context,
-                                        message: result.getError()!,
-                                        type: NotificationType.error,
-                                      );
-                                    }
-                                  });
-                                }
-
-                                if (result.get() != null) {
+                                final file = result.get();
+                                if (file != null) {
                                   return ClipRRect(
                                     borderRadius: BorderRadius.circular(60),
-                                    child: Image.file(
-                                      result.get()!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (final context, final error, final stackTrace) {
-                                            return Icon(
-                                              Icons.error_rounded,
-                                              size: 50,
-                                              color: colorScheme.primary,
-                                            );
-                                          },
-                                    ),
+                                    child: Image.file(file, fit: BoxFit.cover),
                                   );
                                 }
+                              }
 
-                                return Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 50,
-                                  color: colorScheme.primary,
-                                );
-                              },
-                            ),
+                              return Icon(
+                                Icons.camera_alt_rounded,
+                                size: 50,
+                                color: colorScheme.primary,
+                              );
+                            },
+                          ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -379,22 +382,25 @@ class _StoreProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient: isLoading.value
-                    ? null
-                    : LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      ),
-                color: isLoading.value ? colorScheme.surfaceContainerHighest : null,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: isLoading.value
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
+                gradient:
+                    isLoading.value
+                        ? null
+                        : LinearGradient(
+                          colors: [colorScheme.primary, colorScheme.secondary],
                         ),
-                      ],
+                color:
+                    isLoading.value ? colorScheme.surfaceContainerHighest : null,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow:
+                    isLoading.value
+                        ? null
+                        : [
+                          BoxShadow(
+                            color: colorScheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
               ),
               child: Material(
                 color: Colors.transparent,
@@ -402,35 +408,36 @@ class _StoreProfileForm extends HookConsumerWidget {
                   onTap: isLoading.value ? null : updateProfile,
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
-                    child: isLoading.value
-                        ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: colorScheme.primary,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.save_rounded,
-                                color: colorScheme.onPrimary,
-                                size: 24,
+                    child:
+                        isLoading.value
+                            ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.primary,
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '儲存',
-                                style: textTheme.titleMedium?.copyWith(
+                            )
+                            : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.save_rounded,
                                   color: colorScheme.onPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5,
+                                  size: 24,
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '儲存',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                   ),
                 ),
               ),

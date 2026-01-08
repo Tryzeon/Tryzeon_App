@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 
 import '../home/presentation/pages/home_page.dart';
 import '../onboarding/presentation/pages/store_onboarding_page.dart';
-import '../settings/data/profile_service.dart';
 
 /// 店家入口 - 負責判斷是否需要 onboarding
 class StoreEntry extends HookConsumerWidget {
@@ -13,43 +11,27 @@ class StoreEntry extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final isChecking = useState(true);
-    final needsOnboarding = useState(true);
+    final profileAsync = ref.watch(storeProfileProvider);
 
-    Future<void> checkStoreInfo() async {
-      isChecking.value = true;
-
-      final state = await StoreProfileService.storeProfileQuery().fetch();
-      if (!context.mounted) return;
-
-      if (state.error != null) {
-        TopNotification.show(
-          context,
-          message: state.error.toString(),
-          type: NotificationType.error,
-        );
-      }
-
-      needsOnboarding.value = (state.data == null);
-      isChecking.value = false;
-    }
-
-    useEffect(() {
-      checkStoreInfo();
-      return null;
-    }, []);
-
-    if (isChecking.value) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (needsOnboarding.value) {
-      return PopScope(
-        canPop: false,
-        child: StoreOnboardingPage(onRefresh: checkStoreInfo),
-      );
-    } else {
-      return const StoreHomePage();
-    }
+    return profileAsync.when(
+      data: (final profile) {
+        if (profile == null) {
+          return PopScope(
+            canPop: false,
+            child: StoreOnboardingPage(
+              onRefresh: () async {
+                // Invalidate provider to trigger re-fetch
+                ref.invalidate(storeProfileProvider);
+              },
+            ),
+          );
+        }
+        return const StoreHomePage();
+      },
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error:
+          (final error, final stack) =>
+              Scaffold(body: Center(child: Text('載入失敗: $error'))),
+    );
   }
 }

@@ -1,11 +1,10 @@
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 
-import '../../../settings/data/profile_service.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../data/product_service.dart';
 import '../dialogs/sort_dialog.dart';
@@ -22,6 +21,8 @@ class StoreHomePage extends HookConsumerWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final profileAsync = ref.watch(storeProfileProvider);
 
     void handleSortChange(final String newSortBy) {
       sortBy.value = newSortBy;
@@ -95,17 +96,17 @@ class StoreHomePage extends HookConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('店家後台', style: textTheme.titleLarge),
-                          QueryBuilder(
-                            query: StoreProfileService.storeProfileQuery(),
-                            builder: (final context, final state) {
-                              final storeName = state.data?.name ?? '';
-                              return Text(
-                                '歡迎回來，$storeName',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                ),
-                              );
-                            },
+                          Text(
+                            profileAsync.maybeWhen(
+                              data: (final profile) =>
+                                  profile == null
+                                      ? '歡迎回來'
+                                      : '歡迎回來，${profile.name}',
+                              orElse: () => '歡迎回來',
+                            ),
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
                           ),
                         ],
                       ),
