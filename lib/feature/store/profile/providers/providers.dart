@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_
 import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_logo.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/update_store_profile.dart';
+import 'package:typed_result/typed_result.dart';
 
 final storeProfileRemoteDataSourceProvider = Provider<StoreProfileRemoteDataSource>((
   final ref,
@@ -40,7 +41,7 @@ final getStoreLogoUseCaseProvider = Provider<GetStoreLogo>((final ref) {
   return GetStoreLogo(ref.watch(storeProfileRepositoryProvider));
 });
 
-final storeProfileProvider = FutureProvider<StoreProfile?>((final ref) async {
+final storeProfileProvider = FutureProvider<Result<StoreProfile?, String>>((final ref) async {
   final getStoreProfile = ref.watch(getStoreProfileUseCaseProvider);
   return getStoreProfile();
 });

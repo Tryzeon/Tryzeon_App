@@ -18,11 +18,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   final UserProfileLocalDataSource _localDataSource;
 
   @override
-  Future<UserProfile> getUserProfile() async {
+  Future<Result<UserProfile, String>> getUserProfile() async {
     try {
       // Cache-first
       final cached = _localDataSource.cache;
-      if (cached != null) return cached;
+      if (cached != null) return Ok(cached);
 
       // Fetch from API
       final json = await _remoteDataSource.fetchUserProfile();
@@ -31,11 +31,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       // Update cache
       _localDataSource.cache = profile;
 
-      return profile;
+      return Ok(profile);
     } catch (e) {
-      if (e is String) rethrow; // Allow DataSource specific messages to pass
+      if (e is String) return Err(e);
       // Wrap unknown errors
-      throw '無法載入個人資料，請稍後再試';
+      return const Err('無法載入個人資料，請稍後再試');
     }
   }
 

@@ -98,7 +98,11 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
               // 內容
               Expanded(
                 child: profileAsync.when(
-                  data: (final profile) {
+                  data: (final result) {
+                    if (result.isFailure) {
+                      return Center(child: Text('載入失敗: ${result.getError()}'));
+                    }
+                    final profile = result.get();
                     if (profile == null) {
                       return const Center(child: Text('無法載入店家資料'));
                     }

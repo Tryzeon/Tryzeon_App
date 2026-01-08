@@ -18,21 +18,26 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   final StoreProfileLocalDataSource _localDataSource;
 
   @override
-  Future<StoreProfile?> getStoreProfile() async {
-    // Cache-first
-    final cached = _localDataSource.cache;
-    if (cached != null) return cached;
+  Future<Result<StoreProfile?, String>> getStoreProfile() async {
+    try {
+      // Cache-first
+      final cached = _localDataSource.cache;
+      if (cached != null) return Ok(cached);
 
-    // Fetch from API
-    final json = await _remoteDataSource.fetchStoreProfile();
-    if (json == null) return null;
+      // Fetch from API
+      final json = await _remoteDataSource.fetchStoreProfile();
+      if (json == null) return const Ok(null);
 
-    final entity = StoreProfileModel.fromJson(json);
+      final entity = StoreProfileModel.fromJson(json);
 
-    // Update cache
-    _localDataSource.cache = entity;
+      // Update cache
+      _localDataSource.cache = entity;
 
-    return entity;
+      return Ok(entity);
+    } catch (e) {
+      if (e is String) return Err(e);
+      return const Err('無法載入店家資料，請稍後再試');
+    }
   }
 
   @override
