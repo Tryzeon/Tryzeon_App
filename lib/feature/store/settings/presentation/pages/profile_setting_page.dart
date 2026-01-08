@@ -15,10 +15,9 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(storeProfileProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
-    final profileAsync = ref.watch(storeProfileProvider);
 
     return Scaffold(
       body: Container(
@@ -105,12 +104,11 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                     }
                     return _StoreProfileForm(profile: profile);
                   },
-                  loading:
-                      () => Center(
-                        child: CircularProgressIndicator(color: colorScheme.primary),
-                      ),
-                  error:
-                      (final error, final stack) => Center(child: Text('載入失敗: $error')),
+                  loading: () => Center(
+                    child: CircularProgressIndicator(color: colorScheme.primary),
+                  ),
+                  error: (final error, final stack) =>
+                      Center(child: Text('載入失敗: $error')),
                 ),
               ),
             ],
@@ -268,51 +266,49 @@ class _StoreProfileForm extends HookConsumerWidget {
                       ),
                       child: newLogoImage.value != null
                           ? ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
-                          )
+                              borderRadius: BorderRadius.circular(60),
+                              child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
+                            )
                           : FutureBuilder(
-                            future:
-                                profile.logoPath != null
-                                    ? ref.watch(getStoreLogoUseCaseProvider)(
+                              future: profile.logoPath != null
+                                  ? ref.watch(getStoreLogoUseCaseProvider)(
                                       profile.logoPath!,
                                     )
-                                    : Future.value(const Ok(null)),
-                            builder: (final context, final snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return CircularProgressIndicator(
-                                  color: colorScheme.primary,
-                                );
-                              }
-
-                              if (snapshot.hasData) {
-                                final result =
-                                    snapshot.data! as Result<File?, String>;
-                                if (result.isFailure) {
-                                  // Log error but show placeholder
-                                  return Icon(
-                                    Icons.error_rounded,
-                                    size: 50,
+                                  : Future.value(const Ok(null)),
+                              builder: (final context, final snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return CircularProgressIndicator(
                                     color: colorScheme.primary,
                                   );
                                 }
 
-                                final file = result.get();
-                                if (file != null) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(60),
-                                    child: Image.file(file, fit: BoxFit.cover),
-                                  );
-                                }
-                              }
+                                if (snapshot.hasData) {
+                                  final result = snapshot.data! as Result<File?, String>;
+                                  if (result.isFailure) {
+                                    // Log error but show placeholder
+                                    return Icon(
+                                      Icons.error_rounded,
+                                      size: 50,
+                                      color: colorScheme.primary,
+                                    );
+                                  }
 
-                              return Icon(
-                                Icons.camera_alt_rounded,
-                                size: 50,
-                                color: colorScheme.primary,
-                              );
-                            },
-                          ),
+                                  final file = result.get();
+                                  if (file != null) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(60),
+                                      child: Image.file(file, fit: BoxFit.cover),
+                                    );
+                                  }
+                                }
+
+                                return Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 50,
+                                  color: colorScheme.primary,
+                                );
+                              },
+                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -382,25 +378,22 @@ class _StoreProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient:
-                    isLoading.value
-                        ? null
-                        : LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
-                color:
-                    isLoading.value ? colorScheme.surfaceContainerHighest : null,
+                gradient: isLoading.value
+                    ? null
+                    : LinearGradient(
+                        colors: [colorScheme.primary, colorScheme.secondary],
+                      ),
+                color: isLoading.value ? colorScheme.surfaceContainerHighest : null,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow:
-                    isLoading.value
-                        ? null
-                        : [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                boxShadow: isLoading.value
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
               ),
               child: Material(
                 color: Colors.transparent,
@@ -408,36 +401,35 @@ class _StoreProfileForm extends HookConsumerWidget {
                   onTap: isLoading.value ? null : updateProfile,
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
-                    child:
-                        isLoading.value
-                            ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.primary,
-                              ),
-                            )
-                            : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.save_rounded,
-                                  color: colorScheme.onPrimary,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '儲存',
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
+                    child: isLoading.value
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.primary,
                             ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.save_rounded,
+                                color: colorScheme.onPrimary,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '儲存',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),

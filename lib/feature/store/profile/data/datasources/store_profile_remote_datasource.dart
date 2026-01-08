@@ -50,11 +50,7 @@ class StoreProfileRemoteDataSource {
     final bytes = await image.readAsBytes();
     await _supabaseClient.storage
         .from(_logoBucket)
-        .uploadBinary(
-          logoPath,
-          bytes,
-          fileOptions: FileOptions(contentType: mimeType),
-        );
+        .uploadBinary(logoPath, bytes, fileOptions: FileOptions(contentType: mimeType));
 
     return logoPath;
   }

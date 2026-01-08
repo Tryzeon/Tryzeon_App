@@ -12,8 +12,8 @@ class UpdateStoreProfile {
     required final StoreProfile target,
     final File? logoFile,
   }) => _repository.updateStoreProfile(
-        original: original,
-        target: target,
-        logoFile: logoFile,
-      );
+    original: original,
+    target: target,
+    logoFile: logoFile,
+  );
 }

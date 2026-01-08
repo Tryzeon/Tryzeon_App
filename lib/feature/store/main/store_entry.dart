@@ -29,9 +29,8 @@ class StoreEntry extends HookConsumerWidget {
         return const StoreHomePage();
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error:
-          (final error, final stack) =>
-              Scaffold(body: Center(child: Text('載入失敗: $error'))),
+      error: (final error, final stack) =>
+          Scaffold(body: Center(child: Text('載入失敗: $error'))),
     );
   }
 }

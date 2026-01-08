@@ -21,6 +21,11 @@ class PersonalPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
+    final profile = profileAsync.maybeWhen(
+      data: (final profile) => profile,
+      orElse: () => null,
+    );
     final isLoading = useState(false);
     final selectedCategory = useState('全部');
     final categoryScrollController = useScrollController();
@@ -175,10 +180,7 @@ class PersonalPage extends HookConsumerWidget {
                                     colors: [colorScheme.primary, colorScheme.secondary],
                                   ).createShader(bounds),
                                   child: Text(
-                                    ref.watch(userProfileProvider).maybeWhen(
-                                      data: (final profile) => '您好, ${profile.name}',
-                                      orElse: () => '您好',
-                                    ),
+                                    profile != null ? '您好, ${profile.name}' : '您好',
                                     style: textTheme.headlineMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,

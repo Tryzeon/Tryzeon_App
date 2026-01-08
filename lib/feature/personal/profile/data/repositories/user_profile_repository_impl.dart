@@ -26,7 +26,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       throw '無法獲取使用者資訊，請重新登入';
     }
 
-    final cachedProfile = _localDataSource.getCachedProfile();
+    final cachedProfile = _localDataSource.cachedProfile;
     if (cachedProfile != null) {
       return cachedProfile;
     }
@@ -34,7 +34,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     final json = await _remoteDataSource.fetchUserProfile();
     final profile = UserProfileModel.fromJson(json);
 
-    _localDataSource.updateCachedProfile(profile);
+    _localDataSource.cachedProfile = profile;
 
     return profile;
   }
@@ -60,7 +60,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       final updatedProfile = UserProfileModel.fromJson(updatedJson);
 
-      _localDataSource.updateCachedProfile(updatedProfile);
+      _localDataSource.cachedProfile = updatedProfile;
 
       return const Ok(null);
     } catch (e) {

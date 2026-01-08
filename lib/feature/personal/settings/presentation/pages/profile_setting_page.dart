@@ -14,6 +14,7 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -83,14 +84,12 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
 
               // 表單內容
               Expanded(
-                child: ref
-                    .watch(userProfileProvider)
-                    .when(
-                      data: (final profile) => _PersonalProfileForm(profile: profile),
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final error, final stack) =>
-                          Center(child: Text('載入失敗: $error')),
-                    ),
+                child: profileAsync.when(
+                  data: (final profile) => _PersonalProfileForm(profile: profile),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (final error, final stack) =>
+                      Center(child: Text('載入失敗: $error')),
+                ),
               ),
             ],
           ),

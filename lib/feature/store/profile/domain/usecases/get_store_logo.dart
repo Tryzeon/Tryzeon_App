@@ -6,6 +6,5 @@ class GetStoreLogo {
   GetStoreLogo(this._repository);
   final StoreProfileRepository _repository;
 
-  Future<Result<File, String>> call(final String path) => 
-      _repository.getStoreLogo(path);
+  Future<Result<File, String>> call(final String path) => _repository.getStoreLogo(path);
 }

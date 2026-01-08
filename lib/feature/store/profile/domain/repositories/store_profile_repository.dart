@@ -4,7 +4,7 @@ import 'package:typed_result/typed_result.dart';
 
 abstract class StoreProfileRepository {
   Future<StoreProfile?> getStoreProfile();
-  
+
   Future<Result<void, String>> updateStoreProfile({
     required final StoreProfile original,
     required final StoreProfile target,

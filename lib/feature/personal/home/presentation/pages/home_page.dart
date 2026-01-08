@@ -617,9 +617,7 @@ class HomePage extends HookConsumerWidget {
                             : LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  colorScheme.primary,
-                                  colorScheme.secondary,                                ],
+                                colors: [colorScheme.primary, colorScheme.secondary],
                               ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: isLoading.value

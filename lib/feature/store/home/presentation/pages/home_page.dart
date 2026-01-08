@@ -16,13 +16,16 @@ class StoreHomePage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(storeProfileProvider);
+    final profile = profileAsync.maybeWhen(
+      data: (final profile) => profile,
+      orElse: () => null,
+    );
     final sortBy = useState('created_at');
     final ascending = useState(false);
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
-    final profileAsync = ref.watch(storeProfileProvider);
 
     void handleSortChange(final String newSortBy) {
       sortBy.value = newSortBy;
@@ -97,13 +100,7 @@ class StoreHomePage extends HookConsumerWidget {
                         children: [
                           Text('店家後台', style: textTheme.titleLarge),
                           Text(
-                            profileAsync.maybeWhen(
-                              data: (final profile) =>
-                                  profile == null
-                                      ? '歡迎回來'
-                                      : '歡迎回來，${profile.name}',
-                              orElse: () => '歡迎回來',
-                            ),
+                            profile == null ? '歡迎回來' : '歡迎回來，${profile.name}',
                             style: textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),

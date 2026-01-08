@@ -12,7 +12,7 @@ final chatRemoteDataSourceProvider = Provider<ChatRemoteDataSource>((final ref) 
 
 // Repository Provider
 final chatRepositoryProvider = Provider<ChatRepository>((final ref) {
-  final remoteDataSource = ref.read(chatRemoteDataSourceProvider);
+  final remoteDataSource = ref.watch(chatRemoteDataSourceProvider);
   return ChatRepositoryImpl(remoteDataSource: remoteDataSource);
 });
 
@@ -20,6 +20,6 @@ final chatRepositoryProvider = Provider<ChatRepository>((final ref) {
 final getLLMRecommendationUseCaseProvider = Provider<GetLLMRecommendationUseCase>((
   final ref,
 ) {
-  final repository = ref.read(chatRepositoryProvider);
+  final repository = ref.watch(chatRepositoryProvider);
   return GetLLMRecommendationUseCase(repository);
 });

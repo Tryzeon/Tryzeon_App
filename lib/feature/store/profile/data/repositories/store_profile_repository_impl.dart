@@ -11,8 +11,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   StoreProfileRepositoryImpl({
     required final StoreProfileRemoteDataSource remoteDataSource,
     required final StoreProfileLocalDataSource localDataSource,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource;
+  }) : _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource;
 
   final StoreProfileRemoteDataSource _remoteDataSource;
   final StoreProfileLocalDataSource _localDataSource;

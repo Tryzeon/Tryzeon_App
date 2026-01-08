@@ -26,8 +26,8 @@ final tryonRemoteDataSourceProvider = Provider<TryonRemoteDataSource>((final ref
 
 // Repository Providers
 final avatarRepositoryProvider = Provider<AvatarRepository>((final ref) {
-  final avatarRemoteDataSource = ref.read(avatarRemoteDataSourceProvider);
-  final avatarLocalDataSource = ref.read(avatarLocalDataSourceProvider);
+  final avatarRemoteDataSource = ref.watch(avatarRemoteDataSourceProvider);
+  final avatarLocalDataSource = ref.watch(avatarLocalDataSourceProvider);
 
   return AvatarRepositoryImpl(
     avatarRemoteDataSource: avatarRemoteDataSource,
@@ -36,25 +36,25 @@ final avatarRepositoryProvider = Provider<AvatarRepository>((final ref) {
 });
 
 final tryOnRepositoryProvider = Provider<TryOnRepository>((final ref) {
-  final tryonDataSource = ref.read(tryonRemoteDataSourceProvider);
+  final tryonDataSource = ref.watch(tryonRemoteDataSourceProvider);
 
   return TryOnRepositoryImpl(tryonDataSource: tryonDataSource);
 });
 
 // Use Case Providers
 final getAvatarUseCaseProvider = Provider<GetAvatarUseCase>((final ref) {
-  final repository = ref.read(avatarRepositoryProvider);
+  final repository = ref.watch(avatarRepositoryProvider);
   return GetAvatarUseCase(repository);
 });
 
 final uploadAvatarUseCaseProvider = Provider<UploadAvatarUseCase>((final ref) {
-  final repository = ref.read(avatarRepositoryProvider);
+  final repository = ref.watch(avatarRepositoryProvider);
   return UploadAvatarUseCase(repository);
 });
 
 final tryonUseCaseProvider = Provider<TryonUseCase>((final ref) {
-  final avatarRepository = ref.read(avatarRepositoryProvider);
-  final tryOnRepository = ref.read(tryOnRepositoryProvider);
+  final avatarRepository = ref.watch(avatarRepositoryProvider);
+  final tryOnRepository = ref.watch(tryOnRepositoryProvider);
   return TryonUseCase(
     avatarRepository: avatarRepository,
     tryOnRepository: tryOnRepository,

@@ -24,8 +24,8 @@ final authLocalDataSourceProvider = FutureProvider<AuthLocalDataSource>((
 
 // Repository Provider
 final authRepositoryProvider = FutureProvider<AuthRepository>((final ref) async {
-  final remoteDataSource = ref.read(authRemoteDataSourceProvider);
-  final localDataSource = await ref.read(authLocalDataSourceProvider.future);
+  final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
+  final localDataSource = await ref.watch(authLocalDataSourceProvider.future);
 
   return AuthRepositoryImpl(
     remoteDataSource: remoteDataSource,
@@ -37,25 +37,25 @@ final authRepositoryProvider = FutureProvider<AuthRepository>((final ref) async 
 final signInWithProviderUseCaseProvider = FutureProvider<SignInWithProviderUseCase>((
   final ref,
 ) async {
-  final repository = await ref.read(authRepositoryProvider.future);
+  final repository = await ref.watch(authRepositoryProvider.future);
   return SignInWithProviderUseCase(repository);
 });
 
 final signOutUseCaseProvider = FutureProvider<SignOutUseCase>((final ref) async {
-  final repository = await ref.read(authRepositoryProvider.future);
+  final repository = await ref.watch(authRepositoryProvider.future);
   return SignOutUseCase(repository);
 });
 
 final getLastLoginTypeUseCaseProvider = FutureProvider<GetLastLoginTypeUseCase>((
   final ref,
 ) async {
-  final repository = await ref.read(authRepositoryProvider.future);
+  final repository = await ref.watch(authRepositoryProvider.future);
   return GetLastLoginTypeUseCase(repository);
 });
 
 final setLastLoginTypeUseCaseProvider = FutureProvider<SetLastLoginTypeUseCase>((
   final ref,
 ) async {
-  final repository = await ref.read(authRepositoryProvider.future);
+  final repository = await ref.watch(authRepositoryProvider.future);
   return SetLastLoginTypeUseCase(repository);
 });

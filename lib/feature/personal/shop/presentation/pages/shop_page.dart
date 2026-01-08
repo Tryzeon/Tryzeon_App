@@ -19,6 +19,12 @@ class ShopPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final userProfile = userProfileAsync.maybeWhen(
+      data: (final profile) => profile,
+      orElse: () => null,
+    );
+
     final adImages = useState<List<String>>([]);
 
     // 過濾和排序狀態
@@ -373,12 +379,6 @@ class ShopPage extends HookConsumerWidget {
                                           ),
                                       itemBuilder: (final context, final index) {
                                         final product = displayedProducts[index];
-                                        final profileAsync = ref.watch(
-                                          userProfileProvider,
-                                        );
-                                        final userProfile = profileAsync.hasValue
-                                            ? profileAsync.value
-                                            : null;
                                         return ProductCard(
                                           product: product,
                                           userProfile: userProfile,
