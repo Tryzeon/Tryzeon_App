@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.da
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
+import 'package:tryzeon/shared/widgets/error_view.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -87,13 +88,16 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
                 child: profileAsync.when(
                   data: (final result) {
                     if (result.isFailure) {
-                      return Center(child: Text('載入失敗: ${result.getError()}'));
+                      return ErrorView(
+                        onRetry: () => ref.invalidate(userProfileProvider),
+                      );
                     }
                     return _PersonalProfileForm(profile: result.get()!);
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final error, final stack) =>
-                      Center(child: Text('載入失敗: $error')),
+                  error: (final error, final stack) => ErrorView(
+                    onRetry: () => ref.invalidate(userProfileProvider),
+                  ),
                 ),
               ),
             ],

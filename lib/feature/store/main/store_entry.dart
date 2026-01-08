@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
+import 'package:tryzeon/shared/widgets/error_view.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../home/presentation/pages/home_page.dart';
@@ -17,7 +18,9 @@ class StoreEntry extends HookConsumerWidget {
     return profileAsync.when(
       data: (final result) {
         if (result.isFailure) {
-          return Scaffold(body: Center(child: Text('載入失敗: ${result.getError()}')));
+          return Scaffold(
+            body: ErrorView(onRetry: () => ref.invalidate(storeProfileProvider)),
+          );
         }
         final profile = result.get();
         if (profile == null) {
@@ -34,8 +37,9 @@ class StoreEntry extends HookConsumerWidget {
         return const StoreHomePage();
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (final error, final stack) =>
-          Scaffold(body: Center(child: Text('載入失敗: $error'))),
+      error: (final error, final stack) => Scaffold(
+        body: ErrorView(onRetry: () => ref.invalidate(storeProfileProvider)),
+      ),
     );
   }
 }

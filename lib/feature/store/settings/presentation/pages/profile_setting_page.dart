@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 import 'package:tryzeon/shared/utils/validators.dart';
+import 'package:tryzeon/shared/widgets/error_view.dart';
 import 'package:tryzeon/shared/widgets/image_picker_helper.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
@@ -100,19 +101,24 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                 child: profileAsync.when(
                   data: (final result) {
                     if (result.isFailure) {
-                      return Center(child: Text('載入失敗: ${result.getError()}'));
+                      return ErrorView(
+                        onRetry: () => ref.invalidate(storeProfileProvider),
+                      );
                     }
                     final profile = result.get();
                     if (profile == null) {
-                      return const Center(child: Text('無法載入店家資料'));
+                      return ErrorView(
+                        onRetry: () => ref.invalidate(storeProfileProvider),
+                      );
                     }
                     return _StoreProfileForm(profile: profile);
                   },
                   loading: () => Center(
                     child: CircularProgressIndicator(color: colorScheme.primary),
                   ),
-                  error: (final error, final stack) =>
-                      Center(child: Text('載入失敗: $error')),
+                  error: (final error, final stack) => ErrorView(
+                    onRetry: () => ref.invalidate(storeProfileProvider),
+                  ),
                 ),
               ),
             ],
