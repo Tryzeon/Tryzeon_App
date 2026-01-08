@@ -1,4 +1,5 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
@@ -10,64 +11,97 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   UserProfileRepositoryImpl({
     required final UserProfileRemoteDataSource remoteDataSource,
     required final UserProfileLocalDataSource localDataSource,
-    required final SupabaseClient supabaseClient,
   }) : _remoteDataSource = remoteDataSource,
-       _localDataSource = localDataSource,
-       _supabaseClient = supabaseClient;
+       _localDataSource = localDataSource;
 
   final UserProfileRemoteDataSource _remoteDataSource;
   final UserProfileLocalDataSource _localDataSource;
-  final SupabaseClient _supabaseClient;
 
   @override
   Future<UserProfile> getUserProfile() async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) {
-      throw '無法獲取使用者資訊，請重新登入';
+    try {
+      // Cache-first
+      final cached = _localDataSource.cache;
+      if (cached != null) return cached;
+
+      // Fetch from API
+      final json = await _remoteDataSource.fetchUserProfile();
+      final profile = UserProfileModel.fromJson(json);
+
+      // Update cache
+      _localDataSource.cache = profile;
+
+      return profile;
+    } catch (e) {
+      if (e is String) rethrow; // Allow DataSource specific messages to pass
+      // Wrap unknown errors
+      throw '無法載入個人資料，請稍後再試';
     }
-
-    final cachedProfile = _localDataSource.cachedProfile;
-    if (cachedProfile != null) {
-      return cachedProfile;
-    }
-
-    final json = await _remoteDataSource.fetchUserProfile();
-    final profile = UserProfileModel.fromJson(json);
-
-    _localDataSource.cachedProfile = profile;
-
-    return profile;
   }
 
   @override
   Future<Result<void, String>> updateUserProfile({
     required final UserProfile original,
     required final UserProfile target,
+    final File? avatarFile,
   }) async {
     try {
-      final user = _supabaseClient.auth.currentUser;
-      if (user == null) {
-        return const Err('無法獲取使用者資訊，請重新登入');
+      UserProfile finalTarget = target;
+
+      // Handle Avatar Upload
+      if (avatarFile != null) {
+        final newAvatarPath = await _remoteDataSource.uploadAvatar(avatarFile);
+        finalTarget = target.copyWith(avatarPath: newAvatarPath);
+
+        // Optimistic cache update for image
+        final bytes = await avatarFile.readAsBytes();
+        await _localDataSource.saveAvatar(bytes, newAvatarPath);
       }
 
-      final updateData = original.getDirtyFields(target);
+      final updateData = original.getDirtyFields(finalTarget);
+      if (updateData.isEmpty) return const Ok(null);
 
-      if (updateData.isEmpty) {
-        return const Ok(null);
-      }
-
-      final updatedJson = await _remoteDataSource.updateUserProfile(user.id, updateData);
-
+      final updatedJson = await _remoteDataSource.updateUserProfile(updateData);
       final updatedProfile = UserProfileModel.fromJson(updatedJson);
 
-      _localDataSource.cachedProfile = updatedProfile;
+      _localDataSource.cache = updatedProfile;
+
+      // Clean up old avatar if changed
+      if (avatarFile != null &&
+          original.avatarPath != null &&
+          original.avatarPath!.isNotEmpty) {
+        // Fire and forget
+        _remoteDataSource.deleteAvatar(original.avatarPath!);
+        _localDataSource.deleteAvatar(original.avatarPath!);
+      }
 
       return const Ok(null);
     } catch (e) {
-      if (e is String) {
-        return Err(e);
-      }
+      if (e is String) return Err(e);
       return const Err('個人資料更新失敗，請稍後再試');
+    }
+  }
+
+  @override
+  Future<Result<File, String>> getUserAvatar(final String path) async {
+    try {
+      // 1. Try Local Cache
+      final cachedAvatar = await _localDataSource.getCachedAvatar(path);
+      if (cachedAvatar != null) {
+        return Ok(cachedAvatar);
+      }
+
+      // 2. If missing, generate URL and download
+      final url = _remoteDataSource.getAvatarPublicUrl(path);
+      final downloadedAvatar = await _localDataSource.downloadAvatar(path, url);
+
+      if (downloadedAvatar == null) {
+        return const Err('無法獲取個人頭像，請稍後再試');
+      }
+
+      return Ok(downloadedAvatar);
+    } catch (e) {
+      return const Err('無法載入個人頭像，請稍後再試');
     }
   }
 }

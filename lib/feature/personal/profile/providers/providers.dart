@@ -24,7 +24,6 @@ final userProfileRepositoryProvider = Provider<UserProfileRepository>((final ref
   return UserProfileRepositoryImpl(
     remoteDataSource: ref.watch(userProfileRemoteDataSourceProvider),
     localDataSource: ref.watch(userProfileLocalDataSourceProvider),
-    supabaseClient: Supabase.instance.client,
   );
 });
 

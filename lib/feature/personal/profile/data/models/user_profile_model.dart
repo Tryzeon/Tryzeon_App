@@ -6,6 +6,7 @@ class UserProfileModel extends UserProfile {
     required super.userId,
     required super.name,
     required super.measurements,
+    super.avatarPath,
   });
 
   factory UserProfileModel.fromJson(final Map<String, dynamic> json) {
@@ -13,10 +14,16 @@ class UserProfileModel extends UserProfile {
       userId: json['user_id'] as String,
       name: json['name'] as String,
       measurements: BodyMeasurements.fromJson(json),
+      avatarPath: json['avatar_path'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'user_id': userId, 'name': name, ...measurements.toJson()};
+    return {
+      'user_id': userId,
+      'name': name,
+      'avatar_path': avatarPath,
+      ...measurements.toJson(),
+    };
   }
 }
