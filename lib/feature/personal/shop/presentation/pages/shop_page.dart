@@ -3,12 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
-import 'package:tryzeon/shared/models/product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
+import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 import 'package:tryzeon/shared/services/product_type_service.dart';
 import 'package:tryzeon/shared/widgets/app_query_builder.dart';
+import 'package:tryzeon/shared/widgets/error_view.dart';
 import 'package:typed_result/typed_result.dart';
 
-import '../../data/shop_service.dart';
 import '../dialogs/filter_dialog.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/product_card.dart';
@@ -162,7 +163,7 @@ class ShopPage extends HookConsumerWidget {
       );
     }
 
-    final productsQuery = ShopService.productsQuery(
+    final filter = ShopFilter(
       searchQuery: searchQuery.value,
       sortBy: sortBy.value,
       ascending: ascending.value,
@@ -170,6 +171,12 @@ class ShopPage extends HookConsumerWidget {
       maxPrice: maxPrice.value,
       types: selectedTypes.value,
     );
+
+    final productsAsync = ref.watch(shopProductsProvider(filter));
+
+    Future<void> handleRefresh() async {
+      ref.invalidate(shopProductsProvider(filter));
+    }
 
     return Scaffold(
       body: Container(
@@ -238,7 +245,7 @@ class ShopPage extends HookConsumerWidget {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: productsQuery.fetch,
+                  onRefresh: handleRefresh,
                   color: colorScheme.primary,
                   child: LayoutBuilder(
                     builder: (final context, final constraints) {
@@ -338,9 +345,17 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 16),
 
                               // 商品 Grid（可滾動）
-                              AppQueryBuilder<List<Product>>(
-                                query: productsQuery,
-                                builder: (final context, final displayedProducts) {
+                              productsAsync.when(
+                                loading: () => Center(
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.primary,
+                                  ),
+                                ),
+                                error: (final error, final stack) => ErrorView(
+                                  onRetry: () =>
+                                      ref.invalidate(shopProductsProvider(filter)),
+                                ),
+                                data: (final displayedProducts) {
                                   if (displayedProducts.isEmpty) {
                                     return Center(
                                       child: Padding(

@@ -3,17 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 import 'package:tryzeon/shared/models/body_measurements.dart';
-import 'package:tryzeon/shared/models/product.dart';
 import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../data/shop_service.dart';
 
 class ProductCard extends HookConsumerWidget {
   const ProductCard({super.key, required this.product, this.userProfile});
 
-  final Product product;
+  final ShopProduct product;
   final UserProfile? userProfile;
 
   @override
@@ -78,7 +77,7 @@ class ProductCard extends HookConsumerWidget {
 
     Future<void> handleTryon() async {
       // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
-      ShopService.incrementTryonCount(product.id!).ignore();
+      ref.read(incrementTryonCountProvider).call(product.id!).ignore();
 
       final personalEntry = PersonalEntry.of(context);
       await personalEntry?.tryOnFromStorage(product.imagePath);
@@ -99,7 +98,7 @@ class ProductCard extends HookConsumerWidget {
       }
 
       // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
-      ShopService.incrementPurchaseClickCount(product.id!).ignore();
+      ref.read(incrementPurchaseClickCountProvider).call(product.id!).ignore();
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
 
