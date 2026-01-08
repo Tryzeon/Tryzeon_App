@@ -1,10 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/domain/entities/product.dart';
 import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
-import 'package:typed_result/typed_result.dart';
 
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../data/product_service.dart';
@@ -19,7 +19,7 @@ class StoreHomePage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final profileAsync = ref.watch(storeProfileProvider);
     final profile = profileAsync.maybeWhen(
-      data: (final result) => result.get(),
+      data: (final profile) => profile,
       orElse: () => null,
     );
     final sortBy = useState('created_at');
@@ -43,6 +43,65 @@ class StoreHomePage extends HookConsumerWidget {
         ascending: ascending.value,
         onSortChange: handleSortChange,
         onAscendingChange: handleAscendingChange,
+      );
+    }
+
+    Widget buildStoreLogo() {
+      final logoUrl = profile?.logoUrl;
+
+      if (logoUrl == null || logoUrl.isEmpty) {
+        return Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colorScheme.primary, colorScheme.secondary],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(Icons.store_rounded, color: colorScheme.onPrimary, size: 24),
+        );
+      }
+
+      return CachedNetworkImage(
+        imageUrl: logoUrl,
+        imageBuilder: (final context, final imageProvider) => Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+          ),
+        ),
+        placeholder: (final context, final url) => Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
+        errorWidget: (final context, final url, final error) => Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colorScheme.primary, colorScheme.secondary],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(Icons.store_rounded, color: colorScheme.onPrimary, size: 24),
+        ),
       );
     }
 
@@ -79,21 +138,7 @@ class StoreHomePage extends HookConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.store_rounded,
-                        color: colorScheme.onPrimary,
-                        size: 24,
-                      ),
-                    ),
+                    buildStoreLogo(),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -300,3 +345,4 @@ class StoreHomePage extends HookConsumerWidget {
     );
   }
 }
+

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
-import 'package:typed_result/typed_result.dart';
 
 import '../home/presentation/pages/home_page.dart';
 import '../onboarding/presentation/pages/store_onboarding_page.dart';
@@ -16,13 +15,7 @@ class StoreEntry extends HookConsumerWidget {
     final profileAsync = ref.watch(storeProfileProvider);
 
     return profileAsync.when(
-      data: (final result) {
-        if (result.isFailure) {
-          return Scaffold(
-            body: ErrorView(onRetry: () => ref.invalidate(storeProfileProvider)),
-          );
-        }
-        final profile = result.get();
+      data: (final profile) {
         if (profile == null) {
           return PopScope(
             canPop: false,

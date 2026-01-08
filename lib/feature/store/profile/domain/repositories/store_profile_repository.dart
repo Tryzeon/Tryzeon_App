@@ -10,6 +10,4 @@ abstract class StoreProfileRepository {
     required final StoreProfile target,
     final File? logoFile,
   });
-
-  Future<Result<File, String>> getStoreLogo(final String path);
 }

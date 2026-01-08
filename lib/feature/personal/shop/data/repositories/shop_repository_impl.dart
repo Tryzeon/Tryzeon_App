@@ -46,9 +46,7 @@ class ShopRepositoryImpl implements ShopRepository {
   }
 
   @override
-  Future<Result<void, String>> incrementPurchaseClickCount(
-    final String productId,
-  ) async {
+  Future<Result<void, String>> incrementPurchaseClickCount(final String productId) async {
     try {
       await _remoteDataSource.incrementPurchaseClickCount(productId);
       return const Ok(null);

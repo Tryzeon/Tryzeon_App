@@ -55,10 +55,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       if (logoFile != null) {
         final newLogoPath = await _remoteDataSource.uploadLogo(logoFile);
         finalTarget = target.copyWith(logoPath: newLogoPath);
-
-        // Optimistic cache update for image
-        final bytes = await logoFile.readAsBytes();
-        await _localDataSource.saveLogo(bytes, newLogoPath);
       }
 
       final updateData = original.getDirtyFields(finalTarget);
@@ -75,7 +71,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
           original.logoPath!.isNotEmpty) {
         // Fire and forget
         _remoteDataSource.deleteLogo(original.logoPath!);
-        _localDataSource.deleteLogo(original.logoPath!);
+        // We no longer manually delete from local cache as we use network image cache
       }
 
       return const Ok(null);
@@ -83,30 +79,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       AppLogger.error('店家資料更新失敗', e);
 
       return const Err('店家資料更新失敗，請稍後再試');
-    }
-  }
-
-  @override
-  Future<Result<File, String>> getStoreLogo(final String path) async {
-    try {
-      // 1. Try Local Cache
-      final cachedLogo = await _localDataSource.getCachedLogo(path);
-      if (cachedLogo != null) {
-        return Ok(cachedLogo);
-      }
-
-      // 2. If missing, generate URL and download
-      final url = _remoteDataSource.getLogoPublicUrl(path);
-      final downloadedLogo = await _localDataSource.downloadLogo(path, url);
-
-      if (downloadedLogo == null) {
-        return const Err('無法獲取 Logo 圖片，請稍後再試');
-      }
-
-      return Ok(downloadedLogo);
-    } catch (e) {
-      AppLogger.error('無法載入店家 Logo', e);
-      return const Err('無法載入店家 Logo ，請稍後再試');
     }
   }
 }

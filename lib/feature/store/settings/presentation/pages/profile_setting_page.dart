@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -99,13 +100,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
               // 內容
               Expanded(
                 child: profileAsync.when(
-                  data: (final result) {
-                    if (result.isFailure) {
-                      return ErrorView(
-                        onRetry: () => ref.invalidate(storeProfileProvider),
-                      );
-                    }
-                    final profile = result.get();
+                  data: (final profile) {
                     if (profile == null) {
                       return ErrorView(
                         onRetry: () => ref.invalidate(storeProfileProvider),
@@ -222,6 +217,87 @@ class _StoreProfileForm extends HookConsumerWidget {
       );
     }
 
+    Widget buildLogoPreview() {
+      if (newLogoImage.value != null) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(60),
+          child: Image.file(
+            newLogoImage.value!,
+            width: 120,
+            height: 120,
+            fit: BoxFit.cover,
+          ),
+        );
+      }
+
+      final logoUrl = profile.logoUrl;
+      if (logoUrl == null || logoUrl.isEmpty) {
+        return Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary.withValues(alpha: 0.1),
+                colorScheme.secondary.withValues(alpha: 0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(60),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              width: 2,
+            ),
+          ),
+          child: Icon(Icons.camera_alt_rounded, size: 50, color: colorScheme.primary),
+        );
+      }
+
+      return CachedNetworkImage(
+        imageUrl: logoUrl,
+        imageBuilder: (final context, final imageProvider) => Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(60),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              width: 2,
+            ),
+            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+          ),
+        ),
+        placeholder: (final context, final url) => Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(60),
+          ),
+          child: Center(
+            child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+          ),
+        ),
+        errorWidget: (final context, final url, final error) => Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary.withValues(alpha: 0.1),
+                colorScheme.secondary.withValues(alpha: 0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(60),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              width: 2,
+            ),
+          ),
+          child: Icon(Icons.camera_alt_rounded, size: 50, color: colorScheme.primary),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Form(
@@ -255,71 +331,7 @@ class _StoreProfileForm extends HookConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: updateLogo,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            colorScheme.primary.withValues(alpha: 0.1),
-                            colorScheme.secondary.withValues(alpha: 0.1),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(60),
-                        border: Border.all(
-                          color: colorScheme.primary.withValues(alpha: 0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: newLogoImage.value != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(60),
-                              child: Image.file(newLogoImage.value!, fit: BoxFit.cover),
-                            )
-                          : FutureBuilder(
-                              future: profile.logoPath != null
-                                  ? ref.watch(getStoreLogoUseCaseProvider)(
-                                      profile.logoPath!,
-                                    )
-                                  : Future.value(const Ok(null)),
-                              builder: (final context, final snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return CircularProgressIndicator(
-                                    color: colorScheme.primary,
-                                  );
-                                }
-
-                                if (snapshot.hasData) {
-                                  final result = snapshot.data! as Result<File?, String>;
-                                  if (result.isFailure) {
-                                    // Log error but show placeholder
-                                    return Icon(
-                                      Icons.error_rounded,
-                                      size: 50,
-                                      color: colorScheme.primary,
-                                    );
-                                  }
-
-                                  final file = result.get();
-                                  if (file != null) {
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(60),
-                                      child: Image.file(file, fit: BoxFit.cover),
-                                    );
-                                  }
-                                }
-
-                                return Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 50,
-                                  color: colorScheme.primary,
-                                );
-                              },
-                            ),
-                    ),
-                  ),
+                  GestureDetector(onTap: updateLogo, child: buildLogoPreview()),
                   const SizedBox(height: 12),
                   Text(
                     '點擊上傳店家 Logo',
@@ -449,3 +461,4 @@ class _StoreProfileForm extends HookConsumerWidget {
     );
   }
 }
+

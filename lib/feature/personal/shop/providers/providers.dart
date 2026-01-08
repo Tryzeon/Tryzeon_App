@@ -41,19 +41,21 @@ final incrementPurchaseClickCountProvider = Provider<IncrementPurchaseClickCount
 
 // --- Feature Providers ---
 
-final shopProductsProvider =
-    FutureProvider.family<List<ShopProduct>, ShopFilter>((final ref, final filter) async {
-      final useCase = ref.watch(getShopProductsProvider);
-      final result = await useCase(
-        searchQuery: filter.searchQuery,
-        sortBy: filter.sortBy,
-        ascending: filter.ascending,
-        minPrice: filter.minPrice,
-        maxPrice: filter.maxPrice,
-        types: filter.types,
-      );
-      if (result.isFailure) {
-        throw result.getError()!;
-      }
-      return result.get()!;
-    });
+final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter>((
+  final ref,
+  final filter,
+) async {
+  final useCase = ref.watch(getShopProductsProvider);
+  final result = await useCase(
+    searchQuery: filter.searchQuery,
+    sortBy: filter.sortBy,
+    ascending: filter.ascending,
+    minPrice: filter.minPrice,
+    maxPrice: filter.maxPrice,
+    types: filter.types,
+  );
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+  return result.get()!;
+});

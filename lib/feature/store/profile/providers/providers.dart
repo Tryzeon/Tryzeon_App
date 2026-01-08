@@ -5,7 +5,6 @@ import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_rem
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
-import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_logo.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/update_store_profile.dart';
 import 'package:typed_result/typed_result.dart';
@@ -37,13 +36,11 @@ final updateStoreProfileUseCaseProvider = Provider<UpdateStoreProfile>((final re
   return UpdateStoreProfile(ref.watch(storeProfileRepositoryProvider));
 });
 
-final getStoreLogoUseCaseProvider = Provider<GetStoreLogo>((final ref) {
-  return GetStoreLogo(ref.watch(storeProfileRepositoryProvider));
-});
-
-final storeProfileProvider = FutureProvider<Result<StoreProfile?, String>>((
-  final ref,
-) async {
+final storeProfileProvider = FutureProvider<StoreProfile?>((final ref) async {
   final getStoreProfile = ref.watch(getStoreProfileUseCaseProvider);
-  return getStoreProfile();
+  final result = await getStoreProfile();
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+  return result.get();
 });

@@ -5,6 +5,7 @@ class StoreProfile {
     required this.name,
     this.address,
     this.logoPath,
+    this.logoUrl,
   });
 
   final String id;
@@ -12,6 +13,7 @@ class StoreProfile {
   final String name;
   final String? address;
   final String? logoPath;
+  final String? logoUrl;
 
   StoreProfile copyWith({
     final String? id,
@@ -19,6 +21,7 @@ class StoreProfile {
     final String? name,
     final String? address,
     final String? logoPath,
+    final String? logoUrl,
   }) {
     return StoreProfile(
       id: id ?? this.id,
@@ -26,6 +29,7 @@ class StoreProfile {
       name: name ?? this.name,
       address: address ?? this.address,
       logoPath: logoPath ?? this.logoPath,
+      logoUrl: logoUrl ?? this.logoUrl,
     );
   }
 

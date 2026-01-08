@@ -86,13 +86,8 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
               // 表單內容
               Expanded(
                 child: profileAsync.when(
-                  data: (final result) {
-                    if (result.isFailure) {
-                      return ErrorView(
-                        onRetry: () => ref.invalidate(userProfileProvider),
-                      );
-                    }
-                    return _PersonalProfileForm(profile: result.get()!);
+                  data: (final profile) {
+                    return _PersonalProfileForm(profile: profile);
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (final error, final stack) =>

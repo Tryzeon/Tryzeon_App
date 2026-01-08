@@ -23,7 +23,7 @@ class PersonalPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
     final profile = profileAsync.maybeWhen(
-      data: (final result) => result.get(),
+      data: (final profile) => profile,
       orElse: () => null,
     );
     final isLoading = useState(false);

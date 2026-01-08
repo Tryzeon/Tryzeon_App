@@ -8,7 +8,6 @@ import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
-import 'package:typed_result/typed_result.dart';
 
 import '../dialogs/filter_dialog.dart';
 import '../widgets/ad_banner.dart';
@@ -23,7 +22,7 @@ class ShopPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
-      data: (final result) => result.get(),
+      data: (final profile) => profile,
       orElse: () => null,
     );
 
