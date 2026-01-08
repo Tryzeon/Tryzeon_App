@@ -5,6 +5,7 @@ import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_rem
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class StoreProfileRepositoryImpl implements StoreProfileRepository {
@@ -35,7 +36,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       return Ok(entity);
     } catch (e) {
-      if (e is String) return Err(e);
+      AppLogger.error('無法載入店家資料', e);
+
       return const Err('無法載入店家資料，請稍後再試');
     }
   }
@@ -78,7 +80,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       return const Ok(null);
     } catch (e) {
-      if (e is String) return Err(e);
+      AppLogger.error('店家資料更新失敗', e);
+
       return const Err('店家資料更新失敗，請稍後再試');
     }
   }
@@ -102,6 +105,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       return Ok(downloadedLogo);
     } catch (e) {
+      AppLogger.error('無法載入店家 Logo', e);
       return const Err('無法載入店家 Logo ，請稍後再試');
     }
   }

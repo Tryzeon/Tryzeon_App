@@ -5,6 +5,7 @@ import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_r
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
+import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class UserProfileRepositoryImpl implements UserProfileRepository {
@@ -33,7 +34,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       return Ok(profile);
     } catch (e) {
-      if (e is String) return Err(e);
+      AppLogger.error('無法載入個人資料', e);
+
       // Wrap unknown errors
       return const Err('無法載入個人資料，請稍後再試');
     }
@@ -77,7 +79,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       return const Ok(null);
     } catch (e) {
-      if (e is String) return Err(e);
+      AppLogger.error('個人資料更新失敗', e);
+
       return const Err('個人資料更新失敗，請稍後再試');
     }
   }
@@ -101,6 +104,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       return Ok(downloadedAvatar);
     } catch (e) {
+      AppLogger.error('無法載入個人頭像', e);
       return const Err('無法載入個人頭像，請稍後再試');
     }
   }
