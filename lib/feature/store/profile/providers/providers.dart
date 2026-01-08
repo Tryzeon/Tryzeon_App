@@ -41,7 +41,9 @@ final getStoreLogoUseCaseProvider = Provider<GetStoreLogo>((final ref) {
   return GetStoreLogo(ref.watch(storeProfileRepositoryProvider));
 });
 
-final storeProfileProvider = FutureProvider<Result<StoreProfile?, String>>((final ref) async {
+final storeProfileProvider = FutureProvider<Result<StoreProfile?, String>>((
+  final ref,
+) async {
   final getStoreProfile = ref.watch(getStoreProfileUseCaseProvider);
   return getStoreProfile();
 });

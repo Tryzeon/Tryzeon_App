@@ -36,7 +36,9 @@ final updateUserProfileUseCaseProvider = Provider<UpdateUserProfile>((final ref)
   return UpdateUserProfile(ref.watch(userProfileRepositoryProvider));
 });
 
-final userProfileProvider = FutureProvider<Result<UserProfile, String>>((final ref) async {
+final userProfileProvider = FutureProvider<Result<UserProfile, String>>((
+  final ref,
+) async {
   final getUserProfileUseCase = ref.watch(getUserProfileUseCaseProvider);
   return getUserProfileUseCase();
 });

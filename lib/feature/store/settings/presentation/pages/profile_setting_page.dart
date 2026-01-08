@@ -116,9 +116,8 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                   loading: () => Center(
                     child: CircularProgressIndicator(color: colorScheme.primary),
                   ),
-                  error: (final error, final stack) => ErrorView(
-                    onRetry: () => ref.invalidate(storeProfileProvider),
-                  ),
+                  error: (final error, final stack) =>
+                      ErrorView(onRetry: () => ref.invalidate(storeProfileProvider)),
                 ),
               ),
             ],
