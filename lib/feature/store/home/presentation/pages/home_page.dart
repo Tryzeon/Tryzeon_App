@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/domain/entities/product.dart';
+import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
-import 'package:tryzeon/shared/models/product.dart';
-import 'package:tryzeon/shared/widgets/app_query_builder.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../settings/presentation/pages/settings_page.dart';

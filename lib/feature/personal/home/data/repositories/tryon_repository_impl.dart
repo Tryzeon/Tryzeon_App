@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class TryOnRepositoryImpl implements TryOnRepository {

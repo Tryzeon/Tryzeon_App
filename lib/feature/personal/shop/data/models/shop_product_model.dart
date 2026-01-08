@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/domain/entities/product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/shared/models/product.dart';
 
 class ShopProductModel extends ShopProduct {
   ShopProductModel({

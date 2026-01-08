@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
+import 'package:tryzeon/core/services/cache_service.dart';
 
 class AvatarLocalDataSource {
   AvatarLocalDataSource(this._supabase);

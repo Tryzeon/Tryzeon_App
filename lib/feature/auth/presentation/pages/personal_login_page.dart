@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 class PersonalLoginPage extends HookConsumerWidget {

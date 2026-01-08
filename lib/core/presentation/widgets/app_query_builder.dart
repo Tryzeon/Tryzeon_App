@@ -2,8 +2,8 @@ import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/shared/widgets/error_view.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 
 class AppQueryBuilder<T> extends HookConsumerWidget {
   const AppQueryBuilder({

@@ -1,6 +1,6 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 class ProductTypeService {
   static final _supabase = Supabase.instance.client;

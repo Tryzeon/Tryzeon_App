@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 /// 設定頁面的選單項目資料模型
 class SettingsMenuItem {

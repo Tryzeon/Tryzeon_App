@@ -1,7 +1,7 @@
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ShopRepositoryImpl implements ShopRepository {

@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/shared/models/product.dart';
+import 'package:tryzeon/core/domain/entities/product.dart';
 
 import '../pages/product_detail_page.dart';
 

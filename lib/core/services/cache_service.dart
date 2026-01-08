@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as fcm;
-import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 class CacheService {
   /// 保存檔案到緩存 (圖片專用)

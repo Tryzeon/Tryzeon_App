@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/providers/providers.dart';
-import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../auth/presentation/pages/login_page.dart';

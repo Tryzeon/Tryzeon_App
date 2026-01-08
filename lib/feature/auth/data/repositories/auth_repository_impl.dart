@@ -1,11 +1,11 @@
 import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/cache_service.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_data_source.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/domain/repositories/auth_repository.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AuthRepositoryImpl implements AuthRepository {

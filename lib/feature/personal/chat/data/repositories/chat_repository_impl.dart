@@ -1,6 +1,6 @@
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ChatRepositoryImpl implements ChatRepository {

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:tryzeon/shared/models/product.dart';
+import 'package:tryzeon/core/domain/entities/product.dart';
 
 class ShopProduct {
   ShopProduct({

@@ -4,8 +4,8 @@ import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/shared/services/cache_service.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
+import 'package:tryzeon/core/services/cache_service.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 import 'wardrobe_item_model.dart';

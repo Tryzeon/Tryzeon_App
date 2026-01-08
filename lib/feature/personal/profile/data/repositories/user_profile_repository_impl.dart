@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
-import 'package:tryzeon/shared/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class UserProfileRepositoryImpl implements UserProfileRepository {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
-import 'package:tryzeon/shared/widgets/error_view.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../home/presentation/pages/home_page.dart';

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
-import 'package:tryzeon/shared/models/body_measurements.dart';
-import 'package:tryzeon/shared/utils/validators.dart';
-import 'package:tryzeon/shared/widgets/error_view.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 class PersonalProfileSettingsPage extends HookConsumerWidget {

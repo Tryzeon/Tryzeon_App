@@ -1,5 +1,5 @@
+import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
-import 'package:tryzeon/shared/models/body_measurements.dart';
 
 class UserProfileModel extends UserProfile {
   UserProfileModel({

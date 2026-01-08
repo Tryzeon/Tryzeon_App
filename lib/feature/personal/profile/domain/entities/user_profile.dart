@@ -1,4 +1,4 @@
-import 'package:tryzeon/shared/models/body_measurements.dart';
+import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 
 class UserProfile {
   UserProfile({

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
 import 'package:tryzeon/feature/personal/chat/providers/providers.dart';
-import 'package:tryzeon/shared/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/shared/widgets/top_notification.dart';
 import 'package:typed_result/typed_result.dart';
 
 // ChatBubble widget
