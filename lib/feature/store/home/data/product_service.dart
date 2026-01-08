@@ -47,7 +47,7 @@ class ProductService {
           .from('store_profile')
           .select('''
             id,
-            products!inner(
+            products(
               *,
               product_sizes(*)
             )
