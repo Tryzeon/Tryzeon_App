@@ -10,6 +10,7 @@ import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/home/providers/providers.dart';
+import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePageController {
@@ -26,64 +27,57 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final avatarFile = useState<File?>(null);
+    final avatarAsync = ref.watch(avatarFileProvider);
     final tryonImages = useState<List<Uint8List>>([]);
     final currentTryonIndex = useState(-1);
-    final isLoading = useState(true);
+    final isActionLoading = useState(false);
     final customAvatarIndex = useState<int?>(null);
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    Future<void> loadAvatar({final bool forceRefresh = false}) async {
-      isLoading.value = true;
-
-      final getAvatarUseCase = ref.read(getAvatarUseCaseProvider);
-      final result = await getAvatarUseCase(forceRefresh: forceRefresh);
-      if (!context.mounted) return;
-
-      isLoading.value = false;
-
-      if (result.isSuccess) {
-        final avatar = result.get();
-        if (avatar != null) {
-          avatarFile.value = avatar.avatarFile;
-        }
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!,
-          type: NotificationType.error,
-        );
-      }
-    }
-
     Future<void> uploadAvatar() async {
       final File? imageFile = await ImagePickerHelper.pickImage(context);
       if (imageFile == null) return;
 
-      isLoading.value = true;
+      isActionLoading.value = true;
 
-      final uploadAvatarUseCase = ref.read(uploadAvatarUseCaseProvider);
-      final result = await uploadAvatarUseCase(imageFile);
-      if (!context.mounted) return;
+      try {
+        final profile = await ref.read(userProfileProvider.future);
+        final result = await ref.read(updateUserProfileUseCaseProvider)(
+          original: profile,
+          target: profile,
+          avatarFile: imageFile,
+        );
 
-      isLoading.value = false;
+        if (!context.mounted) return;
 
-      if (result.isSuccess) {
-        final avatar = result.get()!;
-        avatarFile.value = avatar.avatarFile;
-        tryonImages.value = [];
-        currentTryonIndex.value = -1;
-        customAvatarIndex.value = null;
-
-        TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
-      } else {
+        if (result.isSuccess) {
+          tryonImages.value = [];
+          currentTryonIndex.value = -1;
+          customAvatarIndex.value = null;
+          ref.invalidate(userProfileProvider);
+          TopNotification.show(
+            context,
+            message: '頭像上傳成功',
+            type: NotificationType.success,
+          );
+        } else {
+          TopNotification.show(
+            context,
+            message: result.getError()!,
+            type: NotificationType.error,
+          );
+        }
+      } catch (e) {
+        if (!context.mounted) return;
         TopNotification.show(
           context,
-          message: result.getError()!,
+          message: '頭像上傳失敗：${e.toString()}',
           type: NotificationType.error,
         );
+      } finally {
+        isActionLoading.value = false;
       }
     }
 
@@ -97,7 +91,7 @@ class HomePage extends HookConsumerWidget {
         customAvatarBase64 = base64Encode(tryonImages.value[customAvatarIndex.value!]);
       }
 
-      isLoading.value = true;
+      isActionLoading.value = true;
 
       final tryonUseCase = ref.read(tryonUseCaseProvider);
       final result = await tryonUseCase(
@@ -108,7 +102,7 @@ class HomePage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
+      isActionLoading.value = false;
 
       // Check if success
       if (result.isSuccess) {
@@ -176,28 +170,22 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> toggleAvatar() async {
-      try {
-        final isCurrentlySet = customAvatarIndex.value == currentTryonIndex.value;
+      final isCurrentlySet = customAvatarIndex.value == currentTryonIndex.value;
 
-        if (isCurrentlySet) {
-          // 取消設定
-          customAvatarIndex.value = null;
-        } else {
-          // 設定為 avatar
-          customAvatarIndex.value = currentTryonIndex.value;
-        }
+      if (isCurrentlySet) {
+        // 取消設定
+        customAvatarIndex.value = null;
+      } else {
+        // 設定為 avatar
+        customAvatarIndex.value = currentTryonIndex.value;
+      }
 
-        if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: isCurrentlySet ? '已取消試穿形象' : '已設定為試穿形象',
-            type: NotificationType.success,
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          TopNotification.show(context, message: '操作失敗：$e', type: NotificationType.error);
-        }
+      if (context.mounted) {
+        TopNotification.show(
+          context,
+          message: isCurrentlySet ? '已取消試穿形象' : '已設定為試穿形象',
+          type: NotificationType.success,
+        );
       }
     }
 
@@ -243,11 +231,6 @@ class HomePage extends HookConsumerWidget {
         }
       }
     }
-
-    useEffect(() {
-      loadAvatar();
-      return null;
-    }, []);
 
     useEffect(() {
       if (controller != null) {
@@ -437,7 +420,7 @@ class HomePage extends HookConsumerWidget {
       );
     }
 
-    Widget buildAvatarImage() {
+    Widget buildAvatarImage(final File? avatarFile) {
       // 如果有試穿圖片，顯示試穿圖片
       if (currentTryonIndex.value >= 0 &&
           currentTryonIndex.value < tryonImages.value.length) {
@@ -450,9 +433,9 @@ class HomePage extends HookConsumerWidget {
       }
 
       // 沒有試穿圖片，顯示原始頭像
-      if (avatarFile.value != null) {
+      if (avatarFile != null) {
         return Image.file(
-          avatarFile.value!,
+          avatarFile,
           width: double.infinity,
           height: double.infinity,
           fit: BoxFit.cover,
@@ -490,7 +473,11 @@ class HomePage extends HookConsumerWidget {
           ),
         ),
         child: RefreshIndicator(
-          onRefresh: () => loadAvatar(forceRefresh: true),
+          onRefresh: () async {
+            ref.invalidate(userProfileProvider);
+            ref.invalidate(avatarFileProvider);
+            await ref.read(avatarFileProvider.future);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: SafeArea(
@@ -499,7 +486,7 @@ class HomePage extends HookConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 標題 - 保留簡約風格
+                    // 標題
                     Text(
                       'Tryzeon',
                       style: textTheme.displayLarge?.copyWith(
@@ -537,64 +524,61 @@ class HomePage extends HookConsumerWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(32),
-                            child: Stack(
-                              children: [
-                                // 主要圖片
-                                buildAvatarImage(),
-
-                                // 載入遮罩
-                                if (isLoading.value)
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.black.withValues(alpha: 0.6),
-                                          Colors.black.withValues(alpha: 0.8),
-                                        ],
-                                      ),
+                            child: avatarAsync.when(
+                              loading: () =>
+                                  const Center(child: CircularProgressIndicator()),
+                              error: (final error, final stack) => Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.error_outline_rounded,
+                                      size: 48,
+                                      color: Colors.grey,
                                     ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            color: colorScheme.secondary,
-                                            strokeWidth: 3,
-                                          ),
-                                          const SizedBox(height: 16),
-                                          ShaderMask(
-                                            shaderCallback: (final bounds) =>
-                                                LinearGradient(
-                                                  colors: [
-                                                    Colors.white,
-                                                    colorScheme.surfaceContainer,
-                                                  ],
-                                                ).createShader(bounds),
-                                            child: const Text(
-                                              '再一下...就快好了',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                                letterSpacing: 1.5,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    const SizedBox(height: 16),
+                                    TextButton(
+                                      onPressed: () {
+                                        ref.invalidate(userProfileProvider);
+                                        ref.invalidate(avatarFileProvider);
+                                      },
+                                      child: const Text('重試'),
                                     ),
-                                  ),
+                                  ],
+                                ),
+                              ),
+                              data: (final avatarFile) => Stack(
+                                children: [
+                                  // 主要圖片
+                                  buildAvatarImage(avatarFile),
 
-                                // 更多選項按鈕（僅在顯示試穿結果時顯示）
-                                if (!isLoading.value && currentTryonIndex.value >= 0)
-                                  buildMoreOptionsButton(),
+                                  // 載入遮罩
+                                  if (isActionLoading.value)
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withValues(alpha: 0.6),
+                                            Colors.black.withValues(alpha: 0.8),
+                                          ],
+                                        ),
+                                      ),
+                                      child: const Center(child: CircularProgressIndicator()),
+                                    ),
 
-                                // 上一步/下一步按鈕（僅在有試穿結果時顯示）
-                                if (!isLoading.value && tryonImages.value.isNotEmpty)
-                                  buildNavigationButtons(),
-                              ],
+                                  // 更多選項按鈕
+                                  if (!isActionLoading.value &&
+                                      currentTryonIndex.value >= 0)
+                                    buildMoreOptionsButton(),
+
+                                  // 上一步/下一步按鈕
+                                  if (!isActionLoading.value &&
+                                      tryonImages.value.isNotEmpty)
+                                    buildNavigationButtons(),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -607,7 +591,7 @@ class HomePage extends HookConsumerWidget {
                     Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        gradient: isLoading.value
+                        gradient: (isActionLoading.value || avatarAsync.isLoading)
                             ? LinearGradient(
                                 colors: [
                                   colorScheme.surfaceContainer,
@@ -620,7 +604,7 @@ class HomePage extends HookConsumerWidget {
                                 colors: [colorScheme.primary, colorScheme.secondary],
                               ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: isLoading.value
+                        boxShadow: (isActionLoading.value || avatarAsync.isLoading)
                             ? []
                             : [
                                 BoxShadow(
@@ -633,14 +617,16 @@ class HomePage extends HookConsumerWidget {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: isLoading.value ? null : tryOnFromLocal,
+                          onTap: (isActionLoading.value || avatarAsync.isLoading)
+                              ? null
+                              : tryOnFromLocal,
                           borderRadius: BorderRadius.circular(16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.auto_awesome_rounded,
-                                color: isLoading.value
+                                color: (isActionLoading.value || avatarAsync.isLoading)
                                     ? colorScheme.onSurfaceVariant
                                     : Colors.white,
                                 size: 24,
@@ -649,7 +635,7 @@ class HomePage extends HookConsumerWidget {
                               Text(
                                 '虛擬試穿',
                                 style: textTheme.titleMedium?.copyWith(
-                                  color: isLoading.value
+                                  color: (isActionLoading.value || avatarAsync.isLoading)
                                       ? colorScheme.onSurfaceVariant
                                       : Colors.white,
                                   letterSpacing: 0.5,

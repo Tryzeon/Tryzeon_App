@@ -1,16 +1,16 @@
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
-import 'package:tryzeon/feature/personal/home/domain/repositories/avatar_repository.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
 class TryonUseCase {
   TryonUseCase({
-    required final AvatarRepository avatarRepository,
+    required final UserProfileRepository userProfileRepository,
     required final TryOnRepository tryOnRepository,
-  }) : _avatarRepository = avatarRepository,
+  }) : _userProfileRepository = userProfileRepository,
        _tryOnRepository = tryOnRepository;
 
-  final AvatarRepository _avatarRepository;
+  final UserProfileRepository _userProfileRepository;
   final TryOnRepository _tryOnRepository;
 
   /// Performs virtual try-on.
@@ -24,14 +24,14 @@ class TryonUseCase {
     // Business Logic: If no custom avatar provided, fetch current user's avatar path
     String? avatarPathToUse;
     if (customAvatarBase64 == null) {
-      final avatarResult = await _avatarRepository.getAvatar();
+      final profileResult = await _userProfileRepository.getUserProfile();
 
       // Check for error using pattern matching
-      switch (avatarResult) {
+      switch (profileResult) {
         case Err(:final error):
           return Err(error);
         case Ok(:final value):
-          if (value == null) {
+          if (value.avatarPath == null || value.avatarPath!.isEmpty) {
             return const Err('請先上傳您的照片');
           }
           avatarPathToUse = value.avatarPath;

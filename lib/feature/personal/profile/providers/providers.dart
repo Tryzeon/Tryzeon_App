@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
@@ -43,4 +45,19 @@ final userProfileProvider = FutureProvider<UserProfile>((final ref) async {
     throw result.getError()!;
   }
   return result.get()!;
+});
+
+final avatarFileProvider = FutureProvider<File?>((final ref) async {
+  final profile = await ref.watch(userProfileProvider.future);
+  if (profile.avatarPath == null || profile.avatarPath!.isEmpty) {
+    return null;
+  }
+
+  final repository = ref.watch(userProfileRepositoryProvider);
+  final result = await repository.getUserAvatar(profile.avatarPath!);
+
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+  return result.get();
 });

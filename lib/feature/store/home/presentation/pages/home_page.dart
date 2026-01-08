@@ -345,4 +345,3 @@ class StoreHomePage extends HookConsumerWidget {
     );
   }
 }
-
