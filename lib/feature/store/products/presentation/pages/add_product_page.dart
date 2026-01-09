@@ -5,15 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
-import 'package:tryzeon/core/domain/entities/product.dart';
 import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/services/product_type_service.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../data/product_service.dart';
 
 class AddProductPage extends HookConsumerWidget {
   const AddProductPage({super.key});
@@ -111,10 +110,12 @@ class AddProductPage extends HookConsumerWidget {
         price: double.parse(priceController.text),
         purchaseLink: purchaseLinkController.text,
         imagePath: '',
+        imageUrl: '',
         sizes: buildProductSizes(),
       );
 
-      final result = await ProductService.createProduct(
+      final createProductUseCase = ref.read(createProductUseCaseProvider);
+      final result = await createProductUseCase(
         product: newProduct,
         image: selectedImage.value!,
       );
@@ -124,6 +125,7 @@ class AddProductPage extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
+        ref.invalidate(productsProvider);
         Navigator.pop(context, true);
         TopNotification.show(context, message: '商品新增成功', type: NotificationType.success);
       } else {
@@ -293,7 +295,6 @@ class AddProductPage extends HookConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        // 尺寸名稱
                         TextFormField(
                           controller: controllers['name'],
                           style: textTheme.bodyMedium,
@@ -330,7 +331,6 @@ class AddProductPage extends HookConsumerWidget {
                           validator: AppValidators.validateSizeName,
                         ),
                         const SizedBox(height: 12),
-                        // 身體測量欄位
                         Wrap(
                           spacing: 12,
                           runSpacing: 12,
@@ -410,7 +410,6 @@ class AddProductPage extends HookConsumerWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // 自訂 AppBar
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -455,15 +454,12 @@ class AddProductPage extends HookConsumerWidget {
                   ],
                 ),
               ),
-
-              // 內容
               Expanded(
                 child: Form(
                   key: formKey,
                   child: ListView(
                     padding: const EdgeInsets.all(20.0),
                     children: [
-                      // 圖片上傳卡片
                       Container(
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
@@ -537,10 +533,7 @@ class AddProductPage extends HookConsumerWidget {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
-                      // 商品資訊卡片
                       Container(
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
@@ -559,8 +552,6 @@ class AddProductPage extends HookConsumerWidget {
                           children: [
                             Text('商品資訊', style: textTheme.titleSmall),
                             const SizedBox(height: 16),
-
-                            // 商品名稱
                             TextFormField(
                               controller: nameController,
                               style: textTheme.bodyLarge,
@@ -595,20 +586,11 @@ class AddProductPage extends HookConsumerWidget {
                               ),
                               validator: AppValidators.validateProductName,
                             ),
-
                             const SizedBox(height: 12),
-
-                            // 商品類型（多選）
                             buildTypeSelector(),
-
                             const SizedBox(height: 16),
-
-                            // 尺寸資訊 (列表 + 新增按鈕)
                             buildSizeInputs(),
-
                             const SizedBox(height: 16),
-
-                            // 價格
                             TextFormField(
                               controller: priceController,
                               style: textTheme.bodyLarge,
@@ -649,10 +631,7 @@ class AddProductPage extends HookConsumerWidget {
                               ],
                               validator: AppValidators.validatePrice,
                             ),
-
                             const SizedBox(height: 12),
-
-                            // 購買連結
                             TextFormField(
                               controller: purchaseLinkController,
                               style: textTheme.bodyLarge,
@@ -692,10 +671,7 @@ class AddProductPage extends HookConsumerWidget {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
-                      // 新增按鈕
                       Container(
                         width: double.infinity,
                         height: 56,

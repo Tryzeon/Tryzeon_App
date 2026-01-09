@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/domain/entities/product.dart';
-import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
-import 'package:tryzeon/feature/store/products/data/product_service.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/dialogs/sort_dialog.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_card.dart';
+import 'package:tryzeon/feature/store/products/providers/providers.dart';
 
 class ProductListSection extends HookConsumerWidget {
   const ProductListSection({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final productsAsync = ref.watch(productsProvider);
     final sortBy = useState('created_at');
     final ascending = useState(false);
 
@@ -40,7 +41,6 @@ class ProductListSection extends HookConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
-        // 我的商品標題
         Row(
           children: [
             Container(
@@ -72,25 +72,30 @@ class ProductListSection extends HookConsumerWidget {
           ],
         ),
         const SizedBox(height: 16),
-        AppQueryBuilder<List<Product>>(
-          query: ProductService.productsQuery(),
-          builder: (final context, final data) {
-            final products = ProductService.sortProducts(
-              data,
-              sortBy.value,
-              ascending.value,
-            );
+        productsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (final error, final stack) =>
+              ErrorView(onRetry: () => ref.invalidate(productsProvider)),
+          data: (final data) {
+            final products = data.sortProducts(sortBy.value, ascending.value);
 
             return RefreshIndicator(
-              onRefresh: () => ProductService.productsQuery().refetch(),
+              onRefresh: () async => ref.invalidate(productsProvider),
               color: colorScheme.primary,
               child: products.isEmpty
-                  ? LayoutBuilder(
-                      builder: (final context, final constraints) {
-                        return SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      ? LayoutBuilder(
+                        builder: (final context, final constraints) {
+                          final double minHeight =
+                              constraints.maxHeight.isFinite
+                                  ? constraints.maxHeight
+                                  : 400; // 如果是無限高度，給予一個合理的預設值
+
+                          return SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: minHeight,
+                              ),
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

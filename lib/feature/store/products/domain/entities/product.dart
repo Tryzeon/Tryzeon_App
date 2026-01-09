@@ -1,33 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 
 class ProductSize {
   ProductSize({this.id, this.productId, required this.name, required this.measurements});
 
-  factory ProductSize.fromJson(final Map<String, dynamic> json) {
-    return ProductSize(
-      id: json['id'],
-      productId: json['product_id'],
-
-      name: json['name'],
-      measurements: BodyMeasurements.fromJson(json),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      if (productId != null) 'product_id': productId,
-
-      'name': name,
-      ...measurements.toJson(),
-    };
-  }
-
   final String? id;
   final String? productId;
-
   final String name;
   final BodyMeasurements measurements;
 
@@ -45,7 +23,6 @@ class ProductSize {
     );
   }
 
-  /// 比對另一個 ProductSize，回傳差異的 Map
   Map<String, dynamic> getDirtyFields(final ProductSize target) {
     final updates = <String, dynamic>{};
 
@@ -66,7 +43,7 @@ class Product {
     required this.types,
     required this.price,
     required this.imagePath,
-
+    required this.imageUrl,
     this.id,
     this.purchaseLink,
     this.tryonCount,
@@ -77,58 +54,12 @@ class Product {
     this.updatedAt,
   });
 
-  factory Product.fromJson(final Map<String, dynamic> json) {
-    return Product(
-      storeId: json['store_id'],
-      name: json['name'],
-      types: (json['type'] as List).map((final e) => e.toString()).toSet(),
-      price: (json['price'] as num).toDouble(),
-      imagePath: json['image_path'],
-
-      id: json['id'],
-      purchaseLink: json['purchase_link'],
-      tryonCount: json['tryon_count'] ?? 0,
-      purchaseClickCount: json['purchase_click_count'] ?? 0,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      storeName: json['store_profile']?['name'],
-      sizes:
-          (json['product_sizes'] as List?)
-              ?.map((final e) => ProductSize.fromJson(Map<String, dynamic>.from(e)))
-              .toList() ??
-          [],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'store_id': storeId,
-      'name': name,
-      'type': types.toList(),
-      'price': price,
-      'image_path': imagePath,
-
-      if (id != null) 'id': id,
-      if (purchaseLink != null) 'purchase_link': purchaseLink,
-      if (tryonCount != null) 'tryon_count': tryonCount,
-      if (purchaseClickCount != null) 'purchase_click_count': purchaseClickCount,
-      if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
-      if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
-      if (sizes != null) 'product_sizes': sizes!.map((final e) => e.toJson()).toList(),
-      if (storeName != null) 'store_name': storeName,
-    };
-  }
-
-  /// 取得圖片的完整 URL (用於 CachedNetworkImage)
-  String get imageUrl =>
-      Supabase.instance.client.storage.from('store').getPublicUrl(imagePath);
-
   final String storeId;
   final String name;
   final Set<String> types;
   final double price;
   final String imagePath;
-
+  final String imageUrl;
   final String? id;
   final String? purchaseLink;
   final int? tryonCount;
@@ -144,6 +75,7 @@ class Product {
     final Set<String>? types,
     final double? price,
     final String? imagePath,
+    final String? imageUrl,
     final String? id,
     final String? purchaseLink,
     final int? tryonCount,
@@ -159,6 +91,7 @@ class Product {
       types: types ?? this.types,
       price: price ?? this.price,
       imagePath: imagePath ?? this.imagePath,
+      imageUrl: imageUrl ?? this.imageUrl,
       id: id ?? this.id,
       purchaseLink: purchaseLink ?? this.purchaseLink,
       tryonCount: tryonCount ?? this.tryonCount,
@@ -170,7 +103,6 @@ class Product {
     );
   }
 
-  /// 比對另一個 Product，回傳差異的 Map (不包含 sizes)
   Map<String, dynamic> getDirtyFields(final Product target) {
     final updates = <String, dynamic>{};
 
@@ -198,7 +130,6 @@ class Product {
   }
 }
 
-/// Helper class to encapsulate product size changes
 class ProductSizeChanges {
   ProductSizeChanges({
     required this.toAdd,
@@ -225,7 +156,6 @@ extension ProductSizeListExtension on List<ProductSize>? {
     return null;
   }
 
-  /// 獲取尺寸的變更，包含新增、更新和刪除
   ProductSizeChanges getDirtyFields(final List<ProductSize>? targetSizes) {
     final originalSizes = this ?? [];
     final finalTargetSizes = targetSizes ?? [];
@@ -234,7 +164,6 @@ extension ProductSizeListExtension on List<ProductSize>? {
     final List<Map<String, dynamic>> sizesToUpdate = [];
     final List<String> sizesToDeleteIds = [];
 
-    // Delete
     final targetSizeIds = finalTargetSizes
         .map((final s) => s.id)
         .whereType<String>()
@@ -247,10 +176,8 @@ extension ProductSizeListExtension on List<ProductSize>? {
 
     for (final targetSize in finalTargetSizes) {
       if (targetSize.id == null) {
-        // Insert
         sizesToAdd.add(targetSize);
       } else {
-        // Update
         final originalSize = originalSizes.firstWhereOrNull(
           (final s) => s.id == targetSize.id,
         );
@@ -268,5 +195,46 @@ extension ProductSizeListExtension on List<ProductSize>? {
       toUpdate: sizesToUpdate,
       toDeleteIds: sizesToDeleteIds,
     );
+  }
+}
+
+extension ProductListExtension on List<Product> {
+  List<Product> sortProducts(final String sortBy, final bool ascending) {
+    final sortedProducts = List<Product>.from(this);
+
+    sortedProducts.sort((final a, final b) {
+      int comparison;
+
+      switch (sortBy) {
+        case 'name':
+          comparison = -a.name.compareTo(b.name);
+          break;
+        case 'price':
+          comparison = a.price.compareTo(b.price);
+          break;
+        case 'created_at':
+          comparison = (a.createdAt ?? DateTime.now()).compareTo(
+            b.createdAt ?? DateTime.now(),
+          );
+          break;
+        case 'updated_at':
+          comparison = (a.updatedAt ?? DateTime.now()).compareTo(
+            b.updatedAt ?? DateTime.now(),
+          );
+          break;
+        case 'tryon_count':
+          comparison = (a.tryonCount ?? 0).compareTo(b.tryonCount ?? 0);
+          break;
+        case 'purchase_click_count':
+          comparison = (a.purchaseClickCount ?? 0).compareTo(b.purchaseClickCount ?? 0);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return ascending ? comparison : -comparison;
+    });
+
+    return sortedProducts;
   }
 }

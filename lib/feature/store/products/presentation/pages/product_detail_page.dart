@@ -6,14 +6,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
-import 'package:tryzeon/core/domain/entities/product.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/services/product_type_service.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/store/products/data/product_service.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
@@ -62,13 +62,15 @@ class ProductDetailPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final result = await ProductService.deleteProduct(product);
+      final deleteProductUseCase = ref.read(deleteProductUseCaseProvider);
+      final result = await deleteProductUseCase(product);
 
       if (!context.mounted) return;
 
       isLoading.value = false;
 
       if (result.isSuccess) {
+        ref.invalidate(productsProvider);
         TopNotification.show(context, message: '商品刪除成功', type: NotificationType.success);
         Navigator.pop(context, true);
       } else {
@@ -94,19 +96,20 @@ class ProductDetailPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      // 準備目標商品資料
       final targetProduct = Product(
         storeId: product.storeId,
         name: nameController.text,
         types: selectedTypes.value,
         price: double.parse(priceController.text),
         imagePath: product.imagePath,
+        imageUrl: product.imageUrl,
         id: product.id,
         purchaseLink: purchaseLinkController.text,
         sizes: sizeEntries.value.map((final e) => e.toProductSize(product.id!)).toList(),
       );
 
-      final result = await ProductService.updateProduct(
+      final updateProductUseCase = ref.read(updateProductUseCaseProvider);
+      final result = await updateProductUseCase(
         original: product,
         target: targetProduct,
         newImage: newImage.value,
@@ -117,6 +120,7 @@ class ProductDetailPage extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
+        ref.invalidate(productsProvider);
         Navigator.pop(context, true);
         TopNotification.show(context, message: '商品更新成功', type: NotificationType.success);
       } else {
@@ -374,7 +378,6 @@ class ProductDetailPage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 圖片區域
               GestureDetector(
                 onTap: () async {
                   final image = await ImagePickerHelper.pickImage(context);
@@ -441,8 +444,6 @@ class ProductDetailPage extends HookConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // 表單欄位
               buildTextField(
                 controller: nameController,
                 label: '商品名稱',
@@ -476,11 +477,9 @@ class ProductDetailPage extends HookConsumerWidget {
               ),
               const SizedBox(height: 24),
 
-              // 尺寸編輯區
               buildSizeList(),
               const SizedBox(height: 24),
 
-              // 儲存按鈕
               SizedBox(
                 width: double.infinity,
                 height: 52,

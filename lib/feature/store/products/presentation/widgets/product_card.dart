@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 import '../pages/product_detail_page.dart';
 
@@ -62,7 +62,7 @@ class StoreProductCard extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    product.types.join(', '), // 顯示所有類型，用逗號分隔
+                    product.types.join(', '),
                     style: textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
