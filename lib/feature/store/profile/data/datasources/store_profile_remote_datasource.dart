@@ -20,7 +20,15 @@ class StoreProfileRemoteDataSource {
         .eq('owner_id', user.id)
         .maybeSingle();
 
-    return response;
+    if (response == null) return null;
+
+    final map = Map<String, dynamic>.from(response);
+    final logoPath = map['logo_path'] as String?;
+    if (logoPath != null) {
+      map['logo_url'] = getLogoPublicUrl(logoPath);
+    }
+
+    return map;
   }
 
   Future<Map<String, dynamic>> updateStoreProfile(
@@ -36,7 +44,13 @@ class StoreProfileRemoteDataSource {
         .select()
         .single();
 
-    return response;
+    final map = Map<String, dynamic>.from(response);
+    final logoPath = map['logo_path'] as String?;
+    if (logoPath != null) {
+      map['logo_url'] = getLogoPublicUrl(logoPath);
+    }
+
+    return map;
   }
 
   Future<String> uploadLogo(final File image) async {

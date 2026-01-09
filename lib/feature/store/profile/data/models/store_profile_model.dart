@@ -1,4 +1,3 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreProfileModel extends StoreProfile {
@@ -12,16 +11,13 @@ class StoreProfileModel extends StoreProfile {
   });
 
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) {
-    final logoPath = json['logo_path'] as String?;
     return StoreProfileModel(
       id: json['id'] as String,
       ownerId: json['owner_id'] as String,
       name: json['name'] as String,
       address: json['address'] as String?,
-      logoPath: logoPath,
-      logoUrl: logoPath != null
-          ? Supabase.instance.client.storage.from('store').getPublicUrl(logoPath)
-          : null,
+      logoPath: json['logo_path'] as String?,
+      logoUrl: json['logo_url'] as String?,
     );
   }
 

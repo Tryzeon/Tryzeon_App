@@ -1,4 +1,3 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
@@ -21,14 +20,13 @@ class ShopProductModel extends ShopProduct {
   });
 
   factory ShopProductModel.fromJson(final Map<String, dynamic> json) {
-    final imagePath = json['image_path'] as String;
     return ShopProductModel(
       storeId: json['store_id'] as String,
       name: json['name'] as String,
       types: (json['type'] as List).map((final e) => e.toString()).toSet(),
       price: (json['price'] as num).toDouble(),
-      imagePath: imagePath,
-      imageUrl: Supabase.instance.client.storage.from('store').getPublicUrl(imagePath),
+      imagePath: json['image_path'] as String,
+      imageUrl: json['image_url'] as String,
       id: json['id'] as String?,
       purchaseLink: json['purchase_link'] as String?,
       tryonCount: json['tryon_count'] as int? ?? 0,

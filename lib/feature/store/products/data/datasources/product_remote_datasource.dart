@@ -30,9 +30,14 @@ class ProductRemoteDataSource {
         .single();
 
     final products = response['products'] as List;
-    return products
-        .map((final e) => ProductModel.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    return products.map((final e) {
+      final map = Map<String, dynamic>.from(e);
+      final imagePath = map['image_path'] as String?;
+      if (imagePath != null) {
+        map['image_url'] = getProductImageUrl(imagePath);
+      }
+      return ProductModel.fromJson(map);
+    }).toList();
   }
 
   Future<String> getStoreId() async {
@@ -67,7 +72,13 @@ class ProductRemoteDataSource {
         .select('*, product_sizes(*)')
         .eq('id', productId)
         .single();
-    return ProductModel.fromJson(response);
+
+    final map = Map<String, dynamic>.from(response);
+    final imagePath = map['image_path'] as String?;
+    if (imagePath != null) {
+      map['image_url'] = getProductImageUrl(imagePath);
+    }
+    return ProductModel.fromJson(map);
   }
 
   Future<void> updateProduct(

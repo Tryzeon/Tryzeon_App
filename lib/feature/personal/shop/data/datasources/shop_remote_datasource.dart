@@ -41,9 +41,18 @@ class ShopRemoteDataSource {
     // 排序
     final response = await query.order(sortBy, ascending: ascending);
 
-    return (response as List)
-        .map((final item) => ShopProductModel.fromJson(item))
-        .toList();
+    return (response as List).map((final item) {
+      final map = Map<String, dynamic>.from(item);
+      final imagePath = map['image_path'] as String?;
+      if (imagePath != null) {
+        map['image_url'] = getProductImageUrl(imagePath);
+      }
+      return ShopProductModel.fromJson(map);
+    }).toList();
+  }
+
+  String getProductImageUrl(final String imagePath) {
+    return _supabaseClient.storage.from('store').getPublicUrl(imagePath);
   }
 
   Future<void> incrementTryonCount(final String productId) async {

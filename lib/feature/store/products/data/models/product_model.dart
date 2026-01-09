@@ -53,7 +53,7 @@ class ProductModel extends Product {
       types: (json['type'] as List).map((final e) => e.toString()).toSet(),
       price: (json['price'] as num).toDouble(),
       imagePath: json['image_path'] as String,
-      imageUrl: '', // Model 不負責組裝 URL
+      imageUrl: json['image_url'] as String? ?? '',
       id: json['id'] as String?,
       purchaseLink: json['purchase_link'] as String?,
       tryonCount: json['tryon_count'] as int? ?? 0,
