@@ -22,7 +22,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   Future<Result<UserProfile, String>> getUserProfile() async {
     try {
       // Cache-first
-      final cached = _localDataSource.cache;
+      final cached = _localDataSource.getCache();
       if (cached != null) return Ok(cached);
 
       // Fetch from API
@@ -30,7 +30,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       final profile = UserProfileModel.fromJson(json);
 
       // Update cache
-      _localDataSource.cache = profile;
+      _localDataSource.setCache(profile);
 
       return Ok(profile);
     } catch (e) {
@@ -66,7 +66,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       final updatedJson = await _remoteDataSource.updateUserProfile(updateData);
       final updatedProfile = UserProfileModel.fromJson(updatedJson);
 
-      _localDataSource.cache = updatedProfile;
+      _localDataSource.setCache(updatedProfile);
 
       // Clean up old avatar if changed
       if (avatarFile != null &&

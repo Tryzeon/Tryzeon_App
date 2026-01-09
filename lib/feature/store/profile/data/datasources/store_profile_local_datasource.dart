@@ -7,9 +7,9 @@ import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.da
 class StoreProfileLocalDataSource {
   StoreProfileModel? _cachedStoreProfile;
 
-  StoreProfileModel? get cache => _cachedStoreProfile;
+  StoreProfileModel? getCache() => _cachedStoreProfile;
 
-  set cache(final StoreProfileModel profile) {
+  void setCache(final StoreProfileModel profile) {
     _cachedStoreProfile = profile;
   }
 

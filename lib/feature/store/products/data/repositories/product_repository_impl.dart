@@ -21,7 +21,7 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<List<Product>, String>> getProducts() async {
     try {
-      final cached = _localDataSource.cache;
+      final cached = _localDataSource.getCache();
       if (cached != null) {
         return Ok(
           cached.map((final m) {
@@ -33,7 +33,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final models = await _remoteDataSource.fetchProducts();
-      _localDataSource.cache = models;
+      _localDataSource.setCache(models);
 
       final products = models.map((final m) {
         return m.copyWith(imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath));
@@ -87,8 +87,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final model = await _remoteDataSource.fetchProduct(productId);
 
-      final currentCache = _localDataSource.cache ?? [];
-      _localDataSource.cache = [model, ...currentCache];
+      final currentCache = _localDataSource.getCache() ?? [];
+      _localDataSource.setCache([model, ...currentCache]);
 
       return const Ok(null);
     } catch (e) {
@@ -152,10 +152,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final model = await _remoteDataSource.fetchProduct(original.id!);
 
-      final currentCache = _localDataSource.cache ?? [];
-      _localDataSource.cache = currentCache
-          .map((final p) => p.id == model.id ? model : p)
-          .toList();
+      final currentCache = _localDataSource.getCache() ?? [];
+      _localDataSource.setCache(
+        currentCache.map((final p) => p.id == model.id ? model : p).toList(),
+      );
 
       return const Ok(null);
     } catch (e) {
@@ -175,10 +175,10 @@ class ProductRepositoryImpl implements ProductRepository {
         _localDataSource.deleteProductImage(product.imagePath).ignore();
       }
 
-      final currentCache = _localDataSource.cache ?? [];
-      _localDataSource.cache = currentCache
-          .where((final p) => p.id != product.id)
-          .toList();
+      final currentCache = _localDataSource.getCache() ?? [];
+      _localDataSource.setCache(
+        currentCache.where((final p) => p.id != product.id).toList(),
+      );
 
       return const Ok(null);
     } catch (e) {

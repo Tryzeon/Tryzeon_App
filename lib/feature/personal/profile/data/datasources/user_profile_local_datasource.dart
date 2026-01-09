@@ -7,9 +7,9 @@ import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.
 class UserProfileLocalDataSource {
   UserProfileModel? _cachedProfile;
 
-  UserProfileModel? get cache => _cachedProfile;
+  UserProfileModel? getCache() => _cachedProfile;
 
-  set cache(final UserProfileModel profile) {
+  void setCache(final UserProfileModel profile) {
     _cachedProfile = profile;
   }
 

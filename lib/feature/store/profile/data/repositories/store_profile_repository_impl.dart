@@ -22,7 +22,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   Future<Result<StoreProfile?, String>> getStoreProfile() async {
     try {
       // Cache-first
-      final cached = _localDataSource.cache;
+      final cached = _localDataSource.getCache();
       if (cached != null) return Ok(cached);
 
       // Fetch from API
@@ -32,7 +32,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       final entity = StoreProfileModel.fromJson(json);
 
       // Update cache
-      _localDataSource.cache = entity;
+      _localDataSource.setCache(entity);
 
       return Ok(entity);
     } catch (e) {
@@ -63,7 +63,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       final updatedJson = await _remoteDataSource.updateStoreProfile(updateData);
       final updated = StoreProfileModel.fromJson(updatedJson);
 
-      _localDataSource.cache = updated;
+      _localDataSource.setCache(updated);
 
       // Clean up old logo if changed
       if (logoFile != null &&
