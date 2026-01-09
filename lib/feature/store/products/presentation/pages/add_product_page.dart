@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
-import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/services/product_type_service.dart';
+import 'package:tryzeon/core/product_type/providers/providers.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
@@ -19,6 +19,7 @@ class AddProductPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final productTypesAsync = ref.watch(productTypesProvider);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController();
     final priceController = useTextEditingController();
@@ -154,55 +155,75 @@ class AddProductPage extends HookConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          AppQueryBuilder<List<String>>(
-            query: ProductTypeService.productTypesQuery(),
-            isCompact: true,
-            builder: (final context, final productTypes) {
+          productTypesAsync.when(
+            data: (final productTypes) {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: colorScheme.outline.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: productTypes.map((final type) {
-                    final isSelected = selectedTypes.value.contains(type);
-                    return FilterChip(
-                      label: Text(type),
-                      selected: isSelected,
-                      onSelected: (final selected) {
-                        final newSet = Set<String>.from(selectedTypes.value);
-                        if (selected) {
-                          newSet.add(type);
-                        } else {
-                          newSet.remove(type);
-                        }
-                        selectedTypes.value = newSet;
-                      },
-                      backgroundColor: colorScheme.surface,
-                      selectedColor: colorScheme.primary,
-                      checkmarkColor: colorScheme.onPrimary,
-                      labelStyle: textTheme.labelLarge?.copyWith(
-                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.outline.withValues(alpha: 0.3),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                  children:
+                      productTypes.map((final type) {
+                        final isSelected = selectedTypes.value.contains(type);
+                        return FilterChip(
+                          label: Text(type),
+                          selected: isSelected,
+                          onSelected: (final selected) {
+                            final newSet = Set<String>.from(selectedTypes.value);
+                            if (selected) {
+                              newSet.add(type);
+                            } else {
+                              newSet.remove(type);
+                            }
+                            selectedTypes.value = newSet;
+                          },
+                          backgroundColor: colorScheme.surface,
+                          selectedColor: colorScheme.primary,
+                          checkmarkColor: colorScheme.onPrimary,
+                          labelStyle: textTheme.labelLarge?.copyWith(
+                            color:
+                                isSelected
+                                    ? colorScheme.onPrimary
+                                    : colorScheme.onSurface,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(
+                              color:
+                                  isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.outline.withValues(alpha: 0.3),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                 ),
               );
             },
+            loading:
+                () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            error:
+                (final error, final stack) => ErrorView(
+                  onRetry: () => ref.invalidate(productTypesProvider),
+                  isCompact: true,
+                ),
           ),
         ],
       );

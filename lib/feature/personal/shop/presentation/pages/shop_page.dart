@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
-import 'package:tryzeon/core/services/product_type_service.dart';
+import 'package:tryzeon/core/product_type/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
@@ -20,6 +19,7 @@ class ShopPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final productTypesAsync = ref.watch(productTypesProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
       data: (final profile) => profile,
@@ -274,10 +274,8 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 24),
 
                               // 商品類型篩選標籤
-                              AppQueryBuilder<List<String>>(
-                                query: ProductTypeService.productTypesQuery(),
-                                isCompact: true,
-                                builder: (final context, final types) {
+                              productTypesAsync.when(
+                                data: (final types) {
                                   return ProductTypeFilter(
                                     productTypes: types,
                                     selectedTypes: selectedTypes.value,
@@ -295,6 +293,18 @@ class ShopPage extends HookConsumerWidget {
                                     },
                                   );
                                 },
+                                loading:
+                                    () => const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                error:
+                                    (final error, final stack) => ErrorView(
+                                      onRetry: () => ref.invalidate(productTypesProvider),
+                                      isCompact: true,
+                                    ),
                               ),
 
                               const SizedBox(height: 24),
