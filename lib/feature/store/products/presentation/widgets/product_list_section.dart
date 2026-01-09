@@ -83,19 +83,16 @@ class ProductListSection extends HookConsumerWidget {
               onRefresh: () async => ref.invalidate(productsProvider),
               color: colorScheme.primary,
               child: products.isEmpty
-                      ? LayoutBuilder(
-                        builder: (final context, final constraints) {
-                          final double minHeight =
-                              constraints.maxHeight.isFinite
-                                  ? constraints.maxHeight
-                                  : 400; // 如果是無限高度，給予一個合理的預設值
+                  ? LayoutBuilder(
+                      builder: (final context, final constraints) {
+                        final double minHeight = constraints.maxHeight.isFinite
+                            ? constraints.maxHeight
+                            : 400; // 如果是無限高度，給予一個合理的預設值
 
-                          return SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: minHeight,
-                              ),
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: minHeight),
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

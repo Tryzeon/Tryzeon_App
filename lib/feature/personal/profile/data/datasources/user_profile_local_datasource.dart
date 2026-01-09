@@ -2,14 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:tryzeon/core/services/cache_service.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileLocalDataSource {
-  UserProfile? _cachedProfile;
+  UserProfileModel? _cachedProfile;
 
-  UserProfile? get cache => _cachedProfile;
+  UserProfileModel? get cache => _cachedProfile;
 
-  set cache(final UserProfile profile) {
+  set cache(final UserProfileModel profile) {
     _cachedProfile = profile;
   }
 

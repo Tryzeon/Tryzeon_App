@@ -106,9 +106,7 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       Product finalTarget = target;
       if (newImage != null) {
-        final newImagePath = await _remoteDataSource.uploadProductImage(
-          newImage,
-        );
+        final newImagePath = await _remoteDataSource.uploadProductImage(newImage);
         finalTarget = target.copyWith(imagePath: newImagePath);
 
         // 同時保存到本地快取

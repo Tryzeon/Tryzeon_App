@@ -2,14 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:tryzeon/core/services/cache_service.dart';
-import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
+import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileLocalDataSource {
-  StoreProfile? _cachedStoreProfile;
+  StoreProfileModel? _cachedStoreProfile;
 
-  StoreProfile? get cache => _cachedStoreProfile;
+  StoreProfileModel? get cache => _cachedStoreProfile;
 
-  set cache(final StoreProfile profile) {
+  set cache(final StoreProfileModel profile) {
     _cachedStoreProfile = profile;
   }
 

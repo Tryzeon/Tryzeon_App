@@ -1,18 +1,18 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:tryzeon/core/services/cache_service.dart';
-import '../../domain/entities/wardrobe_item.dart';
+import '../models/wardrobe_item_model.dart';
 
 class WardrobeLocalDataSource {
-  List<WardrobeItem>? _cachedItems;
+  List<WardrobeItemModel>? _cachedItems;
 
-  List<WardrobeItem>? getCachedItems() => _cachedItems;
+  List<WardrobeItemModel>? getCachedItems() => _cachedItems;
 
-  void updateCachedItems(final List<WardrobeItem> items) {
+  void updateCachedItems(final List<WardrobeItemModel> items) {
     _cachedItems = items;
   }
 
-  void addItemToCache(final WardrobeItem item) {
+  void addItemToCache(final WardrobeItemModel item) {
     if (_cachedItems == null) {
       _cachedItems = [item];
     } else {
