@@ -95,7 +95,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       }
 
       // 2. If missing, generate URL and download
-      final url = _remoteDataSource.getAvatarPublicUrl(path);
+      final url = await _remoteDataSource.createSignedUrl(path);
       final downloadedAvatar = await _localDataSource.downloadAvatar(path, url);
 
       if (downloadedAvatar == null) {

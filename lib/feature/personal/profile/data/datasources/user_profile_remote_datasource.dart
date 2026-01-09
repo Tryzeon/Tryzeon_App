@@ -62,6 +62,10 @@ class UserProfileRemoteDataSource {
     await _supabaseClient.storage.from(_avatarBucket).remove([avatarPath]);
   }
 
+  Future<String> createSignedUrl(final String avatarPath) async {
+    return _supabaseClient.storage.from(_avatarBucket).createSignedUrl(avatarPath, 3600);
+  }
+
   String getAvatarPublicUrl(final String avatarPath) {
     return _supabaseClient.storage.from(_avatarBucket).getPublicUrl(avatarPath);
   }

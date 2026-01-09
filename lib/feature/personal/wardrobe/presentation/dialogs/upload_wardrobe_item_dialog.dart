@@ -4,20 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../data/wardrobe_service.dart';
+import '../mappers/category_display_mapper.dart';
 
 class UploadWardrobeItemDialog extends HookConsumerWidget {
-  const UploadWardrobeItemDialog({
-    super.key,
-    required this.image,
-    required this.categories,
-  });
+  const UploadWardrobeItemDialog({super.key, required this.image});
   final File image;
-  final List<String> categories;
 
-  // 預設的 tag 類別
   static const Map<String, List<String>> _defaultTagCategories = {
     '顏色': ['黑色', '白色', '灰色', '紅色', '藍色', '綠色', '黃色', '粉色', '紫色', '棕色'],
     '風格': ['休閒', '正式', '運動', '街頭', '古著', '韓系', '日系', '歐美'],
@@ -27,10 +22,13 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final selectedCategory = useState<String?>(null);
+    final selectedCategory = useState<WardrobeCategory?>(null);
     final selectedTags = useState<List<String>>([]);
     final isUploading = useState(false);
     final customTagController = useTextEditingController();
+
+    // Get all categories with display names for UI
+    final categoriesWithDisplay = CategoryDisplay.allWithDisplayNames;
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -38,9 +36,10 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     Future<void> handleUpload() async {
       isUploading.value = true;
 
-      final result = await WardrobeService.createWardrobeItem(
-        image,
-        selectedCategory.value!,
+      final useCase = ref.read(uploadWardrobeItemUseCaseProvider);
+      final result = await useCase(
+        image: image,
+        category: selectedCategory.value!,
         tags: selectedTags.value,
       );
 
@@ -49,6 +48,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
       isUploading.value = false;
 
       if (result.isSuccess) {
+        ref.invalidate(wardrobeItemsProvider);
         Navigator.pop(context, true);
       } else {
         TopNotification.show(
@@ -108,7 +108,9 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: categories.map((final category) {
+            children: categoriesWithDisplay.map((final entry) {
+              final category = entry.key;
+              final displayName = entry.value;
               final isSelected = selectedCategory.value == category;
               return Container(
                 decoration: BoxDecoration(
@@ -130,7 +132,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       child: Text(
-                        category,
+                        displayName,
                         style: textTheme.bodyMedium?.copyWith(
                           color: isSelected
                               ? colorScheme.onPrimary

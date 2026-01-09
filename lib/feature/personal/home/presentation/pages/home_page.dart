@@ -565,7 +565,9 @@ class HomePage extends HookConsumerWidget {
                                           ],
                                         ),
                                       ),
-                                      child: const Center(child: CircularProgressIndicator()),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
                                     ),
 
                                   // 更多選項按鈕

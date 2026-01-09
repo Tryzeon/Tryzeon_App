@@ -1,49 +1,20 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:typed_result/typed_result.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/providers.dart';
+import '../mappers/category_display_mapper.dart';
 
-import '../../data/wardrobe_item_model.dart';
-
-class WardrobeItemCard extends HookConsumerWidget {
+class WardrobeItemCard extends ConsumerWidget {
   const WardrobeItemCard({super.key, required this.item, required this.onDelete});
   final WardrobeItem item;
   final VoidCallback onDelete;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final imageFile = useState<File?>(null);
-    final isLoading = useState(true);
+    final imageFileAsync = ref.watch(wardrobeItemImageProvider(item.imagePath));
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
-    Future<void> loadImage() async {
-      isLoading.value = true;
-
-      final result = await item.loadImage();
-      if (!context.mounted) return;
-
-      isLoading.value = false;
-
-      if (result.isSuccess) {
-        imageFile.value = result.get();
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!,
-          type: NotificationType.error,
-        );
-      }
-    }
-
-    useEffect(() {
-      loadImage();
-      return null;
-    }, [item.imagePath]);
 
     return Container(
       decoration: BoxDecoration(
@@ -65,38 +36,14 @@ class WardrobeItemCard extends HookConsumerWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: Stack(
                 children: [
-                  isLoading.value
-                      ? Center(
-                          child: CircularProgressIndicator(color: colorScheme.primary),
-                        )
-                      : imageFile.value != null
-                      ? Image.file(
-                          imageFile.value!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          errorBuilder: (final context, final error, final stackTrace) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    colorScheme.surfaceContainerLow,
-                                    colorScheme.surfaceContainerHigh,
-                                  ],
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.error_outline,
-                                color: colorScheme.outline,
-                              ),
-                            );
-                          },
-                        )
-                      : Container(
-                          width: double.infinity,
-                          height: double.infinity,
+                  imageFileAsync.when(
+                    data: (final file) => Image.file(
+                      file,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (final context, final error, final stackTrace) {
+                        return Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
@@ -107,38 +54,55 @@ class WardrobeItemCard extends HookConsumerWidget {
                               ],
                             ),
                           ),
-                          child: Center(
-                            child: Icon(Icons.error_outline, color: colorScheme.outline),
-                          ),
+                          child: Icon(Icons.error_outline, color: colorScheme.outline),
+                        );
+                      },
+                    ),
+                    loading: () => Center(
+                      child: CircularProgressIndicator(color: colorScheme.primary),
+                    ),
+                    error: (final error, final stack) => Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            colorScheme.surfaceContainerLow,
+                            colorScheme.surfaceContainerHigh,
+                          ],
                         ),
-                  if (!isLoading.value)
-                    // 刪除按鈕
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: onDelete,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline,
-                              size: 16,
-                              color: Colors.white,
-                            ),
+                      ),
+                      child: Center(
+                        child: Icon(Icons.error_outline, color: colorScheme.outline),
+                      ),
+                    ),
+                  ),
+                  // 刪除按鈕
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onDelete,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.delete_outline,
+                            size: 16,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -162,7 +126,7 @@ class WardrobeItemCard extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        item.category,
+                        item.category.displayName,
                         style: textTheme.labelMedium?.copyWith(
                           color: colorScheme.primary,
                         ),

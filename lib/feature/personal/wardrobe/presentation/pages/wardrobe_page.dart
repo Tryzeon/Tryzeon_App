@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/app_query_builder.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../settings/presentation/pages/settings_page.dart';
-import '../../data/wardrobe_item_model.dart';
-import '../../data/wardrobe_service.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
+import '../mappers/category_display_mapper.dart';
 import '../widgets/wardrobe_item_card.dart';
 
 class PersonalPage extends HookConsumerWidget {
@@ -26,14 +28,17 @@ class PersonalPage extends HookConsumerWidget {
       data: (final profile) => profile,
       orElse: () => null,
     );
+
+    final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
+
     final isLoading = useState(false);
-    final selectedCategory = useState('全部');
+    final selectedCategory = useState<WardrobeCategory?>(null);
     final categoryScrollController = useScrollController();
 
+    // Build category list with display names for UI
     final wardrobeCategories = useMemoized(() {
-      final categories = WardrobeService.getWardrobeTypesList();
-      return ['全部', ...categories];
-    });
+      return CategoryDisplay.allWithDisplayNames;
+    }, []);
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -50,13 +55,16 @@ class PersonalPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final result = await WardrobeService.deleteWardrobeItem(item);
+      final useCase = ref.read(deleteWardrobeItemUseCaseProvider);
+      final result = await useCase(item);
 
       if (!context.mounted) return;
 
       isLoading.value = false;
 
-      if (!result.isSuccess) {
+      if (result.isSuccess) {
+        ref.invalidate(wardrobeItemsProvider);
+      } else {
         TopNotification.show(
           context,
           message: result.getError()!,
@@ -71,15 +79,12 @@ class PersonalPage extends HookConsumerWidget {
       if (image != null && context.mounted) {
         await showDialog<bool>(
           context: context,
-          builder: (final context) => UploadWardrobeItemDialog(
-            image: image,
-            categories: WardrobeService.getWardrobeTypesList(),
-          ),
+          builder: (final context) => UploadWardrobeItemDialog(image: image),
         );
       }
     }
 
-    Widget buildCategoryChip(final String category, final bool isSelected) {
+    Widget buildCategoryChip(final String displayName, final bool isSelected) {
       return Container(
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
@@ -102,14 +107,22 @@ class PersonalPage extends HookConsumerWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              selectedCategory.value = category;
+              // Find the category enum from display name
+              if (displayName == '全部') {
+                selectedCategory.value = null;
+              } else {
+                final categoryEntry = wardrobeCategories.firstWhere(
+                  (final entry) => entry.value == displayName,
+                );
+                selectedCategory.value = categoryEntry.key;
+              }
             },
             borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Center(
                 child: Text(
-                  category,
+                  displayName,
                   style: textTheme.bodyMedium?.copyWith(
                     color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -132,13 +145,68 @@ class PersonalPage extends HookConsumerWidget {
           controller: categoryScrollController,
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: wardrobeCategories.length,
+          itemCount: wardrobeCategories.length + 1, // +1 for "全部"
           itemBuilder: (final context, final index) {
-            final category = wardrobeCategories[index];
-            final isSelected = selectedCategory.value == category;
-            return buildCategoryChip(category, isSelected);
+            if (index == 0) {
+              // "全部" category
+              final isSelected = selectedCategory.value == null;
+              return buildCategoryChip('全部', isSelected);
+            }
+            final categoryEntry = wardrobeCategories[index - 1];
+            final isSelected = selectedCategory.value == categoryEntry.key;
+            return buildCategoryChip(categoryEntry.value, isSelected);
           },
         ),
+      );
+    }
+
+    Widget buildEmptyState() {
+      return LayoutBuilder(
+        builder: (final context, final constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.checkroom_rounded,
+                        size: 50,
+                        color: colorScheme.primary.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      '此衣櫃沒有衣物',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '點擊右下角按鈕新增衣物',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       );
     }
 
@@ -261,76 +329,20 @@ class PersonalPage extends HookConsumerWidget {
                   // 衣櫃內容
                   Expanded(
                     child: RefreshIndicator(
-                      onRefresh: () => WardrobeService.wardrobeItemsQuery().refetch(),
-                      child: AppQueryBuilder<List<WardrobeItem>>(
-                        query: WardrobeService.wardrobeItemsQuery(),
-                        builder: (final context, final wardrobeItem) {
-                          final filteredWardrobeItem = selectedCategory.value == '全部'
-                              ? wardrobeItem
-                              : wardrobeItem
+                      onRefresh: () async => ref.invalidate(wardrobeItemsProvider),
+                      child: wardrobeItemsAsync.when(
+                        data: (final wardrobeItems) {
+                          final filteredWardrobeItems = selectedCategory.value == null
+                              ? wardrobeItems
+                              : wardrobeItems
                                     .where(
                                       (final item) =>
                                           item.category == selectedCategory.value,
                                     )
                                     .toList();
 
-                          if (filteredWardrobeItem.isEmpty) {
-                            return LayoutBuilder(
-                              builder: (final context, final constraints) {
-                                return SingleChildScrollView(
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      minHeight: constraints.maxHeight,
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 100,
-                                            height: 100,
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.primary.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              Icons.checkroom_rounded,
-                                              size: 50,
-                                              color: colorScheme.primary.withValues(
-                                                alpha: 0.5,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 24),
-                                          Text(
-                                            selectedCategory.value == '全部'
-                                                ? '衣櫃是空的'
-                                                : '此類別沒有衣物',
-                                            style: textTheme.titleMedium?.copyWith(
-                                              color: colorScheme.onSurfaceVariant,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            '點擊右下角按鈕新增衣物',
-                                            style: textTheme.bodyMedium?.copyWith(
-                                              color: colorScheme.onSurfaceVariant
-                                                  .withValues(alpha: 0.8),
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
+                          if (filteredWardrobeItems.isEmpty) {
+                            return buildEmptyState();
                           } else {
                             return GridView.builder(
                               padding: const EdgeInsets.all(16),
@@ -341,17 +353,21 @@ class PersonalPage extends HookConsumerWidget {
                                     mainAxisSpacing: 16,
                                     childAspectRatio: 0.7,
                                   ),
-                              itemCount: filteredWardrobeItem.length,
+                              itemCount: filteredWardrobeItems.length,
                               itemBuilder: (final context, final index) {
                                 return WardrobeItemCard(
-                                  item: filteredWardrobeItem[index],
+                                  item: filteredWardrobeItems[index],
                                   onDelete: () =>
-                                      showDeleteDialog(filteredWardrobeItem[index]),
+                                      showDeleteDialog(filteredWardrobeItems[index]),
                                 );
                               },
                             );
                           }
                         },
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (final error, final stack) => ErrorView(
+                          onRetry: () => ref.invalidate(wardrobeItemsProvider),
+                        ),
                       ),
                     ),
                   ),
