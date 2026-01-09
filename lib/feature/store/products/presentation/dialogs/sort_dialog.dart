@@ -91,59 +91,57 @@ class _SortOptionsDialogContent extends HookConsumerWidget {
         {'label': '購買點擊次數', 'value': 'purchase_click_count'},
       ];
 
-      return RadioGroup<String>(
-        groupValue: sortByState.value,
-        onChanged: (final val) {
-          if (val != null) {
-            handleSortChange(val);
-          }
-        },
-        child: Column(
-          children: options.map((final option) {
-            final label = option['label']!;
-            final value = option['value']!;
-            final isSelected = sortByState.value == value;
+      return Column(
+        children: options.map((final option) {
+          final label = option['label']!;
+          final value = option['value']!;
+          final isSelected = sortByState.value == value;
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(
-                        colors: [
-                          colorScheme.primary.withValues(alpha: 0.1),
-                          colorScheme.secondary.withValues(alpha: 0.1),
-                        ],
-                      )
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-                border: isSelected
-                    ? Border.all(color: colorScheme.primary, width: 2)
-                    : null,
-              ),
-              child: InkWell(
-                onTap: () => handleSortChange(value),
-                borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  title: Text(
-                    label,
-                    style: textTheme.titleSmall?.copyWith(
-                      color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                    ),
-                  ),
-                  leading: Radio<String>(
-                    value: value,
-                    fillColor: WidgetStateProperty.resolveWith((final states) {
-                      if (states.contains(WidgetState.selected)) {
-                        return colorScheme.primary;
-                      }
-                      return null;
-                    }),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        colorScheme.primary.withValues(alpha: 0.1),
+                        colorScheme.secondary.withValues(alpha: 0.1),
+                      ],
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(12),
+              border: isSelected
+                  ? Border.all(color: colorScheme.primary, width: 2)
+                  : null,
+            ),
+            child: InkWell(
+              onTap: () => handleSortChange(value),
+              borderRadius: BorderRadius.circular(12),
+              child: ListTile(
+                title: Text(
+                  label,
+                  style: textTheme.titleSmall?.copyWith(
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                   ),
                 ),
+                leading: Radio<String>(
+                  value: value,
+                  groupValue: sortByState.value,
+                  onChanged: (final val) {
+                    if (val != null) {
+                      handleSortChange(val);
+                    }
+                  },
+                  fillColor: WidgetStateProperty.resolveWith((final states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return colorScheme.primary;
+                    }
+                    return null;
+                  }),
+                ),
               ),
-            );
-          }).toList(),
-        ),
+            ),
+          );
+        }).toList(),
       );
     }
 

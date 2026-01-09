@@ -13,7 +13,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/services/product_type_service.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/store/home/data/product_service.dart';
+import 'package:tryzeon/feature/store/products/data/product_service.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
