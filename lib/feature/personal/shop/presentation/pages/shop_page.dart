@@ -63,7 +63,7 @@ class ShopPage extends HookConsumerWidget {
       ascending.value = !ascending.value;
     }
 
-    void handleShowFilterDialog() {
+    void handleShowFilterDialog() { 
       FilterDialog(
         context: context,
         minPrice: minPrice.value,

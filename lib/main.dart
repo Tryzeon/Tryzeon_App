@@ -1,5 +1,3 @@
-import 'package:cached_query_flutter/cached_query_flutter.dart';
-import 'package:cached_storage/cached_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -22,16 +20,6 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
-  );
-
-  final storage = await CachedStorage.ensureInitialized();
-  CachedQuery.instance.configFlutter(
-    storage: storage,
-    config: const GlobalQueryConfig(
-      staleDuration: Duration(days: 30),
-      storageDuration: Duration(days: 60),
-      storeQuery: true,
-    ),
   );
 
   runApp(const ProviderScope(child: Tryzeon()));

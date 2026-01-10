@@ -29,8 +29,6 @@ dependencies:
   path: any
   typed_result: ^2.0.0
   cached_network_image: ^3.4.1
-  cached_query_flutter: ^3.3.1
-  cached_storage: ^3.2.2
   hooks_riverpod: ^3.1.0
   flutter_hooks: ^0.21.3+1
   talker_flutter: ^5.1.9

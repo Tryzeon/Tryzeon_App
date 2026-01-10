@@ -1,4 +1,3 @@
-import 'package:cached_query_flutter/cached_query_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/services/cache_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -63,7 +62,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // Clear API cache
     try {
-      CachedQuery.instance.deleteCache(deleteStorage: true);
       await CacheService.clearCache();
     } catch (e) {
       AppLogger.error('清除快取失敗 (已忽略)', e);
