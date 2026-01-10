@@ -293,18 +293,16 @@ class ShopPage extends HookConsumerWidget {
                                     },
                                   );
                                 },
-                                loading:
-                                    () => const Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    ),
-                                error:
-                                    (final error, final stack) => ErrorView(
-                                      onRetry: () => ref.invalidate(productTypesProvider),
-                                      isCompact: true,
-                                    ),
+                                loading: () => const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                                error: (final error, final stack) => ErrorView(
+                                  onRetry: () => ref.refresh(productTypesProvider),
+                                  isCompact: true,
+                                ),
                               ),
 
                               const SizedBox(height: 24),
@@ -362,7 +360,7 @@ class ShopPage extends HookConsumerWidget {
                                 ),
                                 error: (final error, final stack) => ErrorView(
                                   onRetry: () =>
-                                      ref.invalidate(shopProductsProvider(filter)),
+                                      ref.refresh(shopProductsProvider(filter)),
                                 ),
                                 data: (final displayedProducts) {
                                   if (displayedProducts.isEmpty) {

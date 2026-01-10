@@ -91,7 +91,7 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (final error, final stack) =>
-                      ErrorView(onRetry: () => ref.invalidate(userProfileProvider)),
+                      ErrorView(onRetry: () => ref.refresh(userProfileProvider)),
                 ),
               ),
             ],

@@ -163,67 +163,55 @@ class AddProductPage extends HookConsumerWidget {
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: colorScheme.outline.withValues(alpha: 0.3),
-                  ),
+                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                 ),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children:
-                      productTypes.map((final type) {
-                        final isSelected = selectedTypes.value.contains(type);
-                        return FilterChip(
-                          label: Text(type),
-                          selected: isSelected,
-                          onSelected: (final selected) {
-                            final newSet = Set<String>.from(selectedTypes.value);
-                            if (selected) {
-                              newSet.add(type);
-                            } else {
-                              newSet.remove(type);
-                            }
-                            selectedTypes.value = newSet;
-                          },
-                          backgroundColor: colorScheme.surface,
-                          selectedColor: colorScheme.primary,
-                          checkmarkColor: colorScheme.onPrimary,
-                          labelStyle: textTheme.labelLarge?.copyWith(
-                            color:
-                                isSelected
-                                    ? colorScheme.onPrimary
-                                    : colorScheme.onSurface,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            side: BorderSide(
-                              color:
-                                  isSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                  children: productTypes.map((final type) {
+                    final isSelected = selectedTypes.value.contains(type);
+                    return FilterChip(
+                      label: Text(type),
+                      selected: isSelected,
+                      onSelected: (final selected) {
+                        final newSet = Set<String>.from(selectedTypes.value);
+                        if (selected) {
+                          newSet.add(type);
+                        } else {
+                          newSet.remove(type);
+                        }
+                        selectedTypes.value = newSet;
+                      },
+                      backgroundColor: colorScheme.surface,
+                      selectedColor: colorScheme.primary,
+                      checkmarkColor: colorScheme.onPrimary,
+                      labelStyle: textTheme.labelLarge?.copyWith(
+                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.outline.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               );
             },
-            loading:
-                () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-            error:
-                (final error, final stack) => ErrorView(
-                  onRetry: () => ref.invalidate(productTypesProvider),
-                  isCompact: true,
-                ),
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            error: (final error, final stack) => ErrorView(
+              onRetry: () => ref.refresh(productTypesProvider),
+              isCompact: true,
+            ),
           ),
         ],
       );

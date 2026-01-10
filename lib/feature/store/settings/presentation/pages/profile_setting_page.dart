@@ -102,9 +102,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                 child: profileAsync.when(
                   data: (final profile) {
                     if (profile == null) {
-                      return ErrorView(
-                        onRetry: () => ref.invalidate(storeProfileProvider),
-                      );
+                      return ErrorView(onRetry: () => ref.refresh(storeProfileProvider));
                     }
                     return _StoreProfileForm(profile: profile);
                   },
@@ -112,7 +110,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                     child: CircularProgressIndicator(color: colorScheme.primary),
                   ),
                   error: (final error, final stack) =>
-                      ErrorView(onRetry: () => ref.invalidate(storeProfileProvider)),
+                      ErrorView(onRetry: () => ref.refresh(storeProfileProvider)),
                 ),
               ),
             ],

@@ -365,9 +365,8 @@ class PersonalPage extends HookConsumerWidget {
                           }
                         },
                         loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (final error, final stack) => ErrorView(
-                          onRetry: () => ref.invalidate(wardrobeItemsProvider),
-                        ),
+                        error: (final error, final stack) =>
+                            ErrorView(onRetry: () => ref.refresh(wardrobeItemsProvider)),
                       ),
                     ),
                   ),
