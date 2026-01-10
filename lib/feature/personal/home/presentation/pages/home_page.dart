@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/home/providers/providers.dart';
@@ -33,7 +34,6 @@ class HomePage extends HookConsumerWidget {
     final isActionLoading = useState(false);
     final customAvatarIndex = useState<int?>(null);
 
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     Future<void> uploadAvatar() async {
@@ -394,21 +394,11 @@ class HomePage extends HookConsumerWidget {
                         width: double.infinity,
                         child: avatarAsync.when(
                           loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (final error, final stack) => Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.error_outline_rounded, size: 48),
-                                const SizedBox(height: 16),
-                                TextButton(
-                                  onPressed: () {
-                                    ref.invalidate(userProfileProvider);
-                                    ref.invalidate(avatarFileProvider);
-                                  },
-                                  child: const Text('重試'),
-                                ),
-                              ],
-                            ),
+                          error: (final error, final stack) => ErrorView(
+                            onRetry: () => Future.wait([
+                              ref.refresh(userProfileProvider.future),
+                              ref.refresh(avatarFileProvider.future),
+                            ]),
                           ),
                           data: (final avatarFile) => Stack(
                             children: [

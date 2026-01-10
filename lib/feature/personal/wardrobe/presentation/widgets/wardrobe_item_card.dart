@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/providers.dart';
 import '../mappers/category_display_mapper.dart';
@@ -61,22 +62,10 @@ class WardrobeItemCard extends ConsumerWidget {
                     loading: () => Center(
                       child: CircularProgressIndicator(color: colorScheme.primary),
                     ),
-                    error: (final error, final stack) => Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.surfaceContainerLow,
-                            colorScheme.surfaceContainerHigh,
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(Icons.error_outline, color: colorScheme.outline),
-                      ),
+                    error: (final error, final stack) => ErrorView(
+                      isCompact: true,
+                      onRetry: () =>
+                          ref.refresh(wardrobeItemImageProvider(item.imagePath)),
                     ),
                   ),
                   // 刪除按鈕
