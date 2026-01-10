@@ -473,11 +473,10 @@ class HomePage extends HookConsumerWidget {
           ),
         ),
         child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(userProfileProvider);
-            ref.invalidate(avatarFileProvider);
-            await ref.read(avatarFileProvider.future);
-          },
+          onRefresh: () => Future.wait([ 
+            ref.refresh(userProfileProvider.future),
+            ref.refresh(avatarFileProvider.future),
+          ]),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: SafeArea(

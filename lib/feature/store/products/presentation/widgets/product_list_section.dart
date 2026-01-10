@@ -80,7 +80,7 @@ class ProductListSection extends HookConsumerWidget {
             final products = data.sortProducts(sortBy.value, ascending.value);
 
             return RefreshIndicator(
-              onRefresh: () async => ref.invalidate(productsProvider),
+              onRefresh: () async => ref.refresh(productsProvider),
               color: colorScheme.primary,
               child: products.isEmpty
                   ? LayoutBuilder(

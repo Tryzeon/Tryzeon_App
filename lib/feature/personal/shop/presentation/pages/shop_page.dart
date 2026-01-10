@@ -63,7 +63,7 @@ class ShopPage extends HookConsumerWidget {
       ascending.value = !ascending.value;
     }
 
-    void handleShowFilterDialog() { 
+    void handleShowFilterDialog() {
       FilterDialog(
         context: context,
         minPrice: minPrice.value,
@@ -173,9 +173,8 @@ class ShopPage extends HookConsumerWidget {
 
     final productsAsync = ref.watch(shopProductsProvider(filter));
 
-    Future<void> handleRefresh() async {
-      ref.invalidate(shopProductsProvider(filter));
-    }
+    Future<void> handleRefresh() async =>
+        ref.refresh(shopProductsProvider(filter).future);
 
     return Scaffold(
       body: Container(

@@ -20,10 +20,7 @@ class StoreEntry extends HookConsumerWidget {
           return PopScope(
             canPop: false,
             child: StoreOnboardingPage(
-              onRefresh: () async {
-                // Invalidate provider to trigger re-fetch
-                ref.invalidate(storeProfileProvider);
-              },
+              onRefresh: () async => ref.refresh(storeProfileProvider.future),
             ),
           );
         }

@@ -329,7 +329,7 @@ class PersonalPage extends HookConsumerWidget {
                   // 衣櫃內容
                   Expanded(
                     child: RefreshIndicator(
-                      onRefresh: () async => ref.invalidate(wardrobeItemsProvider),
+                      onRefresh: () async => ref.refresh(wardrobeItemsProvider),
                       child: wardrobeItemsAsync.when(
                         data: (final wardrobeItems) {
                           final filteredWardrobeItems = selectedCategory.value == null
