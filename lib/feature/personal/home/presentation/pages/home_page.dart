@@ -85,7 +85,6 @@ class HomePage extends HookConsumerWidget {
       final String? clothesBase64,
       final String? clothesPath,
     }) async {
-      // 如果有自訂 avatar，轉換為 base64
       String? customAvatarBase64;
       if (customAvatarIndex.value != null) {
         customAvatarBase64 = base64Encode(tryonImages.value[customAvatarIndex.value!]);
@@ -104,9 +103,7 @@ class HomePage extends HookConsumerWidget {
 
       isActionLoading.value = false;
 
-      // Check if success
       if (result.isSuccess) {
-        // 解碼 base64 並儲存為 bytes
         final base64String = result.get()!.imageBase64.split(',')[1];
         final imageBytes = base64Decode(base64String);
 
@@ -149,7 +146,6 @@ class HomePage extends HookConsumerWidget {
       try {
         final imageBytes = tryonImages.value[currentTryonIndex.value];
 
-        // 儲存到相簿
         await Gal.putImageBytes(
           imageBytes,
           name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
@@ -173,10 +169,8 @@ class HomePage extends HookConsumerWidget {
       final isCurrentlySet = customAvatarIndex.value == currentTryonIndex.value;
 
       if (isCurrentlySet) {
-        // 取消設定
         customAvatarIndex.value = null;
       } else {
-        // 設定為 avatar
         customAvatarIndex.value = currentTryonIndex.value;
       }
 
@@ -203,24 +197,18 @@ class HomePage extends HookConsumerWidget {
         newImages.removeAt(deletedIndex);
         tryonImages.value = newImages;
 
-        // 如果刪除的照片是自訂 avatar，清除設定
         if (customAvatarIndex.value == deletedIndex) {
           customAvatarIndex.value = null;
         } else if (customAvatarIndex.value != null &&
             customAvatarIndex.value! > deletedIndex) {
-          // 如果自訂 avatar 在刪除照片之後，索引需要 -1
           customAvatarIndex.value = customAvatarIndex.value! - 1;
         }
 
-        // 調整當前索引
         if (tryonImages.value.isEmpty) {
-          // 如果沒有試穿照片了，回到原圖
           currentTryonIndex.value = -1;
         } else if (currentTryonIndex.value >= tryonImages.value.length) {
-          // 如果刪除的是最後一張，往前移一張
           currentTryonIndex.value = tryonImages.value.length - 1;
         }
-        // 否則保持當前索引，會自動顯示下一張
 
         if (context.mounted) {
           TopNotification.show(
@@ -247,15 +235,8 @@ class HomePage extends HookConsumerWidget {
       required final VoidCallback onTap,
     }) {
       return ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        leading: Icon(icon),
+        title: Text(title),
         subtitle: Text(subtitle),
         onTap: onTap,
       );
@@ -265,82 +246,55 @@ class HomePage extends HookConsumerWidget {
       return Positioned(
         top: 16,
         right: 16,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (final context) => Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        buildOptionButton(
-                          title: '下載照片',
-                          subtitle: '儲存到相簿',
-                          icon: Icons.download_rounded,
-                          onTap: () {
-                            Navigator.pop(context);
-                            downloadCurrentImage();
-                          },
-                        ),
-                        buildOptionButton(
-                          title: customAvatarIndex.value == currentTryonIndex.value
-                              ? '取消我的形象'
-                              : '設為我的形象',
-                          subtitle: customAvatarIndex.value == currentTryonIndex.value
-                              ? '取消使用此照片作為試穿形象'
-                              : '使用此照片作為試穿形象',
-                          icon: customAvatarIndex.value == currentTryonIndex.value
-                              ? Icons.person_off_outlined
-                              : Icons.person_outline_rounded,
-                          onTap: () {
-                            Navigator.pop(context);
-                            toggleAvatar();
-                          },
-                        ),
-                        buildOptionButton(
-                          title: '刪除此試穿',
-                          subtitle: '移除這張試穿照片',
-                          icon: Icons.delete_outline_rounded,
-                          onTap: () {
-                            Navigator.pop(context);
-                            deleteCurrentTryon();
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+        child: IconButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (final context) => SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 16),
+                    buildOptionButton(
+                      title: '下載照片',
+                      subtitle: '儲存到相簿',
+                      icon: Icons.download_rounded,
+                      onTap: () {
+                        Navigator.pop(context);
+                        downloadCurrentImage();
+                      },
                     ),
-                  ),
+                    buildOptionButton(
+                      title: customAvatarIndex.value == currentTryonIndex.value
+                          ? '取消我的形象'
+                          : '設為我的形象',
+                      subtitle: customAvatarIndex.value == currentTryonIndex.value
+                          ? '取消使用此照片作為試穿形象'
+                          : '使用此照片作為試穿形象',
+                      icon: customAvatarIndex.value == currentTryonIndex.value
+                          ? Icons.person_off_outlined
+                          : Icons.person_outline_rounded,
+                      onTap: () {
+                        Navigator.pop(context);
+                        toggleAvatar();
+                      },
+                    ),
+                    buildOptionButton(
+                      title: '刪除此試穿',
+                      subtitle: '移除這張試穿照片',
+                      icon: Icons.delete_outline_rounded,
+                      onTap: () {
+                        Navigator.pop(context);
+                        deleteCurrentTryon();
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-              );
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 24),
-            ),
-          ),
+            );
+          },
+          icon: const Icon(Icons.more_vert_rounded),
         ),
       );
     }
@@ -350,27 +304,7 @@ class HomePage extends HookConsumerWidget {
       required final bool isEnabled,
       required final VoidCallback? onTap,
     }) {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isEnabled
-                  ? Colors.black.withValues(alpha: 0.5)
-                  : Colors.black.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
-              size: 24,
-            ),
-          ),
-        ),
-      );
+      return IconButton(onPressed: isEnabled ? onTap : null, icon: Icon(icon));
     }
 
     Widget buildNavigationButtons() {
@@ -381,33 +315,16 @@ class HomePage extends HookConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // 上一步按鈕
             buildNavButton(
               icon: Icons.arrow_back_ios_rounded,
               isEnabled: currentTryonIndex.value >= 0,
               onTap: currentTryonIndex.value >= 0 ? previousTryon : null,
             ),
-
-            // 頁數指示器
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                currentTryonIndex.value >= 0
-                    ? '${currentTryonIndex.value + 1} / ${tryonImages.value.length}'
-                    : '原圖',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            Text(
+              currentTryonIndex.value >= 0
+                  ? '${currentTryonIndex.value + 1} / ${tryonImages.value.length}'
+                  : '原圖',
             ),
-
-            // 下一步按鈕
             buildNavButton(
               icon: Icons.arrow_forward_ios_rounded,
               isEnabled: currentTryonIndex.value < tryonImages.value.length - 1,
@@ -454,203 +371,77 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.secondary.withValues(alpha: 0.05),
-                colorScheme.surface,
-              ),
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.1),
-                colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
-        child: RefreshIndicator(
-          onRefresh: () => Future.wait([ 
-            ref.refresh(userProfileProvider.future),
-            ref.refresh(avatarFileProvider.future),
-          ]),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 標題
-                    Text(
-                      'Tryzeon',
-                      style: textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 虛擬人偶容器
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: GestureDetector(
-                        onTap: uploadAvatar,
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(32),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                colorScheme.surface,
-                                colorScheme.surface.withValues(alpha: 0.9),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.primary.withValues(alpha: 0.15),
-                                spreadRadius: 0,
-                                blurRadius: 30,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(32),
-                            child: avatarAsync.when(
-                              loading: () =>
-                                  const Center(child: CircularProgressIndicator()),
-                              error: (final error, final stack) => Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.error_outline_rounded,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    TextButton(
-                                      onPressed: () {
-                                        ref.invalidate(userProfileProvider);
-                                        ref.invalidate(avatarFileProvider);
-                                      },
-                                      child: const Text('重試'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              data: (final avatarFile) => Stack(
-                                children: [
-                                  // 主要圖片
-                                  buildAvatarImage(avatarFile),
-
-                                  // 載入遮罩
-                                  if (isActionLoading.value)
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.black.withValues(alpha: 0.6),
-                                            Colors.black.withValues(alpha: 0.8),
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    ),
-
-                                  // 更多選項按鈕
-                                  if (!isActionLoading.value &&
-                                      currentTryonIndex.value >= 0)
-                                    buildMoreOptionsButton(),
-
-                                  // 上一步/下一步按鈕
-                                  if (!isActionLoading.value &&
-                                      tryonImages.value.isNotEmpty)
-                                    buildNavigationButtons(),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // 虛擬試穿按鈕
-                    Container(
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: (isActionLoading.value || avatarAsync.isLoading)
-                            ? LinearGradient(
-                                colors: [
-                                  colorScheme.surfaceContainer,
-                                  colorScheme.surfaceContainerHigh,
-                                ],
-                              )
-                            : LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [colorScheme.primary, colorScheme.secondary],
-                              ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: (isActionLoading.value || avatarAsync.isLoading)
-                            ? []
-                            : [
-                                BoxShadow(
-                                  color: colorScheme.primary.withValues(alpha: 0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
+      body: RefreshIndicator(
+        onRefresh: () => Future.wait([ 
+          ref.refresh(userProfileProvider.future),
+          ref.refresh(avatarFileProvider.future),
+        ]),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tryzeon', style: textTheme.displayLarge),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: GestureDetector(
+                      onTap: uploadAvatar,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: avatarAsync.when(
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (final error, final stack) => Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.error_outline_rounded, size: 48),
+                                const SizedBox(height: 16),
+                                TextButton(
+                                  onPressed: () {
+                                    ref.invalidate(userProfileProvider);
+                                    ref.invalidate(avatarFileProvider);
+                                  },
+                                  child: const Text('重試'),
                                 ),
                               ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: (isActionLoading.value || avatarAsync.isLoading)
-                              ? null
-                              : tryOnFromLocal,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                          ),
+                          data: (final avatarFile) => Stack(
                             children: [
-                              Icon(
-                                Icons.auto_awesome_rounded,
-                                color: (isActionLoading.value || avatarAsync.isLoading)
-                                    ? colorScheme.onSurfaceVariant
-                                    : Colors.white,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '虛擬試穿',
-                                style: textTheme.titleMedium?.copyWith(
-                                  color: (isActionLoading.value || avatarAsync.isLoading)
-                                      ? colorScheme.onSurfaceVariant
-                                      : Colors.white,
-                                  letterSpacing: 0.5,
+                              buildAvatarImage(avatarFile),
+                              if (isActionLoading.value)
+                                Container(
+                                  color: Colors.black54,
+                                  child: const Center(child: CircularProgressIndicator()),
                                 ),
-                              ),
+                              if (!isActionLoading.value && currentTryonIndex.value >= 0)
+                                buildMoreOptionsButton(),
+                              if (!isActionLoading.value && tryonImages.value.isNotEmpty)
+                                buildNavigationButtons(),
                             ],
                           ),
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    height: 56,
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: (isActionLoading.value || avatarAsync.isLoading)
+                          ? null
+                          : tryOnFromLocal,
+                      icon: const Icon(Icons.auto_awesome_rounded),
+                      label: const Text('虛擬試穿'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
             ),
           ),
