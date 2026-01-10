@@ -372,7 +372,7 @@ class HomePage extends HookConsumerWidget {
 
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () => Future.wait([ 
+        onRefresh: () => Future.wait([
           ref.refresh(userProfileProvider.future),
           ref.refresh(avatarFileProvider.future),
         ]),

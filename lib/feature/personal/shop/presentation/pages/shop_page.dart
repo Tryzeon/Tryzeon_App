@@ -173,9 +173,6 @@ class ShopPage extends HookConsumerWidget {
 
     final productsAsync = ref.watch(shopProductsProvider(filter));
 
-    Future<void> handleRefresh() async =>
-        ref.refresh(shopProductsProvider(filter).future);
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -243,7 +240,7 @@ class ShopPage extends HookConsumerWidget {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: handleRefresh,
+                  onRefresh: () async => ref.refresh(shopProductsProvider(filter).future),
                   color: colorScheme.primary,
                   child: LayoutBuilder(
                     builder: (final context, final constraints) {
