@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -33,8 +34,24 @@ class HomePage extends HookConsumerWidget {
     final currentTryonIndex = useState(-1);
     final isActionLoading = useState(false);
     final customAvatarIndex = useState<int?>(null);
+    final pageController = usePageController(initialPage: 0);
 
     final textTheme = Theme.of(context).textTheme;
+
+    // Sync PageController with currentTryonIndex changes (from logic)
+    useEffect(() {
+      if (pageController.hasClients) {
+        final targetPage = currentTryonIndex.value + 1;
+        if (pageController.page?.round() != targetPage) {
+          pageController.animateToPage(
+            targetPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+      return null;
+    }, [currentTryonIndex.value]);
 
     Future<void> uploadAvatar() async {
       final File? imageFile = await ImagePickerHelper.pickImage(context);
@@ -134,13 +151,6 @@ class HomePage extends HookConsumerWidget {
       await performTryOn(clothesPath: clothesPath);
     }
 
-    void previousTryon() {
-      currentTryonIndex.value--;
-    }
-
-    void nextTryon() {
-      currentTryonIndex.value++;
-    }
 
     Future<void> downloadCurrentImage() async {
       try {
@@ -243,199 +253,364 @@ class HomePage extends HookConsumerWidget {
     }
 
     Widget buildMoreOptionsButton() {
-      return Positioned(
-        top: 16,
-        right: 16,
-        child: IconButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (final context) => SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 16),
-                    buildOptionButton(
-                      title: '下載照片',
-                      subtitle: '儲存到相簿',
-                      icon: Icons.download_rounded,
-                      onTap: () {
-                        Navigator.pop(context);
-                        downloadCurrentImage();
-                      },
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            color: Colors.white.withValues(alpha: 0.1),
+            child: IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (final context) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 16),
+                        buildOptionButton(
+                          title: '下載照片',
+                          subtitle: '儲存到相簿',
+                          icon: Icons.download_rounded,
+                          onTap: () {
+                            Navigator.pop(context);
+                            downloadCurrentImage();
+                          },
+                        ),
+                        buildOptionButton(
+                          title: customAvatarIndex.value == currentTryonIndex.value
+                              ? '取消我的形象'
+                              : '設為我的形象',
+                          subtitle: customAvatarIndex.value == currentTryonIndex.value
+                              ? '取消使用此照片作為試穿形象'
+                              : '使用此照片作為試穿形象',
+                          icon: customAvatarIndex.value == currentTryonIndex.value
+                              ? Icons.person_off_outlined
+                              : Icons.person_outline_rounded,
+                          onTap: () {
+                            Navigator.pop(context);
+                            toggleAvatar();
+                          },
+                        ),
+                        buildOptionButton(
+                          title: '刪除此試穿',
+                          subtitle: '移除這張試穿照片',
+                          icon: Icons.delete_outline_rounded,
+                          onTap: () {
+                            Navigator.pop(context);
+                            deleteCurrentTryon();
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                    buildOptionButton(
-                      title: customAvatarIndex.value == currentTryonIndex.value
-                          ? '取消我的形象'
-                          : '設為我的形象',
-                      subtitle: customAvatarIndex.value == currentTryonIndex.value
-                          ? '取消使用此照片作為試穿形象'
-                          : '使用此照片作為試穿形象',
-                      icon: customAvatarIndex.value == currentTryonIndex.value
-                          ? Icons.person_off_outlined
-                          : Icons.person_outline_rounded,
-                      onTap: () {
-                        Navigator.pop(context);
-                        toggleAvatar();
-                      },
-                    ),
-                    buildOptionButton(
-                      title: '刪除此試穿',
-                      subtitle: '移除這張試穿照片',
-                      icon: Icons.delete_outline_rounded,
-                      onTap: () {
-                        Navigator.pop(context);
-                        deleteCurrentTryon();
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.more_vert_rounded),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+            ),
+          ),
         ),
       );
     }
 
-    Widget buildNavButton({
-      required final IconData icon,
-      required final bool isEnabled,
-      required final VoidCallback? onTap,
-    }) {
-      return IconButton(onPressed: isEnabled ? onTap : null, icon: Icon(icon));
-    }
-
-    Widget buildNavigationButtons() {
-      return Positioned(
-        left: 16,
-        right: 16,
-        bottom: 16,
+    Widget buildPageIndicator() {
+      // Bottom Center
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            buildNavButton(
-              icon: Icons.arrow_back_ios_rounded,
-              isEnabled: currentTryonIndex.value >= 0,
-              onTap: currentTryonIndex.value >= 0 ? previousTryon : null,
-            ),
-            Text(
-              currentTryonIndex.value >= 0
-                  ? '${currentTryonIndex.value + 1} / ${tryonImages.value.length}'
-                  : '原圖',
-            ),
-            buildNavButton(
-              icon: Icons.arrow_forward_ios_rounded,
-              isEnabled: currentTryonIndex.value < tryonImages.value.length - 1,
-              onTap: currentTryonIndex.value < tryonImages.value.length - 1
-                  ? nextTryon
-                  : null,
-            ),
+            if (currentTryonIndex.value == -1)
+              const Text(
+                'Original',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 4.0,
+                      color: Colors.black45,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    List.generate(tryonImages.value.length, (final index) {
+                  final isSelected = currentTryonIndex.value == index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: isSelected ? 12 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
           ],
         ),
       );
     }
 
-    Widget buildAvatarImage(final File? avatarFile) {
-      // 如果有試穿圖片，顯示試穿圖片
-      if (currentTryonIndex.value >= 0 &&
-          currentTryonIndex.value < tryonImages.value.length) {
-        return Image.memory(
-          tryonImages.value[currentTryonIndex.value],
-          width: double.infinity,
-          height: double.infinity,
-          fit: BoxFit.cover,
-        );
-      }
-
-      // 沒有試穿圖片，顯示原始頭像
-      if (avatarFile != null) {
-        return Image.file(
-          avatarFile,
-          width: double.infinity,
-          height: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (final context, final error, final stackTrace) =>
-              const Icon(Icons.image_not_supported),
-        );
-      }
-
-      // 沒有頭像，顯示預設圖片
-      return Image.asset(
-        'assets/images/profile/default.png',
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      );
-    }
-
-    return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () => Future.wait([
-          ref.refresh(userProfileProvider.future),
-          ref.refresh(avatarFileProvider.future),
-        ]),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    Widget buildTryOnButton() {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: InkWell(
+            onTap: (isActionLoading.value || avatarAsync.isLoading)
+                ? null
+                : tryOnFromLocal,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.9), // Pop out more
+                border: Border.all(color: Colors.white),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Tryzeon', style: textTheme.displayLarge),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.6,
-                    child: GestureDetector(
-                      onTap: uploadAvatar,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: avatarAsync.when(
-                          loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (final error, final stack) => ErrorView(
-                            onRetry: () => Future.wait([
-                              ref.refresh(userProfileProvider.future),
-                              ref.refresh(avatarFileProvider.future),
-                            ]),
-                          ),
-                          data: (final avatarFile) => Stack(
-                            children: [
-                              buildAvatarImage(avatarFile),
-                              if (isActionLoading.value)
-                                Container(
-                                  color: Colors.black54,
-                                  child: const Center(child: CircularProgressIndicator()),
-                                ),
-                              if (!isActionLoading.value && currentTryonIndex.value >= 0)
-                                buildMoreOptionsButton(),
-                              if (!isActionLoading.value && tryonImages.value.isNotEmpty)
-                                buildNavigationButtons(),
-                            ],
-                          ),
-                        ),
-                      ),
+                  Icon(Icons.auto_awesome_rounded, color: Colors.black),
+                  SizedBox(width: 8),
+                  Text(
+                    'Try On',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    height: 56,
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: (isActionLoading.value || avatarAsync.isLoading)
-                          ? null
-                          : tryOnFromLocal,
-                      icon: const Icon(Icons.auto_awesome_rounded),
-                      label: const Text('虛擬試穿'),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                 ],
               ),
             ),
           ),
         ),
+      );
+    }
+
+    return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Background Image Layer
+          GestureDetector(
+            onTap: uploadAvatar,
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.black, // Fallback
+              child: avatarAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (final error, final stack) => Center(
+                  child: ErrorView(
+                    onRetry: () => Future.wait([
+                      ref.refresh(userProfileProvider.future),
+                      ref.refresh(avatarFileProvider.future),
+                    ]),
+                  ),
+                ),
+                data: (final avatarFile) {
+                  return PageView.builder(
+                    controller: pageController,
+                    onPageChanged: (final index) {
+                      currentTryonIndex.value = index - 1;
+                    },
+                    itemCount: tryonImages.value.length + 1,
+                    itemBuilder: (final context, final index) {
+                      ImageProvider imageProvider;
+                      if (index > 0) {
+                        imageProvider = MemoryImage(
+                          tryonImages.value[index - 1],
+                        );
+                      } else if (avatarFile != null) {
+                        imageProvider = FileImage(avatarFile);
+                      } else {
+                        imageProvider = const AssetImage(
+                          'assets/images/profile/default.png',
+                        );
+                      }
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.3),
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.3),
+                                  ],
+                                  stops: const [0.0, 0.4, 1.0],
+                                ),
+                              ),
+                            ),
+                            if (avatarFile == null && index == 0)
+                              Align(
+                                alignment: const Alignment(0, 0.6),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 5,
+                                      sigmaY: 5,
+                                    ),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      child: const Text(
+                                        'Tap to upload avatar image',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // 2. Top Left Title Layer (Tryzeon)
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  'Tryzeon',
+                  style:
+                      textTheme.displayLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1.0,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10.0,
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: const Offset(2, 2),
+                          ),
+                        ],
+                      ) ??
+                      const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                ),
+              ),
+            ),
+          ),
+
+          // 3. Top Right Controls
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: !isActionLoading.value && currentTryonIndex.value >= 0
+                    ? buildMoreOptionsButton()
+                    : const SizedBox.shrink(),
+              ),
+            ),
+          ),
+
+          // 4. Bottom Layer (Navigation & Action) - Aware of Floating Nav Bar
+          // We assume "floating nav bar" occupies bottom space.
+          // Let's position things above it. Say bottom padding 100.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Navigation Buttons (Left/Center aligned or just floating)
+                if (!isActionLoading.value && tryonImages.value.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: buildPageIndicator(),
+                  ),
+
+                // Spacing for where the actual bottom bar would be
+                SizedBox(
+                  height: MediaQuery.of(context).padding.bottom + 80,
+                ), // Approx floating bar height
+              ],
+            ),
+          ),
+
+          // 5. Bottom Right Floating Action Button (Try On)
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 70,
+            right: 20,
+            child: buildTryOnButton(),
+          ),
+
+          // 6. Loading Overlay
+          if (isActionLoading.value)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: Colors.white),
+                    SizedBox(height: 16),
+                    Text(
+                      'Processing...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
