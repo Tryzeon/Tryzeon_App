@@ -1,10 +1,12 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/shop_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_tryon_count.dart';
@@ -16,17 +18,26 @@ final shopRemoteDataSourceProvider = Provider<ShopRemoteDataSource>((final ref) 
   return ShopRemoteDataSource(Supabase.instance.client);
 });
 
+final adLocalDataSourceProvider = Provider<AdLocalDataSource>((final ref) {
+  return AdLocalDataSource();
+});
+
 // --- Repository ---
 
 final shopRepositoryProvider = Provider<ShopRepository>((final ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
-  return ShopRepositoryImpl(remote);
+  final adLocal = ref.watch(adLocalDataSourceProvider);
+  return ShopRepositoryImpl(remote, adLocal);
 });
 
 // --- Use Cases ---
 
 final getShopProductsProvider = Provider<GetShopProducts>((final ref) {
   return GetShopProducts(ref.watch(shopRepositoryProvider));
+});
+
+final getAdsProvider = Provider<GetAds>((final ref) {
+  return GetAds(ref.watch(shopRepositoryProvider));
 });
 
 final incrementTryonCountProvider = Provider<IncrementTryonCount>((final ref) {
@@ -54,6 +65,15 @@ final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter
     maxPrice: filter.maxPrice,
     types: filter.types,
   );
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+  return result.get()!;
+});
+
+final shopAdsProvider = FutureProvider<List<String>>((final ref) async {
+  final useCase = ref.watch(getAdsProvider);
+  final result = await useCase();
   if (result.isFailure) {
     throw result.getError()!;
   }

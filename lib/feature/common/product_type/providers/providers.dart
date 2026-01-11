@@ -1,10 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/product_type/data/datasources/product_type_local_datasource.dart';
-import 'package:tryzeon/core/product_type/data/datasources/product_type_remote_datasource.dart';
-import 'package:tryzeon/core/product_type/data/repositories/product_type_repository_impl.dart';
-import 'package:tryzeon/core/product_type/domain/repositories/product_type_repository.dart';
-import 'package:tryzeon/core/product_type/domain/usecases/get_product_types.dart';
+import 'package:tryzeon/feature/common/product_type/data/datasources/product_type_local_datasource.dart';
+import 'package:tryzeon/feature/common/product_type/data/datasources/product_type_remote_datasource.dart';
+import 'package:tryzeon/feature/common/product_type/data/repositories/product_type_repository_impl.dart';
+import 'package:tryzeon/feature/common/product_type/domain/repositories/product_type_repository.dart';
+import 'package:tryzeon/feature/common/product_type/domain/usecases/get_product_types.dart';
 import 'package:typed_result/typed_result.dart';
 
 // Data Sources

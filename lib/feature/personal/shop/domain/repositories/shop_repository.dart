@@ -15,4 +15,6 @@ abstract class ShopRepository {
   Future<Result<void, String>> incrementTryonCount(final String productId);
 
   Future<Result<void, String>> incrementPurchaseClickCount(final String productId);
+
+  Future<Result<List<String>, String>> getAds({final bool forceRefresh = false});
 }

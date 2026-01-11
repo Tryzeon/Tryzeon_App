@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/product_type/data/models/product_type_model.dart';
+import 'package:tryzeon/feature/common/product_type/data/models/product_type_model.dart';
 
 class ProductTypeRemoteDataSource {
   ProductTypeRemoteDataSource(this._supabaseClient);

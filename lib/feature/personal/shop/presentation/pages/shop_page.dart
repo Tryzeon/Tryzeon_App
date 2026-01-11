@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
-import 'package:tryzeon/core/product_type/providers/providers.dart';
+import 'package:tryzeon/feature/common/product_type/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
-import 'package:tryzeon/feature/personal/shop/data/ad_service.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 
@@ -26,7 +25,7 @@ class ShopPage extends HookConsumerWidget {
       orElse: () => null,
     );
 
-    final adImages = useState<List<String>>([]);
+    final adsAsync = ref.watch(shopAdsProvider);
 
     // 過濾和排序狀態
     final sortBy = useState('tryon_count');
@@ -40,17 +39,6 @@ class ShopPage extends HookConsumerWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
-    Future<void> loadAdImages({final bool forceRefresh = false}) async {
-      final response = await AdService.getAdImages(forceRefresh: forceRefresh);
-      if (!context.mounted) return;
-      adImages.value = response;
-    }
-
-    useEffect(() {
-      loadAdImages();
-      return null;
-    }, []);
 
     void handleSortByTryonCount() {
       if (sortBy.value == 'tryon_count') return;
@@ -265,7 +253,14 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 20),
 
                               // 📢 廣告輪播
-                              AdBanner(adImages: adImages.value),
+                              adsAsync.when(
+                                data: (final ads) => AdBanner(adImages: ads),
+                                loading: () => const SizedBox(
+                                  height: 150,
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                                error: (final e, final s) => const SizedBox.shrink(),
+                              ),
 
                               const SizedBox(height: 24),
 
