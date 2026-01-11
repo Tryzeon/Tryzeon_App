@@ -101,10 +101,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
               Expanded(
                 child: profileAsync.when(
                   data: (final profile) {
-                    if (profile == null) {
-                      return ErrorView(onRetry: () => ref.refresh(storeProfileProvider));
-                    }
-                    return _StoreProfileForm(profile: profile);
+                    return _StoreProfileForm(profile: profile!);
                   },
                   loading: () => Center(
                     child: CircularProgressIndicator(color: colorScheme.primary),
