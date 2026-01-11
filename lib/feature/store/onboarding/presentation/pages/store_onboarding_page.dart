@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -37,11 +38,16 @@ class StoreOnboardingPage extends HookConsumerWidget {
         content: '你確定要切換到個人版帳號嗎？',
       );
 
-      if (confirmed == true && context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (final context) => const PersonalEntry()),
-          (final route) => false,
-        );
+      if (confirmed == true) {
+        final setLoginTypeUseCase = await ref.read(setLastLoginTypeUseCaseProvider.future);
+        await setLoginTypeUseCase(UserType.personal);
+
+        if (context.mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (final context) => const PersonalEntry()),
+            (final route) => false,
+          );
+        }
       }
     }
 
