@@ -36,6 +36,7 @@ class HomePage extends HookConsumerWidget {
     final customAvatarIndex = useState<int?>(null);
     final pageController = usePageController(initialPage: 0);
 
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     // Sync PageController with currentTryonIndex changes (from logic)
@@ -257,7 +258,7 @@ class HomePage extends HookConsumerWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: colorScheme.onSurface.withValues(alpha: 0.1),
             child: IconButton(
               onPressed: () {
                 showModalBottomSheet(
@@ -306,7 +307,7 @@ class HomePage extends HookConsumerWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+              icon: Icon(Icons.more_vert_rounded, color: colorScheme.onSurface),
             ),
           ),
         ),
@@ -318,21 +319,25 @@ class HomePage extends HookConsumerWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.3),
+          color: colorScheme.surface.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (currentTryonIndex.value == -1)
-              const Text(
+              Text(
                 'Original',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                   shadows: [
-                    Shadow(blurRadius: 4.0, color: Colors.black45, offset: Offset(0, 2)),
+                    Shadow(
+                      blurRadius: 4.0,
+                      color: colorScheme.surface.withValues(alpha: 0.45),
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
               )
@@ -348,8 +353,8 @@ class HomePage extends HookConsumerWidget {
                     height: 8,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.5),
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -372,18 +377,18 @@ class HomePage extends HookConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9), // Pop out more
-                border: Border.all(color: Colors.white),
+                color: colorScheme.surface.withValues(alpha: 0.9), // Pop out more
+                border: Border.all(color: colorScheme.surface),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: Colors.black),
-                  SizedBox(width: 8),
+                  Icon(Icons.auto_awesome_rounded, color: colorScheme.onSurface),
+                  const SizedBox(width: 8),
                   Text(
                     'Try On',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -408,7 +413,7 @@ class HomePage extends HookConsumerWidget {
             child: Container(
               width: double.infinity,
               height: double.infinity,
-              color: Colors.black, // Fallback
+              color: colorScheme.surface, // Fallback
               child: avatarAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (final error, final stack) => Center(
@@ -450,9 +455,9 @@ class HomePage extends HookConsumerWidget {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    Colors.black.withValues(alpha: 0.3),
+                                    colorScheme.surface.withValues(alpha: 0.3),
                                     Colors.transparent,
-                                    Colors.black.withValues(alpha: 0.3),
+                                    colorScheme.surface.withValues(alpha: 0.3),
                                   ],
                                   stops: const [0.0, 0.4, 1.0],
                                 ),
@@ -470,11 +475,11 @@ class HomePage extends HookConsumerWidget {
                                         horizontal: 16,
                                         vertical: 8,
                                       ),
-                                      color: Colors.black.withValues(alpha: 0.3),
-                                      child: const Text(
+                                      color: colorScheme.surface.withValues(alpha: 0.3),
+                                      child: Text(
                                         'Tap to upload avatar image',
                                         style: TextStyle(
-                                          color: Colors.white,
+                                          color: colorScheme.onSurface,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -502,24 +507,18 @@ class HomePage extends HookConsumerWidget {
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
                   'Tryzeon',
-                  style:
-                      textTheme.displayLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1.0,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 10.0,
-                            color: Colors.black.withValues(alpha: 0.5),
-                            offset: const Offset(2, 2),
-                          ),
-                        ],
-                      ) ??
-                      const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  style: textTheme.displayLarge?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.0,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 10.0,
+                        color: colorScheme.primary.withValues(alpha: 0.5),
+                        offset: const Offset(2, 2),
                       ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -574,17 +573,17 @@ class HomePage extends HookConsumerWidget {
           // 6. Loading Overlay
           if (isActionLoading.value)
             Container(
-              color: Colors.black54,
-              child: const Center(
+              color: colorScheme.surface.withValues(alpha: 0.54),
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
+                    CircularProgressIndicator(color: colorScheme.onSurface),
+                    const SizedBox(height: 16),
                     Text(
                       'Processing...',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: colorScheme.onSurface,
                         letterSpacing: 2,
                         fontWeight: FontWeight.bold,
                       ),
