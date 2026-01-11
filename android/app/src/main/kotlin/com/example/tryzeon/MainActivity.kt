@@ -1,4 +1,4 @@
-package com.example.tryzeon
+package com.tryzeon.app
 
 import io.flutter.embedding.android.FlutterActivity
 
