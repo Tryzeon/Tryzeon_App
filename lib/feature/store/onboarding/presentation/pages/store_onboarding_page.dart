@@ -39,7 +39,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
       );
 
       if (confirmed == true) {
-        final setLoginTypeUseCase = await ref.read(setLastLoginTypeUseCaseProvider.future);
+        final setLoginTypeUseCase = await ref.read(
+          setLastLoginTypeUseCaseProvider.future,
+        );
         await setLoginTypeUseCase(UserType.personal);
 
         if (context.mounted) {

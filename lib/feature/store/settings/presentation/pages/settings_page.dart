@@ -24,6 +24,7 @@ class StoreSettingsPage extends HookConsumerWidget {
 
       final setLoginTypeUseCase = await ref.read(setLastLoginTypeUseCaseProvider.future);
       await setLoginTypeUseCase(UserType.personal);
+
       if (!context.mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(

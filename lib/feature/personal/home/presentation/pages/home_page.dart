@@ -151,7 +151,6 @@ class HomePage extends HookConsumerWidget {
       await performTryOn(clothesPath: clothesPath);
     }
 
-
     Future<void> downloadCurrentImage() async {
       try {
         final imageBytes = tryonImages.value[currentTryonIndex.value];
@@ -333,19 +332,14 @@ class HomePage extends HookConsumerWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   shadows: [
-                    Shadow(
-                      blurRadius: 4.0,
-                      color: Colors.black45,
-                      offset: Offset(0, 2),
-                    ),
+                    Shadow(blurRadius: 4.0, color: Colors.black45, offset: Offset(0, 2)),
                   ],
                 ),
               )
             else
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children:
-                    List.generate(tryonImages.value.length, (final index) {
+                children: List.generate(tryonImages.value.length, (final index) {
                   final isSelected = currentTryonIndex.value == index;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -353,10 +347,9 @@ class HomePage extends HookConsumerWidget {
                     width: isSelected ? 12 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color:
-                          isSelected
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.5),
+                      color: isSelected
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -436,9 +429,7 @@ class HomePage extends HookConsumerWidget {
                     itemBuilder: (final context, final index) {
                       ImageProvider imageProvider;
                       if (index > 0) {
-                        imageProvider = MemoryImage(
-                          tryonImages.value[index - 1],
-                        );
+                        imageProvider = MemoryImage(tryonImages.value[index - 1]);
                       } else if (avatarFile != null) {
                         imageProvider = FileImage(avatarFile);
                       } else {
@@ -449,10 +440,7 @@ class HomePage extends HookConsumerWidget {
 
                       return Container(
                         decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
+                          image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
                         ),
                         child: Stack(
                           children: [
@@ -476,18 +464,13 @@ class HomePage extends HookConsumerWidget {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
                                   child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                      sigmaX: 5,
-                                      sigmaY: 5,
-                                    ),
+                                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
                                         vertical: 8,
                                       ),
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
-                                      ),
+                                      color: Colors.black.withValues(alpha: 0.3),
                                       child: const Text(
                                         'Tap to upload avatar image',
                                         style: TextStyle(

@@ -1,8 +1,8 @@
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_type/data/datasources/product_type_local_datasource.dart';
 import 'package:tryzeon/feature/common/product_type/data/datasources/product_type_remote_datasource.dart';
 import 'package:tryzeon/feature/common/product_type/domain/entities/product_type.dart';
 import 'package:tryzeon/feature/common/product_type/domain/repositories/product_type_repository.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ProductTypeRepositoryImpl implements ProductTypeRepository {
