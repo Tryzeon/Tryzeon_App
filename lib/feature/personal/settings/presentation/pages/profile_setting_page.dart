@@ -22,17 +22,7 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.05),
-                colorScheme.surface,
-              ),
-            ],
-          ),
+          color: colorScheme.surface,
         ),
         child: SafeArea(
           child: Column(
@@ -228,12 +218,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        colorScheme.primary.withValues(alpha: 0.1),
-                        colorScheme.secondary.withValues(alpha: 0.1),
-                      ],
-                    ),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: colorScheme.primary, size: 28),
@@ -309,13 +294,9 @@ class _PersonalProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient: isLoading.value
-                    ? LinearGradient(
-                        colors: [colorScheme.outline, colorScheme.outlineVariant],
-                      )
-                    : LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      ),
+                color: isLoading.value
+                    ? colorScheme.onSurface.withValues(alpha: 0.12)
+                    : colorScheme.primary,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: isLoading.value
                     ? []

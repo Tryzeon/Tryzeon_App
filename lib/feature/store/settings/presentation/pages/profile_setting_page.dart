@@ -24,17 +24,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.05),
-                colorScheme.surface,
-              ),
-            ],
-          ),
+          color: colorScheme.surface,
         ),
         child: SafeArea(
           child: Column(
@@ -231,12 +221,7 @@ class _StoreProfileForm extends HookConsumerWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colorScheme.primary.withValues(alpha: 0.1),
-                colorScheme.secondary.withValues(alpha: 0.1),
-              ],
-            ),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(60),
             border: Border.all(
               color: colorScheme.primary.withValues(alpha: 0.3),
@@ -276,12 +261,7 @@ class _StoreProfileForm extends HookConsumerWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colorScheme.primary.withValues(alpha: 0.1),
-                colorScheme.secondary.withValues(alpha: 0.1),
-              ],
-            ),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(60),
             border: Border.all(
               color: colorScheme.primary.withValues(alpha: 0.3),
@@ -394,12 +374,9 @@ class _StoreProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient: isLoading.value
-                    ? null
-                    : LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      ),
-                color: isLoading.value ? colorScheme.surfaceContainerHighest : null,
+                color: isLoading.value
+                    ? colorScheme.onSurface.withValues(alpha: 0.12)
+                    : colorScheme.primary,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: isLoading.value
                     ? null
