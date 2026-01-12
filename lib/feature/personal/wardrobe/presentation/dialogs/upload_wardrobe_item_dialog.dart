@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -61,7 +62,8 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
 
     void toggleTag(final String tag) {
       if (selectedTags.value.contains(tag)) {
-        selectedTags.value = selectedTags.value.where((final t) => t != tag).toList();
+        selectedTags.value =
+            selectedTags.value.where((final t) => t != tag).toList();
       } else {
         selectedTags.value = [...selectedTags.value, tag];
       }
@@ -82,11 +84,14 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
         width: 200,
         height: 200,
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(12),
+          color: colorScheme.onSurface.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: colorScheme.onSurface.withValues(alpha: 0.1),
+          ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
           child: Image.file(image, fit: BoxFit.cover),
         ),
       );
@@ -112,15 +117,18 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
               final category = entry.key;
               final displayName = entry.value;
               final isSelected = selectedCategory.value == category;
-              return Container(
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        )
-                      : null,
-                  color: isSelected ? null : colorScheme.surfaceContainer,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -130,14 +138,18 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                     },
                     borderRadius: BorderRadius.circular(20),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       child: Text(
                         displayName,
                         style: textTheme.bodyMedium?.copyWith(
                           color: isSelected
                               ? colorScheme.onPrimary
                               : colorScheme.onSurface,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
                           fontSize: 14,
                         ),
                       ),
@@ -170,7 +182,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                 '(可選)',
                 style: textTheme.bodySmall?.copyWith(
                   fontSize: 14,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -184,9 +196,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
               children: selectedTags.value.map((final tag) {
                 return Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [colorScheme.primary, colorScheme.secondary],
-                    ),
+                    color: colorScheme.primary,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Material(
@@ -195,7 +205,10 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                       onTap: () => toggleTag(tag),
                       borderRadius: BorderRadius.circular(20),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -208,7 +221,11 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(Icons.close, color: colorScheme.onPrimary, size: 14),
+                            Icon(
+                              Icons.close,
+                              color: colorScheme.onPrimary,
+                              size: 14,
+                            ),
                           ],
                         ),
                       ),
@@ -232,7 +249,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                   style: textTheme.labelLarge?.copyWith(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurfaceVariant,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -241,21 +258,19 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                   runSpacing: 8,
                   children: tags.map((final tag) {
                     final isSelected = selectedTags.value.contains(tag);
-                    return Container(
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
                       decoration: BoxDecoration(
-                        gradient: isSelected
-                            ? LinearGradient(
-                                colors: [
-                                  colorScheme.primary.withValues(alpha: 0.2),
-                                  colorScheme.secondary.withValues(alpha: 0.2),
-                                ],
-                              )
-                            : null,
-                        color: isSelected ? null : colorScheme.surfaceContainer,
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
-                        border: isSelected
-                            ? Border.all(color: colorScheme.primary, width: 1.5)
-                            : null,
+                        border: Border.all(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
                       ),
                       child: Material(
                         color: Colors.transparent,
@@ -271,7 +286,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                               tag,
                               style: textTheme.bodySmall?.copyWith(
                                 color: isSelected
-                                    ? colorScheme.primary
+                                    ? colorScheme.onPrimary
                                     : colorScheme.onSurface,
                                 fontWeight: isSelected
                                     ? FontWeight.w600
@@ -289,13 +304,13 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
               ],
             );
           }),
-          // 自訂 tag 輸入框 (移到最下面)
+          // 自訂 tag 輸入框
           Text(
             '自訂標籤',
             style: textTheme.labelLarge?.copyWith(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: colorScheme.onSurfaceVariant,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
@@ -306,9 +321,11 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                   controller: customTagController,
                   decoration: InputDecoration(
                     hintText: '輸入自訂標籤',
-                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    hintStyle: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainer,
+                    fillColor: colorScheme.onSurface.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -324,9 +341,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
               const SizedBox(width: 8),
               Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [colorScheme.primary, colorScheme.secondary],
-                  ),
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Material(
@@ -336,7 +351,11 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Icon(Icons.add, color: colorScheme.onPrimary, size: 20),
+                      child: Icon(
+                        Icons.add,
+                        color: colorScheme.onPrimary,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -348,99 +367,128 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     }
 
     return Dialog(
-      backgroundColor: colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.cloud_upload_outlined,
-                      color: colorScheme.onPrimary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '上傳衣物',
-                    style: textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ],
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: colorScheme.onSurface.withValues(alpha: 0.1),
               ),
-              const SizedBox(height: 24),
-              buildImagePreview(),
-              const SizedBox(height: 24),
-              buildCategorySelector(),
-              const SizedBox(height: 24),
-              buildTagSelector(),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      '取消',
-                      style: TextStyle(color: colorScheme.onSurfaceVariant),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: selectedCategory.value != null && !isUploading.value
-                          ? LinearGradient(
-                              colors: [colorScheme.primary, colorScheme.secondary],
-                            )
-                          : null,
-                      color: selectedCategory.value == null || isUploading.value
-                          ? colorScheme.surfaceContainerHighest
-                          : null,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: selectedCategory.value != null && !isUploading.value
-                          ? handleUpload
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: colorScheme.onPrimary,
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Icon(
+                            Icons.cloud_upload_outlined,
+                            color: colorScheme.onPrimary,
+                            size: 24,
+                          ),
                         ),
-                      ),
-                      child: isUploading.value
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.onPrimary,
-                              ),
-                            )
-                          : const Text('上傳'),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Upload Item',
+                          style: textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    buildImagePreview(),
+                    const SizedBox(height: 24),
+                    buildCategorySelector(),
+                    const SizedBox(height: 24),
+                    buildTagSelector(),
+                    const SizedBox(height: 32),
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Opacity(
+                            opacity:
+                                selectedCategory.value != null ? 1.0 : 0.5,
+                            child: ElevatedButton(
+                              onPressed:
+                                  selectedCategory.value != null &&
+                                          !isUploading.value
+                                      ? handleUpload
+                                      : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: isUploading.value
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: colorScheme.onPrimary,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Upload',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ),

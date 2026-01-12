@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -23,26 +24,29 @@ class PersonalPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    // 1. Data Providers
     final profileAsync = ref.watch(userProfileProvider);
     final profile = profileAsync.maybeWhen(
       data: (final profile) => profile,
       orElse: () => null,
     );
-
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
 
+    // 2. State
     final isLoading = useState(false);
     final selectedCategory = useState<WardrobeCategory?>(null);
     final categoryScrollController = useScrollController();
 
-    // Build category list with display names for UI
+    // 3. Memoized Data
     final wardrobeCategories = useMemoized(() {
       return CategoryDisplay.allWithDisplayNames;
     }, []);
 
+    // 4. Theme
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    // 5. Actions
     Future<void> showDeleteDialog(final WardrobeItem item) async {
       final confirmed = await ConfirmationDialog.show(
         context: context,
@@ -84,53 +88,64 @@ class PersonalPage extends HookConsumerWidget {
       }
     }
 
-    Widget buildCategoryChip(final String displayName, final bool isSelected) {
-      return Container(
-        margin: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [colorScheme.primary, colorScheme.secondary])
-              : null,
-          color: isSelected ? null : colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              // Find the category enum from display name
-              if (displayName == '全部') {
-                selectedCategory.value = null;
-              } else {
-                final categoryEntry = wardrobeCategories.firstWhere(
-                  (final entry) => entry.value == displayName,
-                );
-                selectedCategory.value = categoryEntry.key;
-              }
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Center(
-                child: Text(
-                  displayName,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    fontSize: 14,
-                    height: 1.0,
+    // 6. Widget Helpers (Glassmorphism Style)
+    Widget buildGlassElement({
+      required final Widget child,
+      final VoidCallback? onTap,
+      final EdgeInsetsGeometry padding = EdgeInsets.zero,
+      final double borderRadius = 30,
+      final Color? color,
+    }) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(borderRadius),
+              child: Container(
+                padding: padding,
+                decoration: BoxDecoration(
+                  color: color ?? colorScheme.surface.withValues(alpha: 0.2),
+                  border: Border.all(
+                    color: colorScheme.onSurface.withValues(alpha: 0.1),
+                    width: 0.5,
                   ),
                 ),
+                child: child,
               ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget buildCategoryChip(final String displayName, final bool isSelected) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: buildGlassElement(
+          borderRadius: 20,
+          color: isSelected
+              ? colorScheme.onSurface.withValues(alpha: 0.8)
+              : colorScheme.surface.withValues(alpha: 0.3),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          onTap: () {
+            if (displayName == '全部') {
+              selectedCategory.value = null;
+            } else {
+              final categoryEntry = wardrobeCategories.firstWhere(
+                (final entry) => entry.value == displayName,
+              );
+              selectedCategory.value = categoryEntry.key;
+            }
+          },
+          child: Text(
+            displayName,
+            style: textTheme.bodyMedium?.copyWith(
+              color: isSelected ? colorScheme.surface : colorScheme.onSurface,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ),
@@ -139,16 +154,15 @@ class PersonalPage extends HookConsumerWidget {
 
     Widget buildCategoryBar() {
       return Container(
-        height: 50,
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        height: 48,
+        margin: const EdgeInsets.symmetric(vertical: 12),
         child: ListView.builder(
           controller: categoryScrollController,
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: wardrobeCategories.length + 1, // +1 for "全部"
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          itemCount: wardrobeCategories.length + 1,
           itemBuilder: (final context, final index) {
             if (index == 0) {
-              // "全部" category
               final isSelected = selectedCategory.value == null;
               return buildCategoryChip('全部', isSelected);
             }
@@ -172,33 +186,22 @@ class PersonalPage extends HookConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      width: 100,
-                      height: 100,
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        color: colorScheme.surface.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.checkroom_rounded,
-                        size: 50,
-                        color: colorScheme.primary.withValues(alpha: 0.5),
+                        size: 48,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     Text(
                       '此衣櫃沒有衣物',
                       style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '點擊右下角按鈕新增衣物',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                        fontSize: 14,
+                        color: colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -210,209 +213,198 @@ class PersonalPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  colorScheme.surface,
-                  Color.alphaBlend(
-                    colorScheme.primary.withValues(alpha: 0.05),
-                    colorScheme.surface,
-                  ),
-                ],
+    Widget buildAddButton() {
+      return buildGlassElement(
+        onTap: showUploadDialog,
+        // 使用 primary color (黑色)
+        color: colorScheme.primary.withValues(alpha: 0.9),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add_rounded, color: colorScheme.onPrimary),
+            const SizedBox(width: 8),
+            Text(
+              'Add Cloth',
+              style: TextStyle(
+                color: colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  // 頂部標題區
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        // 設定按鈕和使用者名稱
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // 使用者名稱
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 20.0),
-                                child: ShaderMask(
-                                  shaderCallback: (final bounds) => LinearGradient(
-                                    colors: [colorScheme.primary, colorScheme.secondary],
-                                  ).createShader(bounds),
-                                  child: Text(
-                                    profile != null ? '您好, ${profile.name}' : '您好',
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // 設定按鈕
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainer,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (final context) =>
-                                            const PersonalSettingsPage(),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(22),
-                                  child: Icon(
-                                    Icons.settings_rounded,
-                                    color: colorScheme.onSurface,
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+          ],
+        ),
+      );
+    }
 
-                  // 我的衣櫃標題
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.checkroom_rounded,
-                          color: colorScheme.primary,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '我的衣櫃',
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+    return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Background Layer
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/profile/default.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black, // Darken it slightly if needed
+                  BlendMode.dstOver,
+                ),
+              ),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colorScheme.surface.withValues(alpha: 0.7),
+                      colorScheme.surface.withValues(alpha: 0.9),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 2. Main Content
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Spacer for Header
+                const SizedBox(height: 80),
+
+                // Category Bar
+                buildCategoryBar(),
+
+                // Grid Content
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async => ref.refresh(wardrobeItemsProvider),
+                    child: wardrobeItemsAsync.when(
+                      data: (final wardrobeItems) {
+                        final filtered = selectedCategory.value == null
+                            ? wardrobeItems
+                            : wardrobeItems
+                                .where(
+                                  (final i) =>
+                                      i.category == selectedCategory.value,
+                                )
+                                .toList();
+
+                        if (filtered.isEmpty) return buildEmptyState();
+
+                        return GridView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.75,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 分類選單
-                  buildCategoryBar(),
-
-                  // 衣櫃內容
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () async => ref.refresh(wardrobeItemsProvider),
-                      child: wardrobeItemsAsync.when(
-                        data: (final wardrobeItems) {
-                          final filteredWardrobeItems = selectedCategory.value == null
-                              ? wardrobeItems
-                              : wardrobeItems
-                                    .where(
-                                      (final item) =>
-                                          item.category == selectedCategory.value,
-                                    )
-                                    .toList();
-
-                          if (filteredWardrobeItems.isEmpty) {
-                            return buildEmptyState();
-                          } else {
-                            return GridView.builder(
-                              padding: const EdgeInsets.all(16),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 16,
-                                    mainAxisSpacing: 16,
-                                    childAspectRatio: 0.7,
-                                  ),
-                              itemCount: filteredWardrobeItems.length,
-                              itemBuilder: (final context, final index) {
-                                return WardrobeItemCard(
-                                  item: filteredWardrobeItems[index],
-                                  onDelete: () =>
-                                      showDeleteDialog(filteredWardrobeItems[index]),
-                                );
-                              },
+                          itemCount: filtered.length,
+                          itemBuilder: (final context, final index) {
+                            return WardrobeItemCard(
+                              item: filtered[index],
+                              onDelete: () => showDeleteDialog(filtered[index]),
                             );
-                          }
-                        },
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (final error, final stack) =>
-                            ErrorView(onRetry: () => ref.refresh(wardrobeItemsProvider)),
+                          },
+                        );
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (final _, final __) => ErrorView(
+                        onRetry: () => ref.refresh(wardrobeItemsProvider),
                       ),
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+
+          // 3. Header Layer (Title & Settings)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Title
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Wardrobe',
+                          style: textTheme.displaySmall?.copyWith(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        if (profile != null)
+                          Text(
+                            'Hello, ${profile.name}',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    // Settings Button
+                    buildGlassElement(
+                      padding: const EdgeInsets.all(12),
+                      borderRadius: 30,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (final context) =>
+                                const PersonalSettingsPage(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.settings_rounded,
+                        color: colorScheme.onSurface,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+
+          // 4. Floating Action Button
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 80,
+            right: 24,
+            child: buildAddButton(),
+          ),
+
+          // 5. Loading Overlay
           if (isLoading.value)
             Container(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 60),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colorScheme.primary, colorScheme.secondary],
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: showUploadDialog,
-              customBorder: const CircleBorder(),
-              child: SizedBox(
-                width: 56,
-                height: 56,
-                child: Icon(Icons.add_rounded, color: colorScheme.onPrimary, size: 28),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
