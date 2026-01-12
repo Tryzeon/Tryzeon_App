@@ -28,14 +28,7 @@ class ChatBubble extends HookConsumerWidget {
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          gradient: isUser
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [colorScheme.primary, colorScheme.secondary],
-                )
-              : null,
-          color: isUser ? null : colorScheme.surface,
+          color: isUser ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -122,12 +115,7 @@ class QuickReplyButton extends HookConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.1),
-              colorScheme.secondary.withValues(alpha: 0.1),
-            ],
-          ),
+          color: colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: colorScheme.primary.withValues(alpha: 0.3),
@@ -330,17 +318,7 @@ class ChatPage extends HookConsumerWidget {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.03),
-                colorScheme.surface,
-              ),
-            ],
-          ),
+          color: colorScheme.surface,
         ),
         child: SafeArea(
           child: Column(
@@ -364,9 +342,7 @@ class ChatPage extends HookConsumerWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
+                        color: colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -469,11 +445,9 @@ class ChatPage extends HookConsumerWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: isLoadingRecommendation.value
-                                ? [colorScheme.outlineVariant, colorScheme.outline]
-                                : [colorScheme.primary, colorScheme.secondary],
-                          ),
+                          color: isLoadingRecommendation.value
+                              ? colorScheme.onSurface.withValues(alpha: 0.12)
+                              : colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: Material(

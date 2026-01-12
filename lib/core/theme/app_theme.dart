@@ -16,6 +16,11 @@ class AppTheme {
       surface: _surface,
       onSurface: _onSurface,
       brightness: Brightness.light,
+      surfaceContainerLowest: const Color(0xFFFAFAFA),
+      surfaceContainerLow: const Color(0xFFF5F5F5),
+      surfaceContainer: const Color(0xFFF0F0F0),
+      surfaceContainerHigh: const Color(0xFFEAEAEA),
+      surfaceContainerHighest: const Color(0xFFE5E5E5),
     );
 
     return ThemeData(
