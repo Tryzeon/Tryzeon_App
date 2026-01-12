@@ -1,0 +1,7 @@
+app_identifier("com.tryzeon.app") # The bundle identifier of your app
+
+itc_team_id("128445555") # App Store Connect Team ID
+team_id("ZRT8ZB9565") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

@@ -43,6 +43,14 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# iOS build artifacts
+*.ipa
+*.dSYM.zip
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
 # supabase temp files
 */.temp
 

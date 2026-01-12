@@ -1,9 +1,9 @@
-name: Android Release Build
+name:  Release Build - Android
 
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 permissions:
   contents: write

@@ -1,0 +1,5 @@
+git_url("git@github.com:Tryzeon/tryzeon-ios-certificates.git")
+storage_mode("git")
+type("appstore")
+app_identifier(["com.tryzeon.app"])
+username("rthung96@gmail.com")

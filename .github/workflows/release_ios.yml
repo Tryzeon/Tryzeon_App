@@ -1,4 +1,4 @@
-name: iOS CI/CD to TestFlight
+name: Release Build - iOS
 
 on:
   push:
@@ -10,32 +10,45 @@ jobs:
   build-and-deploy-ios:
     runs-on: macos-latest
     steps:
-      # 1. Checkout
       - uses: actions/checkout@v4
 
-      # 2. Setup Flutter
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.2'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
+          channel: 'stable'
+          cache: true
 
-      # 3. Install Dependencies
       - name: Flutter Pub Get
         run: flutter pub get
 
-      # 4. Install Bundle (Fastlane)
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
       - name: Install Bundle
         run: |
           cd ios
           bundle install
 
-      # 5. Run Fastlane beta lane (Build & Deploy)
-      - name: Deploy to TestFlight
+      - name: Setup SSH for match
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MATCH_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Build and deploy to TestFlight
         run: |
           cd ios
           bundle exec fastlane beta
         env:
-          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_CONTENT }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
