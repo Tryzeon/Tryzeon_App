@@ -293,18 +293,16 @@ class PersonalPage extends HookConsumerWidget {
                         final filtered = selectedCategory.value == null
                             ? wardrobeItems
                             : wardrobeItems
-                                .where(
-                                  (final i) =>
-                                      i.category == selectedCategory.value,
-                                )
-                                .toList();
+                                  .where(
+                                    (final i) => i.category == selectedCategory.value,
+                                  )
+                                  .toList();
 
                         if (filtered.isEmpty) return buildEmptyState();
 
                         return GridView.builder(
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
@@ -319,11 +317,9 @@ class PersonalPage extends HookConsumerWidget {
                           },
                         );
                       },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (final _, final __) => ErrorView(
-                        onRetry: () => ref.refresh(wardrobeItemsProvider),
-                      ),
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (final _, final __) =>
+                          ErrorView(onRetry: () => ref.refresh(wardrobeItemsProvider)),
                     ),
                   ),
                 ),
@@ -359,8 +355,7 @@ class PersonalPage extends HookConsumerWidget {
                           Text(
                             'Hello, ${profile.name}',
                             style: textTheme.bodyMedium?.copyWith(
-                              color:
-                                  colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                       ],
@@ -374,8 +369,7 @@ class PersonalPage extends HookConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (final context) =>
-                                const PersonalSettingsPage(),
+                            builder: (final context) => const PersonalSettingsPage(),
                           ),
                         );
                       },

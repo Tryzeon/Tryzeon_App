@@ -62,8 +62,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
 
     void toggleTag(final String tag) {
       if (selectedTags.value.contains(tag)) {
-        selectedTags.value =
-            selectedTags.value.where((final t) => t != tag).toList();
+        selectedTags.value = selectedTags.value.where((final t) => t != tag).toList();
       } else {
         selectedTags.value = [...selectedTags.value, tag];
       }
@@ -86,9 +85,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
         decoration: BoxDecoration(
           color: colorScheme.onSurface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: colorScheme.onSurface.withValues(alpha: 0.1),
-          ),
+          border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.1)),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -138,18 +135,14 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                     },
                     borderRadius: BorderRadius.circular(20),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       child: Text(
                         displayName,
                         style: textTheme.bodyMedium?.copyWith(
                           color: isSelected
                               ? colorScheme.onPrimary
                               : colorScheme.onSurface,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                           fontSize: 14,
                         ),
                       ),
@@ -205,10 +198,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                       onTap: () => toggleTag(tag),
                       borderRadius: BorderRadius.circular(20),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -221,11 +211,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(
-                              Icons.close,
-                              color: colorScheme.onPrimary,
-                              size: 14,
-                            ),
+                            Icon(Icons.close, color: colorScheme.onPrimary, size: 14),
                           ],
                         ),
                       ),
@@ -261,9 +247,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.surface,
+                        color: isSelected ? colorScheme.primary : colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
@@ -351,11 +335,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Icon(
-                        Icons.add,
-                        color: colorScheme.onPrimary,
-                        size: 20,
-                      ),
+                      child: Icon(Icons.add, color: colorScheme.onPrimary, size: 20),
                     ),
                   ),
                 ),
@@ -379,9 +359,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
             decoration: BoxDecoration(
               color: colorScheme.surface.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: colorScheme.onSurface.withValues(alpha: 0.1),
-              ),
+              border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.1)),
             ),
             child: SingleChildScrollView(
               child: Padding(
@@ -447,14 +425,12 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Opacity(
-                            opacity:
-                                selectedCategory.value != null ? 1.0 : 0.5,
+                            opacity: selectedCategory.value != null ? 1.0 : 0.5,
                             child: ElevatedButton(
                               onPressed:
-                                  selectedCategory.value != null &&
-                                          !isUploading.value
-                                      ? handleUpload
-                                      : null,
+                                  selectedCategory.value != null && !isUploading.value
+                                  ? handleUpload
+                                  : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorScheme.primary,
                                 foregroundColor: colorScheme.onPrimary,
