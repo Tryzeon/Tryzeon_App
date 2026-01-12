@@ -164,11 +164,7 @@ class StoreHomePage extends HookConsumerWidget {
       ),
       floatingActionButton: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [colorScheme.primary, colorScheme.secondary],
-          ),
+          color: colorScheme.primary,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(

@@ -306,31 +306,31 @@ class AddProductPage extends HookConsumerWidget {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: controllers['name'],
-                          style: textTheme.bodyMedium,
+                          style: textTheme.bodyLarge,
                           decoration: InputDecoration(
                             labelText: '尺寸名稱 (如: S, M, XL)',
-                            labelStyle: textTheme.bodySmall,
+                            labelStyle: textTheme.bodyMedium,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: colorScheme.outline.withValues(alpha: 0.3),
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: colorScheme.outline.withValues(alpha: 0.3),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: colorScheme.primary,
                                 width: 2,
                               ),
                             ),
                             filled: true,
-                            fillColor: colorScheme.surface,
+                            fillColor: colorScheme.surfaceContainer,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 12,
@@ -348,31 +348,31 @@ class AddProductPage extends HookConsumerWidget {
                               width: (MediaQuery.of(context).size.width - 118) / 2,
                               child: TextFormField(
                                 controller: controllers[type.name],
-                                style: textTheme.bodyMedium,
+                                style: textTheme.bodyLarge,
                                 decoration: InputDecoration(
                                   labelText: type.label,
-                                  labelStyle: textTheme.bodySmall,
+                                  labelStyle: textTheme.bodyMedium,
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
                                       color: colorScheme.outline.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
                                       color: colorScheme.outline.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
                                       color: colorScheme.primary,
                                       width: 2,
                                     ),
                                   ),
                                   filled: true,
-                                  fillColor: colorScheme.surface,
+                                  fillColor: colorScheme.surfaceContainer,
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 12,
@@ -685,16 +685,9 @@ class AddProductPage extends HookConsumerWidget {
                         width: double.infinity,
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient: isLoading.value
-                              ? LinearGradient(
-                                  colors: [
-                                    colorScheme.outline,
-                                    colorScheme.outlineVariant,
-                                  ],
-                                )
-                              : LinearGradient(
-                                  colors: [colorScheme.primary, colorScheme.secondary],
-                                ),
+                          color: isLoading.value
+                              ? colorScheme.outline
+                              : colorScheme.primary,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: isLoading.value
                               ? []
