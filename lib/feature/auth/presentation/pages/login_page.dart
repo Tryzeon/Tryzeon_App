@@ -12,7 +12,10 @@ class LoginPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final colorScheme = Theme.of(context).colorScheme;
+
+    // Custom Design Tokens
+    const primaryColor = Color(0xFF6366F1); // Indigo
+    const secondaryColor = Color(0xFFEC4899); // Pink
 
     void navigateToPersonalLogin() {
       Navigator.push(
@@ -36,8 +39,8 @@ class LoginPage extends HookConsumerWidget {
           children: [
             SizedBox(height: screenHeight * 0.08),
 
-            // Logo area
-            _buildHeader(context),
+            // Logo area - Center aligned
+            Center(child: _buildHeader(context)),
 
             SizedBox(height: screenHeight * 0.06),
 
@@ -48,10 +51,10 @@ class LoginPage extends HookConsumerWidget {
                 children: [
                   _buildLoginOptionCard(
                     context: context,
-                    icon: Icons.person_rounded, // Rounded icon
+                    icon: Icons.person_rounded,
                     title: 'User Login',
                     subtitle: 'Virtual Try-On',
-                    color: colorScheme.secondary,
+                    accentColor: primaryColor,
                     onTap: navigateToPersonalLogin,
                   ),
 
@@ -59,10 +62,10 @@ class LoginPage extends HookConsumerWidget {
 
                   _buildLoginOptionCard(
                     context: context,
-                    icon: Icons.store_rounded, // Rounded icon
+                    icon: Icons.store_rounded,
                     title: 'Store Login',
                     subtitle: 'Manage Products',
-                    color: colorScheme.primary,
+                    accentColor: secondaryColor,
                     onTap: navigateToStoreLogin,
                   ),
                 ],
@@ -77,8 +80,9 @@ class LoginPage extends HookConsumerWidget {
   }
 
   Widget _buildHeader(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    const brandColor = Color(0xFF6366F1); // Indigo
+    const titleColor = Color(0xFF1E293B); // Slate 800
+    const subtitleColor = Color(0xFF64748B); // Slate 500
 
     return Column(
       children: [
@@ -87,37 +91,38 @@ class LoginPage extends HookConsumerWidget {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: brandColor.withValues(alpha: 0.25),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
-            border: Border.all(color: colorScheme.surface, width: 2),
           ),
-          child: Icon(Icons.checkroom_rounded, size: 56, color: colorScheme.primary),
+          child: const Icon(Icons.checkroom_rounded, size: 56, color: brandColor),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
 
         // Title
         Text(
           'Tryzeon',
-          style: textTheme.displayLarge?.copyWith(
-            color: colorScheme.primary,
-            letterSpacing: -1.0, // Tighter spacing for display font
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+            color: titleColor,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -1.5,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         Text(
           'Choose your identity',
-          style: textTheme.titleMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: subtitleColor,
             fontWeight: FontWeight.w500,
+            letterSpacing: 0.5,
           ),
           textAlign: TextAlign.center,
         ),
@@ -130,28 +135,30 @@ class LoginPage extends HookConsumerWidget {
     required final IconData icon,
     required final String title,
     required final String subtitle,
-    required final Color color,
+    required final Color accentColor,
     required final VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    // Glassmorphism Card Style
+    const cardBackgroundColor = Colors.white;
+    const titleColor = Color(0xFF1E293B); // Slate 800
+    const subtitleColor = Color(0xFF64748B); // Slate 500
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.7), // Glassy
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: colorScheme.surface, width: 2),
+            color: cardBackgroundColor.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.15),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                color: accentColor.withValues(alpha: 0.1),
+                blurRadius: 25,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
@@ -159,13 +166,13 @@ class LoginPage extends HookConsumerWidget {
             children: [
               // Icon Circle
               Container(
-                width: 64,
-                height: 64,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(icon, size: 32, color: color),
+                child: Icon(icon, size: 30, color: accentColor),
               ),
               const SizedBox(width: 20),
 
@@ -174,15 +181,42 @@ class LoginPage extends HookConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: textTheme.headlineSmall),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: textTheme.bodyMedium),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: titleColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: subtitleColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
 
               // Arrow
-              Icon(Icons.arrow_forward_rounded, color: color, size: 28),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.arrow_forward_rounded, color: accentColor, size: 20),
+              ),
             ],
           ),
         ),
