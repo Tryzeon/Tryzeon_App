@@ -35,6 +35,12 @@ platform :ios do
       ) + 1
     )
 
+    version_number = get_version_number(xcodeproj: "Runner.xcodeproj")
+    build_number = get_build_number(xcodeproj: "Runner.xcodeproj")
+    UI.message("---------------------------------------------------------")
+    UI.message("🚀 Building Version: #{version_number}+#{build_number}")
+    UI.message("---------------------------------------------------------")
+
     build_app(
       export_method: "app-store"
     )
