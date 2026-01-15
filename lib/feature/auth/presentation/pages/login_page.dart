@@ -13,9 +13,9 @@ class LoginPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Custom Design Tokens
-    const primaryColor = Color(0xFF6366F1); // Indigo
-    const secondaryColor = Color(0xFFEC4899); // Pink
+    // Custom Design Tokens - Clean Premium Light
+    const primaryColor = Color(0xFF6366F1); // Indigo 500
+    const secondaryColor = Color(0xFFE11D48); // Rose 600 (Store accent)
 
     void navigateToPersonalLogin() {
       Navigator.push(
@@ -50,7 +50,6 @@ class LoginPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLoginOptionCard(
-                    context: context,
                     icon: Icons.person_rounded,
                     title: 'User Login',
                     subtitle: 'Virtual Try-On',
@@ -61,7 +60,6 @@ class LoginPage extends HookConsumerWidget {
                   const SizedBox(height: 24),
 
                   _buildLoginOptionCard(
-                    context: context,
                     icon: Icons.store_rounded,
                     title: 'Store Login',
                     subtitle: 'Manage Products',
@@ -80,7 +78,8 @@ class LoginPage extends HookConsumerWidget {
   }
 
   Widget _buildHeader(final BuildContext context) {
-    const brandColor = Color(0xFF6366F1); // Indigo
+    // Custom Tokens
+    const brandColor = Color(0xFF6366F1); // Indigo 500
     const titleColor = Color(0xFF1E293B); // Slate 800
     const subtitleColor = Color(0xFF64748B); // Slate 500
 
@@ -95,9 +94,14 @@ class LoginPage extends HookConsumerWidget {
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: brandColor.withValues(alpha: 0.25),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
+                color: brandColor.withValues(alpha: 0.20),
+                blurRadius: 32,
+                offset: const Offset(0, 16),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -106,23 +110,28 @@ class LoginPage extends HookConsumerWidget {
         const SizedBox(height: 32),
 
         // Title
-        Text(
+        const Text(
           'Tryzeon',
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+          style: TextStyle(
+            fontFamily:
+                'Outfit', // Assuming Outfit or use default SANs with refined weight
             color: titleColor,
+            fontSize: 40,
             fontWeight: FontWeight.w800,
             letterSpacing: -1.5,
+            height: 1.1,
           ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
 
-        Text(
+        const Text(
           'Choose your identity',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: TextStyle(
             color: subtitleColor,
+            fontSize: 16,
             fontWeight: FontWeight.w500,
-            letterSpacing: 0.5,
+            letterSpacing: 0.2,
           ),
           textAlign: TextAlign.center,
         ),
@@ -131,7 +140,6 @@ class LoginPage extends HookConsumerWidget {
   }
 
   Widget _buildLoginOptionCard({
-    required final BuildContext context,
     required final IconData icon,
     required final String title,
     required final String subtitle,
@@ -151,14 +159,19 @@ class LoginPage extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: cardBackgroundColor.withValues(alpha: 0.8),
+            color: cardBackgroundColor.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
+            border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withValues(alpha: 0.1),
-                blurRadius: 25,
-                offset: const Offset(0, 10),
+                color: accentColor.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -183,18 +196,20 @@ class LoginPage extends HookConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: const TextStyle(
                         color: titleColor,
                         fontWeight: FontWeight.w700,
                         fontSize: 20,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: const TextStyle(
                         color: subtitleColor,
                         fontWeight: FontWeight.w500,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -203,7 +218,7 @@ class LoginPage extends HookConsumerWidget {
 
               // Arrow
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,

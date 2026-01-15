@@ -15,8 +15,11 @@ class PersonalLoginPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+
+    // Custom Design Tokens - Clean Premium Light
+    const primaryColor = Color(0xFF6366F1); // Indigo 500
+    const titleColor = Color(0xFF1E293B); // Slate 800
+    const subtitleColor = Color(0xFF64748B); // Slate 500
 
     final isLoading = useState(false);
     final appLifecycleState = useAppLifecycleState();
@@ -36,7 +39,7 @@ class PersonalLoginPage extends HookConsumerWidget {
       final signInUseCase = await ref.read(signInWithProviderUseCaseProvider.future);
       final result = await signInUseCase(provider: provider, userType: UserType.personal);
 
-      // Check if widget is still mounted (HookWidget handles this generally, but safety is good)
+      // Check if widget is still mounted
       if (!context.mounted) return;
       isLoading.value = false;
 
@@ -62,36 +65,45 @@ class PersonalLoginPage extends HookConsumerWidget {
             width: 88,
             height: 88,
             decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: colorScheme.surface, width: 4),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: colorScheme.secondary.withValues(alpha: 0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
                   blurRadius: 24,
                   offset: const Offset(0, 12),
                 ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
-            child: Icon(Icons.person_rounded, size: 48, color: colorScheme.secondary),
+            child: const Icon(Icons.person_rounded, size: 40, color: primaryColor),
           ),
           const SizedBox(height: 32),
 
           // Title
-          Text(
+          const Text(
             'Welcome!',
-            style: textTheme.displaySmall?.copyWith(
-              color: colorScheme.secondary,
-              letterSpacing: -0.5,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1.0,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
 
-          Text(
+          const Text(
             'Ready to try on some new looks?',
-            style: textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
               letterSpacing: 0.2,
             ),
             textAlign: TextAlign.center,
@@ -103,13 +115,19 @@ class PersonalLoginPage extends HookConsumerWidget {
     Widget buildLoginButton(final String provider, final VoidCallback onTap) {
       return Container(
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(32),
+          color: Colors.white.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white, width: 2),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.secondary.withValues(alpha: 0.1),
+              color: primaryColor.withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -117,9 +135,9 @@ class PersonalLoginPage extends HookConsumerWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(20),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -128,8 +146,15 @@ class PersonalLoginPage extends HookConsumerWidget {
                     height: 24,
                     width: 24,
                   ),
-                  const SizedBox(width: 12),
-                  Text('Continue with $provider', style: textTheme.titleMedium),
+                  const SizedBox(width: 14),
+                  Text(
+                    'Continue with $provider',
+                    style: const TextStyle(
+                      color: Color(0xFF334155), // Slate 700
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -151,19 +176,30 @@ class PersonalLoginPage extends HookConsumerWidget {
                 // Back Button
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.surface,
-                      padding: const EdgeInsets.all(12),
-                      elevation: 2,
-                      shadowColor: Colors.black12,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                      style:
+                          IconButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: titleColor,
+                            padding: const EdgeInsets.all(12),
+                            elevation: 0,
+                            side: const BorderSide(color: Colors.white, width: 2),
+                            shadowColor: Colors
+                                .transparent, // manual shadow if needed, but keeping simple
+                          ).copyWith(
+                            backgroundColor: WidgetStateProperty.all(Colors.white),
+                            // Add shadow via decoration wrapper if strictly needed, or trust material elevation if visible
+                            // For clean look, just simple white button
+                          ),
                     ),
                   ),
                 ),
 
-                SizedBox(height: screenHeight * 0.05),
+                SizedBox(height: screenHeight * 0.04),
 
                 // Header
                 buildHeader(context),
@@ -183,9 +219,23 @@ class PersonalLoginPage extends HookConsumerWidget {
           ),
           if (isLoading.value)
             Container(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withValues(alpha: 0.2), // Light dim
               child: Center(
-                child: CircularProgressIndicator(color: colorScheme.onPrimary),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const CircularProgressIndicator(color: primaryColor),
+                ),
               ),
             ),
         ],
