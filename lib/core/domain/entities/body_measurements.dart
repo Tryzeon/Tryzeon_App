@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 /// 身型測量欄位定義
@@ -16,7 +17,7 @@ enum MeasurementType {
   final String key;
 }
 
-class BodyMeasurements {
+class BodyMeasurements extends Equatable {
   const BodyMeasurements({
     this.height,
     this.weight,
@@ -38,6 +39,17 @@ class BodyMeasurements {
       sleeveLength: (json['sleeve_length'] as num?)?.toDouble(),
     );
   }
+
+  @override
+  List<Object?> get props => [
+    height,
+    weight,
+    chest,
+    waist,
+    hips,
+    shoulderWidth,
+    sleeveLength,
+  ];
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};

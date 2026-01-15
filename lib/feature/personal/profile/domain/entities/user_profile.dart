@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 
-class UserProfile {
-  UserProfile({
+class UserProfile extends Equatable {
+  const UserProfile({
     required this.userId,
     required this.name,
     required this.measurements,
@@ -12,6 +13,9 @@ class UserProfile {
   final String name;
   final BodyMeasurements measurements;
   final String? avatarPath;
+
+  @override
+  List<Object?> get props => [userId, name, measurements, avatarPath];
 
   UserProfile copyWith({
     final String? userId,

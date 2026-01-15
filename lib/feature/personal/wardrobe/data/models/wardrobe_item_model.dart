@@ -2,7 +2,7 @@ import '../../domain/entities/wardrobe_item.dart';
 import '../mappers/category_mapper.dart';
 
 class WardrobeItemModel extends WardrobeItem {
-  WardrobeItemModel({
+  const WardrobeItemModel({
     super.id,
     required super.imagePath,
     required super.category,

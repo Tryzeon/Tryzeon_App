@@ -176,7 +176,7 @@ class ChatPage extends HookConsumerWidget {
       isLoadingRecommendation.value = true;
       messages.value = [
         ...messages.value,
-        ChatMessage(text: '正在尋求穿搭大神...', isUser: false),
+        const ChatMessage(text: '正在尋求穿搭大神...', isUser: false),
       ];
 
       scrollToBottom();
@@ -268,7 +268,7 @@ class ChatPage extends HookConsumerWidget {
       isLoadingRecommendation.value = false;
 
       // Add greeting message
-      messages.value = [ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
+      messages.value = [const ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
 
       // Start Q&A after a short delay
       Future.delayed(const Duration(milliseconds: 1000), () {
@@ -280,7 +280,7 @@ class ChatPage extends HookConsumerWidget {
 
     useEffect(() {
       // Add greeting message first
-      messages.value = [ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
+      messages.value = [const ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
       // Start Q&A after a short delay
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (context.mounted) {

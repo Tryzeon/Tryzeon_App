@@ -1,7 +1,7 @@
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreProfileModel extends StoreProfile {
-  StoreProfileModel({
+  const StoreProfileModel({
     required super.id,
     required super.ownerId,
     required super.name,

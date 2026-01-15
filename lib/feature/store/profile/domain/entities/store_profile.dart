@@ -1,5 +1,7 @@
-class StoreProfile {
-  StoreProfile({
+import 'package:equatable/equatable.dart';
+
+class StoreProfile extends Equatable {
+  const StoreProfile({
     required this.id,
     required this.ownerId,
     required this.name,
@@ -14,6 +16,9 @@ class StoreProfile {
   final String? address;
   final String? logoPath;
   final String? logoUrl;
+
+  @override
+  List<Object?> get props => [id, ownerId, name, address, logoPath, logoUrl];
 
   StoreProfile copyWith({
     final String? id,

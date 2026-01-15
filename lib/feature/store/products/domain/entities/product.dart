@@ -1,13 +1,22 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 
-class ProductSize {
-  ProductSize({this.id, this.productId, required this.name, required this.measurements});
+class ProductSize extends Equatable {
+  const ProductSize({
+    this.id,
+    this.productId,
+    required this.name,
+    required this.measurements,
+  });
 
   final String? id;
   final String? productId;
   final String name;
   final BodyMeasurements measurements;
+
+  @override
+  List<Object?> get props => [id, productId, name, measurements];
 
   ProductSize copyWith({
     final String? id,
@@ -36,8 +45,8 @@ class ProductSize {
   }
 }
 
-class Product {
-  Product({
+class Product extends Equatable {
+  const Product({
     required this.storeId,
     required this.name,
     required this.types,
@@ -68,6 +77,24 @@ class Product {
   final String? storeName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  @override
+  List<Object?> get props => [
+    storeId,
+    name,
+    types,
+    price,
+    imagePath,
+    imageUrl,
+    id,
+    purchaseLink,
+    tryonCount,
+    purchaseClickCount,
+    sizes,
+    storeName,
+    createdAt,
+    updatedAt,
+  ];
 
   Product copyWith({
     final String? storeId,

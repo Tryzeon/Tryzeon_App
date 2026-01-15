@@ -2,7 +2,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
 class ShopProductModel extends ShopProduct {
-  ShopProductModel({
+  const ShopProductModel({
     required super.storeId,
     required super.name,
     required super.types,

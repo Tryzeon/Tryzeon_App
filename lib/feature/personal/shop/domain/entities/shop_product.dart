@@ -1,8 +1,9 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
-class ShopProduct {
-  ShopProduct({
+class ShopProduct extends Equatable {
+  const ShopProduct({
     required this.storeId,
     required this.name,
     required this.types,
@@ -34,6 +35,24 @@ class ShopProduct {
   final String? storeName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  @override
+  List<Object?> get props => [
+    storeId,
+    name,
+    types,
+    price,
+    imagePath,
+    imageUrl,
+    id,
+    purchaseLink,
+    tryonCount,
+    purchaseClickCount,
+    sizes,
+    storeName,
+    createdAt,
+    updatedAt,
+  ];
 
   ShopProduct copyWith({
     final String? storeId,

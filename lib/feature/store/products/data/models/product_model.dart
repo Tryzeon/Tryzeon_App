@@ -2,7 +2,7 @@ import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ProductSizeModel extends ProductSize {
-  ProductSizeModel({
+  const ProductSizeModel({
     super.id,
     super.productId,
     required super.name,
@@ -29,7 +29,7 @@ class ProductSizeModel extends ProductSize {
 }
 
 class ProductModel extends Product {
-  ProductModel({
+  const ProductModel({
     required super.storeId,
     required super.name,
     required super.types,

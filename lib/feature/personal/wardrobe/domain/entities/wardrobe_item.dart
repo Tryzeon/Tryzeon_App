@@ -1,9 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'wardrobe_category.dart';
 
 /// Domain entity representing a wardrobe item
 /// Uses WardrobeCategory enum for type safety and business logic
-class WardrobeItem {
-  WardrobeItem({
+class WardrobeItem extends Equatable {
+  const WardrobeItem({
     this.id,
     required this.imagePath,
     required this.category,
@@ -14,6 +15,9 @@ class WardrobeItem {
   final String imagePath;
   final WardrobeCategory category;
   final List<String> tags;
+
+  @override
+  List<Object?> get props => [id, imagePath, category, tags];
 
   WardrobeItem copyWith({
     final String? id,
