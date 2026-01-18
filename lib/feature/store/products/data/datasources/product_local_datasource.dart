@@ -40,6 +40,8 @@ class ProductLocalDataSource {
                   hips: s.hips,
                   sleeveLength: s.sleeveLength,
                 ),
+                createdAt: s.createdAt,
+                updatedAt: s.updatedAt,
               ),
             )
             .toList(),
@@ -84,7 +86,9 @@ class ProductLocalDataSource {
                   ..waist = s.measurements.waist
                   ..hips = s.measurements.hips
                   ..shoulderWidth = s.measurements.shoulderWidth
-                  ..sleeveLength = s.measurements.sleeveLength,
+                  ..sleeveLength = s.measurements.sleeveLength
+                  ..createdAt = s.createdAt
+                  ..updatedAt = s.updatedAt,
               )
               .toList();
       }).toList();

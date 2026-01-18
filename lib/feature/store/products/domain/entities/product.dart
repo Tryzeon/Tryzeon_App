@@ -8,27 +8,35 @@ class ProductSize extends Equatable {
     this.productId,
     required this.name,
     required this.measurements,
+    this.createdAt,
+    this.updatedAt,
   });
 
   final String? id;
   final String? productId;
   final String name;
   final BodyMeasurements measurements;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   @override
-  List<Object?> get props => [id, productId, name, measurements];
+  List<Object?> get props => [id, productId, name, measurements, createdAt, updatedAt];
 
   ProductSize copyWith({
     final String? id,
     final String? productId,
     final String? name,
     final BodyMeasurements? measurements,
+    final DateTime? createdAt,
+    final DateTime? updatedAt,
   }) {
     return ProductSize(
       id: id ?? this.id,
       productId: productId ?? this.productId,
       name: name ?? this.name,
       measurements: measurements ?? this.measurements,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 

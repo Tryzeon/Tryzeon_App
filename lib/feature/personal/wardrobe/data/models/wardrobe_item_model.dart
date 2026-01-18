@@ -17,12 +17,8 @@ class WardrobeItemModel extends WardrobeItem {
       imagePath: json['image_path'] as String,
       category: CategoryMapper.fromApiString(json['category'] as String),
       tags: json['tags'] != null ? List<String>.from(json['tags'] as List) : const [],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
-          : null,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
 

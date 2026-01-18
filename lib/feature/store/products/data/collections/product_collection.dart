@@ -38,5 +38,6 @@ class ProductSizeCollection {
   double? hips;
   double? shoulderWidth;
   double? sleeveLength;
-
+  DateTime? createdAt;
+  DateTime? updatedAt;
 }

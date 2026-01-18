@@ -13,6 +13,11 @@ class UserProfileCollection {
   String? avatarPath;
 
   BodyMeasurementsCollection? measurements;
+
+  @Index()
+  DateTime? createdAt;
+
+  DateTime? updatedAt;
 }
 
 @embedded

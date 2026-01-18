@@ -7,6 +7,8 @@ class ProductSizeModel extends ProductSize {
     super.productId,
     required super.name,
     required super.measurements,
+    super.createdAt,
+    super.updatedAt,
   });
 
   factory ProductSizeModel.fromJson(final Map<String, dynamic> json) {
@@ -15,6 +17,8 @@ class ProductSizeModel extends ProductSize {
       productId: json['product_id'] as String?,
       name: json['name'] as String,
       measurements: BodyMeasurements.fromJson(json),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
 
@@ -23,6 +27,8 @@ class ProductSizeModel extends ProductSize {
       if (id != null) 'id': id,
       if (productId != null) 'product_id': productId,
       'name': name,
+      if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
+      if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
       ...measurements.toJson(),
     };
   }
@@ -58,12 +64,8 @@ class ProductModel extends Product {
       purchaseLink: json['purchase_link'] as String?,
       tryonCount: json['tryon_count'] as int? ?? 0,
       purchaseClickCount: json['purchase_click_count'] as int? ?? 0,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
-          : null,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
       storeName: json['store_profile']?['name'] as String?,
       sizes: (json['product_sizes'] as List?)
           ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
@@ -92,6 +94,8 @@ class ProductModel extends Product {
                 productId: e.productId,
                 name: e.name,
                 measurements: e.measurements,
+                createdAt: e.createdAt,
+                updatedAt: e.updatedAt,
               ).toJson(),
             )
             .toList(),

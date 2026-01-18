@@ -22,6 +22,8 @@ class UserProfileLocalDataSource {
       userId: collection.userId,
       name: collection.name ?? '',
       avatarPath: collection.avatarPath,
+      createdAt: collection.createdAt,
+      updatedAt: collection.updatedAt,
       measurements: BodyMeasurements(
         height: measurements?.height,
         weight: measurements?.weight,
@@ -42,6 +44,8 @@ class UserProfileLocalDataSource {
         ..userId = profile.userId
         ..name = profile.name
         ..avatarPath = profile.avatarPath
+        ..createdAt = profile.createdAt
+        ..updatedAt = profile.updatedAt
         ..measurements = (BodyMeasurementsCollection()
           ..height = profile.measurements.height
           ..weight = profile.measurements.weight

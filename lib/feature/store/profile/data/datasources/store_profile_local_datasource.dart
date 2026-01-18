@@ -24,6 +24,8 @@ class StoreProfileLocalDataSource {
       address: collection.address,
       logoPath: collection.logoPath,
       logoUrl: collection.logoUrl,
+      createdAt: collection.createdAt,
+      updatedAt: collection.updatedAt,
     );
   }
 
@@ -37,7 +39,9 @@ class StoreProfileLocalDataSource {
         ..name = profile.name
         ..address = profile.address
         ..logoPath = profile.logoPath
-        ..logoUrl = profile.logoUrl;
+        ..logoUrl = profile.logoUrl
+        ..createdAt = profile.createdAt
+        ..updatedAt = profile.updatedAt;
       await isar.storeProfileCollections.put(collection);
     });
   }

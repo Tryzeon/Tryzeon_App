@@ -14,4 +14,9 @@ class StoreProfileCollection {
   String? address;
   String? logoPath;
   String? logoUrl;
+
+  @Index()
+  DateTime? createdAt;
+
+  DateTime? updatedAt;
 }

@@ -26,13 +26,13 @@ class ShopProductModel extends ShopProduct {
       types: (json['type'] as List).map((final e) => e.toString()).toSet(),
       price: (json['price'] as num).toDouble(),
       imagePath: json['image_path'] as String,
-      imageUrl: json['image_url'] as String,
+      imageUrl: json['image_url'] as String? ?? '',
       id: json['id'] as String?,
       purchaseLink: json['purchase_link'] as String?,
       tryonCount: json['tryon_count'] as int? ?? 0,
       purchaseClickCount: json['purchase_click_count'] as int? ?? 0,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
       storeName: json['store_profile']?['name'] as String?,
       sizes:
           (json['product_sizes'] as List?)
@@ -63,6 +63,8 @@ class ShopProductModel extends ShopProduct {
                 productId: e.productId,
                 name: e.name,
                 measurements: e.measurements,
+                createdAt: e.createdAt,
+                updatedAt: e.updatedAt,
               ).toJson(),
             )
             .toList(),

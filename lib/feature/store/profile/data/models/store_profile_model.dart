@@ -8,6 +8,8 @@ class StoreProfileModel extends StoreProfile {
     super.address,
     super.logoPath,
     super.logoUrl,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) {
@@ -18,8 +20,13 @@ class StoreProfileModel extends StoreProfile {
       address: json['address'] as String?,
       logoPath: json['logo_path'] as String?,
       logoUrl: json['logo_url'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
+
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() {
     return {
@@ -28,6 +35,8 @@ class StoreProfileModel extends StoreProfile {
       'name': name,
       'address': address,
       'logo_path': logoPath,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 }
