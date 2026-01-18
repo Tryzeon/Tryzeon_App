@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
@@ -17,7 +18,8 @@ final wardrobeRemoteDataSourceProvider = Provider<WardrobeRemoteDataSource>((fin
 });
 
 final wardrobeLocalDataSourceProvider = Provider<WardrobeLocalDataSource>((final ref) {
-  return WardrobeLocalDataSource();
+  final isarService = ref.watch(isarServiceProvider);
+  return WardrobeLocalDataSource(isarService);
 });
 
 final wardrobeRepositoryProvider = Provider<WardrobeRepository>((final ref) {
@@ -43,7 +45,9 @@ final getWardrobeItemImageUseCaseProvider = Provider<GetWardrobeItemImage>((fina
   return GetWardrobeItemImage(ref.watch(wardrobeRepositoryProvider));
 });
 
-final wardrobeItemsProvider = FutureProvider<List<WardrobeItem>>((final ref) async {
+final wardrobeItemsProvider = FutureProvider.autoDispose<List<WardrobeItem>>((
+  final ref,
+) async {
   final useCase = ref.watch(getWardrobeItemsUseCaseProvider);
   final result = await useCase();
   if (result.isFailure) {
@@ -52,7 +56,7 @@ final wardrobeItemsProvider = FutureProvider<List<WardrobeItem>>((final ref) asy
   return result.get()!;
 });
 
-final wardrobeItemImageProvider = FutureProvider.family<File, String>((
+final wardrobeItemImageProvider = FutureProvider.family.autoDispose<File, String>((
   final ref,
   final imagePath,
 ) async {

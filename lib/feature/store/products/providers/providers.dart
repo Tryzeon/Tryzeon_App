@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/repositories/product_repository_impl.dart';
@@ -16,7 +17,8 @@ final productRemoteDataSourceProvider = Provider<ProductRemoteDataSource>((final
 });
 
 final productLocalDataSourceProvider = Provider<ProductLocalDataSource>((final ref) {
-  return ProductLocalDataSource();
+  final isarService = ref.watch(isarServiceProvider);
+  return ProductLocalDataSource(isarService);
 });
 
 final productRepositoryProvider = Provider<ProductRepository>((final ref) {
@@ -42,7 +44,7 @@ final deleteProductUseCaseProvider = Provider<DeleteProduct>((final ref) {
   return DeleteProduct(ref.watch(productRepositoryProvider));
 });
 
-final productsProvider = FutureProvider<List<Product>>((final ref) async {
+final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) async {
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
   final result = await getProductsUseCase();
   if (result.isFailure) {
