@@ -10,7 +10,7 @@ class ProductTypeRemoteDataSource {
   Future<List<ProductTypeModel>> fetchProductTypes() async {
     final response = await _supabaseClient
         .from(_table)
-        .select('name_zh')
+        .select('id, name')
         .eq('is_active', true)
         .order('priority', ascending: true);
 

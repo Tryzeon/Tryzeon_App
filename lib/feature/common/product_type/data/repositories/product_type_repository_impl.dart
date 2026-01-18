@@ -13,12 +13,12 @@ class ProductTypeRepositoryImpl implements ProductTypeRepository {
   @override
   Future<Result<List<ProductType>, String>> getProductTypes() async {
     try {
-      final cached = _local.getCached();
+      final cached = await _local.getCached();
       if (cached != null && cached.isNotEmpty) {
         return Ok(cached);
       }
       final remote = await _remote.fetchProductTypes();
-      _local.cache(remote);
+      await _local.cache(remote);
       return Ok(remote);
     } catch (e) {
       AppLogger.error('商品類型獲取失敗', e);
