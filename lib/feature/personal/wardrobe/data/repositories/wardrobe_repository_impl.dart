@@ -23,12 +23,12 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   @override
   Future<Result<List<WardrobeItem>, String>> getWardrobeItems() async {
     try {
-      final cached = _localDataSource.getCachedItems();
+      final cached = await _localDataSource.getCachedItems();
       if (cached != null) return Ok(cached);
 
       final response = await _remoteDataSource.fetchWardrobeItems();
       final items = response.map(WardrobeItemModel.fromJson).toList();
-      _localDataSource.updateCachedItems(items);
+      await _localDataSource.updateCachedItems(items);
       return Ok(items);
     } catch (e) {
       AppLogger.error('衣櫃列表獲取失敗', e);
@@ -63,7 +63,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       );
 
       final newItem = WardrobeItemModel.fromJson(response);
-      _localDataSource.addItemToCache(newItem);
+      await _localDataSource.addItemToCache(newItem);
 
       return const Ok(null);
     } catch (e) {
@@ -80,7 +80,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       await _remoteDataSource.deleteWardrobeItem(item.id!);
       _remoteDataSource.deleteImage(item.imagePath).ignore();
       _localDataSource.deleteImage(item.imagePath).ignore();
-      _localDataSource.removeItemFromCache(item.id!);
+      await _localDataSource.removeItemFromCache(item.id!);
 
       return const Ok(null);
     } catch (e) {

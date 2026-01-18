@@ -15,7 +15,7 @@ class WardrobeRemoteDataSource {
 
     final response = await _supabaseClient
         .from(_table)
-        .select('id, image_path, category, tags')
+        .select('id, image_path, category, tags, created_at, updated_at')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
