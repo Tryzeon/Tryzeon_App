@@ -1,21 +1,23 @@
 import 'package:isar/isar.dart';
 import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/common/product_type/data/collections/product_type_collection.dart';
-import 'package:tryzeon/feature/common/product_type/domain/entities/product_type.dart';
+import 'package:tryzeon/feature/common/product_type/data/models/product_type_model.dart';
 
 class ProductTypeLocalDataSource {
   ProductTypeLocalDataSource(this._isarService);
   final IsarService _isarService;
 
-  Future<List<ProductType>?> getCached() async {
+  Future<List<ProductTypeModel>?> getCached() async {
     final isar = await _isarService.db;
     final collections = await isar.productTypeCollections.where().findAll();
     if (collections.isEmpty) return null;
 
-    return collections.map((final e) => ProductType(id: e.typeId, name: e.name)).toList();
+    return collections
+        .map((final e) => ProductTypeModel(id: e.typeId, name: e.name))
+        .toList();
   }
 
-  Future<void> cache(final List<ProductType> types) async {
+  Future<void> cache(final List<ProductTypeModel> types) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productTypeCollections.clear();
