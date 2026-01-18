@@ -32,6 +32,11 @@ migrate_working_dir/
 /coverage/
 devtools_options.yaml
 
+# Code generation files
+*.g.dart
+*.freezed.dart
+*.isar
+
 # Symbolication related
 app.*.symbols
 

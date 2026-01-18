@@ -29,15 +29,19 @@ dependencies:
   path: any
   typed_result: ^2.0.0
   cached_network_image: ^3.4.1
-  hooks_riverpod: ^3.1.0
+  hooks_riverpod: ^2.6.1
   flutter_hooks: ^0.21.3+1
   talker_flutter: ^5.1.9
   equatable: ^2.0.8
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
+  isar_generator: ^3.1.0
+  build_runner: any
 
 flutter:
   assets:
