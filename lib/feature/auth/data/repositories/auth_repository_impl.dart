@@ -80,7 +80,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<UserType?, String>> getLastLoginType() async {
     try {
-      final typeString = _localDataSource.getLastLoginType();
+      final typeString = await _localDataSource.getLastLoginType();
       if (typeString == null) return const Ok(null);
 
       final userType = UserType.values.firstWhere(

@@ -35,24 +35,16 @@ class Tryzeon extends HookConsumerWidget {
 
     useEffect(() {
       Future<void> checkAuthStatus() async {
-        final session = Supabase.instance.client.auth.currentSession;
-        final user = session?.user;
-
-        UserType? type;
-        if (user != null) {
-          final getLoginTypeUseCase = await ref.read(
-            getLastLoginTypeUseCaseProvider.future,
-          );
-          final result = await getLoginTypeUseCase();
-          switch (result) {
-            case Ok(:final value):
-              type = value;
-            case Err():
-              type = null;
-          }
+        final getLoginTypeUseCase = await ref.read(
+          getLastLoginTypeUseCaseProvider.future,
+        );
+        final result = await getLoginTypeUseCase();
+        switch (result) {
+          case Ok(:final value):
+            userType.value = value;
+          case Err():
+            userType.value = null;
         }
-
-        userType.value = type;
         isLoading.value = false;
       }
 

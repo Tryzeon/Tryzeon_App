@@ -1,23 +1,43 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:isar/isar.dart';
+import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.dart';
 
 class AuthLocalDataSource {
-  AuthLocalDataSource(this._prefs);
-  final SharedPreferences _prefs;
-  static const _lastLoginTypeKey = 'last_login_type';
+  AuthLocalDataSource(this._isarService);
+  final IsarService _isarService;
 
-  String? getLastLoginType() {
-    return _prefs.getString(_lastLoginTypeKey);
+  Future<String?> getLastLoginType() async {
+    final isar = await _isarService.db;
+    final settings = await isar.authSettingsCollections.where().findFirst();
+    return settings?.lastLoginType;
   }
 
   Future<void> setLastLoginType(final String type) async {
-    await _prefs.setString(_lastLoginTypeKey, type);
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      final settings =
+          await isar.authSettingsCollections.where().findFirst() ??
+          AuthSettingsCollection();
+      settings.lastLoginType = type;
+      await isar.authSettingsCollections.put(settings);
+    });
   }
 
   Future<void> clearLoginType() async {
-    await _prefs.remove(_lastLoginTypeKey);
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      final settings = await isar.authSettingsCollections.where().findFirst();
+      if (settings != null) {
+        settings.lastLoginType = null;
+        await isar.authSettingsCollections.put(settings);
+      }
+    });
   }
 
   Future<void> clearAll() async {
-    await _prefs.clear();
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.clear();
+    });
   }
 }

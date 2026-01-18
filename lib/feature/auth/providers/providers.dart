@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_data_source.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:tryzeon/feature/auth/data/repositories/auth_repository_impl.dart';
@@ -15,17 +15,15 @@ final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((final ref) 
   return AuthRemoteDataSource(Supabase.instance.client);
 });
 
-final authLocalDataSourceProvider = FutureProvider<AuthLocalDataSource>((
-  final ref,
-) async {
-  final prefs = await SharedPreferences.getInstance();
-  return AuthLocalDataSource(prefs);
+final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((final ref) {
+  final isarService = ref.watch(isarServiceProvider);
+  return AuthLocalDataSource(isarService);
 });
 
 // Repository Provider
-final authRepositoryProvider = FutureProvider<AuthRepository>((final ref) async {
+final authRepositoryProvider = Provider<AuthRepository>((final ref) {
   final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
-  final localDataSource = await ref.watch(authLocalDataSourceProvider.future);
+  final localDataSource = ref.watch(authLocalDataSourceProvider);
 
   return AuthRepositoryImpl(
     remoteDataSource: remoteDataSource,
@@ -37,25 +35,25 @@ final authRepositoryProvider = FutureProvider<AuthRepository>((final ref) async 
 final signInWithProviderUseCaseProvider = FutureProvider<SignInWithProviderUseCase>((
   final ref,
 ) async {
-  final repository = await ref.watch(authRepositoryProvider.future);
+  final repository = ref.watch(authRepositoryProvider);
   return SignInWithProviderUseCase(repository);
 });
 
 final signOutUseCaseProvider = FutureProvider<SignOutUseCase>((final ref) async {
-  final repository = await ref.watch(authRepositoryProvider.future);
+  final repository = ref.watch(authRepositoryProvider);
   return SignOutUseCase(repository);
 });
 
 final getLastLoginTypeUseCaseProvider = FutureProvider<GetLastLoginTypeUseCase>((
   final ref,
 ) async {
-  final repository = await ref.watch(authRepositoryProvider.future);
+  final repository = ref.watch(authRepositoryProvider);
   return GetLastLoginTypeUseCase(repository);
 });
 
 final setLastLoginTypeUseCaseProvider = FutureProvider<SetLastLoginTypeUseCase>((
   final ref,
 ) async {
-  final repository = await ref.watch(authRepositoryProvider.future);
+  final repository = ref.watch(authRepositoryProvider);
   return SetLastLoginTypeUseCase(repository);
 });
