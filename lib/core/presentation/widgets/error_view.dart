@@ -31,7 +31,7 @@ class ErrorView extends HookConsumerWidget {
                 color: colorScheme.error,
               ),
             ),
-            SizedBox(height: isCompact ? 12 : 24),
+            if (!isCompact) const SizedBox(height: 24),
             Text(
               '歐不，發生錯誤',
               style: (isCompact ? textTheme.titleSmall : textTheme.titleMedium)?.copyWith(
@@ -41,7 +41,7 @@ class ErrorView extends HookConsumerWidget {
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
-              SizedBox(height: isCompact ? 16 : 24),
+              if (!isCompact) const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: onRetry,
                 style: ElevatedButton.styleFrom(
