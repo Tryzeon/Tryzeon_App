@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
@@ -20,7 +21,8 @@ final userProfileRemoteDataSourceProvider = Provider<UserProfileRemoteDataSource
 final userProfileLocalDataSourceProvider = Provider<UserProfileLocalDataSource>((
   final ref,
 ) {
-  return UserProfileLocalDataSource();
+  final isarService = ref.watch(isarServiceProvider);
+  return UserProfileLocalDataSource(isarService);
 });
 
 final userProfileRepositoryProvider = Provider<UserProfileRepository>((final ref) {
@@ -38,7 +40,7 @@ final updateUserProfileUseCaseProvider = Provider<UpdateUserProfile>((final ref)
   return UpdateUserProfile(ref.watch(userProfileRepositoryProvider));
 });
 
-final userProfileProvider = FutureProvider<UserProfile>((final ref) async {
+final userProfileProvider = FutureProvider.autoDispose<UserProfile>((final ref) async {
   final getUserProfileUseCase = ref.watch(getUserProfileUseCaseProvider);
   final result = await getUserProfileUseCase();
   if (result.isFailure) {
@@ -47,7 +49,7 @@ final userProfileProvider = FutureProvider<UserProfile>((final ref) async {
   return result.get()!;
 });
 
-final avatarFileProvider = FutureProvider<File?>((final ref) async {
+final avatarFileProvider = FutureProvider.autoDispose<File?>((final ref) async {
   final profile = await ref.watch(userProfileProvider.future);
   if (profile.avatarPath == null || profile.avatarPath!.isEmpty) {
     return null;
