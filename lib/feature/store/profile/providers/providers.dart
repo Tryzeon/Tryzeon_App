@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
@@ -18,7 +19,8 @@ final storeProfileRemoteDataSourceProvider = Provider<StoreProfileRemoteDataSour
 final storeProfileLocalDataSourceProvider = Provider<StoreProfileLocalDataSource>((
   final ref,
 ) {
-  return StoreProfileLocalDataSource();
+  final isarService = ref.watch(isarServiceProvider);
+  return StoreProfileLocalDataSource(isarService);
 });
 
 final storeProfileRepositoryProvider = Provider<StoreProfileRepository>((final ref) {
@@ -36,7 +38,7 @@ final updateStoreProfileUseCaseProvider = Provider<UpdateStoreProfile>((final re
   return UpdateStoreProfile(ref.watch(storeProfileRepositoryProvider));
 });
 
-final storeProfileProvider = FutureProvider<StoreProfile?>((final ref) async {
+final storeProfileProvider = FutureProvider.autoDispose<StoreProfile?>((final ref) async {
   final getStoreProfile = ref.watch(getStoreProfileUseCaseProvider);
   final result = await getStoreProfile();
   if (result.isFailure) {

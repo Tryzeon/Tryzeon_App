@@ -44,6 +44,7 @@ class StoreSettingsPage extends HookConsumerWidget {
 
       final signOutUseCase = await ref.read(signOutUseCaseProvider.future);
       await signOutUseCase();
+
       if (!context.mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
