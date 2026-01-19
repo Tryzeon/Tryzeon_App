@@ -22,6 +22,15 @@ class WardrobeItemModel extends WardrobeItem {
     );
   }
 
+  factory WardrobeItemModel.fromEntity(final WardrobeItem entity) {
+    return WardrobeItemModel(
+      id: entity.id,
+      imagePath: entity.imagePath,
+      category: entity.category,
+      tags: entity.tags,
+    );
+  }
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 

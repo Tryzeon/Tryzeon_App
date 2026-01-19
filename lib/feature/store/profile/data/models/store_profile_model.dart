@@ -25,6 +25,17 @@ class StoreProfileModel extends StoreProfile {
     );
   }
 
+  factory StoreProfileModel.fromEntity(final StoreProfile entity) {
+    return StoreProfileModel(
+      id: entity.id,
+      ownerId: entity.ownerId,
+      name: entity.name,
+      address: entity.address,
+      logoPath: entity.logoPath,
+      logoUrl: entity.logoUrl,
+    );
+  }
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 

@@ -22,6 +22,15 @@ class ProductSizeModel extends ProductSize {
     );
   }
 
+  factory ProductSizeModel.fromEntity(final ProductSize entity) {
+    return ProductSizeModel(
+      id: entity.id,
+      productId: entity.productId,
+      name: entity.name,
+      measurements: entity.measurements,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
@@ -70,6 +79,23 @@ class ProductModel extends Product {
       sizes: (json['product_sizes'] as List?)
           ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
+    );
+  }
+
+  factory ProductModel.fromEntity(final Product entity) {
+    return ProductModel(
+      id: entity.id,
+      storeId: entity.storeId,
+      name: entity.name,
+      types: entity.types,
+      price: entity.price,
+      imagePath: entity.imagePath,
+      imageUrl: entity.imageUrl,
+      purchaseLink: entity.purchaseLink,
+      tryonCount: entity.tryonCount,
+      purchaseClickCount: entity.purchaseClickCount,
+      sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList(),
+      storeName: entity.storeName,
     );
   }
 

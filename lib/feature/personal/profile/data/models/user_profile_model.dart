@@ -22,6 +22,15 @@ class UserProfileModel extends UserProfile {
     );
   }
 
+  factory UserProfileModel.fromEntity(final UserProfile entity) {
+    return UserProfileModel(
+      userId: entity.userId,
+      name: entity.name,
+      measurements: entity.measurements,
+      avatarPath: entity.avatarPath,
+    );
+  }
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
