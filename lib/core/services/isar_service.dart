@@ -2,7 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.dart';
-import 'package:tryzeon/feature/common/product_type/data/collections/product_type_collection.dart';
+import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_collection.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
@@ -22,7 +22,7 @@ class IsarService {
       return Isar.open(
         [
           AuthSettingsCollectionSchema,
-          ProductTypeCollectionSchema,
+          ProductCategoryCollectionSchema,
           UserProfileCollectionSchema,
           WardrobeItemCollectionSchema,
           ProductCollectionSchema,

@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
-import 'package:tryzeon/feature/common/product_type/providers/providers.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 
 import '../dialogs/filter_dialog.dart';
 import '../widgets/ad_banner.dart';
+import '../widgets/category_filter.dart';
 import '../widgets/product_card.dart';
 import '../widgets/search_bar.dart';
-import '../widgets/type_filter.dart';
 
 class ShopPage extends HookConsumerWidget {
   const ShopPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productTypesAsync = ref.watch(productTypesProvider);
+    final productCategoriesAsync = ref.watch(productCategoriesProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
       data: (final profile) => profile,
@@ -35,7 +35,7 @@ class ShopPage extends HookConsumerWidget {
     final searchQuery = useState<String?>(null);
 
     // 商品類型列表
-    final selectedTypes = useState<Set<String>>({});
+    final selectedCategories = useState<Set<String>>({});
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -156,7 +156,7 @@ class ShopPage extends HookConsumerWidget {
       ascending: ascending.value,
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
-      types: selectedTypes.value,
+      types: selectedCategories.value,
     );
 
     final productsAsync = ref.watch(shopProductsProvider(filter));
@@ -265,20 +265,21 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 24),
 
                               // 商品類型篩選標籤
-                              productTypesAsync.when(
-                                data: (final types) {
-                                  return ProductTypeFilter(
-                                    productTypes: types,
-                                    selectedTypes: selectedTypes.value,
-                                    onTypeToggle: (final type) {
-                                      if (selectedTypes.value.contains(type)) {
-                                        selectedTypes.value = selectedTypes.value
-                                            .where((final t) => t != type)
+                              productCategoriesAsync.when(
+                                data: (final categories) {
+                                  return ProductCategoryFilter(
+                                    productCategories: categories,
+                                    selectedCategories: selectedCategories.value,
+                                    onCategoryToggle: (final category) {
+                                      if (selectedCategories.value.contains(category)) {
+                                        selectedCategories.value = selectedCategories
+                                            .value
+                                            .where((final t) => t != category)
                                             .toSet();
                                       } else {
-                                        selectedTypes.value = {
-                                          ...selectedTypes.value,
-                                          type,
+                                        selectedCategories.value = {
+                                          ...selectedCategories.value,
+                                          category,
                                         };
                                       }
                                     },
@@ -291,7 +292,7 @@ class ShopPage extends HookConsumerWidget {
                                   ),
                                 ),
                                 error: (final error, final stack) => ErrorView(
-                                  onRetry: () => ref.refresh(productTypesProvider),
+                                  onRetry: () => ref.refresh(productCategoriesProvider),
                                   isCompact: true,
                                 ),
                               ),

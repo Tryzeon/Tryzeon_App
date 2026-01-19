@@ -1,13 +1,13 @@
 import 'package:isar/isar.dart';
 
-part 'product_type_collection.g.dart';
+part 'product_category_collection.g.dart';
 
 @collection
-class ProductTypeCollection {
+class ProductCategoryCollection {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
-  late String typeId;
+  late String categoryId;
 
   late String name;
 }

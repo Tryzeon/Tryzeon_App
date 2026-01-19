@@ -11,7 +11,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/product_type/providers/providers.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -22,14 +22,14 @@ class ProductDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productTypesAsync = ref.watch(productTypesProvider);
+    final productCategoriesAsync = ref.watch(productCategoriesProvider);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: product.name);
     final priceController = useTextEditingController(text: product.price.toString());
     final purchaseLinkController = useTextEditingController(text: product.purchaseLink);
     final newImage = useState<File?>(null);
     final isLoading = useState(false);
-    final selectedTypes = useState<Set<String>>(Set<String>.from(product.types));
+    final selectedCategories = useState<Set<String>>(Set<String>.from(product.types));
     final sizeEntries = useState<List<_SizeEntry>>([]);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -86,7 +86,7 @@ class ProductDetailPage extends HookConsumerWidget {
     Future<void> updateProduct() async {
       if (!formKey.currentState!.validate()) return;
 
-      if (selectedTypes.value.isEmpty) {
+      if (selectedCategories.value.isEmpty) {
         TopNotification.show(
           context,
           message: '請至少選擇一個類型',
@@ -100,7 +100,7 @@ class ProductDetailPage extends HookConsumerWidget {
       final targetProduct = Product(
         storeId: product.storeId,
         name: nameController.text,
-        types: selectedTypes.value,
+        types: selectedCategories.value,
         price: double.parse(priceController.text),
         imagePath: product.imagePath,
         imageUrl: product.imageUrl,
@@ -307,8 +307,8 @@ class ProductDetailPage extends HookConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          productTypesAsync.when(
-            data: (final clothesTypes) {
+          productCategoriesAsync.when(
+            data: (final categories) {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -320,19 +320,19 @@ class ProductDetailPage extends HookConsumerWidget {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: clothesTypes.map((final type) {
-                    final isSelected = selectedTypes.value.contains(type);
+                  children: categories.map((final category) {
+                    final isSelected = selectedCategories.value.contains(category);
                     return FilterChip(
-                      label: Text(type),
+                      label: Text(category),
                       selected: isSelected,
                       onSelected: (final selected) {
-                        final newSet = Set<String>.from(selectedTypes.value);
+                        final newSet = Set<String>.from(selectedCategories.value);
                         if (selected) {
-                          newSet.add(type);
+                          newSet.add(category);
                         } else {
-                          newSet.remove(type);
+                          newSet.remove(category);
                         }
-                        selectedTypes.value = newSet;
+                        selectedCategories.value = newSet;
                       },
                       backgroundColor: colorScheme.surface,
                       selectedColor: colorScheme.primary,
@@ -361,7 +361,7 @@ class ProductDetailPage extends HookConsumerWidget {
               ),
             ),
             error: (final error, final stack) => ErrorView(
-              onRetry: () => ref.refresh(productTypesProvider),
+              onRetry: () => ref.refresh(productCategoriesProvider),
               isCompact: true,
             ),
           ),

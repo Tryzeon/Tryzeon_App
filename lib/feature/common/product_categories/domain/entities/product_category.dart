@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-class ProductType extends Equatable {
-  const ProductType({required this.id, required this.name});
+class ProductCategory extends Equatable {
+  const ProductCategory({required this.id, required this.name});
 
   final String id;
   final String name;

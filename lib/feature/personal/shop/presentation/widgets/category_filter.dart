@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ProductTypeFilter extends HookConsumerWidget {
-  const ProductTypeFilter({
+class ProductCategoryFilter extends HookConsumerWidget {
+  const ProductCategoryFilter({
     super.key,
-    required this.productTypes,
-    required this.selectedTypes,
-    required this.onTypeToggle,
+    required this.productCategories,
+    required this.selectedCategories,
+    required this.onCategoryToggle,
   });
-  final List<String> productTypes;
-  final Set<String> selectedTypes;
-  final Function(String) onTypeToggle;
+  final List<String> productCategories;
+  final Set<String> selectedCategories;
+  final Function(String) onCategoryToggle;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -23,10 +23,10 @@ class ProductTypeFilter extends HookConsumerWidget {
         child: Wrap(
           spacing: 15,
           runSpacing: 12,
-          children: productTypes.map((final type) {
-            final isSelected = selectedTypes.contains(type);
+          children: productCategories.map((final category) {
+            final isSelected = selectedCategories.contains(category);
             return GestureDetector(
-              onTap: () => onTypeToggle(type),
+              onTap: () => onCategoryToggle(category),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -47,7 +47,7 @@ class ProductTypeFilter extends HookConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        type.substring(0, 1),
+                        category.substring(0, 1),
                         style: textTheme.headlineMedium?.copyWith(
                           color: isSelected
                               ? colorScheme.onPrimary
@@ -58,7 +58,7 @@ class ProductTypeFilter extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    type,
+                    category,
                     style: textTheme.bodyLarge?.copyWith(
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       color: isSelected ? colorScheme.primary : colorScheme.onSurface,
