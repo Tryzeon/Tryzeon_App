@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileRemoteDataSource {
   UserProfileRemoteDataSource(this._supabaseClient);
@@ -26,15 +27,18 @@ class UserProfileRemoteDataSource {
     return response;
   }
 
-  Future<Map<String, dynamic>> updateUserProfile(
-    final Map<String, dynamic> updates,
-  ) async {
+  Future<Map<String, dynamic>> updateUserProfile(final UserProfileModel profile) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
+    final json = profile.toJson()
+      ..remove('user_id')
+      ..remove('created_at')
+      ..remove('updated_at');
+
     final response = await _supabaseClient
         .from(_table)
-        .update(updates)
+        .update(json)
         .eq('user_id', user.id)
         .select()
         .single();

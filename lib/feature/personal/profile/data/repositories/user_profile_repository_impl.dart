@@ -60,10 +60,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         await _localDataSource.saveAvatar(bytes, newAvatarPath);
       }
 
-      final updateData = original.getDirtyFields(finalTarget);
-      if (updateData.isEmpty) return const Ok(null);
+      final targetModel = UserProfileModel.fromEntity(finalTarget);
 
-      final updatedJson = await _remoteDataSource.updateUserProfile(updateData);
+      final updatedJson = await _remoteDataSource.updateUserProfile(targetModel);
       final updatedProfile = UserProfileModel.fromJson(updatedJson);
 
       await _localDataSource.setCache(updatedProfile);

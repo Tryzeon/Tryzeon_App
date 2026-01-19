@@ -61,7 +61,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final imageUrl = _remoteDataSource.getProductImageUrl(imagePath);
 
-      final productData = ProductModel(
+      final productModel = ProductModel(
         storeId: storeId,
         name: product.name,
         types: product.types,
@@ -69,20 +69,20 @@ class ProductRepositoryImpl implements ProductRepository {
         imagePath: imagePath,
         imageUrl: imageUrl,
         purchaseLink: product.purchaseLink,
-      ).toJson();
+      );
 
-      final productId = await _remoteDataSource.insertProduct(productData);
+      final productId = await _remoteDataSource.insertProduct(productModel);
 
       final sizes = product.sizes ?? [];
       if (sizes.isNotEmpty) {
-        final sizesData = sizes.map((final size) {
-          return {
-            'product_id': productId,
-            'name': size.name,
-            ...size.measurements.toJson(),
-          };
+        final sizeModels = sizes.map((final size) {
+          return ProductSizeModel(
+            productId: productId,
+            name: size.name,
+            measurements: size.measurements,
+          );
         }).toList();
-        await _remoteDataSource.insertProductSizes(sizesData);
+        await _remoteDataSource.insertProductSizes(sizeModels);
       }
 
       final model = await _remoteDataSource.fetchProduct(productId);
@@ -136,11 +136,13 @@ class ProductRepositoryImpl implements ProductRepository {
         }
 
         for (final newSize in sizeChanges.toAdd) {
-          await _remoteDataSource.insertProductSize({
-            'product_id': original.id,
-            'name': newSize.name,
-            ...newSize.measurements.toJson(),
-          });
+          await _remoteDataSource.insertProductSize(
+            ProductSizeModel(
+              productId: original.id,
+              name: newSize.name,
+              measurements: newSize.measurements,
+            ),
+          );
         }
 
         for (final updateEntry in sizeChanges.toUpdate) {

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/wardrobe_item_model.dart';
 
 class WardrobeRemoteDataSource {
   WardrobeRemoteDataSource(this._supabaseClient);
@@ -22,24 +23,17 @@ class WardrobeRemoteDataSource {
     return List<Map<String, dynamic>>.from(response as List);
   }
 
-  Future<Map<String, dynamic>> createWardrobeItem({
-    required final String category,
-    required final String imagePath,
-    final List<String> tags = const [],
-  }) async {
+  Future<Map<String, dynamic>> createWardrobeItem(final WardrobeItemModel item) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
-    final response = await _supabaseClient
-        .from(_table)
-        .insert({
-          'user_id': user.id,
-          'category': category,
-          'image_path': imagePath,
-          'tags': tags,
-        })
-        .select()
-        .single();
+    final json = item.toJson();
+    json['user_id'] = user.id;
+    json.remove('id');
+    json.remove('created_at');
+    json.remove('updated_at');
+
+    final response = await _supabaseClient.from(_table).insert(json).select().single();
 
     return response;
   }

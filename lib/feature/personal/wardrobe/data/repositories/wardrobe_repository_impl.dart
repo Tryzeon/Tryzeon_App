@@ -48,6 +48,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final imageName = p.basename(image.path);
       final bytes = await image.readAsBytes();
 
+      // 1. Upload Image first
       final imagePath = await _remoteDataSource.uploadImage(
         category: categoryString,
         fileName: imageName,
@@ -56,11 +57,14 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       await _localDataSource.saveImage(bytes, imagePath);
 
-      final response = await _remoteDataSource.createWardrobeItem(
-        category: categoryString,
+      // 2. Create Item Model
+      final newItemModel = WardrobeItemModel(
         imagePath: imagePath,
+        category: category,
         tags: tags,
       );
+
+      final response = await _remoteDataSource.createWardrobeItem(newItemModel);
 
       final newItem = WardrobeItemModel.fromJson(response);
       await _localDataSource.addItemToCache(newItem);
