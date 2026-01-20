@@ -26,8 +26,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       if (cached != null) return Ok(cached);
 
       // Fetch from API
-      final json = await _remoteDataSource.fetchUserProfile();
-      final profile = UserProfileModel.fromJson(json);
+      final profile = await _remoteDataSource.fetchUserProfile();
 
       // Update cache
       await _localDataSource.setCache(profile);
@@ -62,8 +61,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       final targetModel = UserProfileModel.fromEntity(finalTarget);
 
-      final updatedJson = await _remoteDataSource.updateUserProfile(targetModel);
-      final updatedProfile = UserProfileModel.fromJson(updatedJson);
+      final updatedProfile = await _remoteDataSource.updateUserProfile(targetModel);
 
       await _localDataSource.setCache(updatedProfile);
 

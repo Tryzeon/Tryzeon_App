@@ -10,7 +10,7 @@ class WardrobeRemoteDataSource {
   static const _table = 'wardrobe_items';
   static const _bucket = 'wardrobe';
 
-  Future<List<Map<String, dynamic>>> fetchWardrobeItems() async {
+  Future<List<WardrobeItemModel>> fetchWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
@@ -20,10 +20,12 @@ class WardrobeRemoteDataSource {
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response as List);
+    return (response as List).map((final e) {
+      return WardrobeItemModel.fromJson(Map<String, dynamic>.from(e));
+    }).toList();
   }
 
-  Future<Map<String, dynamic>> createWardrobeItem(final WardrobeItemModel item) async {
+  Future<WardrobeItemModel> createWardrobeItem(final WardrobeItemModel item) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
@@ -35,7 +37,7 @@ class WardrobeRemoteDataSource {
 
     final response = await _supabaseClient.from(_table).insert(json).select().single();
 
-    return response;
+    return WardrobeItemModel.fromJson(response);
   }
 
   Future<void> deleteWardrobeItem(final String id) async {

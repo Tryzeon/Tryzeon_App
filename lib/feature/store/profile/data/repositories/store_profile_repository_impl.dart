@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
-import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -26,15 +25,13 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       if (cached != null) return Ok(cached);
 
       // Fetch from API
-      final json = await _remoteDataSource.fetchStoreProfile();
-      if (json == null) return const Ok(null);
-
-      final entity = StoreProfileModel.fromJson(json);
+      final profile = await _remoteDataSource.fetchStoreProfile();
+      if (profile == null) return const Ok(null);
 
       // Update cache
-      await _localDataSource.setCache(entity);
+      await _localDataSource.setCache(profile);
 
-      return Ok(entity);
+      return Ok(profile);
     } catch (e) {
       AppLogger.error('無法載入店家資料', e);
 
@@ -60,10 +57,9 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       final updateData = original.getDirtyFields(finalTarget);
       if (updateData.isEmpty) return const Ok(null);
 
-      final updatedJson = await _remoteDataSource.updateStoreProfile(updateData);
-      final updated = StoreProfileModel.fromJson(updatedJson);
+      final updatedProfile = await _remoteDataSource.updateStoreProfile(updateData);
 
-      await _localDataSource.setCache(updated);
+      await _localDataSource.setCache(updatedProfile);
 
       // Clean up old logo if changed
       if (logoFile != null &&

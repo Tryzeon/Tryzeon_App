@@ -26,8 +26,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final cached = await _localDataSource.getCachedItems();
       if (cached != null) return Ok(cached);
 
-      final response = await _remoteDataSource.fetchWardrobeItems();
-      final items = response.map(WardrobeItemModel.fromJson).toList();
+      final items = await _remoteDataSource.fetchWardrobeItems();
       await _localDataSource.updateCachedItems(items);
       return Ok(items);
     } catch (e) {
@@ -64,9 +63,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         tags: tags,
       );
 
-      final response = await _remoteDataSource.createWardrobeItem(newItemModel);
+      final newItem = await _remoteDataSource.createWardrobeItem(newItemModel);
 
-      final newItem = WardrobeItemModel.fromJson(response);
       await _localDataSource.addItemToCache(newItem);
 
       return const Ok(null);

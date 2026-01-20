@@ -12,7 +12,7 @@ class UserProfileRemoteDataSource {
   static const _table = 'user_profile';
   static const _avatarBucket = 'avatars';
 
-  Future<Map<String, dynamic>> fetchUserProfile() async {
+  Future<UserProfileModel> fetchUserProfile() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
@@ -24,10 +24,10 @@ class UserProfileRemoteDataSource {
         .eq('user_id', user.id)
         .single();
 
-    return response;
+    return UserProfileModel.fromJson(response);
   }
 
-  Future<Map<String, dynamic>> updateUserProfile(final UserProfileModel profile) async {
+  Future<UserProfileModel> updateUserProfile(final UserProfileModel profile) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
@@ -43,7 +43,7 @@ class UserProfileRemoteDataSource {
         .select()
         .single();
 
-    return response;
+    return UserProfileModel.fromJson(response);
   }
 
   Future<String> uploadAvatar(final File image) async {

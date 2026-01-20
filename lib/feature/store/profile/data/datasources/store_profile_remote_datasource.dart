@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileRemoteDataSource {
   StoreProfileRemoteDataSource(this._supabaseClient);
@@ -10,7 +11,7 @@ class StoreProfileRemoteDataSource {
   static const _table = 'store_profile';
   static const _logoBucket = 'store';
 
-  Future<Map<String, dynamic>?> fetchStoreProfile() async {
+  Future<StoreProfileModel?> fetchStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
@@ -28,12 +29,10 @@ class StoreProfileRemoteDataSource {
       map['logo_url'] = getLogoPublicUrl(logoPath);
     }
 
-    return map;
+    return StoreProfileModel.fromJson(map);
   }
 
-  Future<Map<String, dynamic>> updateStoreProfile(
-    final Map<String, dynamic> updates,
-  ) async {
+  Future<StoreProfileModel> updateStoreProfile(final Map<String, dynamic> updates) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
@@ -50,7 +49,7 @@ class StoreProfileRemoteDataSource {
       map['logo_url'] = getLogoPublicUrl(logoPath);
     }
 
-    return map;
+    return StoreProfileModel.fromJson(map);
   }
 
   Future<String> uploadLogo(final File image) async {
