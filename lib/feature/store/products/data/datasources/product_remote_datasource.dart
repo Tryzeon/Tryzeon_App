@@ -94,11 +94,15 @@ class ProductRemoteDataSource {
     return ProductModel.fromJson(map);
   }
 
-  Future<void> updateProduct(
-    final String productId,
-    final Map<String, dynamic> updateData,
-  ) async {
-    await _supabaseClient.from(_productsTable).update(updateData).eq('id', productId);
+  Future<void> updateProduct(final ProductModel product) async {
+    final json = product.toJson()
+      ..remove('id')
+      ..remove('store_id')
+      ..remove('created_at')
+      ..remove('updated_at')
+      ..remove('product_sizes');
+
+    await _supabaseClient.from(_productsTable).update(json).eq('id', product.id!);
   }
 
   Future<void> deleteProduct(final String productId) async {
@@ -121,11 +125,14 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).insert(json);
   }
 
-  Future<void> updateProductSize(
-    final String sizeId,
-    final Map<String, dynamic> dirtyFields,
-  ) async {
-    await _supabaseClient.from(_productSizesTable).update(dirtyFields).eq('id', sizeId);
+  Future<void> updateProductSize(final ProductSizeModel size) async {
+    final json = size.toJson()
+      ..remove('id')
+      ..remove('product_id')
+      ..remove('created_at')
+      ..remove('updated_at');
+
+    await _supabaseClient.from(_productSizesTable).update(json).eq('id', size.id!);
   }
 
   Future<String> uploadProductImage(final File image) async {

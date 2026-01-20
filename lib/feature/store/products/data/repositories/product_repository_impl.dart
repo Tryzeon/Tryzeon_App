@@ -122,7 +122,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       if (updateData.isNotEmpty) {
-        await _remoteDataSource.updateProduct(original.id!, updateData);
+        await _remoteDataSource.updateProduct(ProductModel.fromEntity(finalTarget));
       }
 
       if (newImage != null) {
@@ -147,8 +147,16 @@ class ProductRepositoryImpl implements ProductRepository {
 
         for (final updateEntry in sizeChanges.toUpdate) {
           final id = updateEntry['id'] as String;
-          final dirtyFields = updateEntry['dirtyFields'] as Map<String, dynamic>;
-          await _remoteDataSource.updateProductSize(id, dirtyFields);
+          final updatedSize = target.sizes?.firstWhere(
+            (final s) => s.id == id,
+            orElse: () => throw 'Size not found',
+          );
+
+          if (updatedSize != null) {
+            await _remoteDataSource.updateProductSize(
+              ProductSizeModel.fromEntity(updatedSize),
+            );
+          }
         }
       }
 

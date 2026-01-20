@@ -32,13 +32,20 @@ class StoreProfileRemoteDataSource {
     return StoreProfileModel.fromJson(map);
   }
 
-  Future<StoreProfileModel> updateStoreProfile(final Map<String, dynamic> updates) async {
+  Future<StoreProfileModel> updateStoreProfile(final StoreProfileModel profile) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
+    final json = profile.toJson()
+      ..remove('id')
+      ..remove('owner_id')
+      ..remove('created_at')
+      ..remove('updated_at')
+      ..remove('logo_url');
+
     final response = await _supabaseClient
         .from(_table)
-        .update(updates)
+        .update(json)
         .eq('owner_id', user.id)
         .select()
         .single();

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
+import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -54,10 +55,9 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         finalTarget = target.copyWith(logoPath: newLogoPath);
       }
 
-      final updateData = original.getDirtyFields(finalTarget);
-      if (updateData.isEmpty) return const Ok(null);
-
-      final updatedProfile = await _remoteDataSource.updateStoreProfile(updateData);
+      final updatedProfile = await _remoteDataSource.updateStoreProfile(
+        StoreProfileModel.fromEntity(finalTarget),
+      );
 
       await _localDataSource.setCache(updatedProfile);
 
