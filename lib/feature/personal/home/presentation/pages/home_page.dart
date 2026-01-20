@@ -466,7 +466,7 @@ class HomePage extends HookConsumerWidget {
                             ),
                             if (avatarFile == null && index == 0)
                               Align(
-                                alignment: const Alignment(0, 0.6),
+                                alignment: const Alignment(0, 0.5),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
                                   child: BackdropFilter(
