@@ -12,6 +12,7 @@ import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/providers/providers.dart';
+import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AddProductPage extends HookConsumerWidget {
@@ -104,8 +105,18 @@ class AddProductPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
+      final storeProfile = ref.read(storeProfileProvider).valueOrNull;
+      if (storeProfile == null) {
+        TopNotification.show(
+          context,
+          message: '無法獲取店家資訊，請重新登入',
+          type: NotificationType.error,
+        );
+        return;
+      }
+
       final newProduct = Product(
-        storeId: '',
+        storeId: storeProfile.id,
         name: nameController.text,
         types: selectedCategories.value,
         price: double.parse(priceController.text),
