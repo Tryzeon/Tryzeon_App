@@ -414,19 +414,7 @@ class AddProductPage extends HookConsumerWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.05),
-                colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
+        decoration: BoxDecoration(color: colorScheme.surface),
         child: SafeArea(
           child: Column(
             children: [
@@ -509,12 +497,7 @@ class AddProductPage extends HookConsumerWidget {
                                 height: 180,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      colorScheme.primary.withValues(alpha: 0.1),
-                                      colorScheme.secondary.withValues(alpha: 0.1),
-                                    ],
-                                  ),
+                                  color: colorScheme.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: colorScheme.primary.withValues(alpha: 0.3),

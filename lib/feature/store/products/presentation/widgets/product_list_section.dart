@@ -47,11 +47,7 @@ class ProductListSection extends HookConsumerWidget {
               width: 4,
               height: 24,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [colorScheme.primary, colorScheme.secondary],
-                ),
+                color: colorScheme.primary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

@@ -163,19 +163,7 @@ class ShopPage extends HookConsumerWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.02),
-                colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
+        decoration: BoxDecoration(color: colorScheme.surface),
         child: SafeArea(
           child: Column(
             children: [
@@ -188,9 +176,7 @@ class ShopPage extends HookConsumerWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
+                        color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -308,14 +294,7 @@ class ShopPage extends HookConsumerWidget {
                                       width: 4,
                                       height: 24,
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            colorScheme.primary,
-                                            colorScheme.secondary,
-                                          ],
-                                        ),
+                                        color: colorScheme.primary,
                                         borderRadius: BorderRadius.circular(2),
                                       ),
                                     ),

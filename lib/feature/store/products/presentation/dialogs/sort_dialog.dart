@@ -68,9 +68,7 @@ class _SortOptionsDialogContent extends HookConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colorScheme.primary, colorScheme.secondary],
-              ),
+              color: colorScheme.primary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.sort_rounded, color: colorScheme.onPrimary, size: 24),
@@ -107,14 +105,7 @@ class _SortOptionsDialogContent extends HookConsumerWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(
-                        colors: [
-                          colorScheme.primary.withValues(alpha: 0.1),
-                          colorScheme.secondary.withValues(alpha: 0.1),
-                        ],
-                      )
-                    : null,
+                color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : null,
                 borderRadius: BorderRadius.circular(12),
                 border: isSelected
                     ? Border.all(color: colorScheme.primary, width: 2)
@@ -150,12 +141,7 @@ class _SortOptionsDialogContent extends HookConsumerWidget {
     Widget buildAscendingSwitch() {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.1),
-              colorScheme.secondary.withValues(alpha: 0.1),
-            ],
-          ),
+          color: colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: SwitchListTile(

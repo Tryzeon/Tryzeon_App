@@ -75,19 +75,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.02),
-                colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
+        decoration: BoxDecoration(color: colorScheme.surface),
         child: SafeArea(
           child: Column(
             children: [
@@ -110,9 +98,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorScheme.primary, colorScheme.secondary],
-                        ),
+                        color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -189,12 +175,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
                                   width: 56,
                                   height: 56,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        colorScheme.tertiary,
-                                        colorScheme.tertiary.withValues(alpha: 0.8),
-                                      ],
-                                    ),
+                                    color: colorScheme.tertiary,
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Icon(
@@ -214,12 +195,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
                                 Container(
                                   width: double.infinity,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        colorScheme.primary,
-                                        colorScheme.secondary,
-                                      ],
-                                    ),
+                                    color: colorScheme.primary,
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
@@ -318,12 +294,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
                                   width: 48,
                                   height: 48,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        colorScheme.primary.withValues(alpha: 0.7),
-                                        colorScheme.primary,
-                                      ],
-                                    ),
+                                    color: colorScheme.primary,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(

@@ -46,14 +46,7 @@ class WardrobeItemCard extends ConsumerWidget {
                       errorBuilder: (final context, final error, final stackTrace) {
                         return Container(
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                colorScheme.surfaceContainerLow,
-                                colorScheme.surfaceContainerHigh,
-                              ],
-                            ),
+                            color: colorScheme.surfaceContainerLow,
                           ),
                           child: Icon(Icons.error_outline, color: colorScheme.outline),
                         );
@@ -106,12 +99,7 @@ class WardrobeItemCard extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            colorScheme.primary.withValues(alpha: 0.1),
-                            colorScheme.secondary.withValues(alpha: 0.1),
-                          ],
-                        ),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

@@ -35,12 +35,9 @@ class ProductCategoryFilter extends HookConsumerWidget {
                     height: 64,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: isSelected
-                          ? LinearGradient(
-                              colors: [colorScheme.primary, colorScheme.secondary],
-                            )
-                          : null,
-                      color: isSelected ? null : colorScheme.surfaceContainer,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.surfaceContainer,
                       border: isSelected
                           ? Border.all(color: colorScheme.primary, width: 2)
                           : null,

@@ -32,11 +32,7 @@ class ConfirmationDialog extends HookConsumerWidget {
           width: MediaQuery.of(context).size.width * 0.85,
           constraints: const BoxConstraints(maxWidth: 360),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colorScheme.surface, colorScheme.surface.withValues(alpha: 0.95)],
-            ),
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(

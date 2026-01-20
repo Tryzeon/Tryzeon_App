@@ -46,23 +46,7 @@ class CommunityPage extends HookConsumerWidget {
     }
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.surface,
-            Color.alphaBlend(
-              colorScheme.surface.withValues(alpha: 0.2),
-              colorScheme.surface,
-            ),
-            Color.alphaBlend(
-              colorScheme.primary.withValues(alpha: 0.1),
-              colorScheme.surface,
-            ),
-          ],
-        ),
-      ),
+      decoration: BoxDecoration(color: colorScheme.surface),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -72,11 +56,7 @@ class CommunityPage extends HookConsumerWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [colorScheme.primary, colorScheme.secondary],
-                ),
+                color: colorScheme.primary,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -95,16 +75,11 @@ class CommunityPage extends HookConsumerWidget {
             const SizedBox(height: 32),
 
             // 標題
-            ShaderMask(
-              shaderCallback: (final bounds) => LinearGradient(
-                colors: [colorScheme.primary, colorScheme.secondary],
-              ).createShader(bounds),
-              child: Text(
-                '社群功能',
-                style: textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  letterSpacing: 1.5,
-                ),
+            Text(
+              '社群功能',
+              style: textTheme.displaySmall?.copyWith(
+                color: colorScheme.primary,
+                letterSpacing: 1.5,
               ),
             ),
             const SizedBox(height: 16),

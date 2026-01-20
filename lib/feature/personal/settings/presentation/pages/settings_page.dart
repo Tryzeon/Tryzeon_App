@@ -72,24 +72,14 @@ class PersonalSettingsPage extends HookConsumerWidget {
           title: '基本資料',
           subtitle: '編輯您的個人資訊',
           onTap: navigateToProfile,
-          gradient: LinearGradient(
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.1),
-              colorScheme.secondary.withValues(alpha: 0.1),
-            ],
-          ),
+          color: colorScheme.primary.withValues(alpha: 0.1),
         ),
         SettingsMenuItem(
           icon: Icons.store_outlined,
           title: '切換到店家帳號',
           subtitle: '管理您的商店',
           onTap: switchToStore,
-          gradient: LinearGradient(
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.1),
-              colorScheme.secondary.withValues(alpha: 0.1),
-            ],
-          ),
+          color: colorScheme.primary.withValues(alpha: 0.1),
         ),
       ],
     );

@@ -10,13 +10,13 @@ class SettingsMenuItem {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.gradient,
+    this.color,
   });
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final Gradient? gradient;
+  final Color? color;
 }
 
 /// 共用的設定頁面骨架
@@ -41,19 +41,7 @@ class SettingsPageScaffold extends HookConsumerWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              Color.alphaBlend(
-                colorScheme.primary.withValues(alpha: 0.05),
-                colorScheme.surface,
-              ),
-            ],
-          ),
-        ),
+        decoration: BoxDecoration(color: colorScheme.surface),
         child: SafeArea(
           child: Column(
             children: [
@@ -177,14 +165,7 @@ class _MenuCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    gradient:
-                        item.gradient ??
-                        LinearGradient(
-                          colors: [
-                            colorScheme.primary.withValues(alpha: 0.1),
-                            colorScheme.secondary.withValues(alpha: 0.1),
-                          ],
-                        ),
+                    color: item.color ?? colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(item.icon, color: colorScheme.primary, size: 28),

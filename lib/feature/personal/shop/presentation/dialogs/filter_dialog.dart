@@ -82,9 +82,7 @@ class _FilterDialogContent extends HookConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [colorScheme.primary, colorScheme.secondary],
-                    ),
+                    color: colorScheme.primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(Icons.tune_rounded, color: colorScheme.onPrimary, size: 24),
@@ -172,9 +170,7 @@ class _FilterDialogContent extends HookConsumerWidget {
                   child: Container(
                     height: 48,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.secondary],
-                      ),
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
