@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/services/cache_service.dart';
 import 'package:tryzeon/core/services/isar_service.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';

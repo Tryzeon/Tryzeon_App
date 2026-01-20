@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.dart';
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
