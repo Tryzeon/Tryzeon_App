@@ -245,33 +245,7 @@ class PersonalPage extends HookConsumerWidget {
         fit: StackFit.expand,
         children: [
           // 1. Background Layer
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/profile/default.png'),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black, // Darken it slightly if needed
-                  BlendMode.dstOver,
-                ),
-              ),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      colorScheme.surface.withValues(alpha: 0.7),
-                      colorScheme.surface.withValues(alpha: 0.9),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          Container(color: colorScheme.surface),
 
           // 2. Main Content
           SafeArea(
