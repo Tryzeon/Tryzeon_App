@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -565,7 +566,10 @@ class HomePage extends HookConsumerWidget {
 
           // 5. Bottom Right Floating Action Button (Try On)
           Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 70,
+            bottom:
+                MediaQuery.of(context).padding.bottom +
+                30 +
+                (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
             right: 20,
             child: buildTryOnButton(),
           ),
