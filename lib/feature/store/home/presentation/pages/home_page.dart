@@ -152,9 +152,9 @@ class StoreHomePage extends HookConsumerWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -170,8 +170,8 @@ class StoreHomePage extends HookConsumerWidget {
             },
             customBorder: const CircleBorder(),
             child: SizedBox(
-              width: 56,
-              height: 56,
+              width: 65,
+              height: 65,
               child: Icon(Icons.add_rounded, color: colorScheme.onPrimary, size: 28),
             ),
           ),
