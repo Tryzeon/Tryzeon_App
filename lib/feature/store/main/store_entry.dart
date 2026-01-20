@@ -27,8 +27,12 @@ class StoreEntry extends HookConsumerWidget {
         return const StoreHomePage();
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (final error, final stack) =>
-          Scaffold(body: ErrorView(onRetry: () => ref.refresh(storeProfileProvider))),
+      error: (final error, final stack) => Scaffold(
+        body: ErrorView(
+          message: error.toString(),
+          onRetry: () => ref.refresh(storeProfileProvider),
+        ),
+      ),
     );
   }
 }

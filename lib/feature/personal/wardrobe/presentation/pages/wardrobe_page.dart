@@ -293,8 +293,10 @@ class PersonalPage extends HookConsumerWidget {
                         );
                       },
                       loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final _, final __) =>
-                          ErrorView(onRetry: () => ref.refresh(wardrobeItemsProvider)),
+                      error: (final error, final __) => ErrorView(
+                        message: error.toString(),
+                        onRetry: () => ref.refresh(wardrobeItemsProvider),
+                      ),
                     ),
                   ),
                 ),

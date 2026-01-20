@@ -427,6 +427,7 @@ class HomePage extends HookConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (final error, final stack) => Center(
                   child: ErrorView(
+                    message: error.toString(),
                     onRetry: () => Future.wait([
                       ref.refresh(userProfileProvider.future),
                       ref.refresh(avatarFileProvider.future),

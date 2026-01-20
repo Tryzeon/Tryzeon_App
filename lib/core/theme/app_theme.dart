@@ -26,6 +26,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: baseColorScheme,
+      visualDensity: VisualDensity.standard,
 
       // Typography
       textTheme: GoogleFonts.outfitTextTheme().copyWith(

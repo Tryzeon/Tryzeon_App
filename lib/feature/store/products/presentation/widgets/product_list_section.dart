@@ -70,8 +70,10 @@ class ProductListSection extends HookConsumerWidget {
         const SizedBox(height: 16),
         productsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (final error, final stack) =>
-              ErrorView(onRetry: () => ref.refresh(productsProvider)),
+          error: (final error, final stack) => ErrorView(
+            message: error.toString(),
+            onRetry: () => ref.refresh(productsProvider),
+          ),
           data: (final data) {
             final products = data.sortProducts(sortBy.value, ascending.value);
 

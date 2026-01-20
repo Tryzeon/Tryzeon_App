@@ -330,6 +330,7 @@ class ShopPage extends HookConsumerWidget {
                                   ),
                                 ),
                                 error: (final error, final stack) => ErrorView(
+                                  message: error.toString(),
                                   onRetry: () =>
                                       ref.refresh(shopProductsProvider(filter)),
                                 ),

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ErrorView extends HookConsumerWidget {
-  const ErrorView({super.key, this.onRetry, this.isCompact = false});
+  const ErrorView({super.key, this.onRetry, this.isCompact = false, this.message});
 
   final VoidCallback? onRetry;
   final bool isCompact;
+  final String? message;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -40,8 +41,18 @@ class ErrorView extends HookConsumerWidget {
               ),
               textAlign: TextAlign.center,
             ),
+            if (message != null && !isCompact) ...[
+              const SizedBox(height: 8),
+              Text(
+                message!,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
             if (onRetry != null) ...[
-              if (!isCompact) const SizedBox(height: 24),
+              SizedBox(height: isCompact ? 10 : 24),
               ElevatedButton.icon(
                 onPressed: onRetry,
                 style: ElevatedButton.styleFrom(
@@ -49,12 +60,12 @@ class ErrorView extends HookConsumerWidget {
                   foregroundColor: colorScheme.onError,
                   elevation: 0,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isCompact ? 16 : 24,
-                    vertical: isCompact ? 8 : 12,
+                    horizontal: isCompact ? 12 : 24,
+                    vertical: isCompact ? 4 : 12,
                   ),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                icon: Icon(Icons.refresh_rounded, size: isCompact ? 18 : 20),
+                icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: Text(
                   '點我重試',
                   style: textTheme.labelLarge?.copyWith(
