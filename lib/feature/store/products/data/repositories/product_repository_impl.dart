@@ -114,14 +114,14 @@ class ProductRepositoryImpl implements ProductRepository {
         await _localDataSource.saveProductImage(bytes, newImagePath);
       }
 
-      final updateData = original.getDirtyFields(finalTarget);
-      final sizeChanges = original.sizes.getDirtyFields(target.sizes);
+      final productChanged = original != finalTarget;
+      final sizesChanged = original.sizes != target.sizes;
 
-      if (updateData.isEmpty && !sizeChanges.hasChanges) {
+      if (!productChanged && !sizesChanged && newImage == null) {
         return const Ok(null);
       }
 
-      if (updateData.isNotEmpty) {
+      if (productChanged) {
         await _remoteDataSource.updateProduct(ProductModel.fromEntity(finalTarget));
       }
 
@@ -130,32 +130,44 @@ class ProductRepositoryImpl implements ProductRepository {
         _localDataSource.deleteProductImage(original.imagePath).ignore();
       }
 
-      if (sizeChanges.hasChanges) {
-        for (final id in sizeChanges.toDeleteIds) {
-          await _remoteDataSource.deleteProductSize(id);
+      if (sizesChanged) {
+        final originalSizes = original.sizes ?? [];
+        final targetSizes = target.sizes ?? [];
+
+        final targetSizeIds = targetSizes
+            .map((final s) => s.id)
+            .whereType<String>()
+            .toSet();
+
+        // Delete removed sizes
+        for (final originalSize in originalSizes) {
+          if (originalSize.id != null && !targetSizeIds.contains(originalSize.id)) {
+            await _remoteDataSource.deleteProductSize(originalSize.id!);
+          }
         }
 
-        for (final newSize in sizeChanges.toAdd) {
-          await _remoteDataSource.insertProductSize(
-            ProductSizeModel(
-              productId: original.id,
-              name: newSize.name,
-              measurements: newSize.measurements,
-            ),
-          );
-        }
-
-        for (final updateEntry in sizeChanges.toUpdate) {
-          final id = updateEntry['id'] as String;
-          final updatedSize = target.sizes?.firstWhere(
-            (final s) => s.id == id,
-            orElse: () => throw 'Size not found',
-          );
-
-          if (updatedSize != null) {
-            await _remoteDataSource.updateProductSize(
-              ProductSizeModel.fromEntity(updatedSize),
+        // Add new sizes
+        for (final targetSize in targetSizes) {
+          if (targetSize.id == null) {
+            await _remoteDataSource.insertProductSize(
+              ProductSizeModel(
+                productId: original.id,
+                name: targetSize.name,
+                measurements: targetSize.measurements,
+              ),
             );
+          } else {
+            // Update existing sizes if changed
+            final originalSize = originalSizes.cast<ProductSize?>().firstWhere(
+              (final s) => s?.id == targetSize.id,
+              orElse: () => null,
+            );
+
+            if (originalSize != null && originalSize != targetSize) {
+              await _remoteDataSource.updateProductSize(
+                ProductSizeModel.fromEntity(targetSize),
+              );
+            }
           }
         }
       }

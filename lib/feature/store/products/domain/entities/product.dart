@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 
 class ProductSize extends Equatable {
@@ -38,18 +38,6 @@ class ProductSize extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
-  }
-
-  Map<String, dynamic> getDirtyFields(final ProductSize target) {
-    final updates = <String, dynamic>{};
-
-    if (name != target.name) {
-      updates['name'] = target.name;
-    }
-
-    updates.addAll(measurements.getDirtyFields(target.measurements));
-
-    return updates;
   }
 }
 
@@ -135,100 +123,6 @@ class Product extends Equatable {
       storeName: storeName ?? this.storeName,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-
-  Map<String, dynamic> getDirtyFields(final Product target) {
-    final updates = <String, dynamic>{};
-
-    if (name != target.name) {
-      updates['name'] = target.name;
-    }
-
-    if (!setEquals(types, target.types)) {
-      updates['type'] = target.types.toList();
-    }
-
-    if (price != target.price) {
-      updates['price'] = target.price;
-    }
-
-    if (imagePath != target.imagePath) {
-      updates['image_path'] = target.imagePath;
-    }
-
-    if (purchaseLink != target.purchaseLink) {
-      updates['purchase_link'] = target.purchaseLink;
-    }
-
-    return updates;
-  }
-}
-
-class ProductSizeChanges {
-  ProductSizeChanges({
-    required this.toAdd,
-    required this.toUpdate,
-    required this.toDeleteIds,
-  });
-
-  final List<ProductSize> toAdd;
-  final List<Map<String, dynamic>> toUpdate;
-  final List<String> toDeleteIds;
-
-  bool get hasChanges =>
-      toAdd.isNotEmpty || toUpdate.isNotEmpty || toDeleteIds.isNotEmpty;
-}
-
-extension ProductSizeListExtension on List<ProductSize>? {
-  ProductSize? firstWhereOrNull(final bool Function(ProductSize) test) {
-    if (this == null) return null;
-    for (final element in this!) {
-      if (test(element)) {
-        return element;
-      }
-    }
-    return null;
-  }
-
-  ProductSizeChanges getDirtyFields(final List<ProductSize>? targetSizes) {
-    final originalSizes = this ?? [];
-    final finalTargetSizes = targetSizes ?? [];
-
-    final List<ProductSize> sizesToAdd = [];
-    final List<Map<String, dynamic>> sizesToUpdate = [];
-    final List<String> sizesToDeleteIds = [];
-
-    final targetSizeIds = finalTargetSizes
-        .map((final s) => s.id)
-        .whereType<String>()
-        .toSet();
-    for (final originalSize in originalSizes) {
-      if (originalSize.id != null && !targetSizeIds.contains(originalSize.id)) {
-        sizesToDeleteIds.add(originalSize.id!);
-      }
-    }
-
-    for (final targetSize in finalTargetSizes) {
-      if (targetSize.id == null) {
-        sizesToAdd.add(targetSize);
-      } else {
-        final originalSize = originalSizes.firstWhereOrNull(
-          (final s) => s.id == targetSize.id,
-        );
-        if (originalSize != null) {
-          final dirtyFields = originalSize.getDirtyFields(targetSize);
-          if (dirtyFields.isNotEmpty) {
-            sizesToUpdate.add({'id': targetSize.id!, 'dirtyFields': dirtyFields});
-          }
-        }
-      }
-    }
-
-    return ProductSizeChanges(
-      toAdd: sizesToAdd,
-      toUpdate: sizesToUpdate,
-      toDeleteIds: sizesToDeleteIds,
     );
   }
 }

@@ -55,6 +55,12 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         finalTarget = target.copyWith(logoPath: newLogoPath);
       }
 
+      final hasChanges = original != finalTarget;
+
+      if (!hasChanges) {
+        return const Ok(null);
+      }
+
       final updatedProfile = await _remoteDataSource.updateStoreProfile(
         StoreProfileModel.fromEntity(finalTarget),
       );

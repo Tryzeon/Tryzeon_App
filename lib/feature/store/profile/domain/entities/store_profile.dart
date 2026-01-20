@@ -37,22 +37,4 @@ class StoreProfile extends Equatable {
       logoUrl: logoUrl ?? this.logoUrl,
     );
   }
-
-  Map<String, dynamic> getDirtyFields(final StoreProfile target) {
-    final updates = <String, dynamic>{};
-
-    if (name != target.name) {
-      updates['name'] = target.name;
-    }
-
-    if (address != target.address) {
-      updates['address'] = target.address;
-    }
-
-    if (logoPath != target.logoPath) {
-      updates['logo_path'] = target.logoPath;
-    }
-
-    return updates;
-  }
 }

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ShopProduct extends Equatable {
@@ -86,31 +86,5 @@ class ShopProduct extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
-  }
-
-  Map<String, dynamic> getDirtyFields(final ShopProduct target) {
-    final updates = <String, dynamic>{};
-
-    if (name != target.name) {
-      updates['name'] = target.name;
-    }
-
-    if (!setEquals(types, target.types)) {
-      updates['type'] = target.types.toList();
-    }
-
-    if (price != target.price) {
-      updates['price'] = target.price;
-    }
-
-    if (imagePath != target.imagePath) {
-      updates['image_path'] = target.imagePath;
-    }
-
-    if (purchaseLink != target.purchaseLink) {
-      updates['purchase_link'] = target.purchaseLink;
-    }
-
-    return updates;
   }
 }
