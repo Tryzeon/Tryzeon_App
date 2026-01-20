@@ -478,7 +478,7 @@ class HomePage extends HookConsumerWidget {
                                       ),
                                       color: colorScheme.surface.withValues(alpha: 0.3),
                                       child: Text(
-                                        '點擊上傳頭像',
+                                        '點擊上傳照片',
                                         style: TextStyle(
                                           color: colorScheme.onSurface,
                                           fontSize: 14,
