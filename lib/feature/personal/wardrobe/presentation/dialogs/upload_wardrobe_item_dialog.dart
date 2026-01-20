@@ -385,7 +385,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          'Upload Item',
+                          '上傳衣服',
                           style: textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: colorScheme.onSurface,
@@ -414,7 +414,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                               ),
                             ),
                             child: Text(
-                              'Cancel',
+                              '取消',
                               style: TextStyle(
                                 color: colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
@@ -450,7 +450,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                                       ),
                                     )
                                   : const Text(
-                                      'Upload',
+                                      '上傳',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,

@@ -329,7 +329,7 @@ class HomePage extends HookConsumerWidget {
           children: [
             if (currentTryonIndex.value == -1)
               Text(
-                'Original',
+                '原圖',
                 style: TextStyle(
                   color: colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
@@ -387,7 +387,7 @@ class HomePage extends HookConsumerWidget {
                   Icon(Icons.auto_awesome_rounded, color: colorScheme.onSurface),
                   const SizedBox(width: 8),
                   Text(
-                    'Try On',
+                    '虛擬試穿',
                     style: TextStyle(
                       color: colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
@@ -478,7 +478,7 @@ class HomePage extends HookConsumerWidget {
                                       ),
                                       color: colorScheme.surface.withValues(alpha: 0.3),
                                       child: Text(
-                                        'Tap to upload avatar image',
+                                        '點擊上傳頭像',
                                         style: TextStyle(
                                           color: colorScheme.onSurface,
                                           fontSize: 14,
@@ -585,7 +585,7 @@ class HomePage extends HookConsumerWidget {
                     CircularProgressIndicator(color: colorScheme.onSurface),
                     const SizedBox(height: 16),
                     Text(
-                      'Processing...',
+                      '處理中...',
                       style: TextStyle(
                         color: colorScheme.onSurface,
                         letterSpacing: 2,

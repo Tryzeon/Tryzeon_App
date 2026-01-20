@@ -226,7 +226,7 @@ class PersonalPage extends HookConsumerWidget {
             Icon(Icons.add_rounded, color: colorScheme.onPrimary),
             const SizedBox(width: 8),
             Text(
-              'Add Cloth',
+              '新增衣服',
               style: TextStyle(
                 color: colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
@@ -345,7 +345,7 @@ class PersonalPage extends HookConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Wardrobe',
+                          '我的衣櫃',
                           style: textTheme.displaySmall?.copyWith(
                             color: colorScheme.onSurface,
                             fontWeight: FontWeight.w900,
@@ -354,7 +354,7 @@ class PersonalPage extends HookConsumerWidget {
                         ),
                         if (profile != null)
                           Text(
-                            'Hello, ${profile.name}',
+                            '你好，${profile.name}',
                             style: textTheme.bodyMedium?.copyWith(
                               color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),

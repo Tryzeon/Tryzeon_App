@@ -51,8 +51,8 @@ class LoginPage extends HookConsumerWidget {
                 children: [
                   _buildLoginOptionCard(
                     icon: Icons.person_rounded,
-                    title: 'User Login',
-                    subtitle: 'Virtual Try-On',
+                    title: '個人登入',
+                    subtitle: '開啟您的虛擬試衣間',
                     accentColor: primaryColor,
                     onTap: navigateToPersonalLogin,
                   ),
@@ -61,8 +61,8 @@ class LoginPage extends HookConsumerWidget {
 
                   _buildLoginOptionCard(
                     icon: Icons.store_rounded,
-                    title: 'Store Login',
-                    subtitle: 'Manage Products',
+                    title: '店家登入',
+                    subtitle: '打造專屬的數位櫥窗',
                     accentColor: secondaryColor,
                     onTap: navigateToStoreLogin,
                   ),
@@ -126,7 +126,7 @@ class LoginPage extends HookConsumerWidget {
         const SizedBox(height: 12),
 
         const Text(
-          'Choose your identity',
+          '選擇您的身份',
           style: TextStyle(
             color: subtitleColor,
             fontSize: 16,

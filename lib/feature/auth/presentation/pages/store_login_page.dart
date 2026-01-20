@@ -87,7 +87,7 @@ class StoreLoginPage extends HookConsumerWidget {
 
           // Title
           const Text(
-            'Welcome!',
+            '歡迎 !',
             style: TextStyle(
               color: titleColor,
               fontSize: 32,
@@ -99,7 +99,7 @@ class StoreLoginPage extends HookConsumerWidget {
           const SizedBox(height: 12),
 
           const Text(
-            'Start managing your store',
+            '開始您的商店管理之旅',
             style: TextStyle(
               color: subtitleColor,
               fontSize: 16,
@@ -148,7 +148,7 @@ class StoreLoginPage extends HookConsumerWidget {
                   ),
                   const SizedBox(width: 14),
                   Text(
-                    'Continue with $provider',
+                    '使用 $provider 繼續',
                     style: const TextStyle(
                       color: Color(0xFF334155), // Slate 700
                       fontSize: 16,
