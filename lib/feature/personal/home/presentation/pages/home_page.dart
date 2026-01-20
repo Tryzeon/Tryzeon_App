@@ -367,31 +367,39 @@ class HomePage extends HookConsumerWidget {
     }
 
     Widget buildTryOnButton() {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
           child: InkWell(
+            borderRadius: BorderRadius.circular(30),
             onTap: (isActionLoading.value || avatarAsync.isLoading)
                 ? null
                 : tryOnFromLocal,
-            child: Container(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                color: colorScheme.surface.withValues(alpha: 0.9), // Pop out more
-                border: Border.all(color: colorScheme.surface),
-              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: colorScheme.onSurface),
+                  Icon(Icons.auto_awesome_rounded, color: colorScheme.primary),
                   const SizedBox(width: 8),
                   Text(
                     '虛擬試穿',
                     style: TextStyle(
                       color: colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w900,
                       fontSize: 16,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
