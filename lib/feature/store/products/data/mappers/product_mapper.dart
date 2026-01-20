@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/data/mappers/body_measurements_mapper.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
 
 import '../collections/product_collection.dart';
@@ -59,13 +60,7 @@ extension ProductSizeModelMapper on ProductSizeModel {
       ..id = id
       ..productId = productId
       ..name = name
-      ..height = measurements.height
-      ..weight = measurements.weight
-      ..chest = measurements.chest
-      ..waist = measurements.waist
-      ..hips = measurements.hips
-      ..shoulderWidth = measurements.shoulderWidth
-      ..sleeveLength = measurements.sleeveLength
+      ..measurements = measurements.toCollection()
       ..createdAt = createdAt
       ..updatedAt = updatedAt;
   }
@@ -77,15 +72,7 @@ extension ProductSizeCollectionMapper on ProductSizeCollection {
       id: id,
       productId: productId,
       name: name ?? '',
-      measurements: BodyMeasurements(
-        height: height,
-        weight: weight,
-        chest: chest,
-        waist: waist,
-        hips: hips,
-        shoulderWidth: shoulderWidth,
-        sleeveLength: sleeveLength,
-      ),
+      measurements: measurements?.toModel() ?? const BodyMeasurements(),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

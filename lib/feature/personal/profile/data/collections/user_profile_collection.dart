@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:tryzeon/core/data/collections/body_measurements_collection.dart';
 
 part 'user_profile_collection.g.dart';
 
@@ -18,16 +19,4 @@ class UserProfileCollection {
   DateTime? createdAt;
 
   DateTime? updatedAt;
-}
-
-@embedded
-class BodyMeasurementsCollection {
-  double? height;
-  double? weight;
-
-  double? shoulderWidth;
-  double? chest;
-  double? waist;
-  double? hips;
-  double? sleeveLength;
 }

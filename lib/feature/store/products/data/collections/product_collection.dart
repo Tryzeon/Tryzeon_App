@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:tryzeon/core/data/collections/body_measurements_collection.dart';
 
 part 'product_collection.g.dart';
 
@@ -31,13 +32,7 @@ class ProductSizeCollection {
   String? productId;
   String? name;
 
-  double? height;
-  double? weight;
-  double? chest;
-  double? waist;
-  double? hips;
-  double? shoulderWidth;
-  double? sleeveLength;
+  BodyMeasurementsCollection? measurements;
   DateTime? createdAt;
   DateTime? updatedAt;
 }
