@@ -5,6 +5,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
+import 'package:tryzeon/feature/personal/shop/domain/utils/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 
 import '../dialogs/filter_dialog.dart';
@@ -374,9 +375,13 @@ class ShopPage extends HookConsumerWidget {
                                           ),
                                       itemBuilder: (final context, final index) {
                                         final product = displayedProducts[index];
+                                        final fitStatus = FitCalculator.calculate(
+                                          userProfile: userProfile,
+                                          productSizes: product.sizes,
+                                        );
                                         return ProductCard(
                                           product: product,
-                                          userProfile: userProfile,
+                                          fitStatus: fitStatus,
                                         );
                                       },
                                     ),

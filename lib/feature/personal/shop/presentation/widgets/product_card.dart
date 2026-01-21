@@ -1,83 +1,58 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductCard extends HookConsumerWidget {
-  const ProductCard({super.key, required this.product, this.userProfile});
+  const ProductCard({super.key, required this.product, this.fitStatus});
 
   final ShopProduct product;
-  final UserProfile? userProfile;
+  final FitStatus? fitStatus;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // 計算契合度等級：返回 'green', 'yellow', 'red' 或 null
-    String? calculateFitLevel(final UserProfile? userProfile) {
-      if (userProfile == null || product.sizes == null) {
-        return null; // 無法計算
-      }
-
-      double? bestDiff;
-      // 對每個商品尺寸進行比對
-      for (final size in product.sizes!) {
-        double totalDiff = 0;
-        int comparisonCount = 0;
-
-        for (final type in MeasurementType.values) {
-          final userValue = userProfile.measurements[type];
-          final sizeValue = size.measurements[type];
-
-          if (userValue != null && sizeValue != null) {
-            totalDiff += (userValue - sizeValue).abs();
-            comparisonCount++;
-          }
-        }
-
-        // 如果有比對到資料，記錄最佳差值
-        if (comparisonCount > 0) {
-          if (bestDiff == null || totalDiff < bestDiff) {
-            bestDiff = totalDiff;
-          }
-        }
-      }
-
-      // 根據最佳差值返回等級
-      if (bestDiff == null) {
-        return null; // 沒有可比對的資料
-      } else if (bestDiff <= 5) {
-        return 'green';
-      } else if (bestDiff <= 10) {
-        return 'yellow';
-      } else {
-        return 'red';
-      }
-    }
-
-    Color getFitColor(final String level) {
-      switch (level) {
-        case 'green':
+    Color getFitColor(final FitStatus status) {
+      switch (status) {
+        case FitStatus.perfect:
           return Colors.green;
-        case 'yellow':
+        case FitStatus.good:
           return Colors.amber;
-        case 'red':
+        case FitStatus.poor:
           return Colors.red;
-        default:
-          return Colors.grey;
+        case FitStatus.unknown:
+          return colorScheme.primary;
       }
     }
 
     Future<void> handleTryon() async {
       // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
       ref.read(incrementTryonCountProvider).call(product.id!).ignore();
+
+      // 如果契合度為紅色，彈出確認視窗
+      if (fitStatus == FitStatus.poor) {
+        final confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: '尺寸不合',
+          content: '這件衣服不合身，是否還要繼續試穿？',
+          confirmText: '繼續試穿',
+          cancelText: '取消',
+        );
+
+        if (confirmed != true) {
+          return;
+        }
+      }
+
+      if (!context.mounted) return;
 
       final personalEntry = PersonalEntry.of(context);
       await personalEntry?.tryOnFromStorage(product.imagePath);
@@ -143,10 +118,9 @@ class ProductCard extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(20),
                         child: Builder(
                           builder: (final context) {
-                            final fitLevel = calculateFitLevel(userProfile);
-                            final buttonColor = fitLevel == null
+                            final buttonColor = fitStatus == null
                                 ? colorScheme.primary
-                                : getFitColor(fitLevel);
+                                : getFitColor(fitStatus!);
 
                             return Container(
                               padding: const EdgeInsets.all(8),
