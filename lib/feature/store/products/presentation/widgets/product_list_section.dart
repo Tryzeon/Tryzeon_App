@@ -77,74 +77,69 @@ class ProductListSection extends HookConsumerWidget {
           data: (final data) {
             final products = data.sortProducts(sortBy.value, ascending.value);
 
-            return RefreshIndicator(
-              onRefresh: () async => ref.refresh(productsProvider),
-              color: colorScheme.primary,
-              child: products.isEmpty
-                  ? LayoutBuilder(
-                      builder: (final context, final constraints) {
-                        final double minHeight = constraints.maxHeight.isFinite
-                            ? constraints.maxHeight
-                            : 400; // 如果是無限高度，給予一個合理的預設值
+            if (products.isEmpty) {
+              return LayoutBuilder(
+                builder: (final context, final constraints) {
+                  final double minHeight = constraints.maxHeight.isFinite
+                      ? constraints.maxHeight
+                      : 400; // 如果是無限高度，給予一個合理的預設值
 
-                        return SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minHeight: minHeight),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.primary.withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.inventory_2_outlined,
-                                      size: 50,
-                                      color: colorScheme.primary.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Text(
-                                    '還沒有商品',
-                                    style: textTheme.titleSmall?.copyWith(
-                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '點擊右下角按鈕新增商品',
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.onSurface.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: minHeight),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.inventory_2_outlined,
+                              size: 50,
+                              color: colorScheme.primary.withValues(alpha: 0.5),
                             ),
                           ),
-                        );
-                      },
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 0.75,
+                          const SizedBox(height: 24),
+                          Text(
+                            '還沒有商品',
+                            style: textTheme.titleSmall?.copyWith(
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '點擊右下角按鈕新增商品',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
                       ),
-                      itemCount: products.length,
-                      itemBuilder: (final context, final index) {
-                        final product = products[index];
-                        return StoreProductCard(product: product);
-                      },
                     ),
+                  );
+                },
+              );
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.75,
+              ),
+              itemCount: products.length,
+              itemBuilder: (final context, final index) {
+                final product = products[index];
+                return StoreProductCard(product: product);
+              },
             );
           },
         ),

@@ -413,199 +413,214 @@ class HomePage extends HookConsumerWidget {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 1. Background Image Layer
-          GestureDetector(
-            onTap: uploadAvatar,
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: colorScheme.surface, // Fallback
-              child: avatarAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (final error, final stack) => Center(
-                  child: ErrorView(
-                    message: error.toString(),
-                    onRetry: () => Future.wait([
-                      ref.refresh(userProfileProvider.future),
-                      ref.refresh(avatarFileProvider.future),
-                    ]),
-                  ),
-                ),
-                data: (final avatarFile) {
-                  return PageView.builder(
-                    controller: pageController,
-                    onPageChanged: (final index) {
-                      currentTryonIndex.value = index - 1;
-                    },
-                    itemCount: tryonImages.value.length + 1,
-                    itemBuilder: (final context, final index) {
-                      ImageProvider imageProvider;
-                      if (index > 0) {
-                        imageProvider = MemoryImage(tryonImages.value[index - 1]);
-                      } else if (avatarFile != null) {
-                        imageProvider = FileImage(avatarFile);
-                      } else {
-                        imageProvider = const AssetImage(
-                          'assets/images/profile/default.png',
-                        );
-                      }
-
-                      return Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+      body: RefreshIndicator(
+        onRefresh: () => refreshUserProfile(ref),
+        edgeOffset: MediaQuery.of(context).padding.top,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // 1. Background Image Layer - wrapped in scrollable for RefreshIndicator
+            SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height,
+                child: GestureDetector(
+                  onTap: uploadAvatar,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: colorScheme.surface, // Fallback
+                    child: avatarAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (final error, final stack) => Center(
+                        child: ErrorView(
+                          message: error.toString(),
+                          onRetry: () => Future.wait([
+                            ref.refresh(userProfileProvider.future),
+                            ref.refresh(avatarFileProvider.future),
+                          ]),
                         ),
-                        child: Stack(
-                          children: [
-                            Container(
+                      ),
+                      data: (final avatarFile) {
+                        return PageView.builder(
+                          controller: pageController,
+                          onPageChanged: (final index) {
+                            currentTryonIndex.value = index - 1;
+                          },
+                          itemCount: tryonImages.value.length + 1,
+                          itemBuilder: (final context, final index) {
+                            ImageProvider imageProvider;
+                            if (index > 0) {
+                              imageProvider = MemoryImage(tryonImages.value[index - 1]);
+                            } else if (avatarFile != null) {
+                              imageProvider = FileImage(avatarFile);
+                            } else {
+                              imageProvider = const AssetImage(
+                                'assets/images/profile/default.png',
+                              );
+                            }
+
+                            return Container(
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    colorScheme.surface.withValues(alpha: 0.3),
-                                    Colors.transparent,
-                                    colorScheme.surface.withValues(alpha: 0.3),
-                                  ],
-                                  stops: const [0.0, 0.4, 1.0],
+                                image: DecorationImage(
+                                  image: imageProvider,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ),
-                            if (avatarFile == null && index == 0)
-                              Align(
-                                alignment: const Alignment(0, 0.5),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                      color: colorScheme.surface.withValues(alpha: 0.3),
-                                      child: Text(
-                                        '點擊上傳照片',
-                                        style: TextStyle(
-                                          color: colorScheme.onSurface,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          colorScheme.surface.withValues(alpha: 0.3),
+                                          Colors.transparent,
+                                          colorScheme.surface.withValues(alpha: 0.3),
+                                        ],
+                                        stops: const [0.0, 0.4, 1.0],
                                       ),
                                     ),
                                   ),
-                                ),
+                                  if (avatarFile == null && index == 0)
+                                    Align(
+                                      alignment: const Alignment(0, 0.5),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: BackdropFilter(
+                                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                            color: colorScheme.surface.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            child: Text(
+                                              '點擊上傳照片',
+                                              style: TextStyle(
+                                                color: colorScheme.onSurface,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
 
-          // 2. Top Left Title Layer (Tryzeon)
-          Positioned(
-            top: 0,
-            left: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  'Tryzeon',
-                  style: textTheme.displayLarge?.copyWith(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.0,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: colorScheme.primary.withValues(alpha: 0.5),
-                        offset: const Offset(2, 2),
+            // 2. Top Left Title Layer (Tryzeon)
+            Positioned(
+              top: 0,
+              left: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text(
+                    'Tryzeon',
+                    style: textTheme.displayLarge?.copyWith(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1.0,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10.0,
+                          color: colorScheme.primary.withValues(alpha: 0.5),
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // 3. Top Right Controls
+            Positioned(
+              top: 0,
+              right: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: !isActionLoading.value && currentTryonIndex.value >= 0
+                      ? buildMoreOptionsButton()
+                      : const SizedBox.shrink(),
+                ),
+              ),
+            ),
+
+            // 4. Bottom Layer (Navigation & Action) - Aware of Floating Nav Bar
+            // We assume "floating nav bar" occupies bottom space.
+            // Let's position things above it. Say bottom padding 100.
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Navigation Buttons (Left/Center aligned or just floating)
+                  if (!isActionLoading.value && tryonImages.value.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: buildPageIndicator(),
+                    ),
+
+                  // Spacing for where the actual bottom bar would be
+                  SizedBox(
+                    height: MediaQuery.of(context).padding.bottom + 80,
+                  ), // Approx floating bar height
+                ],
+              ),
+            ),
+
+            // 5. Bottom Right Floating Action Button (Try On)
+            Positioned(
+              bottom:
+                  MediaQuery.of(context).padding.bottom +
+                  30 +
+                  (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
+              right: 20,
+              child: buildTryOnButton(),
+            ),
+
+            // 6. Loading Overlay
+            if (isActionLoading.value)
+              Container(
+                color: colorScheme.surface.withValues(alpha: 0.54),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: colorScheme.onSurface),
+                      const SizedBox(height: 16),
+                      Text(
+                        '處理中...',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          letterSpacing: 2,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-
-          // 3. Top Right Controls
-          Positioned(
-            top: 0,
-            right: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: !isActionLoading.value && currentTryonIndex.value >= 0
-                    ? buildMoreOptionsButton()
-                    : const SizedBox.shrink(),
-              ),
-            ),
-          ),
-
-          // 4. Bottom Layer (Navigation & Action) - Aware of Floating Nav Bar
-          // We assume "floating nav bar" occupies bottom space.
-          // Let's position things above it. Say bottom padding 100.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Navigation Buttons (Left/Center aligned or just floating)
-                if (!isActionLoading.value && tryonImages.value.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: buildPageIndicator(),
-                  ),
-
-                // Spacing for where the actual bottom bar would be
-                SizedBox(
-                  height: MediaQuery.of(context).padding.bottom + 80,
-                ), // Approx floating bar height
-              ],
-            ),
-          ),
-
-          // 5. Bottom Right Floating Action Button (Try On)
-          Positioned(
-            bottom:
-                MediaQuery.of(context).padding.bottom +
-                30 +
-                (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
-            right: 20,
-            child: buildTryOnButton(),
-          ),
-
-          // 6. Loading Overlay
-          if (isActionLoading.value)
-            Container(
-              color: colorScheme.surface.withValues(alpha: 0.54),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(color: colorScheme.onSurface),
-                    const SizedBox(height: 16),
-                    Text(
-                      '處理中...',
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        letterSpacing: 2,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

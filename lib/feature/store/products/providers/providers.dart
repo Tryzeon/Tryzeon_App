@@ -52,3 +52,10 @@ final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) a
   }
   return result.get()!;
 });
+
+/// 強制刷新商品列表，失敗時返回原始資料
+Future<void> refreshProducts(final WidgetRef ref) async {
+  final useCase = ref.read(getProductsUseCaseProvider);
+  await useCase(forceRefresh: true);
+  ref.invalidate(productsProvider);
+}

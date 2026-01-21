@@ -19,17 +19,21 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDataSource _localDataSource;
 
   @override
-  Future<Result<List<Product>, String>> getProducts() async {
+  Future<Result<List<Product>, String>> getProducts({
+    final bool forceRefresh = false,
+  }) async {
     try {
-      final cached = await _localDataSource.getCache();
-      if (cached != null) {
-        return Ok(
-          cached.map((final m) {
-            return m.copyWith(
-              imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
-            );
-          }).toList(),
-        );
+      if (!forceRefresh) {
+        final cached = await _localDataSource.getCache();
+        if (cached != null) {
+          return Ok(
+            cached.map((final m) {
+              return m.copyWith(
+                imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
+              );
+            }).toList(),
+          );
+        }
       }
 
       final models = await _remoteDataSource.fetchProducts();
@@ -42,6 +46,19 @@ class ProductRepositoryImpl implements ProductRepository {
       return Ok(products);
     } catch (e) {
       AppLogger.error('無法載入商品列表', e);
+
+      // Graceful degradation: 失敗時嘗試返回 cache
+      final cached = await _localDataSource.getCache();
+      if (cached != null) {
+        return Ok(
+          cached.map((final m) {
+            return m.copyWith(
+              imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
+            );
+          }).toList(),
+        );
+      }
+
       return const Err('無法載入商品列表，請稍後再試');
     }
   }

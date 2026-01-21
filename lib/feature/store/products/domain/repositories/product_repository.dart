@@ -3,7 +3,7 @@ import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ProductRepository {
-  Future<Result<List<Product>, String>> getProducts();
+  Future<Result<List<Product>, String>> getProducts({final bool forceRefresh = false});
 
   Future<Result<void, String>> createProduct({
     required final Product product,

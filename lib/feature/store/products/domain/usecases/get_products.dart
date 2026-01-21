@@ -6,5 +6,6 @@ class GetProducts {
   GetProducts(this._repository);
   final ProductRepository _repository;
 
-  Future<Result<List<Product>, String>> call() => _repository.getProducts();
+  Future<Result<List<Product>, String>> call({final bool forceRefresh = false}) =>
+      _repository.getProducts(forceRefresh: forceRefresh);
 }

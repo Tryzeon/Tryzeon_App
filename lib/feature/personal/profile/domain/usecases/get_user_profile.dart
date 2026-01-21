@@ -7,7 +7,7 @@ class GetUserProfile {
 
   final UserProfileRepository _repository;
 
-  Future<Result<UserProfile, String>> call() {
-    return _repository.getUserProfile();
+  Future<Result<UserProfile, String>> call({final bool forceRefresh = false}) {
+    return _repository.getUserProfile(forceRefresh: forceRefresh);
   }
 }

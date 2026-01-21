@@ -4,7 +4,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.da
 import 'package:typed_result/typed_result.dart';
 
 abstract class UserProfileRepository {
-  Future<Result<UserProfile, String>> getUserProfile();
+  Future<Result<UserProfile, String>> getUserProfile({final bool forceRefresh = false});
 
   Future<Result<void, String>> updateUserProfile({
     required final UserProfile original,

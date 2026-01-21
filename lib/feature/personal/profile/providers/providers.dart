@@ -63,3 +63,11 @@ final avatarFileProvider = FutureProvider.autoDispose<File?>((final ref) async {
   }
   return result.get();
 });
+
+/// 強制刷新用戶資料和頭像，失敗時返回原始資料
+Future<void> refreshUserProfile(final WidgetRef ref) async {
+  final useCase = ref.read(getUserProfileUseCaseProvider);
+  await useCase(forceRefresh: true);
+  ref.invalidate(userProfileProvider);
+  ref.invalidate(avatarFileProvider);
+}

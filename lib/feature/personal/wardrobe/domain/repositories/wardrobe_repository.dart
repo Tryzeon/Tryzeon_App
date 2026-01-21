@@ -4,7 +4,9 @@ import '../entities/wardrobe_category.dart';
 import '../entities/wardrobe_item.dart';
 
 abstract class WardrobeRepository {
-  Future<Result<List<WardrobeItem>, String>> getWardrobeItems();
+  Future<Result<List<WardrobeItem>, String>> getWardrobeItems({
+    final bool forceRefresh = false,
+  });
 
   Future<Result<void, String>> uploadWardrobeItem({
     required final File image,

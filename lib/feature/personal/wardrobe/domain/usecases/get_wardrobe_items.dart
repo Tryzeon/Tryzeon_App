@@ -6,5 +6,6 @@ class GetWardrobeItems {
   GetWardrobeItems(this._repository);
   final WardrobeRepository _repository;
 
-  Future<Result<List<WardrobeItem>, String>> call() => _repository.getWardrobeItems();
+  Future<Result<List<WardrobeItem>, String>> call({final bool forceRefresh = false}) =>
+      _repository.getWardrobeItems(forceRefresh: forceRefresh);
 }

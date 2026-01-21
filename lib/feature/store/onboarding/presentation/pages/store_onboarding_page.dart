@@ -4,14 +4,14 @@ import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/providers.dart';
+import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../auth/presentation/pages/login_page.dart';
 import '../../../../personal/main/personal_entry.dart';
 
 class StoreOnboardingPage extends HookConsumerWidget {
-  const StoreOnboardingPage({super.key, this.onRefresh});
-  final Future<void> Function()? onRefresh;
+  const StoreOnboardingPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -147,7 +147,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: onRefresh ?? () async {},
+                  onRefresh: () async => ref.refresh(storeProfileProvider.future),
                   child: Center(
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),

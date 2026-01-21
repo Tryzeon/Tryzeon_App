@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
+import 'package:tryzeon/feature/store/products/providers/providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 
 import '../../../settings/presentation/pages/settings_page.dart';
@@ -135,11 +136,15 @@ class StoreHomePage extends HookConsumerWidget {
               ),
 
               // 內容區域
-              const Expanded(
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.all(16.0),
-                  child: ProductListSection(),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => refreshProducts(ref),
+                  color: colorScheme.primary,
+                  child: const SingleChildScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    child: ProductListSection(),
+                  ),
                 ),
               ),
             ],

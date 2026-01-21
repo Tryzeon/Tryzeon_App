@@ -17,12 +17,7 @@ class StoreEntry extends HookConsumerWidget {
     return profileAsync.when(
       data: (final profile) {
         if (profile == null) {
-          return PopScope(
-            canPop: false,
-            child: StoreOnboardingPage(
-              onRefresh: () async => ref.refresh(storeProfileProvider.future),
-            ),
-          );
+          return const PopScope(canPop: false, child: StoreOnboardingPage());
         }
         return const StoreHomePage();
       },

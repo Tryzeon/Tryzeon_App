@@ -262,7 +262,7 @@ class PersonalPage extends HookConsumerWidget {
                 // Grid Content
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () async => ref.refresh(wardrobeItemsProvider),
+                    onRefresh: () => refreshWardrobeItems(ref),
                     child: wardrobeItemsAsync.when(
                       data: (final wardrobeItems) {
                         final filtered = selectedCategory.value == null
