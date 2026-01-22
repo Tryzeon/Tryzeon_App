@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
@@ -77,7 +78,7 @@ class EmailLoginPage extends HookConsumerWidget {
         if (result.isSuccess) {
           isOtpSent.value = true;
           tokenController.clear();
-          resendCountdown.value = 60;
+          resendCountdown.value = AppConstants.otpResendCountdownSeconds;
           TopNotification.show(
             context,
             message: isResend ? '驗證碼已重新發送' : '驗證碼已發送，請檢查您的信箱',
@@ -320,7 +321,7 @@ class EmailLoginPage extends HookConsumerWidget {
 
                 // Form
                 AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
+                  duration: AppConstants.defaultAnimationDuration,
                   child: isOtpSent.value
                       ? Column(
                           key: const ValueKey('otp_form'),

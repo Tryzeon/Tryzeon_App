@@ -3,15 +3,16 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
 class ProductRemoteDataSource {
   ProductRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _productsTable = 'products';
-  static const _productSizesTable = 'product_sizes';
-  static const _productImagesBucket = 'store';
+  static const _productsTable = AppConstants.tableProducts;
+  static const _productSizesTable = AppConstants.tableProductSizes;
+  static const _productImagesBucket = AppConstants.bucketStore;
 
   Future<List<ProductModel>> fetchProducts() async {
     final user = _supabaseClient.auth.currentUser;

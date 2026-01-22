@@ -1,5 +1,6 @@
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/utils/crypto_utils.dart';
 
 class AuthRemoteDataSource {
@@ -9,7 +10,7 @@ class AuthRemoteDataSource {
   Future<void> signInWithOAuthProvider(final OAuthProvider provider) async {
     final success = await _supabase.auth.signInWithOAuth(
       provider,
-      redirectTo: 'io.supabase.tryzeon://login-callback',
+      redirectTo: AppConstants.authCallbackUrl,
       authScreenLaunchMode: LaunchMode.externalApplication,
     );
 

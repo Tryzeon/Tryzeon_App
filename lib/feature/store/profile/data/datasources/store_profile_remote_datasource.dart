@@ -3,13 +3,15 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileRemoteDataSource {
   StoreProfileRemoteDataSource(this._supabaseClient);
+
   final SupabaseClient _supabaseClient;
-  static const _table = 'store_profile';
-  static const _logoBucket = 'store';
+  static const _table = AppConstants.tableStoreProfile;
+  static const _logoBucket = AppConstants.bucketStore;
 
   Future<StoreProfileModel?> fetchStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;

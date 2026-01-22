@@ -3,14 +3,15 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileRemoteDataSource {
   UserProfileRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _table = 'user_profile';
-  static const _avatarBucket = 'avatars';
+  static const _table = AppConstants.tableUserProfile;
+  static const _avatarBucket = AppConstants.bucketAvatars;
 
   Future<UserProfileModel> fetchUserProfile() async {
     final user = _supabaseClient.auth.currentUser;

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -456,7 +457,7 @@ class HomePage extends HookConsumerWidget {
                               imageProvider = FileImage(avatarFile);
                             } else {
                               imageProvider = const AssetImage(
-                                'assets/images/profile/default.png',
+                                AppConstants.defaultProfileImage,
                               );
                             }
 

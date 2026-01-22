@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 
 enum NotificationType { success, error, info, warning }
 
@@ -13,8 +14,8 @@ class TopNotification {
     final NotificationType type = NotificationType.info,
   }) {
     final duration = type == NotificationType.error
-        ? const Duration(seconds: 10)
-        : const Duration(seconds: 3);
+        ? AppConstants.errorToastDuration
+        : AppConstants.toastDuration;
 
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
@@ -51,7 +52,7 @@ class _TopNotificationWidget extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final controller = useAnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: AppConstants.defaultAnimationDuration,
     );
 
     final slideAnimation = useMemoized(

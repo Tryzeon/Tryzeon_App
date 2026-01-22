@@ -1,14 +1,17 @@
 import 'dart:typed_data';
+
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
+
 import '../models/wardrobe_item_model.dart';
 
 class WardrobeRemoteDataSource {
   WardrobeRemoteDataSource(this._supabaseClient);
   final SupabaseClient _supabaseClient;
 
-  static const _table = 'wardrobe_items';
-  static const _bucket = 'wardrobe';
+  static const _table = AppConstants.tableWardrobeItems;
+  static const _bucket = AppConstants.bucketWardrobe;
 
   Future<List<WardrobeItemModel>> fetchWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;

@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 
 class ChatRemoteDataSource {
   ChatRemoteDataSource(this._supabase);
@@ -14,13 +15,12 @@ class ChatRemoteDataSource {
 - 活動：${answers['what'] ?? ''}
 - 原因：${answers['why'] ?? ''}
 - 風格：${answers['how'] ?? ''}
-''';
+    ''';
 
     final response = await _supabase.functions.invoke(
-      'chat',
+      AppConstants.functionChat,
       body: {'userRequirement': userRequirement},
     );
-
     return response.data['text'] as String;
   }
 }
