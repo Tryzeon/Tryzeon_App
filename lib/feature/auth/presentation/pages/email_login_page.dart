@@ -197,6 +197,8 @@ class EmailLoginPage extends HookConsumerWidget {
       required final String hint,
       required final IconData icon,
       final bool isNumber = false,
+      final TextInputAction? textInputAction,
+      final void Function(String)? onSubmitted,
     }) {
       return Container(
         decoration: BoxDecoration(
@@ -213,6 +215,8 @@ class EmailLoginPage extends HookConsumerWidget {
         child: TextFormField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.emailAddress,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onSubmitted,
           style: const TextStyle(
             color: titleColor,
             fontWeight: FontWeight.w600,
@@ -281,96 +285,124 @@ class EmailLoginPage extends HookConsumerWidget {
     return CustomizeScaffold(
       body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: screenHeight * 0.02),
+          // Main Scrollable Content with Tap-to-Dismiss
+          GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: LayoutBuilder(
+              builder: (final context, final constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: screenHeight * 0.02),
 
-                // Back Button
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: IconButton(
-                      onPressed: () {
-                        if (isOtpSent.value) {
-                          isOtpSent.value = false;
-                        } else {
-                          Navigator.pop(context);
-                        }
-                      },
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: titleColor,
-                        padding: const EdgeInsets.all(12),
-                        elevation: 0,
-                        side: const BorderSide(color: Colors.white, width: 2),
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: screenHeight * 0.04),
-
-                buildHeader(),
-
-                const SizedBox(height: 48),
-
-                // Form
-                AnimatedSwitcher(
-                  duration: AppConstants.defaultAnimationDuration,
-                  child: isOtpSent.value
-                      ? Column(
-                          key: const ValueKey('otp_form'),
-                          children: [
-                            buildInput(
-                              controller: tokenController,
-                              hint: '輸入 6 位數驗證碼',
-                              icon: Icons.lock_outline_rounded,
-                              isNumber: true,
-                            ),
-                            const SizedBox(height: 24),
-                            buildActionButton(text: '驗證並登入', onTap: handleVerifyEmailOtp),
-                            const SizedBox(height: 16),
-                            // Resend button
-                            Center(
-                              child: TextButton(
-                                onPressed: resendCountdown.value > 0
-                                    ? null
-                                    : () => handleSendEmailOtp(isResend: true),
-                                child: Text(
-                                  resendCountdown.value > 0
-                                      ? '重新發送 (${resendCountdown.value}s)'
-                                      : '重新發送驗證碼',
-                                  style: TextStyle(
-                                    color: resendCountdown.value > 0
-                                        ? subtitleColor.withValues(alpha: 0.5)
-                                        : primaryColor,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          // Back Button
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  if (isOtpSent.value) {
+                                    isOtpSent.value = false;
+                                  } else {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 20,
+                                ),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: titleColor,
+                                  padding: const EdgeInsets.all(12),
+                                  elevation: 0,
+                                  side: const BorderSide(color: Colors.white, width: 2),
                                 ),
                               ),
                             ),
-                          ],
-                        )
-                      : Column(
-                          key: const ValueKey('email_form'),
-                          children: [
-                            buildInput(
-                              controller: emailController,
-                              hint: 'name@example.com',
-                              icon: Icons.alternate_email_rounded,
-                            ),
-                            const SizedBox(height: 24),
-                            buildActionButton(text: '發送驗證碼', onTap: handleSendEmailOtp),
-                          ],
-                        ),
-                ),
-              ],
+                          ),
+
+                          SizedBox(height: screenHeight * 0.04),
+
+                          buildHeader(),
+
+                          const SizedBox(height: 48),
+
+                          // Form
+                          AnimatedSwitcher(
+                            duration: AppConstants.defaultAnimationDuration,
+                            child: isOtpSent.value
+                                ? Column(
+                                    key: const ValueKey('otp_form'),
+                                    children: [
+                                      buildInput(
+                                        controller: tokenController,
+                                        hint: '輸入 6 位數驗證碼',
+                                        icon: Icons.lock_outline_rounded,
+                                        isNumber: true,
+                                        textInputAction: TextInputAction.done,
+                                        onSubmitted: (final _) => handleVerifyEmailOtp(),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      buildActionButton(
+                                        text: '驗證並登入',
+                                        onTap: handleVerifyEmailOtp,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Resend button
+                                      Center(
+                                        child: TextButton(
+                                          onPressed: resendCountdown.value > 0
+                                              ? null
+                                              : () => handleSendEmailOtp(isResend: true),
+                                          child: Text(
+                                            resendCountdown.value > 0
+                                                ? '重新發送 (${resendCountdown.value}s)'
+                                                : '重新發送驗證碼',
+                                            style: TextStyle(
+                                              color: resendCountdown.value > 0
+                                                  ? subtitleColor.withValues(alpha: 0.5)
+                                                  : primaryColor,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    key: const ValueKey('email_form'),
+                                    children: [
+                                      buildInput(
+                                        controller: emailController,
+                                        hint: 'name@example.com',
+                                        icon: Icons.alternate_email_rounded,
+                                        textInputAction: TextInputAction.next,
+                                        onSubmitted: (final _) => handleSendEmailOtp(),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      buildActionButton(
+                                        text: '發送驗證碼',
+                                        onTap: handleSendEmailOtp,
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                          // Spacer to ensure content has bottom padding when scrolling
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
