@@ -12,4 +12,15 @@ abstract class AuthRepository {
   Future<Result<UserType?, String>> getLastLoginType();
 
   Future<Result<void, String>> setLastLoginType(final UserType userType);
+
+  Future<Result<void, String>> sendEmailOtp({
+    required final String email,
+    required final UserType userType,
+  });
+
+  Future<Result<void, String>> verifyEmailOtp({
+    required final String email,
+    required final String token,
+    required final UserType userType,
+  });
 }

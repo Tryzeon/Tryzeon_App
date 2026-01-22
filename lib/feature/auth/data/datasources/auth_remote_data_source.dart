@@ -25,6 +25,25 @@ class AuthRemoteDataSource {
     }
   }
 
+  Future<void> sendEmailOtp(final String email) async {
+    await _supabase.auth.signInWithOtp(email: email);
+  }
+
+  Future<void> verifyEmailOtp({
+    required final String email,
+    required final String token,
+  }) async {
+    final response = await _supabase.auth.verifyOTP(
+      type: OtpType.email,
+      email: email,
+      token: token,
+    );
+
+    if (response.session == null) {
+      throw Exception('驗證碼無效或已過期');
+    }
+  }
+
   Future<void> signOut() async {
     await _supabase.auth.signOut();
   }

@@ -105,4 +105,34 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Err('儲存登入類型失敗');
     }
   }
+
+  @override
+  Future<Result<void, String>> sendEmailOtp({
+    required final String email,
+    required final UserType userType,
+  }) async {
+    try {
+      await _remoteDataSource.sendEmailOtp(email);
+      return const Ok(null);
+    } catch (e) {
+      AppLogger.error('發送 Email OTP 失敗', e);
+      return const Err('發送登入連結失敗，請稍後再試');
+    }
+  }
+
+  @override
+  Future<Result<void, String>> verifyEmailOtp({
+    required final String email,
+    required final String token,
+    required final UserType userType,
+  }) async {
+    try {
+      await _remoteDataSource.verifyEmailOtp(email: email, token: token);
+      await _localDataSource.setLastLoginType(userType.name);
+      return const Ok(null);
+    } catch (e) {
+      AppLogger.error('Email OTP 驗證失敗', e);
+      return const Err('驗證碼無效或已過期，請重新發送');
+    }
+  }
 }
