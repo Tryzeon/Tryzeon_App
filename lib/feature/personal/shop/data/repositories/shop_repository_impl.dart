@@ -2,6 +2,7 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -13,8 +14,7 @@ class ShopRepositoryImpl implements ShopRepository {
   @override
   Future<Result<List<ShopProduct>, String>> getProducts({
     final String? searchQuery,
-    final String sortBy = 'created_at',
-    final bool ascending = false,
+    final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? types,
@@ -23,8 +23,7 @@ class ShopRepositoryImpl implements ShopRepository {
     try {
       final result = await _remoteDataSource.fetchProducts(
         searchQuery: searchQuery,
-        sortBy: sortBy,
-        ascending: ascending,
+        sortOption: sortOption,
         minPrice: minPrice,
         maxPrice: maxPrice,
         types: types,

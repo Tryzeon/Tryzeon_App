@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 
 class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);
@@ -8,8 +9,7 @@ class ShopRemoteDataSource {
 
   Future<List<ShopProductModel>> fetchProducts({
     final String? searchQuery,
-    final String sortBy = 'created_at',
-    final bool ascending = false,
+    final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? types,
@@ -38,8 +38,24 @@ class ShopRemoteDataSource {
       query = query.overlaps('type', types.toList());
     }
 
+    // 排序邏輯
+    final String dbSortColumn;
+    final bool isAscending;
+
+    switch (sortOption) {
+      case ProductSortOption.priceLowToHigh:
+        dbSortColumn = 'price';
+        isAscending = true;
+      case ProductSortOption.priceHighToLow:
+        dbSortColumn = 'price';
+        isAscending = false;
+      case ProductSortOption.latest:
+        dbSortColumn = 'created_at';
+        isAscending = false;
+    }
+
     // 排序
-    final response = await query.order(sortBy, ascending: ascending);
+    final response = await query.order(dbSortColumn, ascending: isAscending);
 
     return (response as List).map((final item) {
       final map = Map<String, dynamic>.from(item);

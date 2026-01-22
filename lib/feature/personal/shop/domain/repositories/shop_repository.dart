@@ -1,11 +1,11 @@
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ShopRepository {
   Future<Result<List<ShopProduct>, String>> getProducts({
     final String? searchQuery,
-    final String sortBy = 'created_at',
-    final bool ascending = false,
+    final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? types,

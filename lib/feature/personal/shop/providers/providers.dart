@@ -59,8 +59,7 @@ final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter
   final useCase = ref.watch(getShopProductsProvider);
   final result = await useCase(
     searchQuery: filter.searchQuery,
-    sortBy: filter.sortBy,
-    ascending: filter.ascending,
+    sortOption: filter.sortOption,
     minPrice: filter.minPrice,
     maxPrice: filter.maxPrice,
     types: filter.types,

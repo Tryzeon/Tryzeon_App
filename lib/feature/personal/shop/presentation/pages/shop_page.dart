@@ -5,6 +5,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/utils/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/providers/providers.dart';
 
@@ -29,8 +30,7 @@ class ShopPage extends HookConsumerWidget {
     final adsAsync = ref.watch(shopAdsProvider);
 
     // 過濾和排序狀態
-    final sortBy = useState('tryon_count');
-    final ascending = useState(false);
+    final sortOption = useState(ProductSortOption.latest);
     final minPrice = useState<int?>(null);
     final maxPrice = useState<int?>(null);
     final searchQuery = useState<String?>(null);
@@ -41,15 +41,16 @@ class ShopPage extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    void handleSortByTryonCount() {
-      if (sortBy.value == 'tryon_count') return;
-      sortBy.value = 'tryon_count';
-      ascending.value = false;
+    void handleSortByLatest() {
+      sortOption.value = ProductSortOption.latest;
     }
 
     void handleSortByPrice() {
-      sortBy.value = 'price';
-      ascending.value = !ascending.value;
+      if (sortOption.value == ProductSortOption.priceLowToHigh) {
+        sortOption.value = ProductSortOption.priceHighToLow;
+      } else {
+        sortOption.value = ProductSortOption.priceLowToHigh;
+      }
     }
 
     void handleShowFilterDialog() {
@@ -109,20 +110,23 @@ class ShopPage extends HookConsumerWidget {
     }
 
     Widget buildComprehensiveSortButton() {
-      final isActive = sortBy.value != 'price';
+      final isActive = sortOption.value == ProductSortOption.latest;
       return buildSortButton(
         label: '綜合',
         icon: Icons.emoji_events_outlined,
         isActive: isActive,
-        onTap: handleSortByTryonCount,
+        onTap: handleSortByLatest,
       );
     }
 
     Widget buildPriceSortButton() {
-      final isActive = sortBy.value == 'price';
+      final isActive = sortOption.value == ProductSortOption.priceLowToHigh ||
+          sortOption.value == ProductSortOption.priceHighToLow;
+      final isAscending = sortOption.value == ProductSortOption.priceLowToHigh;
+
       return buildSortButton(
         label: '價格',
-        icon: ascending.value ? Icons.arrow_upward : Icons.arrow_downward,
+        icon: !isActive || isAscending ? Icons.arrow_upward : Icons.arrow_downward,
         isActive: isActive,
         onTap: handleSortByPrice,
       );
@@ -153,8 +157,7 @@ class ShopPage extends HookConsumerWidget {
 
     final filter = ShopFilter(
       searchQuery: searchQuery.value,
-      sortBy: sortBy.value,
-      ascending: ascending.value,
+      sortOption: sortOption.value,
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
       types: selectedCategories.value,
