@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/services/cache_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -38,8 +40,11 @@ class AuthRepositoryImpl implements AuthRepository {
           return Err('目前不支援 $provider 登入');
       }
 
-      // Perform OAuth sign-in
-      await _remoteDataSource.signInWithOAuth(oauthProvider);
+      if (oauthProvider == OAuthProvider.apple && Platform.isIOS) {
+        await _remoteDataSource.signInWithAppleNative();
+      } else {
+        await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
+      }
 
       // Store login type preference
       await _localDataSource.setLastLoginType(userType.name);
@@ -112,7 +117,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required final UserType userType,
   }) async {
     try {
-      await _remoteDataSource.sendEmailOtp(email);
+      await _remoteDataSource.sendEmailOTP(email);
       return const Ok(null);
     } catch (e) {
       AppLogger.error('發送 Email OTP 失敗', e);
@@ -127,7 +132,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required final UserType userType,
   }) async {
     try {
-      await _remoteDataSource.verifyEmailOtp(email: email, token: token);
+      await _remoteDataSource.verifyEmailOTP(email: email, token: token);
       await _localDataSource.setLastLoginType(userType.name);
       return const Ok(null);
     } catch (e) {

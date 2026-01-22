@@ -1,10 +1,12 @@
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/utils/crypto_utils.dart';
 
 class AuthRemoteDataSource {
   AuthRemoteDataSource(this._supabase);
   final SupabaseClient _supabase;
 
-  Future<void> signInWithOAuth(final OAuthProvider provider) async {
+  Future<void> signInWithOAuthProvider(final OAuthProvider provider) async {
     final success = await _supabase.auth.signInWithOAuth(
       provider,
       redirectTo: 'io.supabase.tryzeon://login-callback',
@@ -25,11 +27,32 @@ class AuthRemoteDataSource {
     }
   }
 
-  Future<void> sendEmailOtp(final String email) async {
+  Future<void> signInWithAppleNative() async {
+    final rawNonce = CryptoUtils.generateNonce();
+    final hashedNonce = CryptoUtils.sha256Hash(rawNonce);
+
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+      nonce: hashedNonce,
+    );
+
+    final idToken = credential.identityToken;
+    if (idToken == null) {
+      throw Exception('無法取得 Apple ID Token');
+    }
+
+    await _supabase.auth.signInWithIdToken(
+      provider: OAuthProvider.apple,
+      idToken: idToken,
+      nonce: rawNonce,
+    );
+  }
+
+  Future<void> sendEmailOTP(final String email) async {
     await _supabase.auth.signInWithOtp(email: email);
   }
 
-  Future<void> verifyEmailOtp({
+  Future<void> verifyEmailOTP({
     required final String email,
     required final String token,
   }) async {
