@@ -11,12 +11,17 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
   final ProductCategoryLocalDataSource _local;
 
   @override
-  Future<Result<List<ProductCategory>, String>> getProductCategories() async {
+  Future<Result<List<ProductCategory>, String>> getProductCategories({
+    final bool forceRefresh = false,
+  }) async {
     try {
-      final cached = await _local.getCached();
-      if (cached != null && cached.isNotEmpty) {
-        return Ok(cached);
+      if (!forceRefresh) {
+        final cached = await _local.getCached();
+        if (cached != null && cached.isNotEmpty) {
+          return Ok(cached);
+        }
       }
+
       final remote = await _remote.fetchProductCategories();
       await _local.cache(remote);
       return Ok(remote);
