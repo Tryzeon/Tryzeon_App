@@ -5,6 +5,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 class ImagePickerHelper {
   static final ImagePicker _picker = ImagePicker();
@@ -88,11 +89,12 @@ class ImagePickerHelper {
             return File(compressedFile.path);
           }
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLogger.error('Pick image failed', e, stackTrace);
         if (context.mounted) {
           TopNotification.show(
             context,
-            message: '選擇圖片失敗: $e',
+            message: '選擇圖片失敗，請稍後再試',
             type: NotificationType.error,
           );
         }
