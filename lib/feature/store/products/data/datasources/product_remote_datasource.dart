@@ -4,7 +4,9 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/feature/store/products/data/mappers/product_sort_field_mapper.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 
 class ProductRemoteDataSource {
   ProductRemoteDataSource(this._supabaseClient);
@@ -14,24 +16,19 @@ class ProductRemoteDataSource {
   static const _productSizesTable = AppConstants.tableProductSizes;
   static const _productImagesBucket = AppConstants.bucketStore;
 
-  Future<List<ProductModel>> fetchProducts() async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+  Future<List<ProductModel>> fetchProducts({
+    required final String storeId,
+    required final SortCondition sort,
+  }) async {
+    final dbColumn = sort.field.toDbColumn();
 
     final response = await _supabaseClient
-        .from('store_profile')
-        .select('''
-          id,
-          products(
-            *,
-            product_sizes(*)
-          )
-        ''')
-        .eq('owner_id', user.id)
-        .single();
+        .from(_productsTable)
+        .select('*, product_sizes(*)')
+        .eq('store_id', storeId)
+        .order(dbColumn, ascending: sort.ascending);
 
-    final products = response['products'] as List;
-    return products.map((final e) {
+    return (response as List).map((final e) {
       final map = Map<String, dynamic>.from(e);
       final imagePath = map['image_path'] as String?;
       if (imagePath != null) {
@@ -39,6 +36,22 @@ class ProductRemoteDataSource {
       }
       return ProductModel.fromJson(map);
     }).toList();
+  }
+
+  /// Gets the current user's store ID.
+  ///
+  /// TODO: Replace with local storage retrieval in the future.
+  Future<String> getStoreId() async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+
+    final response = await _supabaseClient
+        .from('store_profile')
+        .select('id')
+        .eq('owner_id', user.id)
+        .single();
+
+    return response['id'] as String;
   }
 
   Future<String> insertProduct(final ProductModel product) async {

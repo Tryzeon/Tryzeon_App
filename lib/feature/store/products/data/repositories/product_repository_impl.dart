@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/store/products/data/datasources/product_remote_d
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
@@ -20,23 +21,26 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Result<List<Product>, String>> getProducts({
+    final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
   }) async {
     try {
+      // 1. 嘗試從本地快取獲取 (由 Database 直接排序)
       if (!forceRefresh) {
-        final cached = await _localDataSource.getCache();
+        final cached = await _localDataSource.getCache(sort: sort);
         if (cached != null) {
-          return Ok(
-            cached.map((final m) {
-              return m.copyWith(
-                imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
-              );
-            }).toList(),
-          );
+          final products = cached.map((final m) {
+            return m.copyWith(
+              imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
+            );
+          }).toList();
+          return Ok(products);
         }
       }
 
-      final models = await _remoteDataSource.fetchProducts();
+      // 2. 本地無快取或強制刷新 -> 從遠端獲取（API 層排序）
+      final storeId = await _remoteDataSource.getStoreId();
+      final models = await _remoteDataSource.fetchProducts(storeId: storeId, sort: sort);
       await _localDataSource.setCache(models);
 
       final products = models.map((final m) {
@@ -47,16 +51,14 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       AppLogger.error('無法載入商品列表', e);
 
-      // Graceful degradation: 失敗時嘗試返回 cache
-      final cached = await _localDataSource.getCache();
+      // Graceful degradation: 失敗時嘗試返回快取 (由 Database 排序)
+      final cached = await _localDataSource.getCache(sort: sort);
+
       if (cached != null) {
-        return Ok(
-          cached.map((final m) {
-            return m.copyWith(
-              imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
-            );
-          }).toList(),
-        );
+        final products = cached.map((final m) {
+          return m.copyWith(imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath));
+        }).toList();
+        return Ok(products);
       }
 
       return const Err('無法載入商品列表，請稍後再試');
@@ -103,7 +105,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final model = await _remoteDataSource.fetchProduct(productId);
 
-      final currentCache = await _localDataSource.getCache() ?? [];
+      final currentCache =
+          await _localDataSource.getCache(sort: SortCondition.defaultSort) ?? [];
       await _localDataSource.setCache([model, ...currentCache]);
 
       return const Ok(null);
@@ -190,7 +193,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final model = await _remoteDataSource.fetchProduct(original.id!);
 
-      final currentCache = await _localDataSource.getCache() ?? [];
+      final currentCache =
+          await _localDataSource.getCache(sort: SortCondition.defaultSort) ?? [];
       await _localDataSource.setCache(
         currentCache.map((final p) => p.id == model.id ? model : p).toList(),
       );
@@ -213,7 +217,8 @@ class ProductRepositoryImpl implements ProductRepository {
         _localDataSource.deleteProductImage(product.imagePath).ignore();
       }
 
-      final currentCache = await _localDataSource.getCache() ?? [];
+      final currentCache =
+          await _localDataSource.getCache(sort: SortCondition.defaultSort) ?? [];
       await _localDataSource.setCache(
         currentCache.where((final p) => p.id != product.id).toList(),
       );

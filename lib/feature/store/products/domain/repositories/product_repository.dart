@@ -1,9 +1,13 @@
 import 'dart:io';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ProductRepository {
-  Future<Result<List<Product>, String>> getProducts({final bool forceRefresh = false});
+  Future<Result<List<Product>, String>> getProducts({
+    final SortCondition sort = SortCondition.defaultSort,
+    final bool forceRefresh = false,
+  });
 
   Future<Result<void, String>> createProduct({
     required final Product product,

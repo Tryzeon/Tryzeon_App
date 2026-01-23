@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/presentation/dialogs/sort_dialog.dart';
+import 'package:tryzeon/feature/store/products/presentation/dialogs/product_sort_dialog.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_card.dart';
 import 'package:tryzeon/feature/store/products/providers/providers.dart';
 
@@ -13,28 +11,12 @@ class ProductListSection extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final productsAsync = ref.watch(productsProvider);
-    final sortBy = useState('created_at');
-    final ascending = useState(false);
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    void handleSortChange(final String newSortBy) {
-      sortBy.value = newSortBy;
-    }
-
-    void handleAscendingChange(final bool value) {
-      ascending.value = value;
-    }
-
     void showSortOptions() {
-      SortOptionsDialog(
-        context: context,
-        sortBy: sortBy.value,
-        ascending: ascending.value,
-        onSortChange: handleSortChange,
-        onAscendingChange: handleAscendingChange,
-      );
+      showSortOptionsDialog(context);
     }
 
     return Column(
@@ -74,9 +56,7 @@ class ProductListSection extends HookConsumerWidget {
             message: error.toString(),
             onRetry: () => ref.refresh(productsProvider),
           ),
-          data: (final data) {
-            final products = data.sortProducts(sortBy.value, ascending.value);
-
+          data: (final products) {
             if (products.isEmpty) {
               return LayoutBuilder(
                 builder: (final context, final constraints) {
