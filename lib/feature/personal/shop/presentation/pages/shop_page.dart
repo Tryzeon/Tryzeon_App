@@ -120,7 +120,8 @@ class ShopPage extends HookConsumerWidget {
     }
 
     Widget buildPriceSortButton() {
-      final isActive = sortOption.value == ProductSortOption.priceLowToHigh ||
+      final isActive =
+          sortOption.value == ProductSortOption.priceLowToHigh ||
           sortOption.value == ProductSortOption.priceHighToLow;
       final isAscending = sortOption.value == ProductSortOption.priceLowToHigh;
 

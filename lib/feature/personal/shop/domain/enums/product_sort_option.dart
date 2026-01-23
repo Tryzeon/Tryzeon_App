@@ -1,5 +1,1 @@
-enum ProductSortOption {
-  latest,
-  priceLowToHigh,
-  priceHighToLow,
-}
+enum ProductSortOption { latest, priceLowToHigh, priceHighToLow }
