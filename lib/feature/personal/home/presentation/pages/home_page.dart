@@ -12,6 +12,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/home/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
@@ -62,43 +63,29 @@ class HomePage extends HookConsumerWidget {
 
       isActionLoading.value = true;
 
-      try {
-        final profile = await ref.read(userProfileProvider.future);
-        final result = await ref.read(updateUserProfileUseCaseProvider)(
-          original: profile,
-          target: profile,
-          avatarFile: imageFile,
-        );
+      final profile = await ref.read(userProfileProvider.future);
+      final result = await ref.read(updateUserProfileUseCaseProvider)(
+        original: profile,
+        target: profile,
+        avatarFile: imageFile,
+      );
 
-        if (!context.mounted) return;
+      if (!context.mounted) return;
 
-        if (result.isSuccess) {
-          tryonImages.value = [];
-          currentTryonIndex.value = -1;
-          customAvatarIndex.value = null;
-          ref.invalidate(userProfileProvider);
-          TopNotification.show(
-            context,
-            message: '頭像上傳成功',
-            type: NotificationType.success,
-          );
-        } else {
-          TopNotification.show(
-            context,
-            message: result.getError()!,
-            type: NotificationType.error,
-          );
-        }
-      } catch (e) {
-        if (!context.mounted) return;
+      if (result.isSuccess) {
+        tryonImages.value = [];
+        currentTryonIndex.value = -1;
+        customAvatarIndex.value = null;
+        ref.invalidate(userProfileProvider);
+        TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
+      } else {
         TopNotification.show(
           context,
-          message: '頭像上傳失敗：${e.toString()}',
+          message: result.getError()!,
           type: NotificationType.error,
         );
-      } finally {
-        isActionLoading.value = false;
       }
+      isActionLoading.value = false;
     }
 
     Future<void> performTryOn({
@@ -170,9 +157,14 @@ class HomePage extends HookConsumerWidget {
             type: NotificationType.success,
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLogger.error('照片儲存失敗', e, stackTrace);
         if (context.mounted) {
-          TopNotification.show(context, message: '儲存失敗：$e', type: NotificationType.error);
+          TopNotification.show(
+            context,
+            message: '儲存失敗，請檢查儲存權限',
+            type: NotificationType.error,
+          );
         }
       }
     }
