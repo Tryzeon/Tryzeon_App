@@ -21,6 +21,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Result<List<Product>, String>> getProducts({
+    required final String storeId,
     final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
   }) async {
@@ -39,7 +40,6 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       // 2. 本地無快取或強制刷新 -> 從遠端獲取（API 層排序）
-      final storeId = await _remoteDataSource.getStoreId();
       final models = await _remoteDataSource.fetchProducts(storeId: storeId, sort: sort);
       await _localDataSource.setCache(models);
 

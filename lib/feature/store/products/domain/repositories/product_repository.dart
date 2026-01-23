@@ -5,6 +5,7 @@ import 'package:typed_result/typed_result.dart';
 
 abstract class ProductRepository {
   Future<Result<List<Product>, String>> getProducts({
+    required final String storeId,
     final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
   });

@@ -86,4 +86,24 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       return const Err('店家資料更新失敗，請稍後再試');
     }
   }
+
+  @override
+  Future<Result<String, String>> getStoreId() async {
+    try {
+      // 1. 嘗試從本地快取獲取
+      final cached = await _localDataSource.getCache();
+      if (cached != null) return Ok(cached.id);
+
+      // 2. 本地無快取 -> 從遠端獲取（會自動更新本地快取）
+      final profile = await _remoteDataSource.fetchStoreProfile();
+      if (profile == null) return const Err('找不到店家資料，請先完成店家設定');
+
+      await _localDataSource.setCache(profile);
+
+      return Ok(profile.id);
+    } catch (e) {
+      AppLogger.error('無法獲取店家 ID', e);
+      return const Err('無法獲取店家 ID，請稍後再試');
+    }
+  }
 }

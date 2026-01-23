@@ -8,7 +8,8 @@ class GetProducts {
   final ProductRepository _repository;
 
   Future<Result<List<Product>, String>> call({
+    required final String storeId,
     final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
-  }) => _repository.getProducts(sort: sort, forceRefresh: forceRefresh);
+  }) => _repository.getProducts(storeId: storeId, sort: sort, forceRefresh: forceRefresh);
 }

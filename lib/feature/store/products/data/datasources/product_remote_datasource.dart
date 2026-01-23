@@ -38,22 +38,6 @@ class ProductRemoteDataSource {
     }).toList();
   }
 
-  /// Gets the current user's store ID.
-  ///
-  /// TODO: Replace with local storage retrieval in the future.
-  Future<String> getStoreId() async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
-
-    final response = await _supabaseClient
-        .from('store_profile')
-        .select('id')
-        .eq('owner_id', user.id)
-        .single();
-
-    return response['id'] as String;
-  }
-
   Future<String> insertProduct(final ProductModel product) async {
     final json = product.toJson();
     json.remove('id');

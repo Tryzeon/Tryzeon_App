@@ -11,6 +11,8 @@ import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.da
 import 'package:tryzeon/feature/store/products/domain/usecases/get_products.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
+import 'package:tryzeon/feature/store/profile/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 final productRemoteDataSourceProvider = Provider<ProductRemoteDataSource>((final ref) {
@@ -51,10 +53,18 @@ final productSortConditionProvider = StateProvider<SortCondition>((final ref) {
 });
 
 final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) async {
+  final StoreProfile? storeProfile = await ref.watch(storeProfileProvider.future);
+  final String? storeId = storeProfile?.id;
+
+  if (storeId == null) {
+    throw '找不到店家資料，請先完成店家設定';
+  }
+
+  // 2. 呼叫產品 Use Case
   final sort = ref.watch(productSortConditionProvider);
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
 
-  final result = await getProductsUseCase(sort: sort);
+  final result = await getProductsUseCase(storeId: storeId, sort: sort);
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -64,9 +74,13 @@ final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) a
 
 /// 強制刷新商品列表，失敗時返回原始資料
 Future<void> refreshProducts(final WidgetRef ref) async {
+  final storeProfile = await ref.read(storeProfileProvider.future);
+  final storeId = storeProfile?.id;
+  if (storeId == null) return;
+
   final sort = ref.read(productSortConditionProvider);
   final useCase = ref.read(getProductsUseCaseProvider);
 
-  await useCase(sort: sort, forceRefresh: true);
+  await useCase(storeId: storeId, sort: sort, forceRefresh: true);
   ref.invalidate(productsProvider);
 }
