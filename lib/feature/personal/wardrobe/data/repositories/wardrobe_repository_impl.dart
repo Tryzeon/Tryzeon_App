@@ -36,10 +36,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     } catch (e) {
       AppLogger.error('衣櫃列表獲取失敗', e);
 
-      // Graceful degradation: 失敗時嘗試返回 cache
-      final cached = await _localDataSource.getCachedItems();
-      if (cached != null) return Ok(cached);
-
       return const Err('無法載入衣櫃列表，請檢查網路連線');
     }
   }

@@ -51,16 +51,6 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       AppLogger.error('無法載入商品列表', e);
 
-      // Graceful degradation: 失敗時嘗試返回快取 (由 Database 排序)
-      final cached = await _localDataSource.getCache(sort: sort);
-
-      if (cached != null) {
-        final products = cached.map((final m) {
-          return m.copyWith(imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath));
-        }).toList();
-        return Ok(products);
-      }
-
       return const Err('無法載入商品列表，請稍後再試');
     }
   }

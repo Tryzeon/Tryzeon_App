@@ -38,12 +38,6 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return Ok(profile);
     } catch (e) {
       AppLogger.error('無法載入個人資料', e);
-
-      // Graceful degradation: 失敗時嘗試返回 cache
-      final cached = await _localDataSource.getCache();
-      if (cached != null) return Ok(cached);
-
-      // Wrap unknown errors
       return const Err('無法載入個人資料，請稍後再試');
     }
   }
