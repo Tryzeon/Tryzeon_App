@@ -25,8 +25,8 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
       final remote = await _remote.fetchProductCategories();
       await _local.cache(remote);
       return Ok(remote);
-    } catch (e) {
-      AppLogger.error('商品類型獲取失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('商品類型獲取失敗', e, stackTrace);
       return const Err('無法載入商品類型，請檢查網路連線');
     }
   }

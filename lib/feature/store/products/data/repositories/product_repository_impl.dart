@@ -48,8 +48,8 @@ class ProductRepositoryImpl implements ProductRepository {
       }).toList();
 
       return Ok(products);
-    } catch (e) {
-      AppLogger.error('無法載入商品列表', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('無法載入商品列表', e, stackTrace);
 
       return const Err('無法載入商品列表，請稍後再試');
     }
@@ -100,8 +100,8 @@ class ProductRepositoryImpl implements ProductRepository {
       await _localDataSource.setCache([model, ...currentCache]);
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('商品創建失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('商品創建失敗', e, stackTrace);
       return const Err('新增商品失敗，請稍後再試');
     }
   }
@@ -190,8 +190,8 @@ class ProductRepositoryImpl implements ProductRepository {
       );
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('商品更新失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('商品更新失敗', e, stackTrace);
       return const Err('更新商品失敗，請稍後再試');
     }
   }
@@ -214,8 +214,8 @@ class ProductRepositoryImpl implements ProductRepository {
       );
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('商品刪除失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('商品刪除失敗', e, stackTrace);
       return const Err('刪除商品失敗，請稍後再試');
     }
   }

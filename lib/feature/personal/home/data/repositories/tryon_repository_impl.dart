@@ -27,7 +27,7 @@ class TryOnRepositoryImpl implements TryOnRepository {
       );
 
       return Ok(TryonResult(imageBase64: imageBase64));
-    } on FunctionException catch (e) {
+    } on FunctionException catch (e, stackTrace) {
       String message;
       switch (e.status) {
         case 403:
@@ -38,12 +38,12 @@ class TryOnRepositoryImpl implements TryOnRepository {
           break;
         default:
           message = '虛擬試穿服務暫時無法使用，請稍後再試';
-          AppLogger.error('虛擬試穿失敗 (FunctionException)', e);
+          AppLogger.error('虛擬試穿失敗 (FunctionException)', e, stackTrace);
           break;
       }
       return Err(message);
-    } catch (e) {
-      AppLogger.error('虛擬試穿失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('虛擬試穿失敗', e, stackTrace);
       return const Err('虛擬試穿服務暫時無法使用，請稍後再試');
     }
   }

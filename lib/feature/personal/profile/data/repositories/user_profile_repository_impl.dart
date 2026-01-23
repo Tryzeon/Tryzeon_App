@@ -36,8 +36,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       await _localDataSource.setCache(profile);
 
       return Ok(profile);
-    } catch (e) {
-      AppLogger.error('無法載入個人資料', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('無法載入個人資料', e, stackTrace);
       return const Err('無法載入個人資料，請稍後再試');
     }
   }
@@ -83,8 +83,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       }
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('個人資料更新失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('個人資料更新失敗', e, stackTrace);
 
       return const Err('個人資料更新失敗，請稍後再試');
     }
@@ -108,8 +108,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       }
 
       return Ok(downloadedAvatar);
-    } catch (e) {
-      AppLogger.error('無法載入個人頭像', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('無法載入個人頭像', e, stackTrace);
       return const Err('無法載入個人頭像，請稍後再試');
     }
   }

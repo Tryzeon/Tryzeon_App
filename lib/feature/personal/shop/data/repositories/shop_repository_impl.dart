@@ -29,8 +29,8 @@ class ShopRepositoryImpl implements ShopRepository {
         types: types,
       );
       return Ok(result);
-    } catch (e) {
-      AppLogger.error('商品列表獲取失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('商品列表獲取失敗', e, stackTrace);
       return const Err('無法取得商品列表，請稍後再試');
     }
   }
@@ -40,8 +40,8 @@ class ShopRepositoryImpl implements ShopRepository {
     try {
       await _remoteDataSource.incrementTryonCount(productId);
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('記錄試穿次數失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('記錄試穿次數失敗', e, stackTrace);
       return const Err('操作失敗，請稍後再試');
     }
   }
@@ -51,8 +51,8 @@ class ShopRepositoryImpl implements ShopRepository {
     try {
       await _remoteDataSource.incrementPurchaseClickCount(productId);
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('記錄購買點擊失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('記錄購買點擊失敗', e, stackTrace);
       return const Err('操作失敗，請稍後再試');
     }
   }
@@ -62,8 +62,8 @@ class ShopRepositoryImpl implements ShopRepository {
     try {
       final ads = await _adLocalDataSource.getAdImages(forceRefresh: forceRefresh);
       return Ok(ads);
-    } catch (e) {
-      AppLogger.error('獲取廣告失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('獲取廣告失敗', e, stackTrace);
       return const Err('無法獲取廣告');
     }
   }

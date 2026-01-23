@@ -50,8 +50,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await _localDataSource.setLastLoginType(userType.name);
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('$provider 登入失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('$provider 登入失敗', e, stackTrace);
       return Err('$provider 登入失敗，請稍後再試');
     }
   }
@@ -61,22 +61,22 @@ class AuthRepositoryImpl implements AuthRepository {
     // Sign out from Supabase
     try {
       await _remoteDataSource.signOut();
-    } catch (e) {
-      AppLogger.error('Supabase 登出失敗 (已忽略)', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('Supabase 登出失敗 (已忽略)', e, stackTrace);
     }
 
     // Clear API cache
     try {
       await CacheService.clearCache();
-    } catch (e) {
-      AppLogger.error('清除快取失敗 (已忽略)', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('清除快取失敗 (已忽略)', e, stackTrace);
     }
 
     // Clear local preferences
     try {
       await _localDataSource.clearAll();
-    } catch (e) {
-      AppLogger.error('清除登入類型失敗 (已忽略)', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('清除登入類型失敗 (已忽略)', e, stackTrace);
     }
 
     return const Ok(null);
@@ -94,8 +94,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       return Ok(userType);
-    } catch (e) {
-      AppLogger.error('取得登入類型失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('取得登入類型失敗', e, stackTrace);
       return const Err('取得登入類型失敗');
     }
   }
@@ -105,8 +105,8 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _localDataSource.setLastLoginType(userType.name);
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('儲存登入類型失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('儲存登入類型失敗', e, stackTrace);
       return const Err('儲存登入類型失敗');
     }
   }
@@ -119,8 +119,8 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _remoteDataSource.sendEmailOTP(email);
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('發送 Email OTP 失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('發送 Email OTP 失敗', e, stackTrace);
       return const Err('發送登入連結失敗，請稍後再試');
     }
   }
@@ -135,8 +135,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remoteDataSource.verifyEmailOTP(email: email, token: token);
       await _localDataSource.setLastLoginType(userType.name);
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('Email OTP 驗證失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('Email OTP 驗證失敗', e, stackTrace);
       return const Err('驗證碼無效或已過期，請重新發送');
     }
   }

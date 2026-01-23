@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/utils/app_logger.dart';
 import '../../domain/entities/wardrobe_category.dart';
 
 class CategoryMapper {
@@ -10,7 +11,8 @@ class CategoryMapper {
       return WardrobeCategory.values.firstWhere(
         (final category) => category.name == categoryString,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.debug('Unknown category string: $categoryString', e, stackTrace);
       return WardrobeCategory.others;
     }
   }

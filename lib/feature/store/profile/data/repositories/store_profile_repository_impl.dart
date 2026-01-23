@@ -37,8 +37,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       await _localDataSource.setCache(profile);
 
       return Ok(profile);
-    } catch (e) {
-      AppLogger.error('無法載入店家資料', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('無法載入店家資料', e, stackTrace);
       return const Err('無法載入店家資料，請稍後再試');
     }
   }
@@ -80,8 +80,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       }
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('店家資料更新失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('店家資料更新失敗', e, stackTrace);
 
       return const Err('店家資料更新失敗，請稍後再試');
     }
@@ -101,8 +101,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       await _localDataSource.setCache(profile);
 
       return Ok(profile.id);
-    } catch (e) {
-      AppLogger.error('無法獲取店家 ID', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('無法獲取店家 ID', e, stackTrace);
       return const Err('無法獲取店家 ID，請稍後再試');
     }
   }

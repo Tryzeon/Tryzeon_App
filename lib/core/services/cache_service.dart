@@ -9,8 +9,8 @@ class CacheService {
   static Future<File> saveImage(final Uint8List bytes, final String filePath) async {
     try {
       return await fcm.DefaultCacheManager().putFile(filePath, bytes, key: filePath);
-    } catch (e) {
-      AppLogger.error('Failed to save image to $filePath', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to save image to $filePath', e, stackTrace);
       rethrow;
     }
   }
@@ -27,8 +27,8 @@ class CacheService {
 
       final fileInfo = await fcm.DefaultCacheManager().getFileFromCache(filePath);
       return fileInfo?.file;
-    } catch (e) {
-      AppLogger.error('Failed to get image from $filePath', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get image from $filePath', e, stackTrace);
       rethrow;
     }
   }
@@ -37,8 +37,8 @@ class CacheService {
   static Future<void> deleteImage(final String filePath) async {
     try {
       await fcm.DefaultCacheManager().removeFile(filePath);
-    } catch (e) {
-      AppLogger.error('Failed to delete image at $filePath', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete image at $filePath', e, stackTrace);
       rethrow;
     }
   }
@@ -47,8 +47,8 @@ class CacheService {
   static Future<void> clearCache() async {
     try {
       await fcm.DefaultCacheManager().emptyCache();
-    } catch (e) {
-      AppLogger.error('Failed to empty cache', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to empty cache', e, stackTrace);
     }
   }
 }

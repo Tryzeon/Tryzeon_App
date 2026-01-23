@@ -33,8 +33,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final items = await _remoteDataSource.fetchWardrobeItems();
       await _localDataSource.updateCachedItems(items);
       return Ok(items);
-    } catch (e) {
-      AppLogger.error('衣櫃列表獲取失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('衣櫃列表獲取失敗', e, stackTrace);
 
       return const Err('無法載入衣櫃列表，請檢查網路連線');
     }
@@ -73,8 +73,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       await _localDataSource.addItemToCache(newItem);
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('衣物上傳失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('衣物上傳失敗', e, stackTrace);
       return const Err('上傳衣物失敗，請稍後再試');
     }
   }
@@ -90,8 +90,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       await _localDataSource.removeItemFromCache(item.id!);
 
       return const Ok(null);
-    } catch (e) {
-      AppLogger.error('衣物刪除失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('衣物刪除失敗', e, stackTrace);
       return const Err('刪除衣物失敗，請稍後再試');
     }
   }
@@ -108,8 +108,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       if (image == null) return const Err('無法獲取衣物圖片，請稍後再試');
 
       return Ok(image);
-    } catch (e) {
-      AppLogger.error('衣櫃圖片載入失敗', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('衣櫃圖片載入失敗', e, stackTrace);
       return const Err('無法載入衣物圖片，請稍後再試');
     }
   }
