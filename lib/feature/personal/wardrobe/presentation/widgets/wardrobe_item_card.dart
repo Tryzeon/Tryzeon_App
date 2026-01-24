@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/providers.dart';
-import '../mappers/category_display_mapper.dart';
+import '../mappers/category_ui_mapper.dart';
 
 class WardrobeItemCard extends ConsumerWidget {
   const WardrobeItemCard({super.key, required this.item, required this.onDelete});

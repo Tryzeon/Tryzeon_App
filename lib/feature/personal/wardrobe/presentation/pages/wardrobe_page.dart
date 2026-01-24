@@ -17,7 +17,7 @@ import 'package:typed_result/typed_result.dart';
 
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
-import '../mappers/category_display_mapper.dart';
+import '../mappers/category_ui_mapper.dart';
 import '../widgets/wardrobe_item_card.dart';
 
 class PersonalPage extends HookConsumerWidget {

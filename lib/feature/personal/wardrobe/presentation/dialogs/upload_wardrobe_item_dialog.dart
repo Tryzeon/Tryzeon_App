@@ -8,7 +8,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
-import '../mappers/category_display_mapper.dart';
+import '../mappers/category_ui_mapper.dart';
 
 class UploadWardrobeItemDialog extends HookConsumerWidget {
   const UploadWardrobeItemDialog({super.key, required this.image});
