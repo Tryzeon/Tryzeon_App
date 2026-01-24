@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/feature/auth/providers/providers.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
 
+import 'preferences_page.dart';
 import 'profile_setting_page.dart';
 
 class PersonalSettingsPage extends HookConsumerWidget {
@@ -63,6 +64,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
       );
     }
 
+    Future<void> navigateToPreferences() async {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (final context) => const PreferencesPage()),
+      );
+    }
+
     return SettingsPageScaffold(
       onBack: () => Navigator.pop(context),
       onLogout: handleSignOut,
@@ -72,6 +80,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
           title: '基本資料',
           subtitle: '編輯您的個人資訊',
           onTap: navigateToProfile,
+          color: colorScheme.primary.withValues(alpha: 0.1),
+        ),
+        SettingsMenuItem(
+          icon: Icons.tune_rounded,
+          title: '偏好設定',
+          subtitle: '管理您的個人偏好',
+          onTap: navigateToPreferences,
           color: colorScheme.primary.withValues(alpha: 0.1),
         ),
         SettingsMenuItem(

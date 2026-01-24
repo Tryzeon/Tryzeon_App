@@ -34,4 +34,7 @@ class AppConstants {
   // Logic
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
+
+  // Shared Preferences Keys
+  static const String keyRecommendNearbyShops = 'recommend_nearby_shops';
 }
