@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
+import 'package:tryzeon/core/shared/measurements/mappers/measurement_type_data_mapper.dart';
 
 class SizeMeasurements extends Equatable {
   const SizeMeasurements({
