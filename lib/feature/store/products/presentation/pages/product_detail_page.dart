@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/domain/entities/size_measurements.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -185,22 +186,113 @@ class ProductDetailPage extends HookConsumerWidget {
       );
     }
 
+    void updateOffset(final TextEditingController controller, final double delta) {
+      final currentValue = double.tryParse(controller.text) ?? 0.0;
+      final newValue = (currentValue + delta).clamp(0.0, 100.0);
+      controller.text = newValue.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+    }
+
     Widget buildMeasurementField(
-      final TextEditingController controller,
+      final TextEditingController valueController,
+      final TextEditingController offsetController,
       final String label,
       final IconData icon,
     ) {
-      return SizedBox(
-        width: (MediaQuery.of(context).size.width - 48 - 32 - 12) / 2,
-        child: buildTextField(
-          controller: controller,
-          label: label,
-          icon: icon,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          filledColor: Theme.of(context).colorScheme.surface,
-          isDense: true,
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
-          validator: AppValidators.validateMeasurement,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: buildTextField(
+                controller: valueController,
+                label: label,
+                icon: icon,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                filledColor: Theme.of(context).colorScheme.surface,
+                isDense: true,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
+                validator: AppValidators.validateMeasurement,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '誤差範圍 (±)',
+                    style: textTheme.labelSmall?.copyWith(color: colorScheme.outline),
+                  ),
+                  Row(
+                    children: [
+                      Material(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          bottomLeft: Radius.circular(8),
+                        ),
+                        child: InkWell(
+                          onTap: () => updateOffset(offsetController, -0.5),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(Icons.remove, size: 16),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.symmetric(
+                              horizontal: BorderSide(
+                                color: colorScheme.outline.withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          child: AnimatedBuilder(
+                            animation: offsetController,
+                            builder: (final context, final child) {
+                              return Text(
+                                offsetController.text,
+                                textAlign: TextAlign.center,
+                                style: textTheme.bodyMedium,
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      Material(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        ),
+                        child: InkWell(
+                          onTap: () => updateOffset(offsetController, 0.5),
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(8),
+                            bottomRight: Radius.circular(8),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(Icons.add, size: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -273,12 +365,11 @@ class ProductDetailPage extends HookConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+                    Column(
                       children: MeasurementType.values.map((final type) {
                         return buildMeasurementField(
                           sizeEntry.measurementControllers[type]!,
+                          sizeEntry.offsetControllers[type]!,
                           type.label,
                           type.icon,
                         );
@@ -530,11 +621,14 @@ class ProductDetailPage extends HookConsumerWidget {
 }
 
 class _SizeEntry {
-  _SizeEntry({this.id, final String name = '', final BodyMeasurements? measurements})
+  _SizeEntry({this.id, final String name = '', final SizeMeasurements? measurements})
     : nameController = TextEditingController(text: name) {
     for (final type in MeasurementType.values) {
       measurementControllers[type] = TextEditingController(
-        text: measurements?[type]?.toString() ?? '',
+        text: measurements?.getValue(type)?.toString() ?? '',
+      );
+      offsetControllers[type] = TextEditingController(
+        text: measurements?.getOffset(type)?.toString() ?? '0.0',
       );
     }
   }
@@ -545,28 +639,38 @@ class _SizeEntry {
 
   ProductSize toProductSize(final String productId) {
     final Map<String, dynamic> measurementsJson = {};
-    for (final entry in measurementControllers.entries) {
-      final value = double.tryParse(entry.value.text);
+    for (final type in MeasurementType.values) {
+      final valueText = measurementControllers[type]?.text;
+      final value = valueText != null ? double.tryParse(valueText) : null;
+
+      final offsetText = offsetControllers[type]?.text;
+      final offset = offsetText != null ? double.tryParse(offsetText) : 0.0;
+
       if (value != null) {
-        measurementsJson[entry.key.key] = value;
+        measurementsJson[type.key] = value;
       }
+      measurementsJson['${type.key}_offset'] = offset;
     }
 
     return ProductSize(
       id: id,
       productId: productId,
       name: nameController.text,
-      measurements: BodyMeasurements.fromJson(measurementsJson),
+      measurements: SizeMeasurements.fromJson(measurementsJson),
     );
   }
 
   final String? id;
   final TextEditingController nameController;
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
+  final Map<MeasurementType, TextEditingController> offsetControllers = {};
 
   void dispose() {
     nameController.dispose();
     for (final controller in measurementControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in offsetControllers.values) {
       controller.dispose();
     }
   }

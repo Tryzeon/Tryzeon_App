@@ -1,5 +1,5 @@
-import 'package:tryzeon/core/data/mappers/body_measurements_mapper.dart';
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/data/mappers/size_measurements_mapper.dart';
+import 'package:tryzeon/core/domain/entities/size_measurements.dart';
 
 import '../collections/product_collection.dart';
 import '../models/product_model.dart';
@@ -72,7 +72,7 @@ extension ProductSizeCollectionMapper on ProductSizeCollection {
       id: id,
       productId: productId,
       name: name ?? '',
-      measurements: measurements?.toModel() ?? const BodyMeasurements(),
+      measurements: measurements?.toModel() ?? const SizeMeasurements(),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

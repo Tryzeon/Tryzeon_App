@@ -12,34 +12,37 @@ class FitCalculator {
       return FitStatus.unknown;
     }
 
-    double? bestDiff;
+    int bestPerfectCount = -1;
 
     for (final size in productSizes) {
-      double totalDiff = 0;
+      int perfectCount = 0;
       int comparisonCount = 0;
 
       for (final type in MeasurementType.values) {
         final userValue = userProfile.measurements[type];
-        final sizeValue = size.measurements[type];
+        final range = size.measurements.getRange(type);
 
-        if (userValue != null && sizeValue != null) {
-          totalDiff += (userValue - sizeValue).abs();
+        if (userValue != null && range != null) {
           comparisonCount++;
+          // 檢查是否在區間內 (inclusive)
+          if (userValue >= range.$1 && userValue <= range.$2) {
+            perfectCount++;
+          }
         }
       }
 
       if (comparisonCount > 0) {
-        if (bestDiff == null || totalDiff < bestDiff) {
-          bestDiff = totalDiff;
+        if (perfectCount > bestPerfectCount) {
+          bestPerfectCount = perfectCount;
         }
       }
     }
 
-    if (bestDiff == null) {
+    if (bestPerfectCount == -1) {
       return FitStatus.unknown;
-    } else if (bestDiff <= 5) {
+    } else if (bestPerfectCount >= 3) {
       return FitStatus.perfect;
-    } else if (bestDiff <= 10) {
+    } else if (bestPerfectCount == 2) {
       return FitStatus.good;
     } else {
       return FitStatus.poor;

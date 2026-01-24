@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/domain/entities/size_measurements.dart';
 
 class ProductSize extends Equatable {
   const ProductSize({
@@ -15,7 +15,7 @@ class ProductSize extends Equatable {
   final String? id;
   final String? productId;
   final String name;
-  final BodyMeasurements measurements;
+  final SizeMeasurements measurements;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -26,7 +26,7 @@ class ProductSize extends Equatable {
     final String? id,
     final String? productId,
     final String? name,
-    final BodyMeasurements? measurements,
+    final SizeMeasurements? measurements,
     final DateTime? createdAt,
     final DateTime? updatedAt,
   }) {

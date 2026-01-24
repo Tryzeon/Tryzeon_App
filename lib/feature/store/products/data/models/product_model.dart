@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/domain/entities/size_measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ProductSizeModel extends ProductSize {
@@ -16,7 +16,7 @@ class ProductSizeModel extends ProductSize {
       id: json['id'] as String?,
       productId: json['product_id'] as String?,
       name: json['name'] as String,
-      measurements: BodyMeasurements.fromJson(json),
+      measurements: SizeMeasurements.fromJson(json),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );

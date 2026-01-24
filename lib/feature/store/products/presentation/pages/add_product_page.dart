@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/domain/entities/size_measurements.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
@@ -50,6 +51,7 @@ class AddProductPage extends HookConsumerWidget {
       };
       for (final type in MeasurementType.values) {
         newControllers[type.name] = TextEditingController();
+        newControllers['${type.name}_offset'] = TextEditingController(text: '0.0');
       }
       sizeControllers.value = [...sizeControllers.value, newControllers];
     }
@@ -69,14 +71,19 @@ class AddProductPage extends HookConsumerWidget {
         for (final type in MeasurementType.values) {
           final text = controllers[type.name]?.text;
           final value = text != null && text.isNotEmpty ? double.tryParse(text) : null;
+
+          final offsetText = controllers['${type.name}_offset']?.text;
+          final offset = offsetText != null ? double.tryParse(offsetText) : 0.0;
+
           if (value != null) {
             measurementsJson[type.key] = value;
           }
+          measurementsJson['${type.key}_offset'] = offset;
         }
 
         return ProductSize(
           name: controllers['name']!.text,
-          measurements: BodyMeasurements.fromJson(measurementsJson),
+          measurements: SizeMeasurements.fromJson(measurementsJson),
         );
       }).toList();
     }
@@ -228,6 +235,14 @@ class AddProductPage extends HookConsumerWidget {
       );
     }
 
+    void updateOffset(final TextEditingController controller, final double delta) {
+      final currentValue = double.tryParse(controller.text) ?? 0.0;
+      final newValue = (currentValue + delta).clamp(0.0, 100.0); // 限制 offset 不小於 0
+
+      // 處理浮點數精度問題
+      controller.text = newValue.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+    }
+
     Widget buildSizeInputs() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,58 +365,128 @@ class AddProductPage extends HookConsumerWidget {
                           keyboardType: TextInputType.text,
                           validator: AppValidators.validateSizeName,
                         ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: MeasurementType.values.map((final type) {
-                            return SizedBox(
-                              width: (MediaQuery.of(context).size.width - 118) / 2,
-                              child: TextFormField(
-                                controller: controllers[type.name],
-                                style: textTheme.bodyLarge,
-                                decoration: InputDecoration(
-                                  labelText: type.label,
-                                  labelStyle: textTheme.bodyMedium,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: colorScheme.outline.withValues(alpha: 0.3),
+                        const SizedBox(height: 16),
+                        ...MeasurementType.values.map((final type) {
+                          final valueController = controllers[type.name]!;
+                          final offsetController = controllers['${type.name}_offset']!;
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                // 測量值輸入
+                                Expanded(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    controller: valueController,
+                                    style: textTheme.bodyLarge,
+                                    decoration: InputDecoration(
+                                      labelText: type.label,
+                                      labelStyle: textTheme.bodyMedium,
+                                      isDense: true,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: colorScheme.outline.withValues(alpha: 0.3),
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                      decimal: true,
                                     ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: colorScheme.primary,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: colorScheme.surfaceContainer,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 12,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*'),
+                                      ),
+                                    ],
+                                    validator: AppValidators.validateMeasurement,
                                   ),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d*'),
+                                const SizedBox(width: 12),
+                                // Offset 控制
+                                Expanded(
+                                  flex: 2,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '誤差範圍 (±)',
+                                        style: textTheme.labelSmall?.copyWith(
+                                          color: colorScheme.outline,
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Material(
+                                            color: colorScheme.surfaceContainerHighest,
+                                            borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(8),
+                                              bottomLeft: Radius.circular(8),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () =>
+                                                  updateOffset(offsetController, -0.5),
+                                              borderRadius: const BorderRadius.only(
+                                                topLeft: Radius.circular(8),
+                                                bottomLeft: Radius.circular(8),
+                                              ),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(8),
+                                                child: const Icon(Icons.remove, size: 16),
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                vertical: 8,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                border: Border.symmetric(
+                                                  horizontal: BorderSide(
+                                                    color: colorScheme.outline.withValues(
+                                                      alpha: 0.1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              child: AnimatedBuilder(
+                                                animation: offsetController,
+                                                builder: (final context, final child) {
+                                                  return Text(
+                                                    offsetController.text,
+                                                    textAlign: TextAlign.center,
+                                                    style: textTheme.bodyMedium,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          Material(
+                                            color: colorScheme.surfaceContainerHighest,
+                                            borderRadius: const BorderRadius.only(
+                                              topRight: Radius.circular(8),
+                                              bottomRight: Radius.circular(8),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () =>
+                                                  updateOffset(offsetController, 0.5),
+                                              borderRadius: const BorderRadius.only(
+                                                topRight: Radius.circular(8),
+                                                bottomRight: Radius.circular(8),
+                                              ),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(8),
+                                                child: const Icon(Icons.add, size: 16),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
-                                validator: AppValidators.validateMeasurement,
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),
