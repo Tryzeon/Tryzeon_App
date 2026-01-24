@@ -38,14 +38,7 @@ class BodyMeasurements extends Equatable {
   ];
 
   Map<String, dynamic> toJson() {
-    final data = <String, dynamic>{};
-    for (final type in MeasurementType.values) {
-      final value = this[type];
-      if (value != null) {
-        data[type.key] = value;
-      }
-    }
-    return data;
+    return {for (final type in MeasurementType.values) type.key: this[type]};
   }
 
   final double? height;
