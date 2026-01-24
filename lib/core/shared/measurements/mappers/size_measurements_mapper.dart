@@ -1,5 +1,5 @@
-import 'package:tryzeon/core/data/collections/size_measurements_collection.dart';
-import 'package:tryzeon/core/domain/entities/size_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/collections/size_measurements_collection.dart';
+import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 
 extension SizeMeasurementsModelMapper on SizeMeasurements {
   SizeMeasurementsCollection toCollection() {

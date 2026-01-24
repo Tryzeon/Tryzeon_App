@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
 
 import '../collections/body_measurements_collection.dart';
 

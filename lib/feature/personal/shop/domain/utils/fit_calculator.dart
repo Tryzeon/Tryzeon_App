@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/fit_status.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';

@@ -1,5 +1,5 @@
-import 'package:tryzeon/core/data/mappers/body_measurements_mapper.dart';
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/mappers/body_measurements_mapper.dart';
 
 import '../collections/user_profile_collection.dart';
 import '../models/user_profile_model.dart';

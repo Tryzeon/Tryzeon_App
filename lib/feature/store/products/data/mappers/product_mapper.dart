@@ -1,5 +1,5 @@
-import 'package:tryzeon/core/data/mappers/size_measurements_mapper.dart';
-import 'package:tryzeon/core/domain/entities/size_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/mappers/size_measurements_mapper.dart';
 
 import '../collections/product_collection.dart';
 import '../models/product_model.dart';

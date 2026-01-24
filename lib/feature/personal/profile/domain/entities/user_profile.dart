@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:tryzeon/core/domain/entities/body_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
 
 class UserProfile extends Equatable {
   const UserProfile({

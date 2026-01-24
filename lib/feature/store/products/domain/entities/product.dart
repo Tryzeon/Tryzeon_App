@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:tryzeon/core/domain/entities/size_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 
 class ProductSize extends Equatable {
   const ProductSize({

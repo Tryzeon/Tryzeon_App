@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:tryzeon/core/domain/entities/measurement_type.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
 
-export 'package:tryzeon/core/domain/entities/measurement_type.dart';
+export 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
 
 class BodyMeasurements extends Equatable {
   const BodyMeasurements({
