@@ -424,14 +424,13 @@ class HomePage extends HookConsumerWidget {
                     height: double.infinity,
                     color: colorScheme.surface, // Fallback
                     child: avatarAsync.when(
+                      skipLoadingOnReload: true,
+                      skipError: true,
                       loading: () => const Center(child: CircularProgressIndicator()),
                       error: (final error, final stack) => Center(
                         child: ErrorView(
                           message: error.toString(),
-                          onRetry: () => Future.wait([
-                            ref.refresh(userProfileProvider.future),
-                            ref.refresh(avatarFileProvider.future),
-                          ]),
+                          onRetry: () => refreshUserProfile(ref),
                         ),
                       ),
                       data: (final avatarFile) {

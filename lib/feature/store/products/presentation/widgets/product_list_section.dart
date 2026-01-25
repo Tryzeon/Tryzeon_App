@@ -51,11 +51,11 @@ class ProductListSection extends HookConsumerWidget {
         ),
         const SizedBox(height: 16),
         productsAsync.when(
+          skipLoadingOnReload: true,
+          skipError: true,
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (final error, final stack) => ErrorView(
-            message: error.toString(),
-            onRetry: () => ref.refresh(productsProvider),
-          ),
+          error: (final error, final stack) =>
+              ErrorView(message: error.toString(), onRetry: () => refreshProducts(ref)),
           data: (final products) {
             if (products.isEmpty) {
               return LayoutBuilder(

@@ -72,7 +72,8 @@ final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) a
   return result.get()!;
 });
 
-/// 強制刷新商品列表，失敗時返回原始資料
+/// 強制刷新商品列表
+/// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作
 Future<void> refreshProducts(final WidgetRef ref) async {
   final storeProfile = await ref.read(storeProfileProvider.future);
   final storeId = storeProfile?.id;
@@ -82,5 +83,9 @@ Future<void> refreshProducts(final WidgetRef ref) async {
   final useCase = ref.read(getProductsUseCaseProvider);
 
   await useCase(storeId: storeId, sort: sort, forceRefresh: true);
-  ref.invalidate(productsProvider);
+  try {
+    final _ = await ref.refresh(productsProvider.future);
+  } catch (_) {
+    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+  }
 }

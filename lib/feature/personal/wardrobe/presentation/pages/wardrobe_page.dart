@@ -264,6 +264,8 @@ class PersonalPage extends HookConsumerWidget {
                   child: RefreshIndicator(
                     onRefresh: () => refreshWardrobeItems(ref),
                     child: wardrobeItemsAsync.when(
+                      skipLoadingOnReload: true,
+                      skipError: true,
                       data: (final wardrobeItems) {
                         final filtered = selectedCategory.value == null
                             ? wardrobeItems
@@ -295,7 +297,7 @@ class PersonalPage extends HookConsumerWidget {
                       loading: () => const Center(child: CircularProgressIndicator()),
                       error: (final error, final __) => ErrorView(
                         message: error.toString(),
-                        onRetry: () => ref.refresh(wardrobeItemsProvider),
+                        onRetry: () => refreshWardrobeItems(ref),
                       ),
                     ),
                   ),

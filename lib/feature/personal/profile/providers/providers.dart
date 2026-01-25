@@ -64,10 +64,17 @@ final avatarFileProvider = FutureProvider.autoDispose<File?>((final ref) async {
   return result.get();
 });
 
-/// 強制刷新用戶資料和頭像，失敗時返回原始資料
+/// 強制刷新用戶資料和頭像
 Future<void> refreshUserProfile(final WidgetRef ref) async {
   final useCase = ref.read(getUserProfileUseCaseProvider);
   await useCase(forceRefresh: true);
-  ref.invalidate(userProfileProvider);
-  ref.invalidate(avatarFileProvider);
+  try {
+    await Future.wait([
+      ref.refresh(userProfileProvider.future),
+      ref.refresh(avatarFileProvider.future),
+    ]);
+  } catch (_) {
+    // Provider 刷新失敗時（例如網絡錯誤），忽略異常
+    // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料
+  }
 }

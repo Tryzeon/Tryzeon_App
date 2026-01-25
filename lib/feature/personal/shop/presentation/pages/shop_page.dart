@@ -219,7 +219,7 @@ class ShopPage extends HookConsumerWidget {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () async => ref.refresh(shopProductsProvider(filter).future),
+                  onRefresh: () => refreshShopProducts(ref, filter),
                   color: colorScheme.primary,
                   child: LayoutBuilder(
                     builder: (final context, final constraints) {
@@ -329,6 +329,8 @@ class ShopPage extends HookConsumerWidget {
 
                               // 商品 Grid（可滾動）
                               productsAsync.when(
+                                skipLoadingOnReload: true,
+                                skipError: true,
                                 loading: () => Center(
                                   child: CircularProgressIndicator(
                                     color: colorScheme.primary,
@@ -336,8 +338,7 @@ class ShopPage extends HookConsumerWidget {
                                 ),
                                 error: (final error, final stack) => ErrorView(
                                   message: error.toString(),
-                                  onRetry: () =>
-                                      ref.refresh(shopProductsProvider(filter)),
+                                  onRetry: () => refreshShopProducts(ref, filter),
                                 ),
                                 data: (final displayedProducts) {
                                   if (displayedProducts.isEmpty) {

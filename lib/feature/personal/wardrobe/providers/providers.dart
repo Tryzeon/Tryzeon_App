@@ -56,11 +56,15 @@ final wardrobeItemsProvider = FutureProvider.autoDispose<List<WardrobeItem>>((
   return result.get()!;
 });
 
-/// 強制刷新衣櫃列表，失敗時返回原始資料
+/// 強制刷新衣櫃列表
 Future<void> refreshWardrobeItems(final WidgetRef ref) async {
   final useCase = ref.read(getWardrobeItemsUseCaseProvider);
   await useCase(forceRefresh: true);
-  ref.invalidate(wardrobeItemsProvider);
+  try {
+    final _ = await ref.refresh(wardrobeItemsProvider.future);
+  } catch (_) {
+    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+  }
 }
 
 final wardrobeItemImageProvider = FutureProvider.family.autoDispose<File, String>((

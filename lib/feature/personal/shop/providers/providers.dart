@@ -78,3 +78,12 @@ final shopAdsProvider = FutureProvider<List<String>>((final ref) async {
   }
   return result.get()!;
 });
+
+/// 強制刷新商品列表
+Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
+  try {
+    final _ = await ref.refresh(shopProductsProvider(filter).future);
+  } catch (_) {
+    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+  }
+}
