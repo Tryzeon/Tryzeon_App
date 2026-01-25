@@ -26,12 +26,12 @@ class UserProfileLocalDataSource {
     });
   }
 
-  Future<void> saveAvatar(final Uint8List bytes, final String path) {
-    return CacheService.saveImage(bytes, path);
+  Future<File?> getAvatar(final String path) {
+    return CacheService.getImage(path);
   }
 
-  Future<File?> getCachedAvatar(final String path) {
-    return CacheService.getImage(path);
+  Future<void> saveAvatar(final Uint8List bytes, final String path) {
+    return CacheService.saveImage(bytes, path);
   }
 
   Future<File?> downloadAvatar(final String path, final String downloadUrl) {

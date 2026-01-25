@@ -94,7 +94,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   Future<Result<File, String>> getUserAvatar(final String path) async {
     try {
       // 1. Try Local Cache
-      final cachedAvatar = await _localDataSource.getCachedAvatar(path);
+      final cachedAvatar = await _localDataSource.getAvatar(path);
       if (cachedAvatar != null) {
         return Ok(cachedAvatar);
       }
