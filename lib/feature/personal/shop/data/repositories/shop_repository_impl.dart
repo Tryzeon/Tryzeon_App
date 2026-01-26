@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/services/location_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
@@ -18,6 +19,7 @@ class ShopRepositoryImpl implements ShopRepository {
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? types,
+    final UserLocation? userLocation,
     final bool forceRefresh = false,
   }) async {
     try {
@@ -27,6 +29,7 @@ class ShopRepositoryImpl implements ShopRepository {
         minPrice: minPrice,
         maxPrice: maxPrice,
         types: types,
+        userLocation: userLocation,
       );
       return Ok(result);
     } catch (e, stackTrace) {

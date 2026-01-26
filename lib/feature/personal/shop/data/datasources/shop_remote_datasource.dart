@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/services/location_service.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 
@@ -13,12 +14,13 @@ class ShopRemoteDataSource {
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? types,
+    final UserLocation? userLocation,
   }) async {
     // 查詢所有商品並關聯店家資訊和尺寸資訊
     dynamic query = _supabaseClient.from(_productsTable).select('''
           *,
           product_sizes(*),
-          store_profile(*)
+          store_profile!inner(*)
         ''');
 
     // 搜尋過濾（商品名稱或類型）
@@ -57,7 +59,8 @@ class ShopRemoteDataSource {
     // 排序
     final response = await query.order(dbSortColumn, ascending: isAscending);
 
-    return (response as List).map((final item) {
+    // 將結果轉換為 Model
+    var products = (response as List).map((final item) {
       final map = Map<String, dynamic>.from(item);
       final imagePath = map['image_path'] as String?;
       if (imagePath != null) {
@@ -65,6 +68,27 @@ class ShopRemoteDataSource {
       }
       return ShopProductModel.fromJson(map);
     }).toList();
+
+    // 若有使用者位置，依接近度排序：同區優先 > 同城市 > 其他
+    if (userLocation != null) {
+      final sameDistrict = <ShopProductModel>[];
+      final sameCity = <ShopProductModel>[];
+      final otherCity = <ShopProductModel>[];
+
+      for (final product in products) {
+        if (userLocation.isSameDistrict(product.storeAddress)) {
+          sameDistrict.add(product);
+        } else if (userLocation.isSameCity(product.storeAddress)) {
+          sameCity.add(product);
+        } else {
+          otherCity.add(product);
+        }
+      }
+
+      products = [...sameDistrict, ...sameCity, ...otherCity];
+    }
+
+    return products;
   }
 
   String getProductImageUrl(final String imagePath) {

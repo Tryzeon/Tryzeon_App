@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:tryzeon/core/services/location_service.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 
 class ShopFilter extends Equatable {
@@ -8,6 +9,7 @@ class ShopFilter extends Equatable {
     this.minPrice,
     this.maxPrice,
     this.types,
+    this.userLocation,
   });
 
   final String? searchQuery;
@@ -16,6 +18,16 @@ class ShopFilter extends Equatable {
   final int? maxPrice;
   final Set<String>? types;
 
+  /// 使用者位置（用於附近店家排序）
+  final UserLocation? userLocation;
+
   @override
-  List<Object?> get props => [searchQuery, sortOption, minPrice, maxPrice, types];
+  List<Object?> get props => [
+    searchQuery,
+    sortOption,
+    minPrice,
+    maxPrice,
+    types,
+    userLocation,
+  ];
 }

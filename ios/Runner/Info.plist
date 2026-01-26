@@ -66,5 +66,7 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to recommend nearby shops</string>
 </dict>
 </plist>

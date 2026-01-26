@@ -15,6 +15,7 @@ class ShopProductModel extends ShopProduct {
     super.purchaseClickCount,
     super.sizes,
     super.storeName,
+    super.storeAddress,
     super.createdAt,
     super.updatedAt,
   });
@@ -34,6 +35,7 @@ class ShopProductModel extends ShopProduct {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       storeName: json['store_profile']?['name'] as String?,
+      storeAddress: json['store_profile']?['address'] as String?,
       sizes:
           (json['product_sizes'] as List?)
               ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
@@ -56,6 +58,7 @@ class ShopProductModel extends ShopProduct {
       purchaseClickCount: entity.purchaseClickCount,
       sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList() ?? [],
       storeName: entity.storeName,
+      storeAddress: entity.storeAddress,
     );
   }
 
@@ -86,6 +89,7 @@ class ShopProductModel extends ShopProduct {
             )
             .toList(),
       if (storeName != null) 'store_name': storeName,
+      if (storeAddress != null) 'store_address': storeAddress,
     };
   }
 }

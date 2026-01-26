@@ -16,6 +16,7 @@ class ShopProduct extends Equatable {
     this.purchaseClickCount,
     this.sizes,
     this.storeName,
+    this.storeAddress,
     this.createdAt,
     this.updatedAt,
   });
@@ -33,6 +34,7 @@ class ShopProduct extends Equatable {
   final int? purchaseClickCount;
   final List<ProductSize>? sizes;
   final String? storeName;
+  final String? storeAddress;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -50,6 +52,7 @@ class ShopProduct extends Equatable {
     purchaseClickCount,
     sizes,
     storeName,
+    storeAddress,
     createdAt,
     updatedAt,
   ];
@@ -67,6 +70,7 @@ class ShopProduct extends Equatable {
     final int? purchaseClickCount,
     final List<ProductSize>? sizes,
     final String? storeName,
+    final String? storeAddress,
     final DateTime? createdAt,
     final DateTime? updatedAt,
   }) {
@@ -83,6 +87,7 @@ class ShopProduct extends Equatable {
       purchaseClickCount: purchaseClickCount ?? this.purchaseClickCount,
       sizes: sizes ?? this.sizes,
       storeName: storeName ?? this.storeName,
+      storeAddress: storeAddress ?? this.storeAddress,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

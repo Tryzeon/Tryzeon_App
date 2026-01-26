@@ -1,5 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/providers/location_providers.dart';
+import 'package:tryzeon/core/services/location_service.dart';
+import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/shop_repository_impl.dart';
@@ -63,6 +66,7 @@ final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter
     minPrice: filter.minPrice,
     maxPrice: filter.maxPrice,
     types: filter.types,
+    userLocation: filter.userLocation,
   );
   if (result.isFailure) {
     throw result.getError()!;
@@ -87,3 +91,14 @@ Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) a
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
   }
 }
+
+final userLocationProvider = FutureProvider<UserLocation?>((final ref) async {
+  final recommendNearbyShops = await ref.watch(recommendNearbyShopsProvider.future);
+
+  if (!recommendNearbyShops) {
+    return null;
+  }
+
+  final locationService = ref.watch(locationServiceProvider);
+  return locationService.getUserLocation();
+});

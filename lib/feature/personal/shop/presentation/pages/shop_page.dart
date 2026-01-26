@@ -29,6 +29,13 @@ class ShopPage extends HookConsumerWidget {
 
     final adsAsync = ref.watch(shopAdsProvider);
 
+    // 取得使用者位置（用於附近店家排序）
+    final userLocationAsync = ref.watch(userLocationProvider);
+    final userLocation = userLocationAsync.maybeWhen(
+      data: (final location) => location,
+      orElse: () => null,
+    );
+
     // 過濾和排序狀態
     final sortOption = useState(ProductSortOption.latest);
     final minPrice = useState<int?>(null);
@@ -162,6 +169,7 @@ class ShopPage extends HookConsumerWidget {
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
       types: selectedCategories.value,
+      userLocation: userLocation,
     );
 
     final productsAsync = ref.watch(shopProductsProvider(filter));
