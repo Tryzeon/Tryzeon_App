@@ -22,7 +22,8 @@ class AppConstants {
   static const String functionTryon = 'tryon';
 
   // Assets
-  static const String defaultProfileImage = 'assets/images/profile/default.png';
+  static const String defaultProfileImage = 'assets/images/profile/default_profile.png';
+  static const String tryOnSkeleton = 'assets/images/tryon/skeleton.svg';
 
   // Timeouts & Durations
   static const Duration defaultAnimationDuration = Duration(milliseconds: 300);

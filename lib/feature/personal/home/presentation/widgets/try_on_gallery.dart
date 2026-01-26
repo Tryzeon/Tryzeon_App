@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 
 class TryOnGallery extends StatelessWidget {
@@ -48,31 +50,23 @@ class TryOnGallery extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Background Image with gaplessPlayback
-              Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
-
-              // Overlays
+              // 只在非加载状态下显示原图，加载状态下显示SVG骨架
               if (loadingIndices.contains(index - 1))
-                Container(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  child: const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(color: Colors.white),
-                        SizedBox(height: 16),
-                        Text(
-                          '試穿中...',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ],
+                Skeletonizer(
+                  enabled: true,
+                  child: Skeleton.shade(
+                    child: SvgPicture.asset(
+                      AppConstants.tryOnSkeleton,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 )
-              else ...[
+              else
+                Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+
+              // Gradient overlay (only when not loading and not showing skeleton)
+              if (!loadingIndices.contains(index - 1)) ...[
+                // Gradient overlay
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
