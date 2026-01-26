@@ -6,8 +6,4 @@ class ProductCategoryModel extends ProductCategory {
   factory ProductCategoryModel.fromJson(final Map<String, dynamic> json) {
     return ProductCategoryModel(id: json['id'] as String, name: json['name'] as String);
   }
-
-  factory ProductCategoryModel.fromEntity(final ProductCategory entity) {
-    return ProductCategoryModel(id: entity.id, name: entity.name);
-  }
 }
