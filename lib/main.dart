@@ -6,7 +6,7 @@ import 'package:tryzeon/core/config/app_config.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/feature/auth/providers/providers.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:typed_result/typed_result.dart';

@@ -4,7 +4,7 @@ import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/pages/base_settings_page.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/feature/auth/providers/providers.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 
 import 'profile_setting_page.dart';

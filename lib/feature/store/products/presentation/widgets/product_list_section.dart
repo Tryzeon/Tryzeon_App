@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/store/products/presentation/dialogs/product_sort_dialog.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_card.dart';
-import 'package:tryzeon/feature/store/products/providers/providers.dart';
+import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 
 class ProductListSection extends HookConsumerWidget {
   const ProductListSection({super.key});

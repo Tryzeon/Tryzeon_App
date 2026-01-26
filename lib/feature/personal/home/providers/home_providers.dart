@@ -4,7 +4,7 @@ import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data
 import 'package:tryzeon/feature/personal/home/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/home/domain/usecases/tryon_usecase.dart';
-import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 
 // Data Source Providers
 final tryonRemoteDataSourceProvider = Provider<TryonRemoteDataSource>((final ref) {

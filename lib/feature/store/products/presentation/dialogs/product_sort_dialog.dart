@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/products/presentation/mapper/product_sort_field_ui_mapper.dart';
-import 'package:tryzeon/feature/store/products/providers/providers.dart';
+import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 
 void showSortOptionsDialog(final BuildContext context) {
   showModalBottomSheet(

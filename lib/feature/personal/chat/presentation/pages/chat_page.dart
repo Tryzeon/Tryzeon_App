@@ -7,7 +7,7 @@ import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
-import 'package:tryzeon/feature/personal/chat/providers/providers.dart';
+import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 // ChatBubble widget

@@ -12,10 +12,10 @@ import 'package:tryzeon/core/shared/measurements/mappers/measurement_type_data_m
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/product_categories/providers/providers.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/providers/providers.dart';
-import 'package:tryzeon/feature/store/profile/providers/providers.dart';
+import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
+import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AddProductPage extends HookConsumerWidget {

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
-import 'package:tryzeon/feature/store/products/providers/providers.dart';
-import 'package:tryzeon/feature/store/profile/providers/providers.dart';
+import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
+import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 
 import '../../../settings/presentation/pages/settings_page.dart';
 

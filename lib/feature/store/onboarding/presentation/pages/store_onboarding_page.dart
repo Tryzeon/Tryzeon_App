@@ -4,8 +4,8 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
-import 'package:tryzeon/feature/auth/providers/providers.dart';
-import 'package:tryzeon/feature/store/profile/providers/providers.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../auth/presentation/pages/login_page.dart';
