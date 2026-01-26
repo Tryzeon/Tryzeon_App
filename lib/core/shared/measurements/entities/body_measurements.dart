@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
 
-import 'package:tryzeon/core/shared/measurements/mappers/measurement_type_data_mapper.dart';
-
 export 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
 
 class BodyMeasurements extends Equatable {
@@ -11,8 +9,8 @@ class BodyMeasurements extends Equatable {
     this.chest,
     this.waist,
     this.hips,
-    this.shoulderWidth,
-    this.sleeveLength,
+    this.shoulder,
+    this.sleeve,
   });
 
   factory BodyMeasurements.fromJson(final Map<String, dynamic> json) {
@@ -21,24 +19,24 @@ class BodyMeasurements extends Equatable {
       chest: (json['chest'] as num?)?.toDouble(),
       waist: (json['waist'] as num?)?.toDouble(),
       hips: (json['hips'] as num?)?.toDouble(),
-      shoulderWidth: (json['shoulder_width'] as num?)?.toDouble(),
-      sleeveLength: (json['sleeve_length'] as num?)?.toDouble(),
+      shoulder: (json['shoulder'] as num?)?.toDouble(),
+      sleeve: (json['sleeve'] as num?)?.toDouble(),
     );
   }
 
   @override
-  List<Object?> get props => [height, chest, waist, hips, shoulderWidth, sleeveLength];
+  List<Object?> get props => [height, chest, waist, hips, shoulder, sleeve];
 
   Map<String, dynamic> toJson() {
-    return {for (final type in MeasurementType.values) type.key: this[type]};
+    return {for (final type in MeasurementType.values) type.name: this[type]};
   }
 
   final double? height;
   final double? chest;
   final double? waist;
   final double? hips;
-  final double? shoulderWidth;
-  final double? sleeveLength;
+  final double? shoulder;
+  final double? sleeve;
 
   // / 透過 Enum 動態取得數值
   double? operator [](final MeasurementType type) {
@@ -51,10 +49,10 @@ class BodyMeasurements extends Equatable {
         return waist;
       case MeasurementType.hips:
         return hips;
-      case MeasurementType.shoulderWidth:
-        return shoulderWidth;
-      case MeasurementType.sleeveLength:
-        return sleeveLength;
+      case MeasurementType.shoulder:
+        return shoulder;
+      case MeasurementType.sleeve:
+        return sleeve;
     }
   }
 
@@ -63,16 +61,16 @@ class BodyMeasurements extends Equatable {
     final double? chest,
     final double? waist,
     final double? hips,
-    final double? shoulderWidth,
-    final double? sleeveLength,
+    final double? shoulder,
+    final double? sleeve,
   }) {
     return BodyMeasurements(
       height: height ?? this.height,
       chest: chest ?? this.chest,
       waist: waist ?? this.waist,
       hips: hips ?? this.hips,
-      shoulderWidth: shoulderWidth ?? this.shoulderWidth,
-      sleeveLength: sleeveLength ?? this.sleeveLength,
+      shoulder: shoulder ?? this.shoulder,
+      sleeve: sleeve ?? this.sleeve,
     );
   }
 }

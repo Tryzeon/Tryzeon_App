@@ -8,6 +8,6 @@ class BodyMeasurementsCollection {
   double? chest;
   double? waist;
   double? hips;
-  double? shoulderWidth;
-  double? sleeveLength;
+  double? shoulder;
+  double? sleeve;
 }

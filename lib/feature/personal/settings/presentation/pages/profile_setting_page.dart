@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
-import 'package:tryzeon/core/shared/measurements/mappers/measurement_type_data_mapper.dart';
+
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -123,7 +123,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
       // 收集所有控制器的值並轉換為 Map
       final measurementsJson = <String, dynamic>{
         for (final entry in measurementControllers.entries)
-          entry.key.key: double.tryParse(entry.value.text),
+          entry.key.name: double.tryParse(entry.value.text),
       };
 
       final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(

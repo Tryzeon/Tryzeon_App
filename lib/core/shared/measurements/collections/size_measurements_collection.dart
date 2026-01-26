@@ -8,13 +8,13 @@ class SizeMeasurementsCollection {
   double? chest;
   double? waist;
   double? hips;
-  double? shoulderWidth;
-  double? sleeveLength;
+  double? shoulder;
+  double? sleeve;
 
   double? heightOffset;
   double? chestOffset;
   double? waistOffset;
   double? hipsOffset;
-  double? shoulderWidthOffset;
-  double? sleeveLengthOffset;
+  double? shoulderOffset;
+  double? sleeveOffset;
 }

@@ -8,14 +8,14 @@ extension SizeMeasurementsModelMapper on SizeMeasurements {
       ..chest = chest
       ..waist = waist
       ..hips = hips
-      ..shoulderWidth = shoulderWidth
-      ..sleeveLength = sleeveLength
+      ..shoulder = shoulder
+      ..sleeve = sleeve
       ..heightOffset = heightOffset
       ..chestOffset = chestOffset
       ..waistOffset = waistOffset
       ..hipsOffset = hipsOffset
-      ..shoulderWidthOffset = shoulderWidthOffset
-      ..sleeveLengthOffset = sleeveLengthOffset;
+      ..shoulderOffset = shoulderOffset
+      ..sleeveOffset = sleeveOffset;
   }
 }
 
@@ -26,14 +26,14 @@ extension SizeMeasurementsCollectionMapper on SizeMeasurementsCollection {
       chest: chest,
       waist: waist,
       hips: hips,
-      shoulderWidth: shoulderWidth,
-      sleeveLength: sleeveLength,
+      shoulder: shoulder,
+      sleeve: sleeve,
       heightOffset: heightOffset,
       chestOffset: chestOffset,
       waistOffset: waistOffset,
       hipsOffset: hipsOffset,
-      shoulderWidthOffset: shoulderWidthOffset,
-      sleeveLengthOffset: sleeveLengthOffset,
+      shoulderOffset: shoulderOffset,
+      sleeveOffset: sleeveOffset,
     );
   }
 }

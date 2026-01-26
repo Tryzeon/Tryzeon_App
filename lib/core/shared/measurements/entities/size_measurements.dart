@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
-import 'package:tryzeon/core/shared/measurements/mappers/measurement_type_data_mapper.dart';
 
 class SizeMeasurements extends Equatable {
   const SizeMeasurements({
@@ -8,14 +7,14 @@ class SizeMeasurements extends Equatable {
     this.chest,
     this.waist,
     this.hips,
-    this.shoulderWidth,
-    this.sleeveLength,
+    this.shoulder,
+    this.sleeve,
     this.heightOffset,
     this.chestOffset,
     this.waistOffset,
     this.hipsOffset,
-    this.shoulderWidthOffset,
-    this.sleeveLengthOffset,
+    this.shoulderOffset,
+    this.sleeveOffset,
   });
 
   factory SizeMeasurements.fromJson(final Map<String, dynamic> json) {
@@ -24,14 +23,14 @@ class SizeMeasurements extends Equatable {
       chest: (json['chest'] as num?)?.toDouble(),
       waist: (json['waist'] as num?)?.toDouble(),
       hips: (json['hips'] as num?)?.toDouble(),
-      shoulderWidth: (json['shoulder_width'] as num?)?.toDouble(),
-      sleeveLength: (json['sleeve_length'] as num?)?.toDouble(),
+      shoulder: (json['shoulder'] as num?)?.toDouble(),
+      sleeve: (json['sleeve'] as num?)?.toDouble(),
       heightOffset: (json['height_offset'] as num?)?.toDouble(),
       chestOffset: (json['chest_offset'] as num?)?.toDouble(),
       waistOffset: (json['waist_offset'] as num?)?.toDouble(),
       hipsOffset: (json['hips_offset'] as num?)?.toDouble(),
-      shoulderWidthOffset: (json['shoulder_width_offset'] as num?)?.toDouble(),
-      sleeveLengthOffset: (json['sleeve_length_offset'] as num?)?.toDouble(),
+      shoulderOffset: (json['shoulder_offset'] as num?)?.toDouble(),
+      sleeveOffset: (json['sleeve_offset'] as num?)?.toDouble(),
     );
   }
 
@@ -41,14 +40,14 @@ class SizeMeasurements extends Equatable {
     chest,
     waist,
     hips,
-    shoulderWidth,
-    sleeveLength,
+    shoulder,
+    sleeve,
     heightOffset,
     chestOffset,
     waistOffset,
     hipsOffset,
-    shoulderWidthOffset,
-    sleeveLengthOffset,
+    shoulderOffset,
+    sleeveOffset,
   ];
 
   Map<String, dynamic> toJson() {
@@ -56,11 +55,11 @@ class SizeMeasurements extends Equatable {
     for (final type in MeasurementType.values) {
       final value = getValue(type);
       if (value != null) {
-        data[type.key] = value;
+        data[type.name] = value;
       }
       final offset = getOffset(type);
       if (offset != null) {
-        data['${type.key}_offset'] = offset;
+        data['${type.name}_offset'] = offset;
       }
     }
     return data;
@@ -70,15 +69,15 @@ class SizeMeasurements extends Equatable {
   final double? chest;
   final double? waist;
   final double? hips;
-  final double? shoulderWidth;
-  final double? sleeveLength;
+  final double? shoulder;
+  final double? sleeve;
 
   final double? heightOffset;
   final double? chestOffset;
   final double? waistOffset;
   final double? hipsOffset;
-  final double? shoulderWidthOffset;
-  final double? sleeveLengthOffset;
+  final double? shoulderOffset;
+  final double? sleeveOffset;
 
   double? getValue(final MeasurementType type) {
     switch (type) {
@@ -90,10 +89,10 @@ class SizeMeasurements extends Equatable {
         return waist;
       case MeasurementType.hips:
         return hips;
-      case MeasurementType.shoulderWidth:
-        return shoulderWidth;
-      case MeasurementType.sleeveLength:
-        return sleeveLength;
+      case MeasurementType.shoulder:
+        return shoulder;
+      case MeasurementType.sleeve:
+        return sleeve;
     }
   }
 
@@ -107,10 +106,10 @@ class SizeMeasurements extends Equatable {
         return waistOffset;
       case MeasurementType.hips:
         return hipsOffset;
-      case MeasurementType.shoulderWidth:
-        return shoulderWidthOffset;
-      case MeasurementType.sleeveLength:
-        return sleeveLengthOffset;
+      case MeasurementType.shoulder:
+        return shoulderOffset;
+      case MeasurementType.sleeve:
+        return sleeveOffset;
     }
   }
 
@@ -130,28 +129,28 @@ class SizeMeasurements extends Equatable {
     final double? chest,
     final double? waist,
     final double? hips,
-    final double? shoulderWidth,
-    final double? sleeveLength,
+    final double? shoulder,
+    final double? sleeve,
     final double? heightOffset,
     final double? chestOffset,
     final double? waistOffset,
     final double? hipsOffset,
-    final double? shoulderWidthOffset,
-    final double? sleeveLengthOffset,
+    final double? shoulderOffset,
+    final double? sleeveOffset,
   }) {
     return SizeMeasurements(
       height: height ?? this.height,
       chest: chest ?? this.chest,
       waist: waist ?? this.waist,
       hips: hips ?? this.hips,
-      shoulderWidth: shoulderWidth ?? this.shoulderWidth,
-      sleeveLength: sleeveLength ?? this.sleeveLength,
+      shoulder: shoulder ?? this.shoulder,
+      sleeve: sleeve ?? this.sleeve,
       heightOffset: heightOffset ?? this.heightOffset,
       chestOffset: chestOffset ?? this.chestOffset,
       waistOffset: waistOffset ?? this.waistOffset,
       hipsOffset: hipsOffset ?? this.hipsOffset,
-      shoulderWidthOffset: shoulderWidthOffset ?? this.shoulderWidthOffset,
-      sleeveLengthOffset: sleeveLengthOffset ?? this.sleeveLengthOffset,
+      shoulderOffset: shoulderOffset ?? this.shoulderOffset,
+      sleeveOffset: sleeveOffset ?? this.sleeveOffset,
     );
   }
 }

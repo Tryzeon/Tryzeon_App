@@ -9,8 +9,8 @@ extension BodyMeasurementsModelMapper on BodyMeasurements {
       ..chest = chest
       ..waist = waist
       ..hips = hips
-      ..shoulderWidth = shoulderWidth
-      ..sleeveLength = sleeveLength;
+      ..shoulder = shoulder
+      ..sleeve = sleeve;
   }
 }
 
@@ -21,8 +21,8 @@ extension BodyMeasurementsCollectionMapper on BodyMeasurementsCollection {
       chest: chest,
       waist: waist,
       hips: hips,
-      shoulderWidth: shoulderWidth,
-      sleeveLength: sleeveLength,
+      shoulder: shoulder,
+      sleeve: sleeve,
     );
   }
 }

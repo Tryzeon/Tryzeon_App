@@ -14,9 +14,9 @@ extension MeasurementTypeUiMapper on MeasurementType {
         return '腰圍 (cm)';
       case MeasurementType.hips:
         return '臀圍 (cm)';
-      case MeasurementType.shoulderWidth:
+      case MeasurementType.shoulder:
         return '肩寬 (cm)';
-      case MeasurementType.sleeveLength:
+      case MeasurementType.sleeve:
         return '袖長 (cm)';
     }
   }
@@ -31,9 +31,9 @@ extension MeasurementTypeUiMapper on MeasurementType {
         return Icons.accessibility_rounded;
       case MeasurementType.hips:
         return Icons.accessibility_rounded;
-      case MeasurementType.shoulderWidth:
+      case MeasurementType.shoulder:
         return Icons.accessibility_rounded;
-      case MeasurementType.sleeveLength:
+      case MeasurementType.sleeve:
         return Icons.accessibility_rounded;
     }
   }
