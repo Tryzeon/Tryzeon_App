@@ -6,11 +6,10 @@ extension BodyMeasurementsModelMapper on BodyMeasurements {
   BodyMeasurementsCollection toCollection() {
     return BodyMeasurementsCollection()
       ..height = height
-      ..weight = weight
-      ..shoulderWidth = shoulderWidth
       ..chest = chest
       ..waist = waist
       ..hips = hips
+      ..shoulderWidth = shoulderWidth
       ..sleeveLength = sleeveLength;
   }
 }
@@ -19,11 +18,10 @@ extension BodyMeasurementsCollectionMapper on BodyMeasurementsCollection {
   BodyMeasurements toModel() {
     return BodyMeasurements(
       height: height,
-      weight: weight,
-      shoulderWidth: shoulderWidth,
       chest: chest,
       waist: waist,
       hips: hips,
+      shoulderWidth: shoulderWidth,
       sleeveLength: sleeveLength,
     );
   }

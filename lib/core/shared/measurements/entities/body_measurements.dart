@@ -8,7 +8,6 @@ export 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart'
 class BodyMeasurements extends Equatable {
   const BodyMeasurements({
     this.height,
-    this.weight,
     this.chest,
     this.waist,
     this.hips,
@@ -19,7 +18,6 @@ class BodyMeasurements extends Equatable {
   factory BodyMeasurements.fromJson(final Map<String, dynamic> json) {
     return BodyMeasurements(
       height: (json['height'] as num?)?.toDouble(),
-      weight: (json['weight'] as num?)?.toDouble(),
       chest: (json['chest'] as num?)?.toDouble(),
       waist: (json['waist'] as num?)?.toDouble(),
       hips: (json['hips'] as num?)?.toDouble(),
@@ -29,22 +27,13 @@ class BodyMeasurements extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    height,
-    weight,
-    chest,
-    waist,
-    hips,
-    shoulderWidth,
-    sleeveLength,
-  ];
+  List<Object?> get props => [height, chest, waist, hips, shoulderWidth, sleeveLength];
 
   Map<String, dynamic> toJson() {
     return {for (final type in MeasurementType.values) type.key: this[type]};
   }
 
   final double? height;
-  final double? weight;
   final double? chest;
   final double? waist;
   final double? hips;
@@ -56,8 +45,6 @@ class BodyMeasurements extends Equatable {
     switch (type) {
       case MeasurementType.height:
         return height;
-      case MeasurementType.weight:
-        return weight;
       case MeasurementType.chest:
         return chest;
       case MeasurementType.waist:
@@ -73,7 +60,6 @@ class BodyMeasurements extends Equatable {
 
   BodyMeasurements copyWith({
     final double? height,
-    final double? weight,
     final double? chest,
     final double? waist,
     final double? hips,
@@ -82,7 +68,6 @@ class BodyMeasurements extends Equatable {
   }) {
     return BodyMeasurements(
       height: height ?? this.height,
-      weight: weight ?? this.weight,
       chest: chest ?? this.chest,
       waist: waist ?? this.waist,
       hips: hips ?? this.hips,

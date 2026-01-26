@@ -5,8 +5,6 @@ extension MeasurementTypeDataMapper on MeasurementType {
     switch (this) {
       case MeasurementType.height:
         return 'height';
-      case MeasurementType.weight:
-        return 'weight';
       case MeasurementType.chest:
         return 'chest';
       case MeasurementType.waist:

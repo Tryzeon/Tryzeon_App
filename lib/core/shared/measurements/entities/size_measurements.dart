@@ -5,14 +5,12 @@ import 'package:tryzeon/core/shared/measurements/mappers/measurement_type_data_m
 class SizeMeasurements extends Equatable {
   const SizeMeasurements({
     this.height,
-    this.weight,
     this.chest,
     this.waist,
     this.hips,
     this.shoulderWidth,
     this.sleeveLength,
     this.heightOffset,
-    this.weightOffset,
     this.chestOffset,
     this.waistOffset,
     this.hipsOffset,
@@ -23,14 +21,12 @@ class SizeMeasurements extends Equatable {
   factory SizeMeasurements.fromJson(final Map<String, dynamic> json) {
     return SizeMeasurements(
       height: (json['height'] as num?)?.toDouble(),
-      weight: (json['weight'] as num?)?.toDouble(),
       chest: (json['chest'] as num?)?.toDouble(),
       waist: (json['waist'] as num?)?.toDouble(),
       hips: (json['hips'] as num?)?.toDouble(),
       shoulderWidth: (json['shoulder_width'] as num?)?.toDouble(),
       sleeveLength: (json['sleeve_length'] as num?)?.toDouble(),
       heightOffset: (json['height_offset'] as num?)?.toDouble(),
-      weightOffset: (json['weight_offset'] as num?)?.toDouble(),
       chestOffset: (json['chest_offset'] as num?)?.toDouble(),
       waistOffset: (json['waist_offset'] as num?)?.toDouble(),
       hipsOffset: (json['hips_offset'] as num?)?.toDouble(),
@@ -42,14 +38,12 @@ class SizeMeasurements extends Equatable {
   @override
   List<Object?> get props => [
     height,
-    weight,
     chest,
     waist,
     hips,
     shoulderWidth,
     sleeveLength,
     heightOffset,
-    weightOffset,
     chestOffset,
     waistOffset,
     hipsOffset,
@@ -73,7 +67,6 @@ class SizeMeasurements extends Equatable {
   }
 
   final double? height;
-  final double? weight;
   final double? chest;
   final double? waist;
   final double? hips;
@@ -81,7 +74,6 @@ class SizeMeasurements extends Equatable {
   final double? sleeveLength;
 
   final double? heightOffset;
-  final double? weightOffset;
   final double? chestOffset;
   final double? waistOffset;
   final double? hipsOffset;
@@ -92,8 +84,6 @@ class SizeMeasurements extends Equatable {
     switch (type) {
       case MeasurementType.height:
         return height;
-      case MeasurementType.weight:
-        return weight;
       case MeasurementType.chest:
         return chest;
       case MeasurementType.waist:
@@ -111,8 +101,6 @@ class SizeMeasurements extends Equatable {
     switch (type) {
       case MeasurementType.height:
         return heightOffset;
-      case MeasurementType.weight:
-        return weightOffset;
       case MeasurementType.chest:
         return chestOffset;
       case MeasurementType.waist:
@@ -139,14 +127,12 @@ class SizeMeasurements extends Equatable {
 
   SizeMeasurements copyWith({
     final double? height,
-    final double? weight,
     final double? chest,
     final double? waist,
     final double? hips,
     final double? shoulderWidth,
     final double? sleeveLength,
     final double? heightOffset,
-    final double? weightOffset,
     final double? chestOffset,
     final double? waistOffset,
     final double? hipsOffset,
@@ -155,14 +141,12 @@ class SizeMeasurements extends Equatable {
   }) {
     return SizeMeasurements(
       height: height ?? this.height,
-      weight: weight ?? this.weight,
       chest: chest ?? this.chest,
       waist: waist ?? this.waist,
       hips: hips ?? this.hips,
       shoulderWidth: shoulderWidth ?? this.shoulderWidth,
       sleeveLength: sleeveLength ?? this.sleeveLength,
       heightOffset: heightOffset ?? this.heightOffset,
-      weightOffset: weightOffset ?? this.weightOffset,
       chestOffset: chestOffset ?? this.chestOffset,
       waistOffset: waistOffset ?? this.waistOffset,
       hipsOffset: hipsOffset ?? this.hipsOffset,

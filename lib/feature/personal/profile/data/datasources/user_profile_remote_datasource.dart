@@ -20,7 +20,7 @@ class UserProfileRemoteDataSource {
     final response = await _supabaseClient
         .from(_table)
         .select(
-          'user_id, name, avatar_path, height, weight, chest, waist, hips, shoulder_width, sleeve_length, created_at, updated_at',
+          'user_id, name, avatar_path, height, chest, waist, hips, shoulder_width, sleeve_length, created_at, updated_at',
         )
         .eq('user_id', user.id)
         .single();

@@ -8,8 +8,6 @@ extension MeasurementTypeUiMapper on MeasurementType {
     switch (this) {
       case MeasurementType.height:
         return '身高 (cm)';
-      case MeasurementType.weight:
-        return '體重 (kg)';
       case MeasurementType.chest:
         return '胸圍 (cm)';
       case MeasurementType.waist:
@@ -27,8 +25,6 @@ extension MeasurementTypeUiMapper on MeasurementType {
     switch (this) {
       case MeasurementType.height:
         return Icons.height_rounded;
-      case MeasurementType.weight:
-        return Icons.monitor_weight_outlined;
       case MeasurementType.chest:
         return Icons.accessibility_rounded;
       case MeasurementType.waist:
