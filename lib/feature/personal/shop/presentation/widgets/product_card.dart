@@ -166,7 +166,7 @@ class ProductCard extends HookConsumerWidget {
                     style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                   ),
                   Text(
-                    product.storeName!,
+                    product.storeInfo.name ?? '',
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),

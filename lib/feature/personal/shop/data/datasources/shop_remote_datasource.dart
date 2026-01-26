@@ -76,9 +76,9 @@ class ShopRemoteDataSource {
       final otherCity = <ShopProductModel>[];
 
       for (final product in products) {
-        if (userLocation.isSameDistrict(product.storeAddress)) {
+        if (userLocation.isSameDistrict(product.storeInfo.address)) {
           sameDistrict.add(product);
-        } else if (userLocation.isSameCity(product.storeAddress)) {
+        } else if (userLocation.isSameCity(product.storeInfo.address)) {
           sameCity.add(product);
         } else {
           otherCity.add(product);

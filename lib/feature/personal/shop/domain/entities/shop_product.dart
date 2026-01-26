@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ShopProduct extends Equatable {
   const ShopProduct({
-    required this.storeId,
+    required this.storeInfo,
     required this.name,
     required this.types,
     required this.price,
@@ -15,13 +16,11 @@ class ShopProduct extends Equatable {
     this.tryonCount,
     this.purchaseClickCount,
     this.sizes,
-    this.storeName,
-    this.storeAddress,
     this.createdAt,
     this.updatedAt,
   });
 
-  final String storeId;
+  final ShopStoreInfo storeInfo;
   final String name;
   final Set<String> types;
   final double price;
@@ -33,14 +32,12 @@ class ShopProduct extends Equatable {
   final int? tryonCount;
   final int? purchaseClickCount;
   final List<ProductSize>? sizes;
-  final String? storeName;
-  final String? storeAddress;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   @override
   List<Object?> get props => [
-    storeId,
+    storeInfo,
     name,
     types,
     price,
@@ -51,14 +48,12 @@ class ShopProduct extends Equatable {
     tryonCount,
     purchaseClickCount,
     sizes,
-    storeName,
-    storeAddress,
     createdAt,
     updatedAt,
   ];
 
   ShopProduct copyWith({
-    final String? storeId,
+    final ShopStoreInfo? storeInfo,
     final String? name,
     final Set<String>? types,
     final double? price,
@@ -69,13 +64,11 @@ class ShopProduct extends Equatable {
     final int? tryonCount,
     final int? purchaseClickCount,
     final List<ProductSize>? sizes,
-    final String? storeName,
-    final String? storeAddress,
     final DateTime? createdAt,
     final DateTime? updatedAt,
   }) {
     return ShopProduct(
-      storeId: storeId ?? this.storeId,
+      storeInfo: storeInfo ?? this.storeInfo,
       name: name ?? this.name,
       types: types ?? this.types,
       price: price ?? this.price,
@@ -86,8 +79,6 @@ class ShopProduct extends Equatable {
       tryonCount: tryonCount ?? this.tryonCount,
       purchaseClickCount: purchaseClickCount ?? this.purchaseClickCount,
       sizes: sizes ?? this.sizes,
-      storeName: storeName ?? this.storeName,
-      storeAddress: storeAddress ?? this.storeAddress,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
