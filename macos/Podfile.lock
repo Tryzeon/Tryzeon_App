@@ -9,6 +9,9 @@ PODS:
   - gal (1.0.0):
     - Flutter
     - FlutterMacOS
+  - geolocator_apple (1.2.0):
+    - Flutter
+    - FlutterMacOS
   - isar_community_flutter_libs (1.0.0):
     - FlutterMacOS
   - path_provider_foundation (0.0.1):
@@ -33,6 +36,7 @@ DEPENDENCIES:
   - flutter_image_compress_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_image_compress_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - gal (from `Flutter/ephemeral/.symlinks/plugins/gal/darwin`)
+  - geolocator_apple (from `Flutter/ephemeral/.symlinks/plugins/geolocator_apple/darwin`)
   - isar_community_flutter_libs (from `Flutter/ephemeral/.symlinks/plugins/isar_community_flutter_libs/macos`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
@@ -52,6 +56,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   gal:
     :path: Flutter/ephemeral/.symlinks/plugins/gal/darwin
+  geolocator_apple:
+    :path: Flutter/ephemeral/.symlinks/plugins/geolocator_apple/darwin
   isar_community_flutter_libs:
     :path: Flutter/ephemeral/.symlinks/plugins/isar_community_flutter_libs/macos
   path_provider_foundation:
@@ -73,6 +79,7 @@ SPEC CHECKSUMS:
   flutter_image_compress_macos: e68daf54bb4bf2144c580fd4d151c949cbf492f0
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   gal: baecd024ebfd13c441269ca7404792a7152fde89
+  geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
   isar_community_flutter_libs: a631ceb5622413b56bcd0a8bf49cb55bf3d8bb2b
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   share_plus: 510bf0af1a42cd602274b4629920c9649c52f4cc
