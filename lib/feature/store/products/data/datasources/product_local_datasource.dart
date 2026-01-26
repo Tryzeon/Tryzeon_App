@@ -1,16 +1,17 @@
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/services/cache_service.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
 import 'package:tryzeon/feature/store/products/data/mappers/product_mapper.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 
 class ProductLocalDataSource {
-  ProductLocalDataSource(this._isarService);
+  ProductLocalDataSource(this._isarService, this._cacheService);
   final IsarService _isarService;
+  final CacheService _cacheService;
 
   Future<List<ProductModel>?> getCache({required final SortCondition sort}) async {
     final isar = await _isarService.db;
@@ -68,10 +69,10 @@ class ProductLocalDataSource {
   }
 
   Future<void> saveProductImage(final Uint8List bytes, final String path) async {
-    await CacheService.saveImage(bytes, path);
+    await _cacheService.saveImage(bytes, path);
   }
 
   Future<void> deleteProductImage(final String path) async {
-    await CacheService.deleteImage(path);
+    await _cacheService.deleteImage(path);
   }
 }

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
@@ -19,7 +19,8 @@ final wardrobeRemoteDataSourceProvider = Provider<WardrobeRemoteDataSource>((fin
 
 final wardrobeLocalDataSourceProvider = Provider<WardrobeLocalDataSource>((final ref) {
   final isarService = ref.watch(isarServiceProvider);
-  return WardrobeLocalDataSource(isarService);
+  final cacheService = ref.watch(cacheServiceProvider);
+  return WardrobeLocalDataSource(isarService, cacheService);
 });
 
 final wardrobeRepositoryProvider = Provider<WardrobeRepository>((final ref) {

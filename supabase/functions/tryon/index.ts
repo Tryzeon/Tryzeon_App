@@ -14,8 +14,8 @@ const CONFIG = {
 
 const PLAN_LIMITS: Record<string, number> = {
   free: 5,
-  pro: 50,
-  ultra: 1000,
+  pro: 20,
+  ultra: 50,
 };
 
 // --- Types & Interfaces ---

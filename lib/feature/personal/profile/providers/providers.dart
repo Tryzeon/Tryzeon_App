@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
@@ -22,7 +22,8 @@ final userProfileLocalDataSourceProvider = Provider<UserProfileLocalDataSource>(
   final ref,
 ) {
   final isarService = ref.watch(isarServiceProvider);
-  return UserProfileLocalDataSource(isarService);
+  final cacheService = ref.watch(cacheServiceProvider);
+  return UserProfileLocalDataSource(isarService, cacheService);
 });
 
 final userProfileRepositoryProvider = Provider<UserProfileRepository>((final ref) {

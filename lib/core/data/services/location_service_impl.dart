@@ -1,6 +1,7 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tryzeon/core/services/location_service.dart';
+import 'package:tryzeon/core/domain/entities/user_location.dart';
+import 'package:tryzeon/core/domain/services/location_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
 /// LocationService 實作，使用 Geolocator 和 Geocoding 套件

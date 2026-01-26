@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/services/location_service.dart';
+import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';

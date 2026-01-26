@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
@@ -20,7 +20,8 @@ final storeProfileLocalDataSourceProvider = Provider<StoreProfileLocalDataSource
   final ref,
 ) {
   final isarService = ref.watch(isarServiceProvider);
-  return StoreProfileLocalDataSource(isarService);
+  final cacheService = ref.watch(cacheServiceProvider);
+  return StoreProfileLocalDataSource(isarService, cacheService);
 });
 
 final storeProfileRepositoryProvider = Provider<StoreProfileRepository>((final ref) {

@@ -2,16 +2,17 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/services/cache_service.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_collection.dart';
 import 'package:tryzeon/feature/store/profile/data/mappers/store_profile_mapper.dart';
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileLocalDataSource {
-  StoreProfileLocalDataSource(this._isarService);
+  StoreProfileLocalDataSource(this._isarService, this._cacheService);
 
   final IsarService _isarService;
+  final CacheService _cacheService;
 
   Future<StoreProfileModel?> getCache() async {
     final isar = await _isarService.db;
@@ -28,18 +29,18 @@ class StoreProfileLocalDataSource {
   }
 
   Future<void> saveLogo(final Uint8List bytes, final String path) {
-    return CacheService.saveImage(bytes, path);
+    return _cacheService.saveImage(bytes, path);
   }
 
   Future<File?> getCachedLogo(final String path) {
-    return CacheService.getImage(path);
+    return _cacheService.getImage(path);
   }
 
   Future<File?> downloadLogo(final String path, final String downloadUrl) {
-    return CacheService.getImage(path, downloadUrl: downloadUrl);
+    return _cacheService.getImage(path, downloadUrl: downloadUrl);
   }
 
   Future<void> deleteLogo(final String path) {
-    return CacheService.deleteImage(path);
+    return _cacheService.deleteImage(path);
   }
 }

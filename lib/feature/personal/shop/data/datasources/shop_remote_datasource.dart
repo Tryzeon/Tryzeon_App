@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/services/location_service.dart';
+import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 

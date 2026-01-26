@@ -1,4 +1,3 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.dart';
@@ -7,8 +6,6 @@ import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_c
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_collection.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_collection.dart';
-
-final isarServiceProvider = Provider<IsarService>((final ref) => IsarService());
 
 class IsarService {
   IsarService() {

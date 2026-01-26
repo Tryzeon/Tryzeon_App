@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_local_datasource.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_remote_datasource.dart';
 import 'package:tryzeon/feature/common/product_categories/data/repositories/product_category_repository_impl.dart';

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_data_source.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_data_source.dart';
@@ -13,10 +13,13 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required final AuthRemoteDataSource remoteDataSource,
     required final AuthLocalDataSource localDataSource,
+    required final CacheService cacheService,
   }) : _remoteDataSource = remoteDataSource,
-       _localDataSource = localDataSource;
+       _localDataSource = localDataSource,
+       _cacheService = cacheService;
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
+  final CacheService _cacheService;
 
   @override
   Future<Result<void, String>> signInWithProvider({
@@ -67,7 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // Clear API cache
     try {
-      await CacheService.clearCache();
+      await _cacheService.clearCache();
     } catch (e, stackTrace) {
       AppLogger.error('清除快取失敗 (已忽略)', e, stackTrace);
     }

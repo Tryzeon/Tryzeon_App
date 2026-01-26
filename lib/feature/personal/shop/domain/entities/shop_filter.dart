@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:tryzeon/core/services/location_service.dart';
+import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 
 class ShopFilter extends Equatable {

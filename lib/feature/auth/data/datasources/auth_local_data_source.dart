@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.dart';
 
 class AuthLocalDataSource {

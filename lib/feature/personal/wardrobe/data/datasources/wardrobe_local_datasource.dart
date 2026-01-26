@@ -2,15 +2,16 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/services/cache_service.dart';
-import 'package:tryzeon/core/services/isar_service.dart';
+import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_collection.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/mappers/wardrobe_item_mapper.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/models/wardrobe_item_model.dart';
 
 class WardrobeLocalDataSource {
-  WardrobeLocalDataSource(this._isarService);
+  WardrobeLocalDataSource(this._isarService, this._cacheService);
   final IsarService _isarService;
+  final CacheService _cacheService;
 
   Future<List<WardrobeItemModel>?> getCachedItems() async {
     final isar = await _isarService.db;
@@ -47,14 +48,14 @@ class WardrobeLocalDataSource {
   }
 
   Future<void> saveImage(final Uint8List bytes, final String path) {
-    return CacheService.saveImage(bytes, path);
+    return _cacheService.saveImage(bytes, path);
   }
 
   Future<File?> getImage(final String path, {final String? downloadUrl}) {
-    return CacheService.getImage(path, downloadUrl: downloadUrl);
+    return _cacheService.getImage(path, downloadUrl: downloadUrl);
   }
 
   Future<void> deleteImage(final String path) {
-    return CacheService.deleteImage(path);
+    return _cacheService.deleteImage(path);
   }
 }

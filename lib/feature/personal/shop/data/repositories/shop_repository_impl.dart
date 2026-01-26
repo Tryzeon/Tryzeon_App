@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/services/location_service.dart';
+import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
