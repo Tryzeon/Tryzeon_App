@@ -26,14 +26,10 @@ class TryonUseCase {
     if (customAvatarBase64 == null) {
       final profileResult = await _userProfileRepository.getUserProfile();
 
-      // Check for error using pattern matching
       switch (profileResult) {
         case Err(:final error):
           return Err(error);
         case Ok(:final value):
-          if (value.avatarPath == null || value.avatarPath!.isEmpty) {
-            return const Err('請先上傳您的照片');
-          }
           avatarPathToUse = value.avatarPath;
       }
     }

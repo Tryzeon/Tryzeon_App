@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_action_button.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
 import 'package:tryzeon/feature/personal/home/providers/providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -34,9 +36,10 @@ class HomePage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final avatarAsync = ref.watch(avatarFileProvider);
     final tryonImages = useState<List<Uint8List>>([]);
+    final loadingIndices = useState<Set<int>>({});
     final currentTryonIndex = useState(-1);
-    final isActionLoading = useState(false);
     final customAvatarIndex = useState<int?>(null);
+    final newAvatarFile = useState<File?>(null);
     final pageController = usePageController(initialPage: 0);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -61,8 +64,10 @@ class HomePage extends HookConsumerWidget {
       final File? imageFile = await ImagePickerHelper.pickImage(context);
       if (imageFile == null) return;
 
-      isActionLoading.value = true;
+      // Optimistic update
+      newAvatarFile.value = imageFile;
 
+      // Upload
       final profile = await ref.read(userProfileProvider.future);
       final result = await ref.read(updateUserProfileUseCaseProvider)(
         original: profile,
@@ -73,11 +78,10 @@ class HomePage extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (result.isSuccess) {
-        tryonImages.value = [];
-        currentTryonIndex.value = -1;
-        customAvatarIndex.value = null;
-        ref.invalidate(userProfileProvider);
-        TopNotification.show(context, message: '頭像上傳成功', type: NotificationType.success);
+        await Future.wait([
+          ref.refresh(userProfileProvider.future),
+          ref.refresh(avatarFileProvider.future),
+        ]);
       } else {
         TopNotification.show(
           context,
@@ -85,20 +89,49 @@ class HomePage extends HookConsumerWidget {
           type: NotificationType.error,
         );
       }
-      isActionLoading.value = false;
+
+      newAvatarFile.value = null;
     }
 
     Future<void> performTryOn({
       final String? clothesBase64,
       final String? clothesPath,
     }) async {
+      Uint8List? placeholderBytes;
+
+      // 1. Determine Placeholder Image
+      if (customAvatarIndex.value != null &&
+          customAvatarIndex.value! < tryonImages.value.length) {
+        placeholderBytes = tryonImages.value[customAvatarIndex.value!];
+      } else {
+        final avatarFile = await ref.read(avatarFileProvider.future);
+        if (avatarFile == null) {
+          if (context.mounted) {
+            TopNotification.show(
+              context,
+              message: '請先上傳您的照片',
+              type: NotificationType.error,
+            );
+          }
+          return;
+        }
+        placeholderBytes = await avatarFile.readAsBytes();
+      }
+
+      // 2. Prepare Request Data
       String? customAvatarBase64;
-      if (customAvatarIndex.value != null) {
+      if (customAvatarIndex.value != null &&
+          customAvatarIndex.value! < tryonImages.value.length) {
         customAvatarBase64 = base64Encode(tryonImages.value[customAvatarIndex.value!]);
       }
 
-      isActionLoading.value = true;
+      // 3. Optimistic Update (Add Placeholder)
+      final newIndex = tryonImages.value.length;
+      tryonImages.value = [...tryonImages.value, placeholderBytes];
+      loadingIndices.value = {...loadingIndices.value, newIndex};
+      currentTryonIndex.value = newIndex;
 
+      // 4. API Call
       final tryonUseCase = ref.read(tryonUseCaseProvider);
       final result = await tryonUseCase(
         customAvatarBase64: customAvatarBase64,
@@ -108,17 +141,21 @@ class HomePage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      isActionLoading.value = false;
-
+      // 5. Handle Result
       if (result.isSuccess) {
         final base64String = result.get()!.imageBase64.split(',')[1];
         final imageBytes = base64Decode(base64String);
 
-        tryonImages.value = [...tryonImages.value, imageBytes];
-        currentTryonIndex.value = tryonImages.value.length - 1;
+        tryonImages.value = [...tryonImages.value]..[newIndex] = imageBytes;
+        loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
 
         TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
       } else {
+        // Failure: Remove placeholder
+        tryonImages.value = [...tryonImages.value]..removeAt(newIndex);
+        loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
+        currentTryonIndex.value = tryonImages.value.length - 1;
+
         TopNotification.show(
           context,
           message: result.getError()!,
@@ -133,12 +170,11 @@ class HomePage extends HookConsumerWidget {
 
       final clothesBytes = await clothesImage.readAsBytes();
       final clothesBase64 = base64Encode(clothesBytes);
-
-      await performTryOn(clothesBase64: clothesBase64);
+      performTryOn(clothesBase64: clothesBase64);
     }
 
     Future<void> tryOnFromStorage(final String clothesPath) async {
-      await performTryOn(clothesPath: clothesPath);
+      performTryOn(clothesPath: clothesPath);
     }
 
     Future<void> downloadCurrentImage() async {
@@ -232,177 +268,6 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [controller]);
 
-    Widget buildOptionButton({
-      required final String title,
-      required final String subtitle,
-      required final IconData icon,
-      required final VoidCallback onTap,
-    }) {
-      return ListTile(
-        leading: Icon(icon),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        onTap: onTap,
-      );
-    }
-
-    Widget buildMoreOptionsButton() {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            color: colorScheme.onSurface.withValues(alpha: 0.1),
-            child: IconButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (final context) => SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 16),
-                        buildOptionButton(
-                          title: '下載照片',
-                          subtitle: '儲存到相簿',
-                          icon: Icons.download_rounded,
-                          onTap: () {
-                            Navigator.pop(context);
-                            downloadCurrentImage();
-                          },
-                        ),
-                        buildOptionButton(
-                          title: customAvatarIndex.value == currentTryonIndex.value
-                              ? '取消我的形象'
-                              : '設為我的形象',
-                          subtitle: customAvatarIndex.value == currentTryonIndex.value
-                              ? '取消使用此照片作為試穿形象'
-                              : '使用此照片作為試穿形象',
-                          icon: customAvatarIndex.value == currentTryonIndex.value
-                              ? Icons.person_off_outlined
-                              : Icons.person_outline_rounded,
-                          onTap: () {
-                            Navigator.pop(context);
-                            toggleAvatar();
-                          },
-                        ),
-                        buildOptionButton(
-                          title: '刪除此試穿',
-                          subtitle: '移除這張試穿照片',
-                          icon: Icons.delete_outline_rounded,
-                          onTap: () {
-                            Navigator.pop(context);
-                            deleteCurrentTryon();
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              icon: Icon(Icons.more_vert_rounded, color: colorScheme.onSurface),
-            ),
-          ),
-        ),
-      );
-    }
-
-    Widget buildPageIndicator() {
-      // Bottom Center
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (currentTryonIndex.value == -1)
-              Text(
-                '原圖',
-                style: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4.0,
-                      color: colorScheme.surface.withValues(alpha: 0.45),
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(tryonImages.value.length, (final index) {
-                  final isSelected = currentTryonIndex.value == index;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: isSelected ? 12 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurface.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
-              ),
-          ],
-        ),
-      );
-    }
-
-    Widget buildTryOnButton() {
-      return Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(30),
-            onTap: (isActionLoading.value || avatarAsync.isLoading)
-                ? null
-                : tryOnFromLocal,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.auto_awesome_rounded, color: colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    '虛擬試穿',
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -417,98 +282,24 @@ class HomePage extends HookConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               child: SizedBox(
                 height: MediaQuery.of(context).size.height,
-                child: GestureDetector(
-                  onTap: uploadAvatar,
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: colorScheme.surface, // Fallback
-                    child: avatarAsync.when(
-                      skipLoadingOnReload: true,
-                      skipError: true,
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final error, final stack) => Center(
-                        child: ErrorView(
-                          message: error.toString(),
-                          onRetry: () => refreshUserProfile(ref),
-                        ),
-                      ),
-                      data: (final avatarFile) {
-                        return PageView.builder(
-                          controller: pageController,
-                          onPageChanged: (final index) {
-                            currentTryonIndex.value = index - 1;
-                          },
-                          itemCount: tryonImages.value.length + 1,
-                          itemBuilder: (final context, final index) {
-                            ImageProvider imageProvider;
-                            if (index > 0) {
-                              imageProvider = MemoryImage(tryonImages.value[index - 1]);
-                            } else if (avatarFile != null) {
-                              imageProvider = FileImage(avatarFile);
-                            } else {
-                              imageProvider = const AssetImage(
-                                AppConstants.defaultProfileImage,
-                              );
-                            }
-
-                            return Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: imageProvider,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          colorScheme.surface.withValues(alpha: 0.3),
-                                          Colors.transparent,
-                                          colorScheme.surface.withValues(alpha: 0.3),
-                                        ],
-                                        stops: const [0.0, 0.4, 1.0],
-                                      ),
-                                    ),
-                                  ),
-                                  if (avatarFile == null && index == 0)
-                                    Align(
-                                      alignment: const Alignment(0, 0.5),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 8,
-                                            ),
-                                            color: colorScheme.surface.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            child: Text(
-                                              '點擊上傳照片',
-                                              style: TextStyle(
-                                                color: colorScheme.onSurface,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
+                child: avatarAsync.when(
+                  skipLoadingOnReload: true,
+                  skipError: true,
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (final error, final stack) => Center(
+                    child: ErrorView(
+                      message: error.toString(),
+                      onRetry: () => refreshUserProfile(ref),
                     ),
+                  ),
+                  data: (final avatarFile) => TryOnGallery(
+                    pageController: pageController,
+                    onPageChanged: (final index) => currentTryonIndex.value = index - 1,
+                    onUploadTap: uploadAvatar,
+                    tryonImages: tryonImages.value,
+                    loadingIndices: loadingIndices.value,
+                    currentTryonIndex: currentTryonIndex.value,
+                    avatarFile: newAvatarFile.value ?? avatarFile,
                   ),
                 ),
               ),
@@ -541,22 +332,17 @@ class HomePage extends HookConsumerWidget {
             ),
 
             // 3. Top Right Controls
-            Positioned(
-              top: 0,
-              right: 0,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: !isActionLoading.value && currentTryonIndex.value >= 0
-                      ? buildMoreOptionsButton()
-                      : const SizedBox.shrink(),
-                ),
+            if (currentTryonIndex.value >= 0 &&
+                !loadingIndices.value.contains(currentTryonIndex.value))
+              TryOnMoreOptionsButton(
+                currentTryonIndex: currentTryonIndex.value,
+                customAvatarIndex: customAvatarIndex.value,
+                onDownload: downloadCurrentImage,
+                onToggleAvatar: toggleAvatar,
+                onDelete: deleteCurrentTryon,
               ),
-            ),
 
             // 4. Bottom Layer (Navigation & Action) - Aware of Floating Nav Bar
-            // We assume "floating nav bar" occupies bottom space.
-            // Let's position things above it. Say bottom padding 100.
             Positioned(
               left: 0,
               right: 0,
@@ -565,10 +351,10 @@ class HomePage extends HookConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Navigation Buttons (Left/Center aligned or just floating)
-                  if (!isActionLoading.value && tryonImages.value.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: buildPageIndicator(),
+                  if (tryonImages.value.isNotEmpty)
+                    TryOnIndicator(
+                      currentTryonIndex: currentTryonIndex.value,
+                      tryonImagesCount: tryonImages.value.length,
                     ),
 
                   // Spacing for where the actual bottom bar would be
@@ -579,38 +365,18 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 5. Bottom Right Floating Action Button (Try On)
+            // 5. Try On Button
             Positioned(
               bottom:
                   MediaQuery.of(context).padding.bottom +
                   30 +
                   (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
               right: 20,
-              child: buildTryOnButton(),
-            ),
-
-            // 6. Loading Overlay
-            if (isActionLoading.value)
-              Container(
-                color: colorScheme.surface.withValues(alpha: 0.54),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(color: colorScheme.onSurface),
-                      const SizedBox(height: 16),
-                      Text(
-                        '處理中...',
-                        style: TextStyle(
-                          color: colorScheme.onSurface,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              child: TryOnActionButton(
+                onTap: tryOnFromLocal,
+                isDisabled: avatarAsync.isLoading,
               ),
+            ),
           ],
         ),
       ),

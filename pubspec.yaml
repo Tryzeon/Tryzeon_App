@@ -39,6 +39,7 @@ dependencies:
   isar_community_flutter_libs: ^3.3.0
   geolocator: ^13.0.2
   geocoding: ^3.0.0
+  skeletonizer: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
