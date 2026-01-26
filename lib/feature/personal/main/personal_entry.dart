@@ -5,7 +5,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../chat/presentation/pages/chat_page.dart';
-import '../community/presentation/pages/community_page.dart';
 import '../home/presentation/pages/home_page.dart';
 import '../shop/presentation/pages/shop_page.dart';
 import '../wardrobe/presentation/pages/wardrobe_page.dart';
@@ -38,7 +37,7 @@ class PersonalEntry extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final selectedIndex = useState(2);
+    final selectedIndex = useState(0);
     final homePageController = useMemoized(HomePageController.new);
 
     // Dispose controller when widget is disposed
@@ -48,9 +47,8 @@ class PersonalEntry extends HookConsumerWidget {
 
     final pages = useMemoized(
       () => [
-        const CommunityPage(),
-        const ShopPage(),
         HomePage(controller: homePageController),
+        const ShopPage(),
         const ChatPage(),
         const PersonalPage(),
       ],
@@ -59,7 +57,7 @@ class PersonalEntry extends HookConsumerWidget {
 
     Future<void> tryOnFromStorage(final String clothesPath) async {
       // 切換到 HomePage
-      selectedIndex.value = 2;
+      selectedIndex.value = 0;
 
       // 呼叫 HomePage 的試穿方法
       if (homePageController.tryOnFromStorage != null) {
@@ -83,11 +81,11 @@ class PersonalEntry extends HookConsumerWidget {
           items: [
             AdaptiveNavigationDestination(
               icon: PlatformInfo.isIOS26OrHigher()
-                  ? 'person.3'
+                  ? 'house'
                   : PlatformInfo.isIOS
-                  ? CupertinoIcons.group
-                  : Icons.group_outlined,
-              label: '社群',
+                  ? CupertinoIcons.house
+                  : Icons.home_outlined,
+              label: '首頁',
             ),
             AdaptiveNavigationDestination(
               icon: PlatformInfo.isIOS26OrHigher()
@@ -96,14 +94,6 @@ class PersonalEntry extends HookConsumerWidget {
                   ? CupertinoIcons.cart
                   : Icons.shopping_cart_outlined,
               label: '試衣間',
-            ),
-            AdaptiveNavigationDestination(
-              icon: PlatformInfo.isIOS26OrHigher()
-                  ? 'house'
-                  : PlatformInfo.isIOS
-                  ? CupertinoIcons.house
-                  : Icons.home_outlined,
-              label: '首頁',
             ),
             AdaptiveNavigationDestination(
               icon: PlatformInfo.isIOS26OrHigher()
