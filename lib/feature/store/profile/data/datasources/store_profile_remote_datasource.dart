@@ -61,12 +61,15 @@ class StoreProfileRemoteDataSource {
     return StoreProfileModel.fromJson(map);
   }
 
-  Future<String> uploadLogo(final File image) async {
+  Future<String> uploadLogo({
+    required final String storeId,
+    required final File image,
+  }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
     final imageName = p.basename(image.path);
-    final logoPath = '${user.id}/logo/$imageName';
+    final logoPath = '$storeId/logo/$imageName';
     final mimeType = lookupMimeType(image.path);
 
     final bytes = await image.readAsBytes();

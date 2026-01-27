@@ -120,12 +120,15 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).update(json).eq('id', size.id!);
   }
 
-  Future<String> uploadProductImage(final File image) async {
+  Future<String> uploadProductImage({
+    required final String storeId,
+    required final File image,
+  }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw '無法獲取使用者資訊，請重新登入';
 
     final imageName = p.basename(image.path);
-    final productImagePath = '${user.id}/products/$imageName';
+    final productImagePath = '$storeId/products/$imageName';
     final mimeType = lookupMimeType(image.path);
 
     final bytes = await image.readAsBytes();

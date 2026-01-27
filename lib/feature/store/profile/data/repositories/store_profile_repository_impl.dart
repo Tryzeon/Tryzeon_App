@@ -54,7 +54,10 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       // Handle Logo Upload
       if (logoFile != null) {
-        final newLogoPath = await _remoteDataSource.uploadLogo(logoFile);
+        final newLogoPath = await _remoteDataSource.uploadLogo(
+          storeId: target.id,
+          image: logoFile,
+        );
         finalTarget = target.copyWith(logoPath: newLogoPath);
       }
 

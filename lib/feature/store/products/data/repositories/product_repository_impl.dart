@@ -61,7 +61,10 @@ class ProductRepositoryImpl implements ProductRepository {
     required final File image,
   }) async {
     try {
-      final imagePath = await _remoteDataSource.uploadProductImage(image);
+      final imagePath = await _remoteDataSource.uploadProductImage(
+        storeId: product.storeId,
+        image: image,
+      );
 
       // 同時保存到本地快取
       final bytes = await image.readAsBytes();
@@ -115,7 +118,10 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       Product finalTarget = target;
       if (newImage != null) {
-        final newImagePath = await _remoteDataSource.uploadProductImage(newImage);
+        final newImagePath = await _remoteDataSource.uploadProductImage(
+          storeId: target.storeId,
+          image: newImage,
+        );
         finalTarget = target.copyWith(imagePath: newImagePath);
 
         // 同時保存到本地快取
