@@ -12,7 +12,6 @@ class ProductCategoryRemoteDataSource {
     final response = await _supabaseClient
         .from(_table)
         .select('id, name')
-        .eq('is_active', true)
         .order('priority', ascending: true);
 
     return (response as List)

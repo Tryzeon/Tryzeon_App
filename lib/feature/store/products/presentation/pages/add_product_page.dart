@@ -6,13 +6,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-
 import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_type_selector.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -176,49 +176,9 @@ class AddProductPage extends HookConsumerWidget {
           const SizedBox(height: 12),
           productCategoriesAsync.when(
             data: (final productCategories) {
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
-                ),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: productCategories.map((final category) {
-                    final isSelected = selectedCategories.value.contains(category);
-                    return FilterChip(
-                      label: Text(category),
-                      selected: isSelected,
-                      onSelected: (final selected) {
-                        final newSet = Set<String>.from(selectedCategories.value);
-                        if (selected) {
-                          newSet.add(category);
-                        } else {
-                          newSet.remove(category);
-                        }
-                        selectedCategories.value = newSet;
-                      },
-                      backgroundColor: colorScheme.surface,
-                      selectedColor: colorScheme.primary,
-                      checkmarkColor: colorScheme.onPrimary,
-                      labelStyle: textTheme.labelLarge?.copyWith(
-                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.outline.withValues(alpha: 0.3),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+              return ProductTypeSelector(
+                allCategories: productCategories,
+                selectedCategories: selectedCategories,
               );
             },
             loading: () => const Center(
