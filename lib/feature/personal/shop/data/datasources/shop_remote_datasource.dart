@@ -66,6 +66,17 @@ class ShopRemoteDataSource {
       if (imagePath != null) {
         map['image_url'] = getProductImageUrl(imagePath);
       }
+
+      // 處理店家 Logo
+      if (map['store_profile'] != null) {
+        final storeProfile = Map<String, dynamic>.from(map['store_profile']);
+        final logoPath = storeProfile['logo_path'] as String?;
+        if (logoPath != null && logoPath.isNotEmpty) {
+          storeProfile['logo_url'] = getProductImageUrl(logoPath);
+        }
+        map['store_profile'] = storeProfile;
+      }
+
       return ShopProductModel.fromJson(map);
     }).toList();
 

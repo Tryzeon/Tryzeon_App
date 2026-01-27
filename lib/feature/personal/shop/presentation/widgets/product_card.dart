@@ -2,12 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/fit_status.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/pages/product_detail_page.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ProductCard extends HookConsumerWidget {
   const ProductCard({super.key, required this.product, this.fitStatus});
@@ -58,27 +58,14 @@ class ProductCard extends HookConsumerWidget {
       await personalEntry?.tryOnFromStorage(product.imagePath);
     }
 
-    Future<void> handlePurchase() async {
-      if (product.purchaseLink == null || product.purchaseLink!.isEmpty) {
-        TopNotification.show(context, message: '此商品尚無購買連結', type: NotificationType.info);
-        return;
-      }
-
-      final Uri url = Uri.parse(product.purchaseLink!);
-      if (!await canLaunchUrl(url)) {
-        if (!context.mounted) return;
-
-        TopNotification.show(context, message: '無法開啟購買連結', type: NotificationType.error);
-        return;
-      }
-
-      // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
-      ref.read(incrementPurchaseClickCountProvider).call(product.id!).ignore();
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
-
     return GestureDetector(
-      onTap: handlePurchase,
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (final context) => ProductDetailPage(product: product),
+          ),
+        );
+      },
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

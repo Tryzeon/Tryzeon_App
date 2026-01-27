@@ -1,13 +1,14 @@
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 
 class ShopStoreInfoModel extends ShopStoreInfo {
-  const ShopStoreInfoModel({required super.id, super.name, super.address});
+  const ShopStoreInfoModel({required super.id, super.name, super.address, super.logoUrl});
 
   factory ShopStoreInfoModel.fromJson(final Map<String, dynamic> json) {
     return ShopStoreInfoModel(
       id: json['id'] as String,
       name: json['name'] as String?,
       address: json['address'] as String?,
+      logoUrl: json['logo_url'] as String?,
     );
   }
 }
