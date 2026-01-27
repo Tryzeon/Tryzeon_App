@@ -17,55 +17,64 @@ class ProductCategoryFilter extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Center(
-      child: Container(
+    return SizedBox(
+      height: 240,
+      child: GridView.builder(
+        scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Wrap(
-          spacing: 15,
-          runSpacing: 12,
-          children: productCategories.map((final category) {
-            final isSelected = selectedCategories.contains(category);
-            return GestureDetector(
-              onTap: () => onCategoryToggle(category),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.surfaceContainer,
-                      border: isSelected
-                          ? Border.all(color: colorScheme.primary, width: 2)
-                          : null,
-                    ),
-                    child: Center(
-                      child: Text(
-                        category.substring(0, 1),
-                        style: textTheme.headlineMedium?.copyWith(
-                          color: isSelected
-                              ? colorScheme.onPrimary
-                              : colorScheme.onSurface,
-                        ),
+        itemCount: productCategories.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 8,
+          childAspectRatio: 1.2,
+        ),
+        itemBuilder: (final context, final index) {
+          final category = productCategories[index];
+          final isSelected = selectedCategories.contains(category);
+          return GestureDetector(
+            onTap: () => onCategoryToggle(category),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.surfaceContainer,
+                    border: isSelected
+                        ? Border.all(color: colorScheme.primary, width: 2)
+                        : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      category.substring(0, 1),
+                      style: textTheme.titleMedium?.copyWith(
+                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    category,
-                    style: textTheme.bodyLarge?.copyWith(
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  category,
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                   ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
