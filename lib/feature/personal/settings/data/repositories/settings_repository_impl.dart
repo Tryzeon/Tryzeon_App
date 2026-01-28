@@ -6,8 +6,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<bool> getRecommendNearbyShops() async {
     final prefs = await SharedPreferences.getInstance();
-    // Default to true if not set
-    return prefs.getBool(AppConstants.keyRecommendNearbyShops) ?? true;
+    return prefs.getBool(AppConstants.keyRecommendNearbyShops) ?? false;
   }
 
   @override
