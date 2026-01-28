@@ -39,5 +39,7 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSLocationUsageDescription</key>
+	<string>We need your location to recommend nearby shops</string>
 </dict>
 </plist>
