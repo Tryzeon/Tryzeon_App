@@ -70,7 +70,8 @@ class AppSpacing {
   static const double xl = 32;
   static const double xxl = 48;
 
-  static const double bottomNavBarHeight = 50;
+  static const double iosTabBarHeight = 50; // iOS UITabBar / iOS26 floating
+  static const double androidNavBarHeight = 80; // Material NavigationBar
 }
 
 // ─── Opacity Tokens ──────────────────────────────────────────────────────────

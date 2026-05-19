@@ -309,7 +309,7 @@ class HomePage extends HookConsumerWidget {
 
     final bottomOffset =
         MediaQuery.paddingOf(context).bottom +
-        (PlatformInfo.isIOS26OrHigher() ? AppSpacing.bottomNavBarHeight : 0);
+        (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0);
 
     final currentResult = galleryState.currentResult;
     final showMoreOptions = currentResult != null && !currentResult.isLoading;

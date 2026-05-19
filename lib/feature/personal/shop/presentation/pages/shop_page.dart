@@ -222,7 +222,7 @@ class ShopPage extends HookConsumerWidget {
                             SizedBox(
                               height: PlatformInfo.isIOS26OrHigher()
                                   ? MediaQuery.of(context).padding.bottom +
-                                        AppSpacing.bottomNavBarHeight
+                                        AppSpacing.iosTabBarHeight
                                   : 0,
                             ),
                           ],

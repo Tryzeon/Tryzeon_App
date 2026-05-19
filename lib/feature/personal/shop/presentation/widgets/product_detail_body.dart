@@ -184,7 +184,7 @@ class _ProductDetailContent extends HookConsumerWidget {
 
           SizedBox(
             height: PlatformInfo.isIOS26OrHigher()
-                ? MediaQuery.of(context).padding.bottom + AppSpacing.bottomNavBarHeight
+                ? MediaQuery.of(context).padding.bottom + AppSpacing.iosTabBarHeight
                 : 0,
           ),
         ],

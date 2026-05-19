@@ -8,7 +8,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 class AppSnackBar {
   static void show(final BuildContext context, {required final String message}) {
     final navBarOffset = PlatformInfo.isIOS26OrHigher()
-        ? AppSpacing.bottomNavBarHeight
+        ? AppSpacing.iosTabBarHeight
         : 0.0;
 
     ScaffoldMessenger.of(context).showSnackBar(
