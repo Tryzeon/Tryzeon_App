@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/feature/common/product_categories/data/models/product_category_model.dart';
 
 class ProductCategoryRemoteDataSource {
@@ -7,7 +8,6 @@ class ProductCategoryRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
   static const _productCategoryTable = AppConstants.tableProductCategories;
-  static const _bucket = AppConstants.bucketProductCategoryImages;
 
   Future<List<ProductCategoryModel>> getProductCategories() async {
     final response = await _supabaseClient
@@ -24,12 +24,8 @@ class ProductCategoryRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = _getCategoryImageUrl(imagePath);
+      map['image_url'] = '${Env.r2PublicImagesBaseUrl}/$imagePath';
     }
     return map;
-  }
-
-  String _getCategoryImageUrl(final String imagePath) {
-    return _supabaseClient.storage.from(_bucket).getPublicUrl(imagePath);
   }
 }
