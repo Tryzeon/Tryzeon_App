@@ -21,20 +21,22 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/image_watermark_helper.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
-import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
 import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -115,16 +117,9 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> performTryOn({
-      final List<String>? clothesBase64s,
-      final List<String>? clothesPaths,
+      required final List<TryOnGarment> garments,
       final TryOnMode mode = TryOnMode.image,
     }) async {
-      final avatarFile = ref.read(avatarFileProvider).value;
-      if (avatarFile == null) {
-        TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
-        return;
-      }
-
       String? customAvatarBase64;
       final customAvatarUrl = galleryState.customAvatarResult?.imageUrl;
       if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
@@ -140,6 +135,23 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      final profile = await ref.read(userProfileProvider.future);
+      final defaultAvatarPath = profile?.avatarPath;
+
+      // Custom avatar wins; otherwise use the profile avatar path (the backend
+      // fetches it directly, so a failed local preview must not block try-on).
+      final TryOnImageSource? avatar = customAvatarBase64 != null
+          ? TryOnImageSource.base64(customAvatarBase64)
+          : (defaultAvatarPath != null && defaultAvatarPath.isNotEmpty)
+                ? TryOnImageSource.path(defaultAvatarPath)
+                : null;
+      if (avatar == null) {
+        if (context.mounted) {
+          TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
+        }
+        return;
+      }
+
       final requestId = UniqueKey().toString();
       final placeholderResult = TryonResult(id: requestId, mode: mode, isLoading: true);
       galleryNotifier.addPlaceholder(placeholderResult);
@@ -152,18 +164,13 @@ class HomePage extends HookConsumerWidget {
         transitionPrompt = promptConfig.transitionPrompt;
       }
 
-      final profile = await ref.read(userProfileProvider.future);
-      final String? defaultAvatarPath = profile?.avatarPath;
-
       final result = await ref
           .read(tryonActionProvider.notifier)
           .execute(
             TryOnParams(
               requestId: requestId,
-              avatarBase64: customAvatarBase64,
-              avatarPath: defaultAvatarPath,
-              clothesBase64s: clothesBase64s,
-              clothesPaths: clothesPaths,
+              avatar: avatar,
+              garments: garments,
               mode: mode,
               scenePrompt: scenePrompt,
               transitionPrompt: transitionPrompt,
@@ -201,14 +208,26 @@ class HomePage extends HookConsumerWidget {
 
       final clothesBytes = await clothesImage.readAsBytes();
       final clothesBase64 = base64Encode(clothesBytes);
-      performTryOn(clothesBase64s: [clothesBase64], mode: TryOnMode.image);
+      performTryOn(
+        garments: [
+          TryOnGarment(images: [TryOnImageSource.base64(clothesBase64)]),
+        ],
+        mode: TryOnMode.image,
+      );
     }
 
     Future<void> tryOnFromStorage(
       final List<String> clothesPaths, {
       final TryOnMode mode = TryOnMode.image,
     }) async {
-      performTryOn(clothesPaths: clothesPaths, mode: mode);
+      performTryOn(
+        garments: [
+          TryOnGarment(
+            images: clothesPaths.map(TryOnImageSource.path).toList(),
+          ),
+        ],
+        mode: mode,
+      );
     }
 
     Future<void> downloadVideo(final TryonResult result) async {
