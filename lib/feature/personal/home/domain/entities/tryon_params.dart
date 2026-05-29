@@ -1,4 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_garment.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 
 part 'tryon_params.freezed.dart';
@@ -7,10 +9,8 @@ part 'tryon_params.freezed.dart';
 sealed class TryOnParams with _$TryOnParams {
   const factory TryOnParams({
     required final String requestId,
-    final String? avatarBase64,
-    final String? avatarPath,
-    final List<String>? clothesBase64s,
-    final List<String>? clothesPaths,
+    required final TryOnImageSource avatar,
+    required final List<TryOnGarment> garments,
     required final TryOnMode mode,
     final String? scenePrompt,
     final String? transitionPrompt,
