@@ -1,17 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
-import 'package:tryzeon/feature/personal/home/data/repositories/tryon_repository_impl.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
-import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/feature/personal/home/domain/usecases/tryon_usecase.dart';
+import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon_usecase.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-part 'home_providers.g.dart';
+part 'tryon_providers.g.dart';
 
 // Data Source Providers
 @riverpod

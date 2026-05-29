@@ -21,22 +21,22 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/image_watermark_helper.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_garment.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_image_source.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
-import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
 import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePage extends HookConsumerWidget {

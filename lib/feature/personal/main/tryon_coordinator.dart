@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 part 'tryon_coordinator.g.dart';
 

@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_garment.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_image_source.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 part 'tryon_params.freezed.dart';
 

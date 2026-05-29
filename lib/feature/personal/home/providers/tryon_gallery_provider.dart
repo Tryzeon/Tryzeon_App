@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 
 part 'tryon_gallery_provider.freezed.dart';
 part 'tryon_gallery_provider.g.dart';

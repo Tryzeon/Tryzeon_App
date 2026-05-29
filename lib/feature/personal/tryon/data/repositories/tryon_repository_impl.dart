@@ -1,9 +1,9 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
-import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:typed_result/typed_result.dart';
 
