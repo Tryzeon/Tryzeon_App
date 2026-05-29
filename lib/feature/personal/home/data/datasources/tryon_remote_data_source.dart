@@ -7,7 +7,6 @@ import '../../domain/entities/tryon_params.dart';
 Map<String, String> _sourceToJson(final TryOnImageSource source) {
   return switch (source) {
     TryOnImageSourcePath(:final path) => {'path': path},
-    TryOnImageSourceUrl(:final url) => {'url': url},
     TryOnImageSourceBase64(:final data) => {'base64': data},
   };
 }
