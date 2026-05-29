@@ -47,13 +47,10 @@ export function parseTryonRequest(body: unknown): TryonRequest {
   if (!Array.isArray(b.garments) || b.garments.length === 0) {
     throw new ValidationError("garments must be a non-empty array");
   }
-
-  // Cap garment count, and per-garment angle images. No global cap: trimming
-  // angles is fine, but a whole garment must never be silently dropped.
-  const rawGarments = (b.garments as unknown[]).slice(0, LIMITS.MAX_GARMENTS);
-  const garments: GarmentInput[] = [];
-
-  for (const rg of rawGarments) {
+  if (b.garments.length > LIMITS.MAX_GARMENTS) {
+    throw new ValidationError(`too many garments (max ${LIMITS.MAX_GARMENTS})`);
+  }
+  const garments: GarmentInput[] = (b.garments as unknown[]).map((rg) => {
     if (typeof rg !== "object" || rg === null) {
       throw new ValidationError("each garment must be an object");
     }
@@ -61,11 +58,14 @@ export function parseTryonRequest(body: unknown): TryonRequest {
     if (!Array.isArray(imagesRaw) || imagesRaw.length === 0) {
       throw new ValidationError("each garment must have a non-empty images array");
     }
-    const images = imagesRaw
-      .slice(0, LIMITS.MAX_IMAGES_PER_GARMENT)
-      .map((img) => assertSingleSourceKey(img, "garment image"));
-    garments.push({ images });
-  }
+    if (imagesRaw.length > LIMITS.MAX_IMAGES_PER_GARMENT) {
+      throw new ValidationError(
+        `too many images for a garment (max ${LIMITS.MAX_IMAGES_PER_GARMENT})`,
+      );
+    }
+    const images = imagesRaw.map((img) => assertSingleSourceKey(img, "garment image"));
+    return { images };
+  });
 
   const mode = b.mode === "video" ? "video" : "image";
 
