@@ -21,6 +21,13 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false">
+        <!-- Disable Impeller on Android: its external-texture (SurfaceTexture/OES)
+             path corrupts hardware-decoded video frames on some GPUs/drivers,
+             producing diagonal-shear + green-block artifacts in video_player.
+             The Skia backend samples the external texture correctly. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
