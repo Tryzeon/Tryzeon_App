@@ -46,13 +46,14 @@ Deno.serve(async (req) => {
     }
 
     const resolver = makeSourceResolver(userClient!);
-    const avatarImage = await resolver(tryonReq.avatar);
-    const { clothesBase64s, garmentImageCounts } = await resolveGarments(tryonReq.garments, resolver);
+    const [avatarImage, garmentGroups] = await Promise.all([
+      resolver(tryonReq.avatar),
+      resolveGarments(tryonReq.garments, resolver),
+    ]);
 
     const tryonImageBase64 = await generateTryonImage(
       avatarImage,
-      clothesBase64s,
-      garmentImageCounts,
+      garmentGroups,
       tryonReq.scenePrompt,
     );
 

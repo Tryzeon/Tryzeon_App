@@ -11,26 +11,26 @@ CORE TASK: Replace ONLY the clothing categories shown in the reference garment(s
 
 You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image. You must NEVER hallucinate or replace clothing in categories the reference does not cover (e.g., do NOT generate new pants when the reference only shows a top). You must NEVER leave remnants of the original clothing visible WITHIN the replaced scope.`;
 
-function buildGarmentManifest(garmentImageCounts: number[]): string {
+function buildGarmentManifest(garmentGroups: string[][]): string {
   const lines: string[] = [];
   let cursor = 2; // image 1 is the person
-  garmentImageCounts.forEach((count, i) => {
+  garmentGroups.forEach((group, i) => {
     const start = cursor;
-    const end = cursor + count - 1;
-    const range = count === 1 ? `image ${start}` : `images ${start}-${end}`;
+    const end = cursor + group.length - 1;
+    const range = group.length === 1 ? `image ${start}` : `images ${start}-${end}`;
     lines.push(`   - Garment ${i + 1}: ${range}`);
     cursor = end + 1;
   });
   return lines.join("\n");
 }
 
-export function buildTaskPrompt(garmentImageCounts: number[], scenePrompt?: string): string {
-  const totalClothes = garmentImageCounts.reduce((a, b) => a + b, 0);
+export function buildTaskPrompt(garmentGroups: string[][], scenePrompt?: string): string {
+  const totalClothes = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt =
     `You will receive ${totalClothes + 1} images after this message:
 1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
-${buildGarmentManifest(garmentImageCounts)}
+${buildGarmentManifest(garmentGroups)}
 First classify each garment's category (top / bottom / full-body / outerwear / footwear / accessory) using the rules below, then apply ALL garments to the person simultaneously. Each garment replaces ONLY its own category scope; any category not covered by ANY garment is a HARD INVARIANT — copy it pixel-faithfully from the person photo.
 
 GOAL
@@ -115,11 +115,11 @@ Place the person in this scene: ${scenePrompt}
  */
 export async function generateTryonImage(
   avatarImage: string,
-  clothesImages: string[],
-  garmentImageCounts: number[],
+  garmentGroups: string[][],
   scenePrompt?: string,
 ): Promise<string | null> {
-  const taskPrompt = buildTaskPrompt(garmentImageCounts, scenePrompt);
+  const taskPrompt = buildTaskPrompt(garmentGroups, scenePrompt);
+  const clothesImages = garmentGroups.flat();
   
   const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
   const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";

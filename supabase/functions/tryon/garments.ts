@@ -17,17 +17,15 @@ export function makeSourceResolver(userClient: SupabaseClient): SourceResolver {
   };
 }
 
-/** Flattens every garment's images to base64 (order preserved) + per-garment counts. */
-export async function resolveGarments(
+/**
+ * Resolves every garment's images to base64, preserving garment grouping and
+ * order. All sources resolve concurrently (one wave, not per-garment).
+ */
+export function resolveGarments(
   garments: GarmentInput[],
   resolver: SourceResolver,
-): Promise<{ clothesBase64s: string[]; garmentImageCounts: number[] }> {
-  const clothesBase64s: string[] = [];
-  const garmentImageCounts: number[] = [];
-  for (const garment of garments) {
-    const resolved = await Promise.all(garment.images.map(resolver));
-    clothesBase64s.push(...resolved);
-    garmentImageCounts.push(resolved.length);
-  }
-  return { clothesBase64s, garmentImageCounts };
+): Promise<string[][]> {
+  return Promise.all(
+    garments.map((garment) => Promise.all(garment.images.map(resolver))),
+  );
 }
