@@ -1,10 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager, FeatureName } from "../_shared/quota.ts";
-import { fetchImageAsBase64, detectMimeType, mimeTypeToExtension, base64ToUint8Array } from "../_shared/image-utils.ts";
+import { detectMimeType, mimeTypeToExtension, base64ToUint8Array } from "../_shared/image-utils.ts";
 import { uploadTryonImageToR2 } from "../_shared/r2.ts";
 import { generateTryonImage } from "./image.ts";
 import { generateTryonVideo } from "./video.ts";
+import { parseTryonRequest, ValidationError } from "./request.ts";
+import { makeSourceResolver, resolveGarments } from "./garments.ts";
 
 Deno.serve(async (req) => {
   let quotaManager: QuotaManager | undefined;
@@ -15,57 +17,44 @@ Deno.serve(async (req) => {
 
     const adminClient = getAdminClient();
 
-    let body;
+    let tryonReq;
     try {
-      const bodyText = await req.text();
-      body = JSON.parse(bodyText);
+      const body = JSON.parse(await req.text());
+      tryonReq = parseTryonRequest(body);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return new Response(
+          JSON.stringify({ error: err.message, code: "VALIDATION_ERROR" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
       return new Response(
         JSON.stringify({ error: "Invalid JSON format", code: "BAD_REQUEST" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-    const { avatarBase64, avatarPath, clothesBase64s, clothesPaths, mode = "image", scenePrompt, transitionPrompt } = body;
-
-    if (!avatarPath && !avatarBase64) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields", code: "VALIDATION_ERROR" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
-    }
-    if ((!clothesBase64s || clothesBase64s.length === 0) && (!clothesPaths || clothesPaths.length === 0)) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields", code: "VALIDATION_ERROR" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    const featureName: FeatureName = mode === "video" ? "tryon_video" : "tryon";
+    const featureName: FeatureName = tryonReq.mode === "video" ? "tryon_video" : "tryon";
     quotaManager = new QuotaManager(adminClient, user!.id, featureName);
 
     const { allowed, usage } = await quotaManager.incrementQuota();
     if (!allowed) {
       return new Response(
-        JSON.stringify({
-          error: "Rate limit exceeded",
-          code: "RATE_LIMIT_EXCEEDED",
-          usage: usage,
-        }),
+        JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED", usage }),
         { status: 429, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    const avatarImage = avatarBase64 ? avatarBase64 : await fetchImageAsBase64(userClient!, avatarPath!);
-    let clothesImages: string[] = [];
+    const resolver = makeSourceResolver(userClient!);
+    const avatarImage = await resolver(tryonReq.avatar);
+    const { clothesBase64s, garmentImageCounts } = await resolveGarments(tryonReq.garments, resolver);
 
-    if (clothesBase64s && clothesBase64s.length > 0) {
-      clothesImages = clothesBase64s.slice(0, 3);
-    } else if (clothesPaths && clothesPaths.length > 0) {
-      const pathsToFetch = clothesPaths.slice(0, 3);
-      clothesImages = await Promise.all(pathsToFetch.map((p: string) => fetchImageAsBase64(userClient!, p)));
-    }
-
-    const tryonImageBase64 = await generateTryonImage(avatarImage, clothesImages, scenePrompt);
+    const tryonImageBase64 = await generateTryonImage(
+      avatarImage,
+      clothesBase64s,
+      garmentImageCounts,
+      tryonReq.scenePrompt,
+    );
 
     if (!tryonImageBase64) {
       return new Response(
@@ -74,8 +63,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (mode === "video") {
-      const videoUrl = await generateTryonVideo(tryonImageBase64, user!.id, transitionPrompt);
+    if (tryonReq.mode === "video") {
+      const videoUrl = await generateTryonVideo(tryonImageBase64, user!.id, tryonReq.transitionPrompt);
       return new Response(
         JSON.stringify({ videoUrl: videoUrl, usage: usage }),
         { headers: { "Content-Type": "application/json" } },
