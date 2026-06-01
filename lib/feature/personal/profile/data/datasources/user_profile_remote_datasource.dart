@@ -46,13 +46,33 @@ class UserProfileRemoteDataSource {
     return UserProfileModel.fromJson(response);
   }
 
-  Future<UserProfileModel> updateUserProfile({required final String name}) async {
+  Future<UserProfileModel> updateUserProfile({
+    required final String name,
+    final String? gender,
+    final int? age,
+  }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
         .from(_userProfileTable)
-        .update({'name': name})
+        .update({'name': name, 'gender': gender, 'age': age})
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+    return UserProfileModel.fromJson(response);
+  }
+
+  Future<UserProfileModel> updateStylePreferences(
+    final List<String> stylePreferences,
+  ) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw const UnauthenticatedException();
+
+    final response = await _supabaseClient
+        .from(_userProfileTable)
+        .update({'style_preferences': stylePreferences})
         .eq('user_id', user.id)
         .select()
         .single();
