@@ -12,7 +12,15 @@ abstract class UserProfileRepository {
 
   Future<Result<File, Failure>> getUserAvatar(final String path);
 
-  Future<Result<void, Failure>> updateUserProfile({required final String name});
+  Future<Result<void, Failure>> updateUserProfile({
+    required final String name,
+    final Gender? gender,
+    final int? age,
+  });
+
+  Future<Result<void, Failure>> updateStylePreferences({
+    required final List<ClothingStyle> stylePreferences,
+  });
 
   Future<Result<void, Failure>> updateUserBodyMeasurements({
     required final Measurements measurements,

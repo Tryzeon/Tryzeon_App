@@ -73,14 +73,39 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateUserProfile({required final String name}) async {
+  Future<Result<void, Failure>> updateUserProfile({
+    required final String name,
+    final Gender? gender,
+    final int? age,
+  }) async {
     try {
-      final updatedProfile = await _remoteDataSource.updateUserProfile(name: name);
+      final updatedProfile = await _remoteDataSource.updateUserProfile(
+        name: name,
+        gender: gender?.value,
+        age: age,
+      );
       await _localDataSource.saveUserProfile(updatedProfile);
 
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update user profile', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> updateStylePreferences({
+    required final List<ClothingStyle> stylePreferences,
+  }) async {
+    try {
+      final updatedProfile = await _remoteDataSource.updateStylePreferences(
+        stylePreferences.map((final style) => style.value).toList(),
+      );
+      await _localDataSource.saveUserProfile(updatedProfile);
+
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update style preferences', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
