@@ -1,3 +1,15 @@
+enum ProductGender {
+  male('male'),
+  female('female'),
+  unisex('unisex');
+
+  const ProductGender(this.value);
+  final String value;
+
+  static ProductGender? tryFromString(final String? value) =>
+      ProductGender.values.where((final e) => e.value == value).firstOrNull;
+}
+
 enum ProductElasticity {
   none('none'),
   low('low'),

@@ -15,6 +15,15 @@ const List<String> kMaterialPresets = [
   '混紡',
 ];
 
+/// UI display label extension for [ProductGender] in Presentation Layer.
+extension ProductGenderX on ProductGender {
+  String get label => switch (this) {
+    ProductGender.male => '男裝',
+    ProductGender.female => '女裝',
+    ProductGender.unisex => '中性',
+  };
+}
+
 /// UI display label extension for [ProductElasticity] in Presentation Layer.
 extension ProductElasticityX on ProductElasticity {
   String get label => switch (this) {
