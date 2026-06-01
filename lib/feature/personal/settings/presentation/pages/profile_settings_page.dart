@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -49,9 +51,19 @@ class _PersonalProfileForm extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: profile.name);
+    final ageController = useTextEditingController(
+      text: profile.age?.toString() ?? '',
+    );
+    final gender = useState<Gender?>(profile.gender);
     final isLoading = useState(false);
+
     final userName = useValueListenable(nameController).text;
-    final hasChanges = userName.trim() != profile.name;
+    final ageText = useValueListenable(ageController).text;
+
+    final nameChanged = userName.trim() != profile.name;
+    final ageChanged = int.tryParse(ageText.trim()) != profile.age;
+    final genderChanged = gender.value != profile.gender;
+    final hasChanges = nameChanged || ageChanged || genderChanged;
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -63,7 +75,11 @@ class _PersonalProfileForm extends HookConsumerWidget {
       isLoading.value = true;
 
       final updateUseCase = ref.read(updateUserProfileUseCaseProvider);
-      final result = await updateUseCase(name: nameController.text.trim());
+      final result = await updateUseCase(
+        name: nameController.text.trim(),
+        gender: gender.value,
+        age: int.tryParse(ageController.text.trim()),
+      );
 
       if (!context.mounted) return;
 
@@ -95,9 +111,37 @@ class _PersonalProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             TextFormField(
               controller: nameController,
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               validator: AppValidators.validateUserName,
               decoration: const InputDecoration(labelText: '姓名'),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextFormField(
+              controller: ageController,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: AppValidators.validateAge,
+              decoration: const InputDecoration(labelText: '年齡'),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              '性別',
+              style: textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            ...Gender.values.map(
+              (final value) => RadioListTile<Gender>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(value.label),
+                value: value,
+                // ignore: deprecated_member_use
+                groupValue: gender.value,
+                // ignore: deprecated_member_use
+                onChanged: (final selected) => gender.value = selected,
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
             SizedBox(
