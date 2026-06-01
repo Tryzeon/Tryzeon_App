@@ -9,6 +9,7 @@ import 'package:tryzeon/feature/common/product_categories/domain/entities/catego
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/repositories/product_category_repository.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/usecases/build_category_tree.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/usecases/expand_category_ids.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/usecases/get_product_categories.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -42,6 +43,11 @@ GetProductCategories getProductCategoriesUseCase(final Ref ref) {
 @riverpod
 BuildCategoryTree buildCategoryTreeUseCase(final Ref ref) {
   return BuildCategoryTree();
+}
+
+@riverpod
+ExpandCategoryIds expandCategoryIdsUseCase(final Ref ref) {
+  return ExpandCategoryIds();
 }
 
 @riverpod
