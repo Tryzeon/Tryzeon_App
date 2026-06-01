@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/personal/settings/presentation/pages/body_measur
 import 'package:tryzeon/feature/personal/settings/presentation/pages/preferences_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/profile_settings_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/settings_page.dart';
+import 'package:tryzeon/feature/personal/settings/presentation/pages/style_preferences_settings_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/product_detail_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/shop_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart';
@@ -111,6 +112,11 @@ final personalFullScreenRoutes = [
       GoRoute(
         path: 'preferences',
         builder: (final context, final state) => const PreferencesPage(),
+      ),
+      GoRoute(
+        path: 'style-preferences',
+        builder: (final context, final state) =>
+            const StylePreferencesSettingsPage(),
       ),
       GoRoute(
         path: 'subscription',
