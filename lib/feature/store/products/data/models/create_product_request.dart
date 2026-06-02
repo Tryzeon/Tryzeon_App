@@ -15,7 +15,6 @@ class CreateProductRequest {
     required this.price,
     required this.imagePaths,
     this.gender,
-    this.wardrobeCategory,
     this.purchaseLink,
     this.material,
     this.elasticity,
@@ -32,7 +31,6 @@ class CreateProductRequest {
   final double price;
   final List<String> imagePaths;
   final String? gender;
-  final String? wardrobeCategory;
   final String? purchaseLink;
   final String? material;
   final String? elasticity;

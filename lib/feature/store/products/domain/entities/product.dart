@@ -4,7 +4,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/product_size/entities/product_size.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 
@@ -29,7 +28,6 @@ sealed class CreateProductParams with _$CreateProductParams {
     required final double price,
     required final List<File> images,
     @Default(ProductGender.unisex) final ProductGender gender,
-    final WardrobeCategory? wardrobeCategory,
     final String? purchaseLink,
     final String? material,
     final ProductElasticity? elasticity,
@@ -53,7 +51,6 @@ sealed class UpdateProductParams with _$UpdateProductParams {
     required final List<String> categoryIds,
     required final double price,
     @Default(ProductGender.unisex) final ProductGender gender,
-    final WardrobeCategory? wardrobeCategory,
     final String? purchaseLink,
     final String? material,
     final ProductElasticity? elasticity,
@@ -75,7 +72,6 @@ sealed class Product with _$Product {
     required final List<String> imageUrls,
     required final String id,
     @Default(ProductGender.unisex) final ProductGender gender,
-    final WardrobeCategory? wardrobeCategory,
     final String? purchaseLink,
     final String? material,
     final ProductElasticity? elasticity,

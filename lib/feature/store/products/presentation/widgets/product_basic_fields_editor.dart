@@ -7,11 +7,9 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_gender_selector.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_wardrobe_category_selector.dart';
 
 class ProductBasicFieldsEditor extends HookWidget {
   const ProductBasicFieldsEditor({
@@ -20,7 +18,6 @@ class ProductBasicFieldsEditor extends HookWidget {
     required this.priceController,
     required this.purchaseLinkController,
     required this.selectedGender,
-    required this.selectedWardrobeCategory,
     required this.selectedCategoryIds,
     required this.productCategoriesAsync,
     required this.onRetryCategories,
@@ -30,7 +27,6 @@ class ProductBasicFieldsEditor extends HookWidget {
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
   final ValueNotifier<ProductGender> selectedGender;
-  final ValueNotifier<WardrobeCategory?> selectedWardrobeCategory;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
@@ -102,23 +98,6 @@ class ProductBasicFieldsEditor extends HookWidget {
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('性別', required: true),
         ProductGenderSelector(selectedGender: selectedGender),
-        const SizedBox(height: AppSpacing.md),
-        const _FieldLabel('衣櫥分類', required: true),
-        FormField<WardrobeCategory?>(
-          initialValue: selectedWardrobeCategory.value,
-          validator: (final value) => value == null ? '請選擇衣櫥分類' : null,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          builder: (final state) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ProductWardrobeCategorySelector(
-                selectedWardrobeCategory: selectedWardrobeCategory,
-                onChanged: state.didChange,
-              ),
-              if (state.hasError) _ErrorText(state.errorText!),
-            ],
-          ),
-        ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('購買連結'),
         TextFormField(

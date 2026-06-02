@@ -18,7 +18,6 @@ class ProductModel {
     required this.createdAt,
     required this.updatedAt,
     this.gender,
-    this.wardrobeCategory,
     this.purchaseLink,
     this.material,
     this.elasticity,
@@ -41,7 +40,6 @@ class ProductModel {
   final List<String> imageUrls;
   final String id;
   final String? gender;
-  final String? wardrobeCategory;
   final String? purchaseLink;
   final String? material;
   final String? elasticity;

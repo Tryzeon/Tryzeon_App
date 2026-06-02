@@ -18,7 +18,6 @@ class ProductCollection {
   late List<String> imagePaths;
   late List<String> imageUrls;
   String? gender;
-  String? wardrobeCategory;
   String? purchaseLink;
   String? material;
 
