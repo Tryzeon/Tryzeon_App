@@ -28,13 +28,17 @@ class ProductCategoryFilter extends StatelessWidget {
       if (categories.isEmpty) return const SizedBox.shrink();
 
       return SizedBox(
-        height: 96,
-        child: ListView.separated(
+        height: 184,
+        child: GridView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // two rows
+            mainAxisExtent: 82, // card width along the scroll axis
+            mainAxisSpacing: AppSpacing.xxs,
+            crossAxisSpacing: AppSpacing.sm,
+          ),
           itemCount: categories.length,
-          separatorBuilder: (final context, final index) =>
-              const SizedBox(width: AppSpacing.xxs),
           itemBuilder: (final context, final index) {
             final category = categories[index];
             return _CategoryCard(
@@ -53,7 +57,7 @@ class ProductCategoryFilter extends StatelessWidget {
     // Priority 2: loading without data.
     if (categoriesAsync.isLoading) {
       return const SizedBox(
-        height: 96,
+        height: 184,
         child: Center(child: CircularProgressIndicator()),
       );
     }
