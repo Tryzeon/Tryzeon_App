@@ -10,12 +10,18 @@ import 'product_category_mappr.auto_mappr.dart';
 @AutoMappr([
   MapType<ProductCategoryModel, ProductCategory>(
     fields: [
-      Field('wardrobeCategory', custom: ProductCategoryMapprHelper.stringToWardrobeCategory),
+      Field(
+        'wardrobeCategory',
+        custom: ProductCategoryMapprHelper.stringToWardrobeCategory,
+      ),
     ],
   ),
   MapType<ProductCategory, ProductCategoryModel>(
     fields: [
-      Field('wardrobeCategory', custom: ProductCategoryMapprHelper.wardrobeCategoryToString),
+      Field(
+        'wardrobeCategory',
+        custom: ProductCategoryMapprHelper.wardrobeCategoryToString,
+      ),
     ],
   ),
   MapType<ProductCategoryModel, ProductCategoryCollection>(

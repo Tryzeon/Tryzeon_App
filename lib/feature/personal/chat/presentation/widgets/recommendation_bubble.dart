@@ -138,10 +138,7 @@ class _SlotSection extends StatelessWidget {
         ),
         if (reason.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xxs),
-          Text(
-            reason,
-            style: textTheme.bodySmall,
-          ),
+          Text(reason, style: textTheme.bodySmall),
         ],
         if (!isEmpty) ...[
           const SizedBox(height: AppSpacing.sm),
