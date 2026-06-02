@@ -7,6 +7,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
@@ -52,16 +53,18 @@ class ChatNotifier extends _$ChatNotifier {
     WidgetsBinding.instance.addPostFrameCallback((final _) => _initialize());
   }
 
-  void appendUserMessage(final String text) => _appendMessage(text, isUser: true);
-  void appendBotMessage(final String text) => _appendMessage(text, isUser: false);
+  void appendUserMessage(final String text) =>
+      _appendMessage(ChatMessage(text: text, isUser: true));
 
-  void _appendMessage(final String text, {required final bool isUser}) {
-    state = state.copyWith(
-      messages: [
-        ...state.messages,
-        ChatMessage(text: text, isUser: isUser),
-      ],
-    );
+  void appendBotMessage(final String text) =>
+      _appendMessage(ChatMessage(text: text, isUser: false));
+
+  void appendRecommendationMessage(final ChatRecommendation rec) => _appendMessage(
+    ChatMessage(text: rec.description, isUser: false, recommendation: rec),
+  );
+
+  void _appendMessage(final ChatMessage message) {
+    state = state.copyWith(messages: [...state.messages, message]);
   }
 
   Future<void> submitAnswer(final String answer) async {
@@ -108,7 +111,7 @@ class ChatNotifier extends _$ChatNotifier {
     if (_isStale(localGen)) return;
 
     if (result.isSuccess) {
-      appendBotMessage(result.get()!.recommendation);
+      appendRecommendationMessage(result.get()!);
       return;
     }
 

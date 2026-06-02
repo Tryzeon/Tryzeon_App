@@ -16,6 +16,7 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_ba
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_progress_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_quick_reply_row.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_thinking_bubble.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/recommendation_bubble.dart';
 
 class ChatPage extends HookConsumerWidget {
   const ChatPage({super.key});
@@ -133,7 +134,12 @@ class ChatPage extends HookConsumerWidget {
                   itemCount: state.messages.length + (state.isLoading ? 1 : 0),
                   itemBuilder: (final context, final index) {
                     if (index < state.messages.length) {
-                      return ChatBubble(message: state.messages[index]);
+                      final message = state.messages[index];
+                      final rec = message.recommendation;
+                      if (rec != null) {
+                        return RecommendationBubble(recommendation: rec);
+                      }
+                      return ChatBubble(message: message);
                     }
                     return const ChatThinkingBubble();
                   },

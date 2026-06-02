@@ -1,13 +1,19 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/outfit_slot.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/resolved_outfit_slot.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/get_llm_recommendation.dart';
+import 'package:tryzeon/feature/personal/chat/domain/usecases/resolve_outfit_slot.dart';
+import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'chat_providers.g.dart';
@@ -70,4 +76,37 @@ class ChatAction extends _$ChatAction {
 
     return result;
   }
+}
+
+@Riverpod(keepAlive: true)
+ResolveOutfitSlot resolveOutfitSlotUseCase(final Ref ref) {
+  return ResolveOutfitSlot(
+    getCategoriesByName: () async {
+      final categories = await ref.read(productCategoriesProvider.future);
+      return {for (final c in categories) c.name: c};
+    },
+    getWardrobeItems: () => ref.read(wardrobeItemsProvider.future),
+    getShopProducts: (final filter) async {
+      final useCase = ref.read(getShopProductsProvider);
+      final result = await useCase(filter: filter);
+      return result.isSuccess ? result.get()! : const [];
+    },
+  );
+}
+
+/// keepAlive: chat messages don't disappear once rendered; without this,
+/// scrolling the bubble out of the ListView window disposes the provider
+/// and the next scroll-back re-fires shop RPC + wardrobe reads.
+///
+/// Cache invariant: relies on `slots` being the SAME `List<OutfitSlot>`
+/// identity across rebuilds (freezed exposes `EqualUnmodifiableListView`
+/// which preserves identity per field read on the same object). Never
+/// pass a copied list — that would defeat the family cache.
+@Riverpod(keepAlive: true)
+Future<List<ResolvedOutfitSlot>> resolvedOutfit(
+  final Ref ref,
+  final List<OutfitSlot> slots,
+) async {
+  final useCase = ref.read(resolveOutfitSlotUseCaseProvider);
+  return Future.wait(slots.map(useCase.call));
 }

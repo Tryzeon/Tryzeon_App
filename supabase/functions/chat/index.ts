@@ -46,8 +46,48 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fetch product_categories so the LLM can only choose from existing names.
+    const { data: categories, error: catErr } = await adminClient
+      .from("product_categories")
+      .select("name")
+
+    if (catErr) {
+      console.error("Failed to fetch product_categories:", catErr);
+      await quotaManager?.rollbackQuota();
+      return new Response(
+        JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const categoryLines = (categories ?? []).map((c) => `- ${c.name}`).join("\n");
+
     // Process LLM Request
-    const prompt = `請根據以下穿搭需求，提供具體的服裝搭配建議，包括上衣、下身、鞋子和配件的推薦，簡短一點即可，但要分段說明。\n${userRequirement}`;
+    const prompt = `你是穿搭顧問。根據使用者需求，推薦一整套穿搭。
+
+【可用商品分類清單】（請只從這個清單選 category_name，必須一字不差）
+${categoryLines}
+
+【使用者需求】
+${userRequirement}
+
+請只回傳純 JSON（不要 markdown code fence），格式：
+{
+  "description": "整體穿搭說明（2-3 句中文）",
+  "slots": [
+    {
+      "slot_label": "上衣",
+      "category_name": "（從上方清單選一個）",
+      "tags": ["白色", "棉", "寬鬆"],
+      "reason": "一句話說明為何推薦"
+    }
+  ]
+}
+
+規則：
+- slots 1-5 個（涵蓋上衣、下身、鞋、配件等）
+- 每個 slot 的 tags 1-5 個，中文形容詞 / 材質 / 顏色，避免罕見詞
+- category_name 必須一字不差地從清單選；找不到合適的就略過該 slot`;
 
     const result = await getAIClient().models.generateContent({
       model: VERTEX_CONFIG.CHAT_MODEL!,
@@ -55,8 +95,27 @@ Deno.serve(async (req) => {
     });
     const recommendation = result.text ?? "";
 
+    // Try-parse JSON. On any failure, fall back to description-only.
+    let description = "";
+    let slots: unknown[] = [];
+    try {
+      // Strip code fences if model wrapped output anyway.
+      const cleaned = recommendation
+        .trim()
+        .replace(/^﻿/, "")
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/i, "");
+      const parsed = JSON.parse(cleaned);
+      description = typeof parsed.description === "string" ? parsed.description : "";
+      slots = Array.isArray(parsed.slots) ? parsed.slots : [];
+    } catch (e) {
+      console.warn("LLM returned non-JSON; falling back to text:", e);
+      description = recommendation;
+      slots = [];
+    }
+
     // Return Success Response
-    return new Response(JSON.stringify({ recommendation, usage }), {
+    return new Response(JSON.stringify({ description, slots, usage }), {
       headers: { "Content-Type": "application/json" }
     });
 
