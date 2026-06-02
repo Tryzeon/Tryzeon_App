@@ -13,6 +13,7 @@ import '../widgets/ad_banner.dart';
 import '../widgets/product_category_filter.dart';
 import '../widgets/product_grid.dart';
 import '../widgets/search_bar.dart';
+import '../widgets/shop_gender_filter.dart';
 
 class ShopPage extends HookConsumerWidget {
   const ShopPage({super.key});
@@ -147,6 +148,18 @@ class ShopPage extends HookConsumerWidget {
                             // 📢 廣告輪播
                             AdBanner(adsAsync: adsAsync),
                             const SizedBox(height: AppSpacing.lg),
+
+                            // 男女裝篩選
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                              ),
+                              child: ShopGenderFilter(
+                                selected: filterState.gender,
+                                onChanged: filterNotifier.setGender,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
 
                             // 商品類型篩選標籤
                             ProductCategoryFilter(

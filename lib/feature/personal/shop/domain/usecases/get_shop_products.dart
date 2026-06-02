@@ -20,6 +20,7 @@ class GetShopProducts {
       minPrice: filter.minPrice,
       maxPrice: filter.maxPrice,
       categories: filter.categories,
+      gender: filter.gender,
       channels: filter.channels,
       userLocation: filter.userLocation,
       forceRefresh: forceRefresh,
