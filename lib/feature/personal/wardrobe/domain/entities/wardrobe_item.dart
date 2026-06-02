@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'wardrobe_category.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 
 part 'wardrobe_item.freezed.dart';
 

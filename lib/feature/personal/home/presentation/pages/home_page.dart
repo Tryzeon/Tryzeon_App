@@ -143,8 +143,8 @@ class HomePage extends HookConsumerWidget {
       final TryOnImageSource? avatar = customAvatarBase64 != null
           ? TryOnImageSource.base64(customAvatarBase64)
           : (defaultAvatarPath != null && defaultAvatarPath.isNotEmpty)
-                ? TryOnImageSource.path(defaultAvatarPath)
-                : null;
+          ? TryOnImageSource.path(defaultAvatarPath)
+          : null;
       if (avatar == null) {
         if (context.mounted) {
           TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
@@ -222,9 +222,7 @@ class HomePage extends HookConsumerWidget {
     }) async {
       performTryOn(
         garments: [
-          TryOnGarment(
-            images: clothesPaths.map(TryOnImageSource.path).toList(),
-          ),
+          TryOnGarment(images: clothesPaths.map(TryOnImageSource.path).toList()),
         ],
         mode: mode,
       );

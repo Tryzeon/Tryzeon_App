@@ -6,11 +6,11 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-import '../extensions/wardrobe_category_display_extension.dart';
 import '../sheets/wardrobe_tag_editor_sheet.dart';
 
 class WardrobeItemDetailPage extends HookConsumerWidget {

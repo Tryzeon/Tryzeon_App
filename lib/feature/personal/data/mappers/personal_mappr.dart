@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 
 import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
 import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
@@ -18,7 +19,6 @@ import '../../subscription/data/collections/subscription_plan_collection.dart';
 import '../../subscription/data/models/subscription_plan_model.dart';
 import '../../wardrobe/data/collections/wardrobe_item_collection.dart';
 import '../../wardrobe/data/models/wardrobe_item_model.dart';
-import '../../wardrobe/domain/entities/wardrobe_category.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 

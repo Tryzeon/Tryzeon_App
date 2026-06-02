@@ -6,11 +6,7 @@ import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.da
 /// 由呼叫端傳入目前選取集合與 toggle callback,供 onboarding 與設定頁共用。
 /// 本元件為可捲動 GridView,呼叫端通常以 `Expanded` 包裹。
 class StylePreferenceGrid extends StatelessWidget {
-  const StylePreferenceGrid({
-    super.key,
-    required this.selected,
-    required this.onToggle,
-  });
+  const StylePreferenceGrid({super.key, required this.selected, required this.onToggle});
 
   final Set<ClothingStyle> selected;
   final void Function(ClothingStyle style) onToggle;
@@ -58,24 +54,23 @@ class StylePreferenceGrid extends StatelessWidget {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
-                          errorBuilder:
-                              (final context, final error, final stackTrace) {
-                                return Container(
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.image_not_supported_outlined,
-                                        color: colorScheme.outline,
-                                        size: 32,
-                                      ),
-                                      const SizedBox(height: AppSpacing.xs),
-                                      Text(style.value, style: textTheme.labelSmall),
-                                    ],
+                          errorBuilder: (final context, final error, final stackTrace) {
+                            return Container(
+                              color: colorScheme.surfaceContainerHighest,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: colorScheme.outline,
+                                    size: 32,
                                   ),
-                                );
-                              },
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(style.value, style: textTheme.labelSmall),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ),
                       if (isSelected)

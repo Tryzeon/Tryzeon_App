@@ -7,11 +7,7 @@ import 'package:tryzeon/feature/personal/shop/domain/repositories/product_reposi
 import 'package:typed_result/typed_result.dart';
 
 class GetShopProducts {
-  GetShopProducts(
-    this._repository,
-    this._categoryRepository,
-    this._expandCategoryIds,
-  );
+  GetShopProducts(this._repository, this._categoryRepository, this._expandCategoryIds);
 
   final ProductRepository _repository;
   final ProductCategoryRepository _categoryRepository;

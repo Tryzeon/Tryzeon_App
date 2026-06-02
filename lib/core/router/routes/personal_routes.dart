@@ -115,8 +115,7 @@ final personalFullScreenRoutes = [
       ),
       GoRoute(
         path: 'style-preferences',
-        builder: (final context, final state) =>
-            const StylePreferencesSettingsPage(),
+        builder: (final context, final state) => const StylePreferencesSettingsPage(),
       ),
       GoRoute(
         path: 'subscription',

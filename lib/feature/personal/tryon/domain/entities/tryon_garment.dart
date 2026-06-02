@@ -5,7 +5,6 @@ part 'tryon_garment.freezed.dart';
 
 @freezed
 sealed class TryOnGarment with _$TryOnGarment {
-  const factory TryOnGarment({
-    required final List<TryOnImageSource> images,
-  }) = _TryOnGarment;
+  const factory TryOnGarment({required final List<TryOnImageSource> images}) =
+      _TryOnGarment;
 }

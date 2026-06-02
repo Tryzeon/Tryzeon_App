@@ -51,9 +51,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: profile.name);
-    final ageController = useTextEditingController(
-      text: profile.age?.toString() ?? '',
-    );
+    final ageController = useTextEditingController(text: profile.age?.toString() ?? '');
     final gender = useState<Gender?>(profile.gender);
     final isLoading = useState(false);
 
@@ -127,9 +125,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               '性別',
-              style: textTheme.labelLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.xs),
             ...Gender.values.map(
