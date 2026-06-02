@@ -78,7 +78,7 @@ ${userRequirement}
     {
       "slot_label": "上衣",
       "category_name": "（從上方清單選一個）",
-      "tags": ["白色", "棉", "寬鬆"],
+      "tags": ["白色", "棉"],
       "reason": "一句話說明為何推薦"
     }
   ]
@@ -86,7 +86,7 @@ ${userRequirement}
 
 規則：
 - slots 1-5 個（涵蓋上衣、下身、鞋、配件等）
-- 每個 slot 的 tags 1-5 個，中文形容詞 / 材質 / 顏色，避免罕見詞
+- 每個 slot 的 tags 2-3 個，挑最關鍵的特徵（顏色 / 品項 / 材質），中文且避免罕見詞
 - category_name 必須一字不差地從清單選；找不到合適的就略過該 slot`;
 
     const result = await getAIClient().models.generateContent({
