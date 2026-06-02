@@ -11,9 +11,6 @@ class ProductCategoryCollection {
 
   late String name;
 
-  @Index()
-  String? parentId;
-
   String? imagePath;
 
   String? imageUrl;

@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
@@ -19,14 +19,14 @@ class ProductFormLayout extends StatelessWidget {
     required this.formData,
     required this.sizeManager,
     required this.onPickImage,
-    required this.productCategoryTreeAsync,
+    required this.productCategoriesAsync,
     required this.onRetryCategories,
     super.key,
   });
   final ProductFormData formData;
   final ProductSizeManager sizeManager;
   final Future<List<File>?> Function(int remainingCount) onPickImage;
-  final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
+  final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
 
   @override
@@ -100,8 +100,10 @@ class ProductFormLayout extends StatelessWidget {
                   nameController: formData.nameController,
                   priceController: formData.priceController,
                   purchaseLinkController: formData.purchaseLinkController,
+                  selectedGender: formData.selectedGender,
+                  selectedWardrobeCategory: formData.selectedWardrobeCategory,
                   selectedCategoryIds: formData.selectedCategoryIds,
-                  productCategoryTreeAsync: productCategoryTreeAsync,
+                  productCategoriesAsync: productCategoriesAsync,
                   onRetryCategories: onRetryCategories,
                 ),
                 const SizedBox(height: AppSpacing.lg),

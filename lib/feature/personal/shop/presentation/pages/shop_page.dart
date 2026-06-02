@@ -1,6 +1,5 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
@@ -20,7 +19,7 @@ class ShopPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
+    final productCategoriesAsync = ref.watch(productCategoriesProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
       data: (final profile) => profile,
@@ -39,8 +38,6 @@ class ShopPage extends HookConsumerWidget {
     // 篩選/排序狀態
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
-
-    final selectedRootId = useState<String?>(null);
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -153,26 +150,16 @@ class ShopPage extends HookConsumerWidget {
 
                             // 商品類型篩選標籤
                             ProductCategoryFilter(
-                              categoryTreeAsync: productCategoryTreeAsync,
-                              selectedRootId: selectedRootId.value,
-                              selectedSubcategoryIds: filterState.categories ?? {},
-                              onRootSelected: (final rootId) {
-                                selectedRootId.value = rootId;
-                                filterNotifier.setCategories({});
-                              },
-                              onSubcategoryToggle: (final subcategoryId) {
+                              categoriesAsync: productCategoriesAsync,
+                              selectedCategoryIds: filterState.categories ?? {},
+                              onCategoryToggle: (final categoryId) {
                                 final current = filterState.categories ?? {};
-                                if (current.contains(subcategoryId)) {
+                                if (current.contains(categoryId)) {
                                   filterNotifier.setCategories(
-                                    current
-                                        .where((final id) => id != subcategoryId)
-                                        .toSet(),
+                                    current.where((final id) => id != categoryId).toSet(),
                                   );
                                 } else {
-                                  filterNotifier.setCategories({
-                                    ...current,
-                                    subcategoryId,
-                                  });
+                                  filterNotifier.setCategories({...current, categoryId});
                                 }
                               },
                               onRetry: () {

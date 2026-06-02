@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/products/presentation/sheets/product_category_sheet.dart';
 
 class ProductCategorySelector extends HookWidget {
   const ProductCategorySelector({
     super.key,
-    required this.categoryTree,
+    required this.categories,
     required this.selectedCategoryIds,
     this.onChanged,
     this.hasError = false,
   });
 
-  final List<CategoryTreeNode> categoryTree;
+  final List<ProductCategory> categories;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueChanged<Set<String>>? onChanged;
   final bool hasError;
@@ -28,26 +28,16 @@ class ProductCategorySelector extends HookWidget {
     final selectedNotifier = useListenable(selectedCategoryIds);
     final selectedIds = selectedNotifier.value;
 
-    final categoryMap = useMemoized(() {
-      final map = <String, String>{};
-      void visit(final List<CategoryTreeNode> nodes, final List<String> parentPath) {
-        for (final node in nodes) {
-          final currentPath = [...parentPath, node.category.name];
-          map[node.category.id] = currentPath.join(' · ');
-          visit(node.children, currentPath);
-        }
-      }
-
-      visit(categoryTree, []);
-      return map;
-    }, [categoryTree]);
+    final categoryMap = useMemoized(() => {for (final c in categories) c.id: c.name}, [
+      categories,
+    ]);
 
     String displayName(final String id) => categoryMap[id] ?? id;
 
     Future<void> openSheet() async {
       final result = await ProductCategorySheet.show(
         context: context,
-        categoryTree: categoryTree,
+        categories: categories,
         initialIds: selectedIds,
       );
       if (result == null) return;

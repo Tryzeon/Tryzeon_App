@@ -6,8 +6,12 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_gender_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_wardrobe_category_selector.dart';
 
 class ProductBasicFieldsEditor extends HookWidget {
   const ProductBasicFieldsEditor({
@@ -18,7 +22,7 @@ class ProductBasicFieldsEditor extends HookWidget {
     required this.selectedGender,
     required this.selectedWardrobeCategory,
     required this.selectedCategoryIds,
-    required this.productCategoryTreeAsync,
+    required this.productCategoriesAsync,
     required this.onRetryCategories,
   });
 
@@ -28,7 +32,7 @@ class ProductBasicFieldsEditor extends HookWidget {
   final ValueNotifier<ProductGender> selectedGender;
   final ValueNotifier<WardrobeCategory?> selectedWardrobeCategory;
   final ValueNotifier<Set<String>> selectedCategoryIds;
-  final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
+  final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
 
   @override
@@ -63,8 +67,8 @@ class ProductBasicFieldsEditor extends HookWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
-        productCategoryTreeAsync.when(
-          data: (final categoryTree) => FormField<Set<String>>(
+        productCategoriesAsync.when(
+          data: (final categories) => FormField<Set<String>>(
             initialValue: selectedCategoryIds.value,
             validator: (final value) =>
                 AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
@@ -73,7 +77,7 @@ class ProductBasicFieldsEditor extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ProductCategorySelector(
-                  categoryTree: categoryTree,
+                  categories: categories,
                   selectedCategoryIds: selectedCategoryIds,
                   hasError: state.hasError,
                   onChanged: (final newIds) {

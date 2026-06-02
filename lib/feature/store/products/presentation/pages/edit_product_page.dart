@@ -54,7 +54,7 @@ class _EditProductContent extends HookConsumerWidget {
     final sizeManager = useProductSizeManager(initialSizes: product.sizes);
     final isSaving = useState(false);
     final isDeleting = useState(false);
-    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
+    final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
     Future<void> deleteProduct() async {
       final dialogResult = await showOkCancelAlertDialog(
@@ -144,7 +144,7 @@ class _EditProductContent extends HookConsumerWidget {
             ProductFormLayout(
               formData: formData,
               sizeManager: sizeManager,
-              productCategoryTreeAsync: productCategoryTreeAsync,
+              productCategoriesAsync: productCategoriesAsync,
               onRetryCategories: () => refreshProductCategories(ref),
               onPickImage: (final remainingCount) async {
                 return ImagePickerHelper.pickImages(context, maxImages: remainingCount);

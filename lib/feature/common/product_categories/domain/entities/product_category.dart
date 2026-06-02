@@ -7,13 +7,7 @@ sealed class ProductCategory with _$ProductCategory {
   const factory ProductCategory({
     required final String id,
     required final String name,
-    final String? parentId,
     final String? imagePath,
     final String? imageUrl,
   }) = _ProductCategory;
-
-  const ProductCategory._();
-
-  bool get isRoot => parentId == null;
-  bool get isChild => parentId != null;
 }

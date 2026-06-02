@@ -3,7 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
-import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_datasource.dart';
@@ -73,11 +72,7 @@ AdRepository adRepository(final Ref ref) {
 
 @riverpod
 GetShopProducts getShopProducts(final Ref ref) {
-  return GetShopProducts(
-    ref.watch(productRepositoryProvider),
-    ref.watch(productCategoryRepositoryProvider),
-    ref.watch(expandCategoryIdsUseCaseProvider),
-  );
+  return GetShopProducts(ref.watch(productRepositoryProvider));
 }
 
 @riverpod

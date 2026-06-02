@@ -22,7 +22,7 @@ class AddProductPage extends HookConsumerWidget {
     final formData = useProductForm();
     final sizeManager = useProductSizeManager();
     final isSaving = useState(false);
-    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
+    final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
@@ -86,7 +86,7 @@ class AddProductPage extends HookConsumerWidget {
         child: ProductFormLayout(
           formData: formData,
           sizeManager: sizeManager,
-          productCategoryTreeAsync: productCategoryTreeAsync,
+          productCategoriesAsync: productCategoriesAsync,
           onRetryCategories: () => refreshProductCategories(ref),
           onPickImage: (final remainingCount) async {
             return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
