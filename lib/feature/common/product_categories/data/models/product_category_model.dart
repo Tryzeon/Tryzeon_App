@@ -7,6 +7,7 @@ class ProductCategoryModel {
   const ProductCategoryModel({
     required this.id,
     required this.name,
+    this.wardrobeCategory,
     this.imagePath,
     this.imageUrl,
   });
@@ -16,6 +17,7 @@ class ProductCategoryModel {
 
   final String id;
   final String name;
+  final String? wardrobeCategory;
   final String? imagePath;
   @JsonKey(includeToJson: false)
   final String? imageUrl;

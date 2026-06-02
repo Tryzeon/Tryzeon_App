@@ -11,6 +11,8 @@ class ProductCategoryCollection {
 
   late String name;
 
+  String? wardrobeCategory;
+
   String? imagePath;
 
   String? imageUrl;

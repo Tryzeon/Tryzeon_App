@@ -12,7 +12,7 @@ class ProductCategoryRemoteDataSource {
   Future<List<ProductCategoryModel>> getProductCategories() async {
     final response = await _supabaseClient
         .from(_productCategoryTable)
-        .select('id, name, image_path')
+        .select('id, name, wardrobe_category, image_path')
         .order('priority', ascending: false);
 
     return (response as List)
