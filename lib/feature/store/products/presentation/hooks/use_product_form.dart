@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
@@ -14,6 +15,8 @@ class ProductFormData {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
+    required this.selectedGender,
+    required this.selectedWardrobeCategory,
     required this.selectedMaterial,
     required this.selectedFit,
     required this.images,
@@ -28,6 +31,8 @@ class ProductFormData {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
+  final ValueNotifier<ProductGender> selectedGender;
+  final ValueNotifier<WardrobeCategory?> selectedWardrobeCategory;
   final ValueNotifier<String?> selectedMaterial;
   final ValueNotifier<String?> selectedFit;
   final ValueNotifier<List<ImageItem>> images;
@@ -59,6 +64,8 @@ class ProductFormData {
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
       images: newImageFiles,
+      gender: selectedGender.value,
+      wardrobeCategory: selectedWardrobeCategory.value,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -85,6 +92,8 @@ class ProductFormData {
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
+      gender: selectedGender.value,
+      wardrobeCategory: selectedWardrobeCategory.value,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -111,6 +120,8 @@ class ProductFormData {
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
+      gender: selectedGender.value,
+      wardrobeCategory: selectedWardrobeCategory.value,
       purchaseLink: purchaseLinkController.text,
       material: selectedMaterial.value,
       elasticity: selectedElasticity.value,
@@ -136,6 +147,12 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   );
   final purchaseLinkController = useTextEditingController(
     text: initialProduct?.purchaseLink,
+  );
+  final selectedGender = useValueNotifier<ProductGender>(
+    initialProduct?.gender ?? ProductGender.unisex,
+  );
+  final selectedWardrobeCategory = useValueNotifier<WardrobeCategory?>(
+    initialProduct?.wardrobeCategory,
   );
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
   final selectedFit = useValueNotifier<String?>(initialProduct?.fit);
@@ -169,6 +186,8 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     nameController: nameController,
     priceController: priceController,
     purchaseLinkController: purchaseLinkController,
+    selectedGender: selectedGender,
+    selectedWardrobeCategory: selectedWardrobeCategory,
     selectedMaterial: selectedMaterial,
     selectedFit: selectedFit,
     images: images,

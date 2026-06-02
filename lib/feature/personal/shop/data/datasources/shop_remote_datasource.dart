@@ -2,6 +2,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
@@ -20,6 +22,8 @@ class ShopRemoteDataSource {
     final int? maxPrice,
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
+    final ProductGender? gender,
+    final WardrobeCategory? wardrobeCategory,
     final UserLocation? userLocation,
   }) async {
     final String sortColumn;
@@ -49,6 +53,8 @@ class ShopRemoteDataSource {
         'p_min_price': minPrice,
         'p_max_price': maxPrice,
         'p_channels': _channelsParam(channels),
+        'p_gender': gender?.value,
+        'p_wardrobe_category': wardrobeCategory?.value,
         'p_sort_column': sortColumn,
         'p_sort_ascending': isAscending,
       },

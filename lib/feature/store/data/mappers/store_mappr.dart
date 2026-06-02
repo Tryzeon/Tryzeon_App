@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart'
 import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
 import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
 import '../../../../feature/common/product_attributes/entities/product_attributes.dart';
+import '../../../../feature/common/product_attributes/entities/wardrobe_category.dart';
 import '../../analytics/data/collections/product_analytics_collection.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
@@ -27,6 +28,8 @@ import 'store_mappr.auto_mappr.dart';
     // Product mappings (String ↔ Enum conversion only at Model ↔ Entity boundary)
     MapType<ProductModel, Product>(
       fields: [
+        Field('gender', custom: StoreMapprHelper.stringToGender),
+        Field('wardrobeCategory', custom: StoreMapprHelper.stringToWardrobeCategory),
         Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
         Field('thickness', custom: StoreMapprHelper.stringToThickness),
         Field('styles', custom: StoreMapprHelper.stringsToStyles),
@@ -35,6 +38,8 @@ import 'store_mappr.auto_mappr.dart';
     ),
     MapType<Product, ProductModel>(
       fields: [
+        Field('gender', custom: StoreMapprHelper.genderToString),
+        Field('wardrobeCategory', custom: StoreMapprHelper.wardrobeCategoryToString),
         Field('elasticity', custom: StoreMapprHelper.elasticityToString),
         Field('thickness', custom: StoreMapprHelper.thicknessToString),
         Field('styles', custom: StoreMapprHelper.stylesToStrings),
@@ -73,6 +78,12 @@ class StoreMappr extends $StoreMappr {
 
 class StoreMapprHelper {
   // String to Enum conversions
+  static ProductGender stringToGender(final ProductModel source) =>
+      ProductGender.tryFromString(source.gender) ?? ProductGender.unisex;
+
+  static WardrobeCategory? stringToWardrobeCategory(final ProductModel source) =>
+      WardrobeCategory.tryFromString(source.wardrobeCategory);
+
   static ProductElasticity? stringToElasticity(final ProductModel source) =>
       ProductElasticity.tryFromString(source.elasticity);
 
@@ -86,6 +97,11 @@ class StoreMapprHelper {
       ProductSeason.listFromStrings(source.seasons);
 
   // Enum to String conversions
+  static String genderToString(final Product source) => source.gender.value;
+
+  static String? wardrobeCategoryToString(final Product source) =>
+      source.wardrobeCategory?.value;
+
   static String? elasticityToString(final Product source) => source.elasticity?.value;
 
   static String? thicknessToString(final Product source) => source.thickness?.value;

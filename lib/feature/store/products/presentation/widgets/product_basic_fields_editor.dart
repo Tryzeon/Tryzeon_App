@@ -15,6 +15,8 @@ class ProductBasicFieldsEditor extends HookWidget {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
+    required this.selectedGender,
+    required this.selectedWardrobeCategory,
     required this.selectedCategoryIds,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
@@ -23,6 +25,8 @@ class ProductBasicFieldsEditor extends HookWidget {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
+  final ValueNotifier<ProductGender> selectedGender;
+  final ValueNotifier<WardrobeCategory?> selectedWardrobeCategory;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
@@ -89,6 +93,26 @@ class ProductBasicFieldsEditor extends HookWidget {
             message: error.displayMessage(context),
             onRetry: onRetryCategories,
             isCompact: true,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('性別', required: true),
+        ProductGenderSelector(selectedGender: selectedGender),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('衣櫥分類', required: true),
+        FormField<WardrobeCategory?>(
+          initialValue: selectedWardrobeCategory.value,
+          validator: (final value) => value == null ? '請選擇衣櫥分類' : null,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          builder: (final state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ProductWardrobeCategorySelector(
+                selectedWardrobeCategory: selectedWardrobeCategory,
+                onChanged: state.didChange,
+              ),
+              if (state.hasError) _ErrorText(state.errorText!),
+            ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),

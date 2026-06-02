@@ -1,5 +1,7 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -17,6 +19,8 @@ abstract class ProductRepository {
     final int? maxPrice,
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
+    final ProductGender? gender,
+    final WardrobeCategory? wardrobeCategory,
     final UserLocation? userLocation,
     final bool forceRefresh = false,
   });
