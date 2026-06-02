@@ -56,7 +56,7 @@ Riverpod (hooks_riverpod + riverpod_generator). Use `@riverpod` codegen provider
 
 ### Analytics
 
-Frontend batches events (10/5s, lifecycle-aware flush) and calls the `log_analytics_events` Supabase RPC. A Postgres trigger aggregates into `analytics_monthly_summary` for O(1) dashboard reads via `get_store_analytics_summary`. See README.md for the full diagram. Event types: `view`, `try_on`, `purchase_click`.
+Frontend batches events (10/5s, lifecycle-aware flush) and calls the `log_analytics_events` Supabase RPC, which inserts into `analytics_events`. An `AFTER INSERT` trigger (`on_analytics_event_inserted` → `update_analytics_summary`) upserts per-product monthly aggregates into `analytics_product_monthly_summary` for O(1) dashboard reads. See README.md for the full diagram. Event types: `view`, `try_on`, `purchase_click`.
 
 ### Edge Functions
 
