@@ -101,9 +101,7 @@ class _SlotSection extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     final isEmpty = slot is ResolvedOutfitSlotEmpty;
     final (label, reason, isWardrobe) = switch (slot) {
