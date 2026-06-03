@@ -71,10 +71,10 @@ GetWardrobeItemImage getWardrobeItemImageUseCase(final Ref ref) {
 @riverpod
 LabelTagger labelTagger(final Ref ref) => LabelTaggerImpl(Supabase.instance.client);
 
-@riverpod
+@Riverpod(keepAlive: true)
 BackgroundRemover backgroundRemover(final Ref ref) => BackgroundRemoverImpl();
 
-@riverpod
+@Riverpod(keepAlive: true)
 AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
   return AnalyzeWardrobeImage(
     labelTagger: ref.watch(labelTaggerProvider),
