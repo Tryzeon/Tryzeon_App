@@ -28,6 +28,8 @@ class LabelTaggerImpl implements LabelTagger {
 
   final SupabaseClient _supabase;
 
+  static const _analysisTimeout = Duration(seconds: 20);
+
   @override
   Future<LabelResult> analyze(final File image) async {
     final jpeg = await FlutterImageCompress.compressWithFile(
@@ -40,10 +42,12 @@ class LabelTaggerImpl implements LabelTagger {
     if (jpeg == null) return const LabelResult();
 
     final base64Image = base64Encode(jpeg);
-    final response = await _supabase.functions.invoke(
-      AppConstants.functionAnalyzeWardrobeImage,
-      body: {'base64': base64Image},
-    );
+    final response = await _supabase.functions
+        .invoke(
+          AppConstants.functionAnalyzeWardrobeImage,
+          body: {'base64': base64Image},
+        )
+        .timeout(_analysisTimeout);
     final data = response.data;
     if (data is! Map<String, dynamic>) return const LabelResult();
     return parseAnalysisResponse(data);
