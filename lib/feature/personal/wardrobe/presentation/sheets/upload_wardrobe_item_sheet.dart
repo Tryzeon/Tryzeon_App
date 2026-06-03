@@ -333,7 +333,10 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             MediaQuery.of(context).padding.bottom + AppSpacing.md, // bottom safe area
           ),
           child: FilledButton(
-            onPressed: selectedCategory.value != null && !isUploading.value
+            onPressed:
+                selectedCategory.value != null &&
+                    !isUploading.value &&
+                    !isAnalyzingTags.value
                 ? handleUpload
                 : null,
             child: isUploading.value
