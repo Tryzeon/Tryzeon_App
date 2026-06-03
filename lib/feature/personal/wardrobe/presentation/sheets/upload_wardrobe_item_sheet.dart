@@ -104,6 +104,14 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         wardrobeLimit: capabilities.wardrobeLimit,
       );
 
+      if (uploadFile.path != image.path) {
+        try {
+          await uploadFile.delete();
+        } catch (_) {
+          // Best-effort cleanup; a leftover temp file is non-fatal.
+        }
+      }
+
       if (!context.mounted) return;
 
       isUploading.value = false;
