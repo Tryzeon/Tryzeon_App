@@ -19,6 +19,8 @@ const VALID_CATEGORIES = [
 ];
 const SCHEMA_CATEGORIES = [...VALID_CATEGORIES, "unknown"];
 
+const MAX_BASE64_LENGTH = 8 * 1024 * 1024;
+
 function rateLimitedResponse(): Response {
   return new Response(
     JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
@@ -52,13 +54,6 @@ Deno.serve(async (req) => {
     const { user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
-    const adminClient = getAdminClient();
-    const [okDay, okMinute] = await Promise.all([
-      checkRateLimit(adminClient, user!.id, "image_analysis:day", 200, 86400),
-      checkRateLimit(adminClient, user!.id, "image_analysis:minute", 15, 60),
-    ]);
-    if (!okDay || !okMinute) return rateLimitedResponse();
-
     const body = await req.json().catch(() => null);
     const base64: string | undefined = body?.base64;
     if (!base64 || typeof base64 !== "string" || base64.length < 16) {
@@ -67,6 +62,31 @@ Deno.serve(async (req) => {
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
+    if (base64.length > MAX_BASE64_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: "Image payload too large", code: "PAYLOAD_TOO_LARGE" }),
+        { status: 413, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const adminClient = getAdminClient();
+    const okMinute = await checkRateLimit(
+      adminClient,
+      user!.id,
+      "image_analysis:minute",
+      15,
+      60,
+    );
+    
+    if (!okMinute) return rateLimitedResponse();
+    const okDay = await checkRateLimit(
+      adminClient,
+      user!.id,
+      "image_analysis:day",
+      200,
+      86400,
+    );
+    if (!okDay) return rateLimitedResponse();
 
     const ai: GoogleGenAI = getAIClient();
     const result = await ai.models.generateContent({
