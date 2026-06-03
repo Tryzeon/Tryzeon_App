@@ -14,8 +14,9 @@ export async function checkRateLimit(
     p_window_seconds: windowSeconds,
   });
   if (error) {
+    // Fail CLOSED Principle
     console.error("checkRateLimit error", error);
-    return true;
+    return false;
   }
   return Boolean(data);
 }
