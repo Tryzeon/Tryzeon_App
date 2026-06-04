@@ -28,6 +28,11 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
+  # Static linkage is required: flutter_onnxruntime pulls in onnxruntime-c /
+  # onnxruntime-objc, which are vendored static binaries that a dynamic
+  # `use_frameworks!` refuses ("transitive dependencies that include statically
+  # linked binaries"). The Isar fallout from static linkage is handled in
+  # post_install below.
   use_frameworks! :linkage => :static
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
@@ -47,6 +52,47 @@ post_install do |installer|
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'BYPASS_PERMISSION_LOCATION_ALWAYS=1'
       end
     end
+  end
+
+  # Isar fix for `use_frameworks! :linkage => :static`.
+  # Isar's core (libisar.a, inside isar.xcframework) exposes its C API only to
+  # Dart FFI via dlsym(RTLD_DEFAULT). No native code references isar_version etc.,
+  # so under static linkage the Release linker never loads those archive members,
+  # and even when force-loaded, `-dead_strip` GCs the unreferenced symbols —
+  # yielding "Could not initialize IsarCore library" on CI/TestFlight (Debug is
+  # unaffected because it doesn't dead-strip).
+  #   1. force_load pulls the whole libisar.a into the Runner executable.
+  #   2. DEAD_CODE_STRIPPING = NO stops -dead_strip from removing the now-loaded
+  #      but unreferenced FFI symbols.
+  #   3. STRIP_STYLE = non-global keeps the global C symbols through the post-link
+  #      strip so dlsym can still resolve them.
+  # force_load points at the source xcframework (present right after pod install),
+  # NOT ${PODS_XCFRAMEWORKS_BUILD_DIR} — that copy is produced by a later script
+  # phase, so clean/CI builds fail with "Build input file cannot be found".
+  # Per-SDK because device/simulator slices live in differently-named folders.
+  isar_xcframework =
+    '${PODS_ROOT}/../.symlinks/plugins/isar_community_flutter_libs/ios/isar.xcframework'
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.user_project.native_targets.each do |target|
+      next unless target.name == 'Runner'
+      target.build_configurations.each do |config|
+        ldflags = config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
+        ldflags = [ldflags] unless ldflags.is_a?(Array)
+        config.build_settings['OTHER_LDFLAGS'] =
+          ldflags.reject { |f| f.to_s == '-force_load' || f.to_s.include?('libisar.a') }
+        config.build_settings['OTHER_LDFLAGS[sdk=iphoneos*]'] = [
+          '$(inherited)',
+          "-Wl,-force_load,#{isar_xcframework}/ios-arm64/libisar.a",
+        ]
+        config.build_settings['OTHER_LDFLAGS[sdk=iphonesimulator*]'] = [
+          '$(inherited)',
+          "-Wl,-force_load,#{isar_xcframework}/ios-arm64_x86_64-simulator/libisar.a",
+        ]
+        config.build_settings['DEAD_CODE_STRIPPING'] = 'NO'
+        config.build_settings['STRIP_STYLE'] = 'non-global'
+      end
+    end
+    aggregate_target.user_project.save
   end
 
   # Ensure AppFrameworkInfo.plist contains MinimumOSVersion to prevent TestFlight errors
