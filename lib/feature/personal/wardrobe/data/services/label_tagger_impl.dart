@@ -43,10 +43,7 @@ class LabelTaggerImpl implements LabelTagger {
 
     final base64Image = base64Encode(jpeg);
     final response = await _supabase.functions
-        .invoke(
-          AppConstants.functionAnalyzeWardrobeImage,
-          body: {'base64': base64Image},
-        )
+        .invoke(AppConstants.functionAnalyzeWardrobeImage, body: {'base64': base64Image})
         .timeout(_analysisTimeout);
     final data = response.data;
     if (data is! Map<String, dynamic>) return const LabelResult();
