@@ -6,8 +6,13 @@ import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/services/background_remover_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/services/label_tagger_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/label_tagger.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/analyze_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
@@ -61,6 +66,20 @@ UpdateWardrobeItemTags updateWardrobeItemTagsUseCase(final Ref ref) {
 @riverpod
 GetWardrobeItemImage getWardrobeItemImageUseCase(final Ref ref) {
   return GetWardrobeItemImage(ref.watch(wardrobeRepositoryProvider));
+}
+
+@riverpod
+LabelTagger labelTagger(final Ref ref) => LabelTaggerImpl(Supabase.instance.client);
+
+@Riverpod(keepAlive: true)
+BackgroundRemover backgroundRemover(final Ref ref) => BackgroundRemoverImpl();
+
+@Riverpod(keepAlive: true)
+AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
+  return AnalyzeWardrobeImage(
+    labelTagger: ref.watch(labelTaggerProvider),
+    backgroundRemover: ref.watch(backgroundRemoverProvider),
+  );
 }
 
 @riverpod

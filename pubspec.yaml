@@ -60,6 +60,7 @@ dependencies:
   dio: ^5.9.2
   upgrader: ^13.1.0
   uuid: ^4.5.3
+  image_background_remover: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
