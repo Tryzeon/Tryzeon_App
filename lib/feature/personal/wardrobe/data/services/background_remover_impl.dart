@@ -10,13 +10,24 @@ class BackgroundRemoverImpl implements BackgroundRemover {
 
   Future<void>? _initFuture;
 
-  Future<void> _ensureInit() {
-    return _initFuture ??= bg.BackgroundRemover.instance.initializeOrt();
+  Future<void> _ensureInit() async {
+    final existing = _initFuture;
+    if (existing != null) return existing;
+    final future = bg.BackgroundRemover.instance.initializeOrt();
+    _initFuture = future;
+    try {
+      await future;
+    } catch (_) {
+      // Don't cache a failed init — allow the next call to retry.
+      _initFuture = null;
+      rethrow;
+    }
   }
 
   @override
   Future<Uint8List?> remove(final File image) async {
-    final (_, bytes) = await (_ensureInit(), image.readAsBytes()).wait;
+    final bytes = await image.readAsBytes();
+    await _ensureInit();
     return bg.BackgroundRemover.instance.removeBgBytes(bytes);
   }
 }
