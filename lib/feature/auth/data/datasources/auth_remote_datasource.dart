@@ -4,6 +4,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/crypto_utils.dart';
 
 class AuthRemoteDataSource {
@@ -74,12 +75,21 @@ class AuthRemoteDataSource {
         idToken: idToken!,
         // accessToken is not required for Supabase authentication with Google
       );
-    } on PlatformException catch (e) {
-      if (e.code == 'sign_in_canceled') {
-        throw const UserCanceledException();
-      }
+    } on PlatformException catch (e, stackTrace) {
+      AppLogger.error(
+        'Google sign-in PlatformException '
+        '[code=${e.code}] message=${e.message} details=${e.details}',
+        e,
+        stackTrace,
+      );
       rethrow;
-    } on GoogleSignInException catch (e) {
+    } on GoogleSignInException catch (e, stackTrace) {
+      AppLogger.error(
+        'Google sign-in GoogleSignInException '
+        '[code=${e.code.name}] description=${e.description} details=${e.details}',
+        e,
+        stackTrace,
+      );
       if (e.code == GoogleSignInExceptionCode.canceled) {
         throw const UserCanceledException();
       }
