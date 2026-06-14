@@ -72,7 +72,10 @@ class HomePage extends HookConsumerWidget {
     }, [currentIndex]);
 
     Future<void> uploadAvatar() async {
-      final File? imageFile = await ImagePickerHelper.pickImage(context);
+      final File? imageFile = await ImagePickerHelper.pickImage(
+        context,
+        hint: '建議上傳短袖短褲的正面全身照。',
+      );
       if (imageFile == null) return;
 
       isUploadingAvatar.value = true;
@@ -203,7 +206,10 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> tryOnFromLocal() async {
-      final File? clothesImage = await ImagePickerHelper.pickImage(context);
+      final File? clothesImage = await ImagePickerHelper.pickImage(
+        context,
+        hint: '建議上傳乾淨背景、單件服飾的清晰照片。',
+      );
       if (clothesImage == null) return;
 
       final clothesBytes = await clothesImage.readAsBytes();
