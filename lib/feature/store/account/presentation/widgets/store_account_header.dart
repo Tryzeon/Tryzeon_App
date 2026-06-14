@@ -4,8 +4,8 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
-class StoreHomeHeader extends StatelessWidget {
-  const StoreHomeHeader({super.key, required this.profile});
+class StoreAccountHeader extends StatelessWidget {
+  const StoreAccountHeader({super.key, required this.profile});
 
   final StoreProfile? profile;
 
