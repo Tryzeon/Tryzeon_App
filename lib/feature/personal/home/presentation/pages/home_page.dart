@@ -405,8 +405,8 @@ class HomePage extends HookConsumerWidget {
             // Hidden only while a try-on is loading.
             if (!isResultLoading)
               Positioned(
-                top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
-                right: AppSpacing.lg,
+                top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
+                right: AppSpacing.md,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
