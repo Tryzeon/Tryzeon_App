@@ -31,12 +31,12 @@ class ProductCategoryFilter extends StatelessWidget {
       if (categories.isEmpty) return const SizedBox.shrink();
 
       return SizedBox(
-        height: 184,
+        height: 280,
         child: GridView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // two rows
+            crossAxisCount: 3, // three rows
             mainAxisExtent: 82, // card width along the scroll axis
             mainAxisSpacing: AppSpacing.xxs,
             crossAxisSpacing: AppSpacing.sm,
