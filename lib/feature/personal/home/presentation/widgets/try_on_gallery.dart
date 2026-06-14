@@ -48,8 +48,8 @@ class TryOnGallery extends HookWidget {
                 onTap: () =>
                     TryOnFullscreenViewer.open(context, imageProvider: imageProvider),
                 child: _ImageItem(
-                imageProvider: imageProvider,
-                showLoadingOverlay: isUploadingAvatar,
+                  imageProvider: imageProvider,
+                  showLoadingOverlay: isUploadingAvatar,
                 ),
               );
             }
@@ -262,9 +262,8 @@ class _VideoPlayerItem extends HookWidget {
       [videoUrl],
     );
     final isInitialized = useState(false);
-    final isUserPaused = useState(false);
     final visibleFraction = useState(1.0);
-    final showPlayIcon = useState(false);
+    final isPaused = useState(false);
 
     useEffect(() {
       controller.initialize().then((_) {
@@ -276,14 +275,14 @@ class _VideoPlayerItem extends HookWidget {
 
     useEffect(() {
       if (!isInitialized.value) return null;
-      final shouldPlay = !isUserPaused.value && visibleFraction.value > 0.5;
+      final shouldPlay = !isPaused.value && visibleFraction.value > 0.5;
       if (shouldPlay && !controller.value.isPlaying) {
         controller.play();
       } else if (!shouldPlay && controller.value.isPlaying) {
         controller.pause();
       }
       return null;
-    }, [isInitialized.value, visibleFraction.value, isUserPaused.value]);
+    }, [isInitialized.value, visibleFraction.value, isPaused.value]);
 
     return VisibilityDetector(
       key: ValueKey('video-$videoUrl'),
@@ -297,20 +296,12 @@ class _VideoPlayerItem extends HookWidget {
               child: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
             )
           : GestureDetector(
-              onTap: () {
-                if (controller.value.isPlaying) {
-                  isUserPaused.value = true;
-                  showPlayIcon.value = true;
-                } else {
-                  isUserPaused.value = false;
-                  showPlayIcon.value = false;
-                }
-              },
+              onTap: () => isPaused.value = controller.value.isPlaying,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   _buildVideoFill(controller),
-                  if (showPlayIcon.value)
+                  if (isPaused.value)
                     Icon(
                       Icons.play_arrow_rounded,
                       color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
