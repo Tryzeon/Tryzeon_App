@@ -15,119 +15,111 @@ class TryOnGallery extends HookWidget {
     super.key,
     required this.pageController,
     required this.onPageChanged,
-    required this.onUploadTap,
     required this.tryonResults,
-    required this.currentTryonIndex,
     required this.avatarFile,
     required this.isUploadingAvatar,
   });
 
   final PageController pageController;
   final ValueChanged<int> onPageChanged;
-  final VoidCallback onUploadTap;
   final List<TryonResult> tryonResults;
-  final int currentTryonIndex;
   final File? avatarFile;
   final bool isUploadingAvatar;
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final canUploadAvatar = currentTryonIndex == -1 && !isUploadingAvatar;
 
-    return GestureDetector(
-      onTap: canUploadAvatar ? onUploadTap : null,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          PageView.builder(
-            controller: pageController,
-            onPageChanged: onPageChanged,
-            itemCount: tryonResults.length + 1,
-            itemBuilder: (final context, final index) {
-              if (index == 0) {
-                // Original Avatar
-                final ImageProvider imageProvider = avatarFile != null
-                    ? FileImage(avatarFile!)
-                    : const AssetImage(AppConstants.defaultProfileImage);
-                return _ImageItem(
-                  imageProvider: imageProvider,
-                  showLoadingOverlay: isUploadingAvatar,
-                );
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          controller: pageController,
+          onPageChanged: onPageChanged,
+          itemCount: tryonResults.length + 1,
+          itemBuilder: (final context, final index) {
+            if (index == 0) {
+              // Original Avatar
+              final ImageProvider imageProvider = avatarFile != null
+                  ? FileImage(avatarFile!)
+                  : const AssetImage(AppConstants.defaultProfileImage);
+              return _ImageItem(
+                imageProvider: imageProvider,
+                showLoadingOverlay: isUploadingAvatar,
+              );
+            }
+
+            final result = tryonResults[index - 1];
+
+            if (result.isLoading) {
+              return const _SkeletonItem();
+            }
+
+            if (result.mode == TryOnMode.video) {
+              final videoUrl = result.videoUrl;
+              if (videoUrl == null || videoUrl.isEmpty) {
+                return const Center(child: Text('Video unavailable'));
+              }
+              return _VideoPlayerItem(videoUrl: videoUrl);
+            }
+
+            if (result.mode == TryOnMode.image) {
+              final imageUrl = result.imageUrl;
+              if (imageUrl == null || imageUrl.isEmpty) {
+                return const Center(child: Text('Image unavailable'));
               }
 
-              final result = tryonResults[index - 1];
+              return _ImageItem(imageUrl: imageUrl);
+            }
 
-              if (result.isLoading) {
-                return const _SkeletonItem();
-              }
-
-              if (result.mode == TryOnMode.video) {
-                final videoUrl = result.videoUrl;
-                if (videoUrl == null || videoUrl.isEmpty) {
-                  return const Center(child: Text('Video unavailable'));
-                }
-                return _VideoPlayerItem(videoUrl: videoUrl);
-              }
-
-              if (result.mode == TryOnMode.image) {
-                final imageUrl = result.imageUrl;
-                if (imageUrl == null || imageUrl.isEmpty) {
-                  return const Center(child: Text('Image unavailable'));
-                }
-
-                return _ImageItem(imageUrl: imageUrl);
-              }
-
-              return const Center(child: Text('Invalid TryOn Result'));
-            },
-          ),
-          // Top Dark Gradient — ensures white logo/icons are legible
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            height: 200,
-            child: IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      colorScheme.scrim.withValues(alpha: AppOpacity.strong),
-                      colorScheme.scrim.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 1.0],
-                  ),
+            return const Center(child: Text('Invalid TryOn Result'));
+          },
+        ),
+        // Top Dark Gradient — ensures white logo/icons are legible
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 200,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.scrim.withValues(alpha: AppOpacity.strong),
+                    colorScheme.scrim.withValues(alpha: 0),
+                  ],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
           ),
-          // Bottom Dark Gradient — ensures white indicator/button are legible
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 250,
-            child: IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      colorScheme.scrim.withValues(alpha: AppOpacity.strong),
-                      colorScheme.scrim.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 1.0],
-                  ),
+        ),
+        // Bottom Dark Gradient — ensures white indicator/button are legible
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 250,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    colorScheme.scrim.withValues(alpha: AppOpacity.strong),
+                    colorScheme.scrim.withValues(alpha: 0),
+                  ],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

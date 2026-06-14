@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -25,7 +26,6 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
 import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -329,8 +329,8 @@ class HomePage extends HookConsumerWidget {
         (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0);
 
     final currentResult = galleryState.currentResult;
-    final showMoreOptions = currentResult != null && !currentResult.isLoading;
-    final showIndicator = currentResult != null;
+    final isAvatarPage = currentIndex == -1;
+    final isResultLoading = currentResult?.isLoading ?? false;
 
     return Scaffold(
       extendBody: true,
@@ -366,9 +366,7 @@ class HomePage extends HookConsumerWidget {
                           : null;
                       galleryNotifier.setCurrentId(id);
                     },
-                    onUploadTap: uploadAvatar,
                     tryonResults: galleryState.images,
-                    currentTryonIndex: currentIndex,
                     avatarFile: avatarFile,
                     isUploadingAvatar: isUploadingAvatar.value,
                   ),
@@ -395,8 +393,9 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 3. Top Right — Avatar Badge + More Options (parallel)
-            if (showMoreOptions)
+            // 3. Top Right — Avatar Badge + More Options (parallel).
+            // Hidden only while a try-on is loading.
+            if (!isResultLoading)
               Positioned(
                 top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
                 right: AppSpacing.lg,
@@ -406,19 +405,56 @@ class HomePage extends HookConsumerWidget {
                   children: [
                     TryOnAvatarBadge(isVisible: isCurrentTheAvatar),
                     const SizedBox(width: AppSpacing.sm),
-                    TryOnMoreOptionsButton(
-                      isCurrentTheAvatar: isCurrentTheAvatar,
-                      canSetAsAvatar: currentResult.mode == TryOnMode.image,
-                      onDownload: downloadCurrentMedia,
-                      onToggleAvatar: toggleAvatar,
-                      onDelete: deleteCurrentTryon,
+                    IconButton(
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: colorScheme.onPrimary,
+                      ),
+                      onPressed: () => showAppActionSheet(
+                        context,
+                        actions: isAvatarPage
+                            ? [
+                                AppMenuAction(
+                                  icon: Icons.swap_horiz_rounded,
+                                  title: '更換模特圖片',
+                                  subtitle: '上傳照片更換試穿模特',
+                                  onTap: uploadAvatar,
+                                ),
+                              ]
+                            : [
+                                AppMenuAction(
+                                  icon: Icons.download_rounded,
+                                  title: '下載',
+                                  subtitle: '儲存到相簿',
+                                  onTap: downloadCurrentMedia,
+                                ),
+                                if (currentResult?.mode == TryOnMode.image)
+                                  AppMenuAction(
+                                    icon: isCurrentTheAvatar
+                                        ? Icons.person_off_outlined
+                                        : Icons.person_outline_rounded,
+                                    title: isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
+                                    subtitle: isCurrentTheAvatar
+                                        ? '取消使用此照片作為試穿形象'
+                                        : '使用此照片作為試穿形象',
+                                    onTap: toggleAvatar,
+                                  ),
+                                AppMenuAction(
+                                  icon: Icons.delete_outline_rounded,
+                                  title: '刪除此試穿',
+                                  subtitle: '移除這張試穿照片',
+                                  onTap: deleteCurrentTryon,
+                                  isDestructive: true,
+                                ),
+                              ],
+                      ),
                     ),
                   ],
                 ),
               ),
 
             // 4. Bottom Left — Indicator (white floating lines)
-            if (showIndicator)
+            if (!isAvatarPage)
               Positioned(
                 bottom: bottomOffset + AppSpacing.xl,
                 left: AppSpacing.xxl,
