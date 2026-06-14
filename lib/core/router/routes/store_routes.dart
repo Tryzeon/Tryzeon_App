@@ -50,6 +50,8 @@ final storeFullScreenRoutes = [
       ),
     ],
   ),
+  // Keep storeProductAdd ('/store/products/add') BEFORE storeProductDetail
+  // ('/store/products/:id') so the static path wins over the param match.
   GoRoute(
     path: AppRoutes.storeProductAdd,
     builder: (final context, final state) => const AddProductPage(),

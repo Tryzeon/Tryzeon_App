@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -80,14 +81,22 @@ class StoreProductsPage extends HookConsumerWidget {
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: ProductListSection(),
               ),
+              SizedBox(
+                height: PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0,
+              ),
             ],
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push(AppRoutes.storeProductAdd),
-        tooltip: '新增商品',
-        child: const Icon(Icons.add_rounded),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0,
+        ),
+        child: FloatingActionButton(
+          onPressed: () => context.push(AppRoutes.storeProductAdd),
+          tooltip: '新增商品',
+          child: const Icon(Icons.add_rounded),
+        ),
       ),
     );
   }

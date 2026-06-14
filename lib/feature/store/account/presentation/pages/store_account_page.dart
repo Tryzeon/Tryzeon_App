@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -61,7 +62,11 @@ class StoreAccountPage extends HookConsumerWidget {
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: StoreTrafficDashboard(),
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                height: PlatformInfo.isIOS26OrHigher()
+                    ? AppSpacing.iosTabBarHeight
+                    : AppSpacing.md,
+              ),
             ],
           ),
         ),

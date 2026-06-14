@@ -48,6 +48,9 @@ class StoreShell extends HookConsumerWidget {
           return;
         }
         lastTabTapTime.value = now;
+      } else {
+        // Reset so a quick hop away-and-back to '我的' doesn't trigger a switch.
+        lastTabTapTime.value = null;
       }
 
       navigationShell.goBranch(
