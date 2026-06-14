@@ -21,13 +21,14 @@ class ImagePickerHelper {
     final CropStyle cropStyle = CropStyle.rectangle,
     final List<CropAspectRatioPreset>? aspectRatioPresets,
     final String? hint,
+    final String title = '選擇圖片來源',
   }) async {
     final Color primaryColor = Theme.of(context).colorScheme.primary;
 
     ImageSource? source;
     await showAppActionSheet(
       context,
-      title: '選擇圖片來源',
+      title: title,
       hint: hint,
       actions: [
         AppMenuAction(

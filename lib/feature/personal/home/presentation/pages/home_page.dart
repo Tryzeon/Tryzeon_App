@@ -74,6 +74,7 @@ class HomePage extends HookConsumerWidget {
     Future<void> uploadAvatar() async {
       final File? imageFile = await ImagePickerHelper.pickImage(
         context,
+        title: '選擇模特來源',
         hint: '建議上傳短袖短褲的正面全身照。',
       );
       if (imageFile == null) return;
@@ -208,6 +209,7 @@ class HomePage extends HookConsumerWidget {
     Future<void> tryOnFromLocal() async {
       final File? clothesImage = await ImagePickerHelper.pickImage(
         context,
+        title: '選擇服飾來源',
         hint: '建議上傳乾淨背景、單件服飾的清晰照片。',
       );
       if (clothesImage == null) return;
