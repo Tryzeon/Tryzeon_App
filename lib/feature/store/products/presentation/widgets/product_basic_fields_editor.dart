@@ -81,6 +81,9 @@ class ProductBasicFieldsEditor extends HookWidget {
           autovalidateMode: AutovalidateMode.onUserInteraction,
         ),
         const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('性別', required: true),
+        ProductGenderSelector(selectedGender: selectedGender),
+        const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
         productCategoriesAsync.when(
           data: (final allCategories) {
@@ -119,9 +122,6 @@ class ProductBasicFieldsEditor extends HookWidget {
             isCompact: true,
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        const _FieldLabel('性別', required: true),
-        ProductGenderSelector(selectedGender: selectedGender),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('購買連結'),
         TextFormField(
