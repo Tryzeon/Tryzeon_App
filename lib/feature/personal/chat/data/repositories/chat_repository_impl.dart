@@ -14,10 +14,14 @@ class ChatRepositoryImpl implements ChatRepository {
 
   @override
   Future<Result<ChatRecommendation, Failure>> getLLMRecommendation(
-    final Map<String, String> answers,
-  ) async {
+    final Map<String, String> answers, {
+    final String? gender,
+  }) async {
     try {
-      final data = await _remoteDataSource.getLLMRecommendation(answers);
+      final data = await _remoteDataSource.getLLMRecommendation(
+        answers,
+        gender: gender,
+      );
       final usageJson = data['usage'] as Map<String, dynamic>?;
       final slotsJson = data['slots'] as List<dynamic>? ?? const [];
 

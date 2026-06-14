@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/outfit_slot.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/resolved_outfit_slot.dart';
@@ -28,6 +29,9 @@ class ResolveOutfitSlot {
     final categories = await _getCategoriesByName();
     final cat = categories[slot.categoryName];
     if (cat == null) {
+      AppLogger.warning(
+        'Unresolved outfit category: "${slot.categoryName}" — dropping slot',
+      );
       return ResolvedOutfitSlot.empty(slotLabel: slot.slotLabel, reason: slot.reason);
     }
 

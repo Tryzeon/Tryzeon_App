@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
@@ -10,6 +11,7 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/resolved_outfit_sl
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/get_llm_recommendation.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/resolve_outfit_slot.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
@@ -59,7 +61,8 @@ class ChatAction extends _$ChatAction {
     final Map<String, String> answers,
   ) async {
     final useCase = ref.read(getLLMRecommendationUseCaseProvider);
-    final result = await useCase(answers);
+    final gender = (await ref.read(userProfileProvider.future))?.gender?.value;
+    final result = await useCase(answers, gender: gender);
 
     if (result.isSuccess) {
       final usage = result.get()!.usage;
@@ -83,7 +86,12 @@ ResolveOutfitSlot resolveOutfitSlotUseCase(final Ref ref) {
   return ResolveOutfitSlot(
     getCategoriesByName: () async {
       final categories = await ref.read(productCategoriesProvider.future);
-      return {for (final c in categories) c.name: c};
+      final genderValue = (await ref.read(userProfileProvider.future))?.gender?.value;
+      final gender = ProductGender.tryFromString(genderValue);
+      final applicable = gender == null
+          ? categories
+          : categories.where((final c) => c.appliesTo(gender));
+      return {for (final c in applicable) c.name: c};
     },
     getWardrobeItems: () => ref.read(wardrobeItemsProvider.future),
     getShopProducts: (final filter) async {

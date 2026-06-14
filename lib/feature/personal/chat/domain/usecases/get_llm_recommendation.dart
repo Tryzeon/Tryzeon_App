@@ -7,7 +7,10 @@ class GetLLMRecommendationUseCase {
   GetLLMRecommendationUseCase(this._repository);
   final ChatRepository _repository;
 
-  Future<Result<ChatRecommendation, Failure>> call(final Map<String, String> answers) {
-    return _repository.getLLMRecommendation(answers);
+  Future<Result<ChatRecommendation, Failure>> call(
+    final Map<String, String> answers, {
+    final String? gender,
+  }) {
+    return _repository.getLLMRecommendation(answers, gender: gender);
   }
 }

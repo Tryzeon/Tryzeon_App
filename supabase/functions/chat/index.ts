@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    const { userRequirement } = JSON.parse(bodyText);
+    const { userRequirement, gender } = JSON.parse(bodyText);
 
     if (!userRequirement || userRequirement.trim() === "") {
       return new Response(
@@ -47,9 +47,11 @@ Deno.serve(async (req) => {
     }
 
     // Fetch product_categories so the LLM can only choose from existing names.
-    const { data: categories, error: catErr } = await adminClient
-      .from("product_categories")
-      .select("name")
+    let categoryQuery = adminClient.from("product_categories").select("name");
+    if (gender === "male" || gender === "female") {
+      categoryQuery = categoryQuery.in("gender", [gender, "unisex"]);
+    }
+    const { data: categories, error: catErr } = await categoryQuery;
 
     if (catErr) {
       console.error("Failed to fetch product_categories:", catErr);

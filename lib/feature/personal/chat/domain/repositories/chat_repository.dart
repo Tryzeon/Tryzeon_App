@@ -4,6 +4,7 @@ import 'package:typed_result/typed_result.dart';
 
 abstract class ChatRepository {
   Future<Result<ChatRecommendation, Failure>> getLLMRecommendation(
-    final Map<String, String> answers,
-  );
+    final Map<String, String> answers, {
+    final String? gender,
+  });
 }
