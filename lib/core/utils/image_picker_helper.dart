@@ -5,8 +5,8 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
 class ImagePickerHelper {
@@ -23,39 +23,29 @@ class ImagePickerHelper {
   }) async {
     final Color primaryColor = Theme.of(context).colorScheme.primary;
 
-    final ImageSource? source = await showModalBottomSheet<ImageSource?>(
-      context: context,
-      useRootNavigator: true,
-      builder: (final BuildContext context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.mdLg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('選擇圖片來源', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: AppSpacing.mdLg),
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('從相簿選擇'),
-                  onTap: () => Navigator.pop(context, ImageSource.gallery),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.camera_alt),
-                  title: const Text('拍攝新照片'),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    ImageSource? source;
+    await showAppActionSheet(
+      context,
+      title: '選擇圖片來源',
+      actions: [
+        AppMenuAction(
+          icon: Icons.photo_library,
+          title: '從相簿選擇',
+          onTap: () => source = ImageSource.gallery,
+        ),
+        AppMenuAction(
+          icon: Icons.camera_alt,
+          title: '拍攝新照片',
+          onTap: () => source = ImageSource.camera,
+        ),
+      ],
     );
 
     if (source == null) return null;
+    final ImageSource selectedSource = source!;
 
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: source);
+      final XFile? pickedFile = await _picker.pickImage(source: selectedSource);
       if (pickedFile == null) return null;
 
       String sourcePath = pickedFile.path;

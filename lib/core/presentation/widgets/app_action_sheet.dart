@@ -21,12 +21,15 @@ class AppMenuAction {
 /// Shows a Clean Luxe modal bottom sheet listing [actions].
 ///
 /// Each action is rendered as a [ListTile]; tapping one dismisses the sheet
-/// and invokes its callback. Colors are pulled from [AppTheme].
+/// and invokes its callback. An optional [title] is shown as a header.
+/// Colors are pulled from [AppTheme].
 Future<void> showAppActionSheet(
   final BuildContext context, {
   required final List<AppMenuAction> actions,
+  final String? title,
 }) {
-  final colorScheme = Theme.of(context).colorScheme;
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
 
   return showModalBottomSheet<void>(
     context: context,
@@ -36,6 +39,10 @@ Future<void> showAppActionSheet(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (title != null) ...[
+            Text(title, style: theme.textTheme.headlineMedium),
+            const SizedBox(height: AppSpacing.mdLg),
+          ],
           for (final action in actions)
             ListTile(
               leading: Icon(
