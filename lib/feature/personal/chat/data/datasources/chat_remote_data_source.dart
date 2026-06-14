@@ -24,10 +24,7 @@ class ChatRemoteDataSource {
 
     final response = await _supabase.functions.invoke(
       AppConstants.functionChat,
-      body: {
-        'userRequirement': userRequirement,
-        'gender': ?gender,
-      },
+      body: {'userRequirement': userRequirement, 'gender': ?gender},
     );
     return response.data as Map<String, dynamic>;
   }

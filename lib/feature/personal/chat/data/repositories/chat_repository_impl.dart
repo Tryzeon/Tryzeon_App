@@ -18,10 +18,7 @@ class ChatRepositoryImpl implements ChatRepository {
     final String? gender,
   }) async {
     try {
-      final data = await _remoteDataSource.getLLMRecommendation(
-        answers,
-        gender: gender,
-      );
+      final data = await _remoteDataSource.getLLMRecommendation(answers, gender: gender);
       final usageJson = data['usage'] as Map<String, dynamic>?;
       final slotsJson = data['slots'] as List<dynamic>? ?? const [];
 

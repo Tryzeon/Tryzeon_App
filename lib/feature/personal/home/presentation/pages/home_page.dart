@@ -406,10 +406,7 @@ class HomePage extends HookConsumerWidget {
                     TryOnAvatarBadge(isVisible: isCurrentTheAvatar),
                     const SizedBox(width: AppSpacing.sm),
                     IconButton(
-                      icon: Icon(
-                        Icons.more_vert_rounded,
-                        color: colorScheme.onPrimary,
-                      ),
+                      icon: Icon(Icons.more_vert_rounded, color: colorScheme.onPrimary),
                       onPressed: () => showAppActionSheet(
                         context,
                         actions: isAvatarPage
