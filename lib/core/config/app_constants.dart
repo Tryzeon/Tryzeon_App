@@ -35,6 +35,7 @@ class AppConstants {
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
   static const String tryOnSkeleton = 'assets/images/tryon/skeleton.svg';
+  static const String logoWordmark = 'assets/images/logo/tryzeon_wordmark.png';
 
   // Logic
   static const int maxProductImages = 3;

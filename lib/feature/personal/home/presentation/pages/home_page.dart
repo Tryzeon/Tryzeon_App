@@ -11,6 +11,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
@@ -52,7 +53,6 @@ class HomePage extends HookConsumerWidget {
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     final currentIndex = galleryState.currentIndex;
     final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
@@ -382,22 +382,14 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 2. Top Left — Tryzeon Logo (Playfair Display italic)
+            // 2. Top Left — Tryzeon Logo (transparent mark)
             Positioned(
-              top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
-              left: AppSpacing.xl,
-              child: Text(
-                'Tryzeon',
-                style: textTheme.displaySmall?.copyWith(
-                  color: colorScheme.onPrimary,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 10.0,
-                      color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
-                ),
+              top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
+              left: AppSpacing.lg,
+              child: Image.asset(
+                AppConstants.logoWordmark,
+                height: 28,
+                fit: BoxFit.contain,
               ),
             ),
 
@@ -405,7 +397,7 @@ class HomePage extends HookConsumerWidget {
             // Hidden only while a try-on is loading.
             if (!isResultLoading)
               Positioned(
-                top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
+                top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
                 right: AppSpacing.md,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
