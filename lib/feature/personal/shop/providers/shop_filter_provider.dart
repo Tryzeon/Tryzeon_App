@@ -33,7 +33,7 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
   }
 
   void setGender(final ProductGender? gender) {
-    state = state.copyWith(gender: gender);
+    state = state.copyWith(gender: gender, categories: null);
   }
 
   void reset() {

@@ -1,10 +1,12 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
+import 'package:tryzeon/feature/personal/shop/domain/extensions/user_gender_extension.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
@@ -20,7 +22,6 @@ class ShopPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productCategoriesAsync = ref.watch(productCategoriesProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
       data: (final profile) => profile,
@@ -39,6 +40,24 @@ class ShopPage extends HookConsumerWidget {
     // 篩選/排序狀態
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
+
+    // 進入頁面時，性別篩選預設為使用者個人資料的性別（只設定一次）。
+    final profileGender = userProfile?.gender;
+    useEffect(() {
+      if (profileGender != null && ref.read(shopFilterProvider).gender == null) {
+        filterNotifier.setGender(profileGender.toProductGender());
+      }
+      return null;
+    }, [profileGender]);
+
+    // 類別清單跟著性別篩選走（男裝/女裝）。
+    final selectedGender = filterState.gender;
+    final productCategoriesAsync = ref
+        .watch(productCategoriesProvider)
+        .whenData(
+          (final list) => 
+              list.where((final c) => c.gender == selectedGender).toList(),
+        );
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
