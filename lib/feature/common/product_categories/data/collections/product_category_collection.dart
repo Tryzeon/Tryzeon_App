@@ -15,7 +15,11 @@ class ProductCategoryCollection {
 
   String? wardrobeCategory;
 
-  String? imagePath;
+  String? imageMale;
 
-  String? imageUrl;
+  String? imageFemale;
+
+  String? imageMaleUrl;
+
+  String? imageFemaleUrl;
 }

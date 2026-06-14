@@ -12,19 +12,23 @@ class ProductCategoryRemoteDataSource {
   Future<List<ProductCategoryModel>> getProductCategories() async {
     final response = await _supabaseClient
         .from(_productCategoryTable)
-        .select('id, name, gender, wardrobe_category, image_path')
+        .select('id, name, gender, wardrobe_category, image_male, image_female')
         .order('priority', ascending: false);
 
     return (response as List)
-        .map((final e) => ProductCategoryModel.fromJson(_withCategoryImageUrl(e)))
+        .map((final e) => ProductCategoryModel.fromJson(_withCategoryImageUrls(e)))
         .toList();
   }
 
-  Map<String, dynamic> _withCategoryImageUrl(final Map<String, dynamic> json) {
+  Map<String, dynamic> _withCategoryImageUrls(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
-    final imagePath = map['image_path'] as String?;
-    if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = '${Env.r2PublicImagesBaseUrl}/$imagePath';
+    final male = map['image_male'] as String?;
+    final female = map['image_female'] as String?;
+    if (male != null && male.isNotEmpty) {
+      map['image_male_url'] = '${Env.r2PublicImagesBaseUrl}/$male';
+    }
+    if (female != null && female.isNotEmpty) {
+      map['image_female_url'] = '${Env.r2PublicImagesBaseUrl}/$female';
     }
     return map;
   }

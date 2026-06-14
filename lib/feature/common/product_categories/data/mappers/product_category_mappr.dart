@@ -18,15 +18,6 @@ import 'product_category_mappr.auto_mappr.dart';
       Field('gender', custom: ProductCategoryMapprHelper.stringToGender),
     ],
   ),
-  MapType<ProductCategory, ProductCategoryModel>(
-    fields: [
-      Field(
-        'wardrobeCategory',
-        custom: ProductCategoryMapprHelper.wardrobeCategoryToString,
-      ),
-      Field('gender', custom: ProductCategoryMapprHelper.genderToString),
-    ],
-  ),
   MapType<ProductCategoryModel, ProductCategoryCollection>(
     fields: [Field('categoryId', from: 'id')],
   ),
@@ -42,12 +33,6 @@ class ProductCategoryMapprHelper {
   static WardrobeCategory? stringToWardrobeCategory(final ProductCategoryModel source) =>
       WardrobeCategory.tryFromString(source.wardrobeCategory);
 
-  static String? wardrobeCategoryToString(final ProductCategory source) =>
-      source.wardrobeCategory?.value;
-
-  static ProductGender? stringToGender(final ProductCategoryModel source) =>
-      ProductGender.tryFromString(source.gender);
-
-  static String? genderToString(final ProductCategory source) =>
-      source.gender?.value;
+  static ProductGender stringToGender(final ProductCategoryModel source) =>
+      ProductGender.tryFromString(source.gender) ?? ProductGender.unisex;
 }

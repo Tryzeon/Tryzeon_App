@@ -9,8 +9,10 @@ class ProductCategoryModel {
     required this.name,
     this.gender,
     this.wardrobeCategory,
-    this.imagePath,
-    this.imageUrl,
+    this.imageMale,
+    this.imageFemale,
+    this.imageMaleUrl,
+    this.imageFemaleUrl,
   });
 
   factory ProductCategoryModel.fromJson(final Map<String, dynamic> json) =>
@@ -18,11 +20,19 @@ class ProductCategoryModel {
 
   final String id;
   final String name;
+
+  /// Applicability (raw value): `male`/`female`/`unisex`. `unisex` = both.
   final String? gender;
   final String? wardrobeCategory;
-  final String? imagePath;
+
+  /// Per-gender model imagery (R2 paths).
+  final String? imageMale;
+  final String? imageFemale;
+
   @JsonKey(includeToJson: false)
-  final String? imageUrl;
+  final String? imageMaleUrl;
+  @JsonKey(includeToJson: false)
+  final String? imageFemaleUrl;
 
   Map<String, dynamic> toJson() => _$ProductCategoryModelToJson(this);
 }

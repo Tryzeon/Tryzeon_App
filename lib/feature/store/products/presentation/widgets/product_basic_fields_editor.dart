@@ -36,6 +36,25 @@ class ProductBasicFieldsEditor extends HookWidget {
     final priceFocusNode = useFocusNode();
     final purchaseLinkFocusNode = useFocusNode();
 
+    // Only offer categories that apply to the product's gender (unisex → all).
+    final gender = useValueListenable(selectedGender);
+    final allCategories = productCategoriesAsync.asData?.value;
+
+    // When gender changes, drop any selected categories that no longer apply
+    useEffect(() {
+      if (allCategories == null || gender == ProductGender.unisex) return null;
+      final validIds = allCategories
+          .where((final c) => c.appliesTo(gender))
+          .map((final c) => c.id)
+          .toSet();
+      final current = selectedCategoryIds.value;
+      final pruned = current.intersection(validIds);
+      if (pruned.length != current.length) {
+        selectedCategoryIds.value = pruned;
+      }
+      return null;
+    }, [gender, allCategories]);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -64,27 +83,32 @@ class ProductBasicFieldsEditor extends HookWidget {
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
         productCategoriesAsync.when(
-          data: (final categories) => FormField<Set<String>>(
-            initialValue: selectedCategoryIds.value,
-            validator: (final value) =>
-                AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            builder: (final state) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ProductCategorySelector(
-                  categories: categories,
-                  selectedCategoryIds: selectedCategoryIds,
-                  hasError: state.hasError,
-                  onChanged: (final newIds) {
-                    selectedCategoryIds.value = newIds;
-                    state.didChange(newIds);
-                  },
-                ),
-                if (state.hasError) _ErrorText(state.errorText!),
-              ],
-            ),
-          ),
+          data: (final allCategories) {
+            final categories = gender == ProductGender.unisex
+                ? allCategories
+                : allCategories.where((final c) => c.appliesTo(gender)).toList();
+            return FormField<Set<String>>(
+              initialValue: selectedCategoryIds.value,
+              validator: (final value) =>
+                  AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              builder: (final state) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ProductCategorySelector(
+                    categories: categories,
+                    selectedCategoryIds: selectedCategoryIds,
+                    hasError: state.hasError,
+                    onChanged: (final newIds) {
+                      selectedCategoryIds.value = newIds;
+                      state.didChange(newIds);
+                    },
+                  ),
+                  if (state.hasError) _ErrorText(state.errorText!),
+                ],
+              ),
+            );
+          },
           loading: () => const Padding(
             padding: EdgeInsets.all(AppSpacing.md),
             child: Center(child: CircularProgressIndicator()),

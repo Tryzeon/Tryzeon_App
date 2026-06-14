@@ -9,9 +9,23 @@ sealed class ProductCategory with _$ProductCategory {
   const factory ProductCategory({
     required final String id,
     required final String name,
-    final ProductGender? gender,
+
+    @Default(ProductGender.unisex) final ProductGender gender,
     final WardrobeCategory? wardrobeCategory,
-    final String? imagePath,
-    final String? imageUrl,
+    final String? imageMaleUrl,
+    final String? imageFemaleUrl,
   }) = _ProductCategory;
+
+  const ProductCategory._();
+
+  /// Whether this category should be shown to a shopper of [shopperGender].
+  bool appliesTo(final ProductGender shopperGender) =>
+      gender == ProductGender.unisex || gender == shopperGender;
+
+  /// The model image to show for a given shopper [shopperGender].
+  String? imageUrlFor(final ProductGender shopperGender) => switch (shopperGender) {
+    ProductGender.male => imageMaleUrl,
+    ProductGender.female => imageFemaleUrl,
+    ProductGender.unisex => imageFemaleUrl ?? imageMaleUrl,
+  };
 }

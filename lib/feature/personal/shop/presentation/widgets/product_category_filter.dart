@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 
 class ProductCategoryFilter extends StatelessWidget {
@@ -11,12 +12,14 @@ class ProductCategoryFilter extends StatelessWidget {
     super.key,
     required this.categoriesAsync,
     required this.selectedCategoryIds,
+    required this.gender,
     required this.onCategoryToggle,
     required this.onRetry,
   });
 
   final AsyncValue<List<ProductCategory>> categoriesAsync;
   final Set<String> selectedCategoryIds;
+  final ProductGender? gender;
   final Function(String) onCategoryToggle;
   final VoidCallback onRetry;
 
@@ -43,6 +46,7 @@ class ProductCategoryFilter extends StatelessWidget {
             final category = categories[index];
             return _CategoryCard(
               category: category,
+              gender: gender,
               isSelected: selectedCategoryIds.contains(category.id),
               onTap: () {
                 HapticFeedback.selectionClick();
@@ -70,11 +74,13 @@ class ProductCategoryFilter extends StatelessWidget {
 class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
     required this.category,
+    required this.gender,
     required this.isSelected,
     required this.onTap,
   });
 
   final ProductCategory category;
+  final ProductGender? gender;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -82,7 +88,7 @@ class _CategoryCard extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final imageUrl = category.imageUrl;
+    final imageUrl = gender == null ? null : category.imageUrlFor(gender!);
 
     return GestureDetector(
       onTap: onTap,

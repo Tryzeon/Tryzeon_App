@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
@@ -53,13 +54,14 @@ class ShopPage extends HookConsumerWidget {
       return null;
     }, [profileGender]);
 
-    // 類別清單跟著性別篩選走（男裝/女裝）。
+    // 類別清單跟著性別篩選走（男裝/女裝）：顯示適用該性別的類別。
     final selectedGender = filterState.gender;
     final productCategoriesAsync = ref
         .watch(productCategoriesProvider)
         .whenData(
-          (final list) => 
-              list.where((final c) => c.gender == selectedGender).toList(),
+          (final list) => selectedGender == null
+              ? const <ProductCategory>[]
+              : list.where((final c) => c.appliesTo(selectedGender)).toList(),
         );
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -187,6 +189,7 @@ class ShopPage extends HookConsumerWidget {
                             ProductCategoryFilter(
                               categoriesAsync: productCategoriesAsync,
                               selectedCategoryIds: filterState.categories ?? {},
+                              gender: selectedGender,
                               onCategoryToggle: (final categoryId) {
                                 final current = filterState.categories ?? {};
                                 if (current.contains(categoryId)) {
