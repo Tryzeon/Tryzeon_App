@@ -31,12 +31,6 @@ if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
-# Check for uncommitted changes
-if [[ -n $(git status --porcelain) ]]; then
-  echo "Error: You have uncommitted changes. Please commit or stash them first." >&2
-  exit 1
-fi
-
 # Check for unpushed commits
 if [[ -n $(git log origin/$(git branch --show-current)..HEAD) ]]; then
   echo "Error: You have unpushed commits" >&2
