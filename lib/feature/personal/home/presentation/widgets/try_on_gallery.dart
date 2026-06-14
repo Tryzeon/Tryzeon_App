@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/home/presentation/pages/tryon_fullscreen_viewer.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:video_player/video_player.dart';
@@ -43,9 +44,13 @@ class TryOnGallery extends HookWidget {
               final ImageProvider imageProvider = avatarFile != null
                   ? FileImage(avatarFile!)
                   : const AssetImage(AppConstants.defaultProfileImage);
-              return _ImageItem(
+              return GestureDetector(
+                onTap: () =>
+                    TryOnFullscreenViewer.open(context, imageProvider: imageProvider),
+                child: _ImageItem(
                 imageProvider: imageProvider,
                 showLoadingOverlay: isUploadingAvatar,
+                ),
               );
             }
 
@@ -68,8 +73,13 @@ class TryOnGallery extends HookWidget {
               if (imageUrl == null || imageUrl.isEmpty) {
                 return const Center(child: Text('Image unavailable'));
               }
-
-              return _ImageItem(imageUrl: imageUrl);
+              return GestureDetector(
+                onTap: () => TryOnFullscreenViewer.open(
+                  context,
+                  imageProvider: CachedNetworkImageProvider(imageUrl),
+                ),
+                child: _ImageItem(imageUrl: imageUrl),
+              );
             }
 
             return const Center(child: Text('Invalid TryOn Result'));
