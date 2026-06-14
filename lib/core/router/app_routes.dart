@@ -27,7 +27,8 @@ abstract final class AppRoutes {
   static const String personalPaywall = '/personal/paywall';
 
   // Store (tabs)
-  static const String storeHome = '/store/home';
+  static const String storeProducts = '/store/products';
+  static const String storeAccount = '/store/account';
 
   // Store (full screen, outside shell)
   static const String storeOnboarding = '/store/onboarding';
@@ -41,7 +42,7 @@ abstract final class AppRoutes {
   static const String deepLinkStore = '/store/:storeId';
 
   static String homeForUserType(final UserType userType) {
-    return userType == UserType.store ? storeHome : personalHome;
+    return userType == UserType.store ? storeAccount : personalHome;
   }
 
   static String personalShopProductPath(final String productId) =>
