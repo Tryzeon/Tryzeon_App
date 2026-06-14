@@ -101,7 +101,7 @@ String? _handleStoreOnboardingRedirect(
 
   final hasProfile = storeProfileAsync.asData?.value != null;
   if (path == AppRoutes.storeOnboarding) {
-    return hasProfile ? AppRoutes.storeHome : null;
+    return hasProfile ? AppRoutes.storeAccount : null;
   }
 
   return hasProfile ? null : AppRoutes.storeOnboarding;

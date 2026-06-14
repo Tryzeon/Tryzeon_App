@@ -44,7 +44,7 @@ class PersonalShell extends HookConsumerWidget {
     Future<void> switchToStore() async {
       await ref.read(setLastLoginTypeUseCaseProvider).call(UserType.store);
       if (!context.mounted) return;
-      context.go(AppRoutes.storeHome);
+      context.go(AppRoutes.storeAccount);
     }
 
     void onItemTapped(final int index) {
