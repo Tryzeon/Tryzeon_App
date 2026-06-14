@@ -45,7 +45,10 @@ class ShopPage extends HookConsumerWidget {
     final profileGender = userProfile?.gender;
     useEffect(() {
       if (profileGender != null && ref.read(shopFilterProvider).gender == null) {
-        filterNotifier.setGender(profileGender.toProductGender());
+        Future.microtask(() {
+          if (!context.mounted) return;
+          filterNotifier.setGender(profileGender.toProductGender());
+        });
       }
       return null;
     }, [profileGender]);
