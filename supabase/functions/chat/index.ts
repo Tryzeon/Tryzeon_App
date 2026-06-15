@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager } from "../_shared/quota.ts";
 import { getAIClient, VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
+import { Type } from "npm:@google/genai";
 
 Deno.serve(async (req) => {
   let quotaManager: QuotaManager | undefined;
@@ -66,13 +67,9 @@ Deno.serve(async (req) => {
 
     const categoryLines = (categories ?? []).map((c) => `- ${c.name}`).join("\n");
 
-    // Render the conversation history for the prompt.
-    const transcript = messages
-      .filter((m) => m && typeof m.content === "string" && m.content.trim() !== "")
-      .map((m) => `${m.role === "user" ? "使用者" : "顧問"}：${m.content}`)
-      .join("\n");
-
-    const prompt = `你是親切專業的穿搭顧問，正在和使用者對話。
+    // Static persona + rules go in the system instruction, separate from the
+    // turn-by-turn conversation (proper multi-turn chat format).
+    const systemInstruction = `你是親切專業的穿搭顧問，正在和使用者對話。
 你可以「追問」以釐清需求，或「推薦」一整套穿搭，或兩者同時。
 - 當需求還不清楚（場合、風格、單品等資訊不足）時，用 message 友善地追問，recommendation 設為 null。
 - 當資訊足夠時，用 recommendation 給出穿搭，並可在 message 補一句說明。
@@ -81,24 +78,6 @@ Deno.serve(async (req) => {
 【可用商品分類清單】（recommendation 的 category_name 只能一字不差地從這裡選）
 ${categoryLines}
 
-【對話紀錄】
-${transcript}
-
-請只回傳純 JSON（不要 markdown code fence），格式：
-{
-  "message": "要對使用者說的話（追問或穿搭說明）；不需要就給空字串",
-  "recommendation": {
-    "slots": [
-      {
-        "slot_label": "上衣",
-        "category_name": "（從上方清單選一個）",
-        "tags": ["白色", "棉"],
-        "reason": "一句話說明為何推薦"
-      }
-    ]
-  }
-}
-
 規則：
 - 只追問時 recommendation 設為 null。
 - 要推薦時 slots 1-5 個（涵蓋上衣、下身、鞋、配件等）。
@@ -106,22 +85,62 @@ ${transcript}
 - category_name 必須一字不差地從清單選；找不到合適的就略過該 slot。
 - message 與 recommendation 至少要有一個有內容。`;
 
+    // Map the conversation history into the SDK's multi-turn format.
+    // Gemini roles are 'user' / 'model' (assistant -> model).
+    const contents = messages
+      .filter((m) => m && typeof m.content === "string" && m.content.trim() !== "")
+      .map((m) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }],
+      }));
+
+    const responseSchema = {
+      type: Type.OBJECT,
+      properties: {
+        message: { type: Type.STRING },
+        recommendation: {
+          type: Type.OBJECT,
+          nullable: true,
+          properties: {
+            slots: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  slot_label: { type: Type.STRING },
+                  category_name: { type: Type.STRING },
+                  tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  reason: { type: Type.STRING },
+                },
+                required: ["slot_label", "category_name", "reason"],
+                propertyOrdering: ["slot_label", "category_name", "tags", "reason"],
+              },
+            },
+          },
+          required: ["slots"],
+          propertyOrdering: ["slots"],
+        },
+      },
+      required: ["message"],
+      propertyOrdering: ["message", "recommendation"],
+    };
+
     const result = await getAIClient().models.generateContent({
       model: VERTEX_CONFIG.CHAT_MODEL!,
-      contents: prompt,
+      contents,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema,
+      },
     });
     const raw = result.text ?? "";
 
-    // Try-parse JSON. On any failure, fall back to message-only (raw text).
+    // With responseSchema the output is valid JSON; still guard defensively.
     let message = "";
     let recommendation: { slots: unknown[] } | null = null;
     try {
-      const cleaned = raw
-        .trim()
-        .replace(/^﻿/, "")
-        .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/i, "");
-      const parsed = JSON.parse(cleaned);
+      const parsed = JSON.parse(raw);
       message = typeof parsed.message === "string" ? parsed.message : "";
       const slots = Array.isArray(parsed?.recommendation?.slots)
         ? parsed.recommendation.slots
@@ -133,7 +152,6 @@ ${transcript}
       recommendation = null;
     }
 
-    // Return Success Response
     return new Response(JSON.stringify({ message, recommendation, usage }), {
       headers: { "Content-Type": "application/json" }
     });
