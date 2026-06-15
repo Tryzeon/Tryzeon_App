@@ -36,32 +36,43 @@ class StoreProductsPage extends HookConsumerWidget {
                   AppSpacing.lg,
                   AppSpacing.sm,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'MY PRODUCTS',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('我的商品', style: textTheme.headlineMedium),
-                        const SizedBox(width: AppSpacing.sm),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
-                          child: Text(
-                            '${ref.watch(productsProvider.select((final async) => async.value?.length ?? 0))} 件商品',
-                            style: textTheme.bodySmall?.copyWith(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'MY PRODUCTS',
+                            style: textTheme.labelSmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                        ),
-                        const Spacer(),
-                        TextButton(
+                          const SizedBox(height: AppSpacing.xs),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text('我的商品', style: textTheme.headlineMedium),
+                              const SizedBox(width: AppSpacing.sm),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
+                                child: Text(
+                                  '${ref.watch(productsProvider.select((final async) => async.value?.length ?? 0))} 件商品',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: TextButton(
                           onPressed: () => ProductSortSheet.show(context),
                           style: TextButton.styleFrom(
                             foregroundColor: colorScheme.onSurfaceVariant,
@@ -79,9 +90,9 @@ class StoreProductsPage extends HookConsumerWidget {
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const Padding(
