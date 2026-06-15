@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -38,6 +39,7 @@ class ProductBasicFieldsEditor extends HookWidget {
 
     // Only offer categories that apply to the product's gender (unisex → all).
     final gender = useValueListenable(selectedGender);
+    final selectedIds = useValueListenable(selectedCategoryIds);
     final allCategories = productCategoriesAsync.asData?.value;
 
     // When gender changes, drop any selected categories that no longer apply
@@ -91,25 +93,32 @@ class ProductBasicFieldsEditor extends HookWidget {
                 ? allCategories
                 : allCategories.where((final c) => c.appliesTo(gender)).toList();
             return FormField<Set<String>>(
-              initialValue: selectedCategoryIds.value,
+              initialValue: selectedIds,
               validator: (final value) =>
                   AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              builder: (final state) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ProductCategorySelector(
-                    categories: categories,
-                    selectedCategoryIds: selectedCategoryIds,
-                    hasError: state.hasError,
-                    onChanged: (final newIds) {
-                      selectedCategoryIds.value = newIds;
-                      state.didChange(newIds);
-                    },
-                  ),
-                  if (state.hasError) _ErrorText(state.errorText!),
-                ],
-              ),
+              builder: (final state) {
+                if (!setEquals(state.value, selectedIds)) {
+                  WidgetsBinding.instance.addPostFrameCallback((final _) {
+                    if (state.mounted) state.didChange(selectedIds);
+                  });
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ProductCategorySelector(
+                      categories: categories,
+                      selectedCategoryIds: selectedCategoryIds,
+                      hasError: state.hasError,
+                      onChanged: (final newIds) {
+                        selectedCategoryIds.value = newIds;
+                        state.didChange(newIds);
+                      },
+                    ),
+                    if (state.hasError) _ErrorText(state.errorText!),
+                  ],
+                );
+              },
             );
           },
           loading: () => const Padding(
