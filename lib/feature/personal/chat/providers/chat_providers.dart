@@ -5,12 +5,13 @@ import 'package:tryzeon/feature/common/product_attributes/entities/product_attri
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_reply.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/outfit_slot.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/resolved_outfit_slot.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
-import 'package:tryzeon/feature/personal/chat/domain/usecases/get_llm_recommendation.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/resolve_outfit_slot.dart';
+import 'package:tryzeon/feature/personal/chat/domain/usecases/send_chat_message.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
@@ -35,9 +36,9 @@ ChatRepository chatRepository(final Ref ref) {
 
 // Use Case Provider
 @riverpod
-GetLLMRecommendationUseCase getLLMRecommendationUseCase(final Ref ref) {
+SendChatMessageUseCase sendChatMessageUseCase(final Ref ref) {
   final repository = ref.watch(chatRepositoryProvider);
-  return GetLLMRecommendationUseCase(repository);
+  return SendChatMessageUseCase(repository);
 }
 
 /// Mutation orchestrator for chat. Wraps [GetLLMRecommendationUseCase] and
@@ -57,12 +58,12 @@ class ChatAction extends _$ChatAction {
   @override
   void build() {}
 
-  Future<Result<ChatRecommendation, Failure>> execute(
-    final Map<String, String> answers,
+  Future<Result<ChatReply, Failure>> execute(
+    final List<ChatMessage> history,
   ) async {
-    final useCase = ref.read(getLLMRecommendationUseCaseProvider);
+    final useCase = ref.read(sendChatMessageUseCaseProvider);
     final gender = (await ref.read(userProfileProvider.future))?.gender?.value;
-    final result = await useCase(answers, gender: gender);
+    final result = await useCase(history, gender: gender);
 
     if (result.isSuccess) {
       final usage = result.get()!.usage;
