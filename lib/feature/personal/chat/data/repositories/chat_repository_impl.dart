@@ -1,7 +1,9 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_reply.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/outfit_slot.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
@@ -13,42 +15,52 @@ class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Result<ChatRecommendation, Failure>> getLLMRecommendation(
-    final Map<String, String> answers, {
+  Future<Result<ChatReply, Failure>> sendMessage(
+    final List<ChatMessage> history, {
     final String? gender,
   }) async {
     try {
-      final data = await _remoteDataSource.getLLMRecommendation(answers, gender: gender);
-      final usageJson = data['usage'] as Map<String, dynamic>?;
-      final slotsJson = data['slots'] as List<dynamic>? ?? const [];
+      final data = await _remoteDataSource.sendMessage(history, gender: gender);
 
-      final slots = slotsJson
-          .whereType<Map<String, dynamic>>()
-          .map(
-            (final s) => OutfitSlot(
-              slotLabel: s['slot_label'] as String? ?? '',
-              categoryName: s['category_name'] as String? ?? '',
-              tags: (s['tags'] as List<dynamic>? ?? const [])
-                  .whereType<String>()
-                  .toList(),
-              reason: s['reason'] as String? ?? '',
-            ),
-          )
-          .where((final s) => s.categoryName.isNotEmpty)
-          .toList();
+      final message = (data['message'] as String?)?.trim();
+
+      final recJson = data['recommendation'] as Map<String, dynamic>?;
+      final slots = _parseSlots(recJson?['slots'] as List<dynamic>?);
+      final recommendation = slots.isEmpty
+          ? null
+          : ChatRecommendation(slots: slots);
+
+      final usageJson = data['usage'] as Map<String, dynamic>?;
 
       return Ok(
-        ChatRecommendation(
-          description: data['description'] as String? ?? '',
-          slots: slots,
+        ChatReply(
+          message: (message?.isEmpty ?? true) ? null : message,
+          recommendation: recommendation,
           usage: usageJson == null
               ? null
               : DailyUsageModel.fromJson(usageJson).toEntity(),
         ),
       );
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to get outfit suggestions', e, stackTrace);
+      AppLogger.error('Failed to send chat message', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+  }
+
+  List<OutfitSlot> _parseSlots(final List<dynamic>? slotsJson) {
+    return (slotsJson ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (final s) => OutfitSlot(
+            slotLabel: s['slot_label'] as String? ?? '',
+            categoryName: s['category_name'] as String? ?? '',
+            tags: (s['tags'] as List<dynamic>? ?? const [])
+                .whereType<String>()
+                .toList(),
+            reason: s['reason'] as String? ?? '',
+          ),
+        )
+        .where((final s) => s.categoryName.isNotEmpty)
+        .toList();
   }
 }
