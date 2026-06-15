@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working notes
+
+- Design/spec docs under `docs/superpowers/` are gitignored and intentionally NOT committed. Write them there for reference, but never `git add -f` or commit them.
+
 ## Project
 
 Tryzeon is a Flutter app (Dart SDK ^3.9) for AI virtual try-on and wardrobe management. Backend is Supabase (Postgres + Edge Functions in `supabase/functions/`); auth, storage, and analytics RPCs all run there. Subscriptions go through RevenueCat; crash/analytics through Firebase.
