@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';

@@ -7,14 +7,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_notifier.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_header.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_progress_bar.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_quick_reply_row.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_starter_chips.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_thinking_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/recommendation_bubble.dart';
 
@@ -67,7 +65,7 @@ class ChatPage extends HookConsumerWidget {
       final trimmed = text.trim();
       if (trimmed.isEmpty) return;
       controller.clear();
-      ref.read(chatProvider.notifier).submitAnswer(trimmed);
+      ref.read(chatProvider.notifier).sendMessage(trimmed);
     }
 
     final mediaQuery = MediaQuery.of(context);
@@ -75,15 +73,9 @@ class ChatPage extends HookConsumerWidget {
     final isKeyboardOpen = keyboardHeight > 0;
     final safeAreaBottom = mediaQuery.viewPadding.bottom;
 
-    final currentQuestion = state.currentQuestionIndex < QAConfig.questions.length
-        ? QAConfig.questions[state.currentQuestionIndex]
-        : null;
-
-    final inputEnabled = currentQuestion != null && !state.isLoading;
-
-    final List<String> currentQuickReplies = inputEnabled
-        ? currentQuestion.quickReplies
-        : [];
+    final inputEnabled = !state.isLoading;
+    // Starter chips only while the conversation is just the greeting.
+    final showStarters = state.messages.length <= 1 && !state.isLoading;
 
     final isIOS26 = PlatformInfo.isIOS26OrHigher();
 
@@ -121,10 +113,6 @@ class ChatPage extends HookConsumerWidget {
                 }
               },
             ),
-            ChatProgressBar(
-              currentQuestionIndex: state.currentQuestionIndex,
-              totalQuestions: QAConfig.questions.length,
-            ),
             Expanded(
               child: GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
@@ -146,8 +134,7 @@ class ChatPage extends HookConsumerWidget {
                 ),
               ),
             ),
-            if (currentQuickReplies.isNotEmpty)
-              ChatQuickReplyRow(replies: currentQuickReplies, onReply: sendMessage),
+            if (showStarters) ChatStarterChips(onTap: sendMessage),
             ChatInputBar(
               controller: controller,
               enabled: inputEnabled,
