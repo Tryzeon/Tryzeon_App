@@ -17,14 +17,8 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # codegen: riverpod, freezed, json, isar, auto_mappr, envied
 dart run build_runner watch  --delete-conflicting-outputs  # incremental codegen during dev
 flutter run                                                # debug on default device
-flutter run -d <device-id>                                 # specific device (use `flutter devices` to list)
 flutter analyze                                            # lint (uses analysis_options.yaml; .g/.freezed/.gr files excluded)
 dart fix --apply && dart format .                          # autofix + format (page_width: 90)
-flutter test                                               # run all tests
-flutter test path/to/file_test.dart                        # single test file
-flutter test --plain-name "<test name>"                    # single test by name
-flutter build apk
-scripts/release-beta.sh <version> [--ios|--android]        # beta release; full flow in docs/release-runbook.md
 ```
 
 Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`). If imports of `*.g.dart` / `*.freezed.dart` are missing, run build_runner.
