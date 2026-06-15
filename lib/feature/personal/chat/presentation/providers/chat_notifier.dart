@@ -5,10 +5,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_reply.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -16,15 +14,16 @@ import 'package:typed_result/typed_result.dart';
 part 'chat_notifier.freezed.dart';
 part 'chat_notifier.g.dart';
 
-const String _greetingText = '你好，今天想怎麼穿呢？';
+const String _greetingText =
+    '嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。';
 const String _rateLimitMessage = '今天的對話次數已達上限，升級方案就能繼續聊喔！';
+const String _emptyReplyMessage = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
+const String _errorMessage = '發生錯誤，請稍後再試';
 
 @freezed
 sealed class ChatState with _$ChatState {
   const factory ChatState({
     @Default([]) final List<ChatMessage> messages,
-    @Default({}) final Map<String, String> answers,
-    @Default(0) final int currentQuestionIndex,
     @Default(false) final bool isLoading,
     @Default(0) final int generation,
   }) = _ChatState;
@@ -39,89 +38,65 @@ class ChatNotifier extends _$ChatNotifier {
   @override
   ChatState build() {
     ref.onDispose(_events.close);
-    WidgetsBinding.instance.addPostFrameCallback((final _) => _initialize());
-    return const ChatState();
-  }
-
-  void _initialize() {
-    appendBotMessage(_greetingText);
-    _appendNextQuestion(state.generation);
+    return const ChatState(messages: [ChatMessage(text: _greetingText, isUser: false)]);
   }
 
   void reset() {
-    state = ChatState(generation: state.generation + 1);
-    WidgetsBinding.instance.addPostFrameCallback((final _) => _initialize());
-  }
-
-  void appendUserMessage(final String text) =>
-      _appendMessage(ChatMessage(text: text, isUser: true));
-
-  void appendBotMessage(final String text) =>
-      _appendMessage(ChatMessage(text: text, isUser: false));
-
-  void appendRecommendationMessage(final ChatRecommendation rec) => _appendMessage(
-    ChatMessage(text: rec.description, isUser: false, recommendation: rec),
-  );
-
-  void _appendMessage(final ChatMessage message) {
-    state = state.copyWith(messages: [...state.messages, message]);
-  }
-
-  Future<void> submitAnswer(final String answer) async {
-    if (state.isLoading) return;
-    final index = state.currentQuestionIndex;
-    if (index >= QAConfig.questions.length) return;
-
-    appendUserMessage(answer);
-
-    final question = QAConfig.questions[index];
-    final localGen = state.generation;
-    state = state.copyWith(
-      answers: {...state.answers, question.id: answer},
-      currentQuestionIndex: index + 1,
-      isLoading: true,
+    state = ChatState(
+      messages: const [ChatMessage(text: _greetingText, isUser: false)],
+      generation: state.generation + 1,
     );
+  }
 
-    if (state.currentQuestionIndex < QAConfig.questions.length) {
-      await _appendNextQuestion(localGen);
-    } else {
-      await _fetchRecommendation(localGen);
-    }
-
-    if (_isStale(localGen)) return;
-    state = state.copyWith(isLoading: false);
+  void _append(final ChatMessage message) {
+    state = state.copyWith(messages: [...state.messages, message]);
   }
 
   bool _isStale(final int localGen) => localGen != state.generation;
 
-  Future<void> _appendNextQuestion(final int localGen) async {
-    final index = state.currentQuestionIndex;
-    if (index >= QAConfig.questions.length) return;
-    final question = QAConfig.questions[index];
+  Future<void> sendMessage(final String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty || state.isLoading) return;
 
-    await Future<void>.delayed(AppDuration.slow);
+    _append(ChatMessage(text: trimmed, isUser: true));
+
+    final localGen = state.generation;
+    final history = state.messages;
+    state = state.copyWith(isLoading: true);
+
+    final result = await ref.read(chatActionProvider.notifier).execute(history);
+
     if (_isStale(localGen)) return;
 
-    appendBotMessage(question.text);
+    _applyResult(result);
+    state = state.copyWith(isLoading: false);
   }
 
-  Future<void> _fetchRecommendation(final int localGen) async {
-    final result = await ref.read(chatActionProvider.notifier).execute(state.answers);
-
-    if (_isStale(localGen)) return;
-
+  void _applyResult(final Result<ChatReply, Failure> result) {
     if (result.isSuccess) {
-      appendRecommendationMessage(result.get()!);
+      final reply = result.get()!;
+      final message = reply.message;
+      final recommendation = reply.recommendation;
+
+      if (message != null && message.isNotEmpty) {
+        _append(ChatMessage(text: message, isUser: false));
+      }
+      if (recommendation != null && recommendation.slots.isNotEmpty) {
+        _append(ChatMessage(text: '', isUser: false, recommendation: recommendation));
+      }
+      if ((message == null || message.isEmpty) && recommendation == null) {
+        _append(const ChatMessage(text: _emptyReplyMessage, isUser: false));
+      }
       return;
     }
 
     final failure = result.getError();
     if (failure is RateLimitFailure) {
-      appendBotMessage(_rateLimitMessage);
+      _append(const ChatMessage(text: _rateLimitMessage, isUser: false));
       _events.add(const ChatEvent.rateLimited());
       return;
     }
 
-    appendBotMessage(failure?.displayMessage() ?? '發生錯誤，請稍後再試');
+    _append(ChatMessage(text: failure?.displayMessage() ?? _errorMessage, isUser: false));
   }
 }
