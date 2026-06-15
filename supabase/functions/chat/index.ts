@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
     // Validate Request Body
     const bodyText = await req.text();
     if (!bodyText) {
+      await quotaManager?.rollbackQuota();
       return new Response(
         JSON.stringify({ error: "Empty request body", code: "BAD_REQUEST" }),
         { status: 400, headers: { "Content-Type": "application/json" } }

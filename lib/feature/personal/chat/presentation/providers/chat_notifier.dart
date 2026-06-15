@@ -44,6 +44,7 @@ class ChatNotifier extends _$ChatNotifier {
       messages: const [ChatMessage(text: _greetingText, isUser: false)],
       generation: state.generation + 1,
     );
+    ref.invalidate(resolvedOutfitProvider);
   }
 
   void _append(final ChatMessage message) {
@@ -59,7 +60,9 @@ class ChatNotifier extends _$ChatNotifier {
     _append(ChatMessage(text: trimmed, isUser: true));
 
     final localGen = state.generation;
-    final history = state.messages;
+    final history = state.messages
+        .where((final m) => !(m.text == _greetingText && !m.isUser))
+        .toList();
     state = state.copyWith(isLoading: true);
 
     final result = await ref.read(chatActionProvider.notifier).execute(history);
