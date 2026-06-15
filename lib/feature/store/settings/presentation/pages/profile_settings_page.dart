@@ -39,7 +39,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
             message: error.displayMessage(context),
-            onRetry: () => refreshStoreProfile(ref),
+            onRetry: () => ref.invalidate(storeProfileProvider),
           ),
         ),
       ),

@@ -34,7 +34,7 @@ class StylePreferencesSettingsPage extends HookConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
             message: error.displayMessage(context),
-            onRetry: () => refreshUserProfile(ref),
+            onRetry: () => ref.invalidate(userProfileProvider),
           ),
         ),
       ),

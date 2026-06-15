@@ -31,7 +31,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
         appBar: AppBar(),
         body: ErrorView(
           message: error.displayMessage(context),
-          onRetry: () => refreshWardrobeItems(ref),
+          onRetry: () => ref.invalidate(wardrobeItemsProvider),
         ),
       ),
       data: (final items) {

@@ -218,7 +218,7 @@ class StorePage extends HookConsumerWidget {
                   ProductGrid(
                     productsAsync: productsAsync,
                     userProfile: userProfile,
-                    onRetry: () => refreshShopProducts(ref, filter),
+                    onRetry: () => ref.invalidate(shopProductsProvider(filter)),
                   ),
                   SizedBox(
                     height: PlatformInfo.isIOS26OrHigher()

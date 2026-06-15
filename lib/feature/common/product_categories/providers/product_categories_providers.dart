@@ -1,4 +1,3 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -46,13 +45,4 @@ Future<List<ProductCategory>> productCategories(final Ref ref) async {
   } else {
     throw result.getError()!;
   }
-}
-
-Future<void> refreshProductCategories(final WidgetRef ref) async {
-  final useCase = ref.read(getProductCategoriesUseCaseProvider);
-  await useCase(forceRefresh: true);
-  try {
-    ref.invalidate(productCategoriesProvider);
-    await ref.read(productCategoriesProvider.future);
-  } catch (_) {}
 }

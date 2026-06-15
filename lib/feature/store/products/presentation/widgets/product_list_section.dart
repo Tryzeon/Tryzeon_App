@@ -62,7 +62,7 @@ class ProductListSection extends HookConsumerWidget {
       error: (final error, final stack) => centeredFill(
         ErrorView(
           message: error.displayMessage(context),
-          onRetry: () => refreshProducts(ref),
+          onRetry: () => ref.invalidate(productsProvider),
         ),
       ),
       data: buildProductGrid,

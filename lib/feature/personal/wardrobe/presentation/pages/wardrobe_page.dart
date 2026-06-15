@@ -246,7 +246,7 @@ class WardrobePage extends HookConsumerWidget {
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (final error, final stack) => ErrorView(
                     message: error.displayMessage(context),
-                    onRetry: () => refreshWardrobeItems(ref),
+                    onRetry: () => ref.invalidate(wardrobeItemsProvider),
                   ),
                 ),
               ),
