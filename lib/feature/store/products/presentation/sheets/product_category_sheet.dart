@@ -117,60 +117,22 @@ class ProductCategorySheet extends HookWidget {
               },
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          const Divider(height: 1),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               children: [
                 for (final category in activeCategories)
-                  _CategoryRow(
-                    category: category,
-                    isSelected: selection.value.contains(category.id),
-                    onTap: () => toggleSelection(category.id),
+                  CheckboxListTile(
+                    title: Text(category.name, style: theme.textTheme.bodyLarge),
+                    value: selection.value.contains(category.id),
+                    onChanged: (final _) => toggleSelection(category.id),
+                    controlAffinity: ListTileControlAffinity.trailing,
+                    dense: true,
                   ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({
-    required this.category,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final ProductCategory category;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.xs,
-        ),
-        child: Row(
-          children: [
-            Expanded(child: Text(category.name, style: textTheme.bodyLarge)),
-            Checkbox(
-              value: isSelected,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              onChanged: (final _) => onTap(),
-            ),
-          ],
-        ),
       ),
     );
   }
