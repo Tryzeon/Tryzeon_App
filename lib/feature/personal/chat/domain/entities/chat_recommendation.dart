@@ -5,7 +5,6 @@ part 'chat_recommendation.freezed.dart';
 
 @freezed
 sealed class ChatRecommendation with _$ChatRecommendation {
-  const factory ChatRecommendation({
-    @Default([]) final List<OutfitSlot> slots,
-  }) = _ChatRecommendation;
+  const factory ChatRecommendation({@Default([]) final List<OutfitSlot> slots}) =
+      _ChatRecommendation;
 }

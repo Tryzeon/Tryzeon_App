@@ -16,10 +16,7 @@ class ChatRemoteDataSource {
   }) async {
     final messages = history
         .where((final m) => m.text.trim().isNotEmpty)
-        .map((final m) => {
-              'role': m.isUser ? 'user' : 'assistant',
-              'content': m.text,
-            })
+        .map((final m) => {'role': m.isUser ? 'user' : 'assistant', 'content': m.text})
         .toList();
 
     final response = await _supabase.functions.invoke(

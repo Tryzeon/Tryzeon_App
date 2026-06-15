@@ -58,9 +58,7 @@ class ChatAction extends _$ChatAction {
   @override
   void build() {}
 
-  Future<Result<ChatReply, Failure>> execute(
-    final List<ChatMessage> history,
-  ) async {
+  Future<Result<ChatReply, Failure>> execute(final List<ChatMessage> history) async {
     final useCase = ref.read(sendChatMessageUseCaseProvider);
     final gender = (await ref.read(userProfileProvider.future))?.gender?.value;
     final result = await useCase(history, gender: gender);

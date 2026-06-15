@@ -13,8 +13,7 @@ import 'package:typed_result/typed_result.dart';
 part 'chat_notifier.freezed.dart';
 part 'chat_notifier.g.dart';
 
-const String _greetingText =
-    '嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。';
+const String _greetingText = '嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。';
 const String _rateLimitMessage = '今天的對話次數已達上限，升級方案就能繼續聊喔！';
 const String _emptyReplyMessage = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
 const String _errorMessage = '發生錯誤，請稍後再試';

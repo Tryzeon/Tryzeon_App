@@ -60,8 +60,7 @@ void main() {
     expect(reply.recommendation, isNull);
   });
 
-  test('empty body yields reply with no message and no recommendation',
-      () async {
+  test('empty body yields reply with no message and no recommendation', () async {
     final repo = repoWith(<String, dynamic>{});
     final reply = (await repo.sendMessage(history)).get()!;
     expect(reply.message, isNull);

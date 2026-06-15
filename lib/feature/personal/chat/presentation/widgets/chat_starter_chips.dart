@@ -6,12 +6,7 @@ class ChatStarterChips extends StatelessWidget {
 
   final ValueChanged<String> onTap;
 
-  static const List<String> _prompts = [
-    '上班約會穿搭',
-    '週末休閒風',
-    '幫我搭一件白襯衫',
-    '參加婚禮要穿什麼',
-  ];
+  static const List<String> _prompts = ['上班約會穿搭', '週末休閒風', '幫我搭一件白襯衫', '參加婚禮要穿什麼'];
 
   @override
   Widget build(final BuildContext context) {

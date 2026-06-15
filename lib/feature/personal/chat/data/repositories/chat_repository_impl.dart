@@ -26,9 +26,7 @@ class ChatRepositoryImpl implements ChatRepository {
 
       final recJson = data['recommendation'] as Map<String, dynamic>?;
       final slots = _parseSlots(recJson?['slots'] as List<dynamic>?);
-      final recommendation = slots.isEmpty
-          ? null
-          : ChatRecommendation(slots: slots);
+      final recommendation = slots.isEmpty ? null : ChatRecommendation(slots: slots);
 
       final usageJson = data['usage'] as Map<String, dynamic>?;
 
@@ -54,9 +52,7 @@ class ChatRepositoryImpl implements ChatRepository {
           (final s) => OutfitSlot(
             slotLabel: s['slot_label'] as String? ?? '',
             categoryName: s['category_name'] as String? ?? '',
-            tags: (s['tags'] as List<dynamic>? ?? const [])
-                .whereType<String>()
-                .toList(),
+            tags: (s['tags'] as List<dynamic>? ?? const []).whereType<String>().toList(),
             reason: s['reason'] as String? ?? '',
           ),
         )
