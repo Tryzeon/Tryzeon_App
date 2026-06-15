@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -41,6 +40,7 @@ class ProductBasicFieldsEditor extends HookWidget {
     final gender = useValueListenable(selectedGender);
     final selectedIds = useValueListenable(selectedCategoryIds);
     final allCategories = productCategoriesAsync.asData?.value;
+    final categoryFieldState = useRef<FormFieldState<Set<String>>?>(null);
 
     // When gender changes, drop any selected categories that no longer apply
     useEffect(() {
@@ -53,6 +53,9 @@ class ProductBasicFieldsEditor extends HookWidget {
       final pruned = current.intersection(validIds);
       if (pruned.length != current.length) {
         selectedCategoryIds.value = pruned;
+        WidgetsBinding.instance.addPostFrameCallback((final _) {
+          categoryFieldState.value?.didChange(selectedCategoryIds.value);
+        });
       }
       return null;
     }, [gender, allCategories]);
@@ -98,11 +101,7 @@ class ProductBasicFieldsEditor extends HookWidget {
                   AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               builder: (final state) {
-                if (!setEquals(state.value, selectedIds)) {
-                  WidgetsBinding.instance.addPostFrameCallback((final _) {
-                    if (state.mounted) state.didChange(selectedIds);
-                  });
-                }
+                categoryFieldState.value = state;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
