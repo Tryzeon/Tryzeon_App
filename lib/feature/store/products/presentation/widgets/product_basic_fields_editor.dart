@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
@@ -38,11 +39,10 @@ class ProductBasicFieldsEditor extends HookWidget {
 
     // Only offer categories that apply to the product's gender (unisex → all).
     final gender = useValueListenable(selectedGender);
-    final selectedIds = useValueListenable(selectedCategoryIds);
     final allCategories = productCategoriesAsync.asData?.value;
-    final categoryFieldState = useRef<FormFieldState<Set<String>>?>(null);
 
-    // When gender changes, drop any selected categories that no longer apply
+    // When gender changes, drop any selected categories that no longer apply.
+    // SelectionFormField mirrors this prune into its validation automatically.
     useEffect(() {
       if (allCategories == null || gender == ProductGender.unisex) return null;
       final validIds = allCategories
@@ -53,9 +53,6 @@ class ProductBasicFieldsEditor extends HookWidget {
       final pruned = current.intersection(validIds);
       if (pruned.length != current.length) {
         selectedCategoryIds.value = pruned;
-        WidgetsBinding.instance.addPostFrameCallback((final _) {
-          categoryFieldState.value?.didChange(selectedCategoryIds.value);
-        });
       }
       return null;
     }, [gender, allCategories]);
@@ -95,29 +92,22 @@ class ProductBasicFieldsEditor extends HookWidget {
             final categories = gender == ProductGender.unisex
                 ? allCategories
                 : allCategories.where((final c) => c.appliesTo(gender)).toList();
-            return FormField<Set<String>>(
-              initialValue: selectedIds,
+            return SelectionFormField<Set<String>>(
+              controller: selectedCategoryIds,
               validator: (final value) =>
                   AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              builder: (final state) {
-                categoryFieldState.value = state;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ProductCategorySelector(
-                      categories: categories,
-                      selectedCategoryIds: selectedCategoryIds,
-                      hasError: state.hasError,
-                      onChanged: (final newIds) {
-                        selectedCategoryIds.value = newIds;
-                        state.didChange(newIds);
-                      },
-                    ),
-                    if (state.hasError) _ErrorText(state.errorText!),
-                  ],
-                );
-              },
+              builder: (final state) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ProductCategorySelector(
+                    categories: categories,
+                    selectedCategoryIds: selectedCategoryIds,
+                    hasError: state.hasError,
+                    onChanged: (final newIds) => selectedCategoryIds.value = newIds,
+                  ),
+                  if (state.hasError) _ErrorText(state.errorText!),
+                ],
+              ),
             );
           },
           loading: () => const Padding(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
@@ -49,21 +50,17 @@ class ProductFormLayout extends StatelessWidget {
               helper: '最多 3 張 · 長按拖曳調整順序',
             ),
           ),
-          FormField<List<ImageItem>>(
-            initialValue: formData.images.value,
+          SelectionFormField<List<ImageItem>>(
+            controller: formData.images,
             validator: (final value) =>
                 AppValidators.validateNonEmpty(value, message: '請選擇至少一張商品圖片'),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
             builder: (final state) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ProductImageEditor(
                   images: formData.images.value,
                   hasError: state.hasError,
-                  onImagesChanged: (final updated) {
-                    formData.images.value = updated;
-                    state.didChange(updated);
-                  },
+                  onImagesChanged: (final updated) => formData.images.value = updated,
                   onPickImage: () async {
                     final currentCount = formData.images.value.length;
                     final remaining = AppConstants.maxProductImages - currentCount;
@@ -73,9 +70,7 @@ class ProductFormLayout extends StatelessWidget {
                       final newItems = files
                           .map((final f) => ImageItem.newImage(file: f))
                           .toList();
-                      final updated = [...formData.images.value, ...newItems];
-                      formData.images.value = updated;
-                      state.didChange(updated);
+                      formData.images.value = [...formData.images.value, ...newItems];
                     }
                   },
                 ),
