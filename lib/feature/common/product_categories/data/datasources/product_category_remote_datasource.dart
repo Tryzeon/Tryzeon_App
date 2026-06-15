@@ -13,7 +13,7 @@ class ProductCategoryRemoteDataSource {
     final response = await _supabaseClient
         .from(_productCategoryTable)
         .select('id, name, gender, wardrobe_category, image_male, image_female')
-        .order('priority', ascending: false);
+        .order('order', ascending: true);
 
     return (response as List)
         .map((final e) => ProductCategoryModel.fromJson(_withCategoryImageUrls(e)))
