@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
@@ -8,7 +6,7 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/resolved_outfit_sl
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/outfit_pick_card.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 
-class RecommendationBubble extends HookConsumerWidget {
+class RecommendationBubble extends ConsumerWidget {
   const RecommendationBubble({super.key, required this.recommendation});
 
   final ChatRecommendation recommendation;
@@ -18,11 +16,6 @@ class RecommendationBubble extends HookConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-
-    final styleSheet = useMemoized(
-      () => MarkdownStyleSheet.fromTheme(theme).copyWith(p: textTheme.bodyLarge),
-      [theme],
-    );
 
     final resolvedAsync = recommendation.slots.isEmpty
         ? const AsyncValue<List<ResolvedOutfitSlot>>.data([])
@@ -46,12 +39,6 @@ class RecommendationBubble extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (recommendation.description.isNotEmpty)
-              MarkdownBody(
-                data: recommendation.description,
-                selectable: true,
-                styleSheet: styleSheet,
-              ),
             resolvedAsync.when(
               data: (final slots) => _SlotsList(slots: slots),
               loading: () => const SizedBox.shrink(),
