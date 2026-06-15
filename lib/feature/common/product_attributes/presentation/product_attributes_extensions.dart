@@ -22,11 +22,9 @@ extension CategoryDisplay on WardrobeCategory {
   /// Get the Chinese display name for UI.
   String get displayName => switch (this) {
     WardrobeCategory.top => '上衣',
-    WardrobeCategory.pants => '褲子',
-    WardrobeCategory.skirt => '裙子',
-    WardrobeCategory.jacket => '外套',
-    WardrobeCategory.shoes => '鞋子',
-    WardrobeCategory.accessories => '配件',
+    WardrobeCategory.bottoms => '下身',
+    WardrobeCategory.outerwear => '外套',
+    WardrobeCategory.sets => '套裝',
     WardrobeCategory.others => '其他',
   };
 

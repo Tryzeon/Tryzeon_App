@@ -10,11 +10,9 @@ import { checkRateLimit } from "../_shared/rate-limit.ts";
 // but exclude it from the values we accept back.
 const VALID_CATEGORIES = [
   "top",
-  "pants",
-  "skirt",
-  "jacket",
-  "shoes",
-  "accessories",
+  "bottoms",
+  "outerwear",
+  "sets",
   "others",
 ];
 const SCHEMA_CATEGORIES = [...VALID_CATEGORIES, "unknown"];
@@ -30,7 +28,7 @@ function rateLimitedResponse(): Response {
 
 const ANALYSIS_PROMPT =
   `你是時尚衣物標註助手。分析這張單一衣物的照片，輸出 JSON。
-- category 從以下擇一：top, pants, skirt, jacket, shoes, accessories, others；無法判斷用 unknown。
+- category 從以下擇一：top（上衣）, bottoms（下身，含褲子與裙子）, outerwear（外套）, sets（套裝/成套）, others（其他，含鞋子、配件及無法歸類者）；無法判斷用 unknown。
 - tags 以「繁體中文」輸出，最多 6 個，只能從下列受控詞彙挑選：
   顏色：黑、白、灰、米、棕、紅、橙、黃、綠、藍、紫、粉、金、銀
   風格：休閒、正式、運動、復古、簡約、甜美、街頭

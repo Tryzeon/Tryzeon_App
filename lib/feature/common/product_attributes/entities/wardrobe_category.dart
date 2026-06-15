@@ -4,11 +4,9 @@
 /// depend on it.
 enum WardrobeCategory {
   top('top'),
-  pants('pants'),
-  skirt('skirt'),
-  jacket('jacket'),
-  shoes('shoes'),
-  accessories('accessories'),
+  bottoms('bottoms'),
+  outerwear('outerwear'),
+  sets('sets'),
   others('others');
 
   const WardrobeCategory(this.value);
