@@ -29,45 +29,57 @@ class StoreProductsPage extends HookConsumerWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
             children: [
-              const SizedBox(height: AppSpacing.md),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 24,
-                      height: 2,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(2),
+                    Text(
+                      'MY PRODUCTS',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.smMd),
-                    Expanded(
-                      child: Text(
-                        '我的商品 · ${ref.watch(productsProvider.select((final async) => async.value?.length ?? 0))}',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('我的商品', style: textTheme.headlineMedium),
+                        const SizedBox(width: AppSpacing.sm),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
+                          child: Text(
+                            '${ref.watch(productsProvider.select((final async) => async.value?.length ?? 0))} 件商品',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => ProductSortSheet.show(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: colorScheme.onSurfaceVariant,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => ProductSortSheet.show(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: colorScheme.onSurfaceVariant,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('排序'),
+                              SizedBox(width: AppSpacing.xs),
+                              Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('排序'),
-                          SizedBox(width: AppSpacing.xs),
-                          Icon(Icons.keyboard_arrow_down_rounded, size: 16),
-                        ],
-                      ),
+                      ],
                     ),
                   ],
                 ),
