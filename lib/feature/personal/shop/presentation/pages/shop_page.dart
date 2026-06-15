@@ -140,10 +140,7 @@ class ShopPage extends HookConsumerWidget {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  await Future.wait([
-                    refreshProductCategories(ref),
-                    refreshShopProducts(ref, filter),
-                  ]);
+                  await refreshShopProducts(ref, filter);
                 },
                 color: colorScheme.primary,
                 child: LayoutBuilder(
