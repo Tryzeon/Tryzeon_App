@@ -66,6 +66,12 @@ Frontend batches events (10/5s, lifecycle-aware flush) and calls the `log_analyt
 
 `supabase/functions/`: `chat`, `tryon`, `delete-account`, `cleanup-orphan-images`, `revenuecat-webhook`, plus `_shared/`. The `tryon` function is the AI image-generation entry point; `revenuecat-webhook` reconciles subscription state.
 
+### Supabase migrations
+
+- Schema is cumulative: to find a column/type/function's real state, `grep -rn "<name>" supabase/migrations/` and trace to the **last** file that touches it — never treat the baseline dump as current.
+- New migration timestamps must be later than the newest existing file, or `supabase db push` rejects them as out-of-order.
+- Enums can't drop/merge values in place: cast dependent columns to `text` → remap data → rebuild type → cast back → drop old type.
+
 ## Conventions
 
 - **Lints (`analysis_options.yaml`):** `prefer_single_quotes`, `always_declare_return_types`, `prefer_final_locals`, `directives_ordering` are enforced; `always_use_package_imports` is off (relative imports allowed within a feature).
