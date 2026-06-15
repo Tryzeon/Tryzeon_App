@@ -48,7 +48,16 @@ class ProductCategorySheet extends HookWidget {
       ];
     }, [categories]);
 
-    final activeGroup = useState<WardrobeCategory?>(null);
+    final activeGroup = useState<WardrobeCategory?>(
+      groups
+          .firstWhere(
+            (final g) => g.value.any((final c) => initialIds.contains(c.id)),
+            orElse: () => groups.isEmpty
+                ? const MapEntry(WardrobeCategory.others, [])
+                : groups.first,
+          )
+          .key,
+    );
 
     void toggleSelection(final String id) {
       final next = {...selection.value};
@@ -63,120 +72,67 @@ class ProductCategorySheet extends HookWidget {
     void done() => Navigator.of(context).pop(selection.value);
 
     final active = activeGroup.value;
-    final activeCategories = active == null
-        ? const <ProductCategory>[]
-        : groups.firstWhere((final g) => g.key == active).value;
+    final activeCategories = groups
+        .firstWhere(
+          (final g) => g.key == active,
+          orElse: () => const MapEntry(WardrobeCategory.others, []),
+        )
+        .value;
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.7,
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (active != null)
-                  IconButton(
-                    onPressed: () => activeGroup.value = null,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                if (active != null) const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    active == null ? '選擇分類' : active.displayName,
-                    style: textTheme.titleMedium,
-                  ),
-                ),
+                Text('選擇分類', style: textTheme.titleMedium),
                 TextButton(onPressed: done, child: const Text('完成')),
               ],
             ),
           ),
+          SizedBox(
+            height: 44,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              itemCount: groups.length,
+              separatorBuilder: (final _, final _) =>
+                  const SizedBox(width: AppSpacing.sm),
+              itemBuilder: (final context, final index) {
+                final group = groups[index];
+                return ChoiceChip(
+                  label: Text(group.key.displayName),
+                  selected: group.key == active,
+                  showCheckmark: false,
+                  onSelected: (final _) => activeGroup.value = group.key,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const Divider(height: 1),
           Expanded(
-            child: active == null
-                ? ListView(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                    children: [
-                      for (final group in groups)
-                        _GroupRow(
-                          wardrobeCategory: group.key,
-                          selectedCount: group.value
-                              .where((final c) => selection.value.contains(c.id))
-                              .length,
-                          onTap: () => activeGroup.value = group.key,
-                        ),
-                    ],
-                  )
-                : ListView(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                    children: [
-                      for (final category in activeCategories)
-                        _CategoryRow(
-                          category: category,
-                          isSelected: selection.value.contains(category.id),
-                          onTap: () => toggleSelection(category.id),
-                        ),
-                    ],
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              children: [
+                for (final category in activeCategories)
+                  _CategoryRow(
+                    category: category,
+                    isSelected: selection.value.contains(category.id),
+                    onTap: () => toggleSelection(category.id),
                   ),
+              ],
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _GroupRow extends StatelessWidget {
-  const _GroupRow({
-    required this.wardrobeCategory,
-    required this.selectedCount,
-    required this.onTap,
-  });
-
-  final WardrobeCategory wardrobeCategory;
-  final int selectedCount;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                wardrobeCategory.displayName,
-                style: textTheme.bodyLarge,
-              ),
-            ),
-            if (selectedCount > 0) ...[
-              Text(
-                '$selectedCount',
-                style: textTheme.labelMedium?.copyWith(
-                  color: colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-            ],
-            Icon(
-              Icons.keyboard_arrow_right_rounded,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ],
-        ),
       ),
     );
   }
