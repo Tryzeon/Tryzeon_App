@@ -37,6 +37,7 @@ const PLAN_CHANGE_EVENTS = new Set([
   "UNCANCELLATION",
   "SUBSCRIPTION_EXTENDED",
   "PRODUCT_CHANGE",
+  "NON_RENEWING_PURCHASE",
 ]);
 
 // Events where the user loses access → reset to free
