@@ -4,8 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
@@ -19,20 +17,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required final AuthLocalDataSource localDataSource,
     required final CacheService cacheService,
     required final AnalyticsEventQueueService analyticsEventQueueService,
-    required final LogInRevenueCat logInRevenueCat,
-    required final LogOutRevenueCat logOutRevenueCat,
   }) : _remoteDataSource = remoteDataSource,
        _localDataSource = localDataSource,
        _cacheService = cacheService,
-       _analyticsEventQueueService = analyticsEventQueueService,
-       _logInRevenueCat = logInRevenueCat,
-       _logOutRevenueCat = logOutRevenueCat;
+       _analyticsEventQueueService = analyticsEventQueueService;
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
   final CacheService _cacheService;
   final AnalyticsEventQueueService _analyticsEventQueueService;
-  final LogInRevenueCat _logInRevenueCat;
-  final LogOutRevenueCat _logOutRevenueCat;
 
   @override
   Future<Result<void, Failure>> signInWithProvider({
@@ -64,18 +56,6 @@ class AuthRepositoryImpl implements AuthRepository {
         await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
       }
 
-      // Log in to RevenueCat
-      final currentUser = _remoteDataSource.getCurrentUser();
-      if (currentUser != null) {
-        final revenueCatResult = await _logInRevenueCat(currentUser.id);
-        if (revenueCatResult.isFailure) {
-          AppLogger.error(
-            'RevenueCat login failed (ignored)',
-            revenueCatResult.getError()!,
-            StackTrace.current,
-          );
-        }
-      }
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -115,16 +95,6 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
       }
 
-      // Log out of RevenueCat
-      final revenueCatResult = await _logOutRevenueCat();
-      if (revenueCatResult.isFailure) {
-        final failure = revenueCatResult.getError()!;
-        AppLogger.error(
-          'RevenueCat logout failed (ignored)',
-          failure,
-          StackTrace.current,
-        );
-      }
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -184,17 +154,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await _remoteDataSource.verifyEmailOTP(email: email, token: token);
 
-      final currentUser = _remoteDataSource.getCurrentUser();
-      if (currentUser != null) {
-        final revenueCatResult = await _logInRevenueCat(currentUser.id);
-        if (revenueCatResult.isFailure) {
-          AppLogger.error(
-            'RevenueCat login failed (ignored)',
-            revenueCatResult.getError()!,
-            StackTrace.current,
-          );
-        }
-      }
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -240,16 +199,6 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
       }
 
-      // Log out of RevenueCat
-      final revenueCatResult = await _logOutRevenueCat();
-      if (revenueCatResult.isFailure) {
-        final failure = revenueCatResult.getError()!;
-        AppLogger.error(
-          'RevenueCat logout failed on account deletion (ignored)',
-          failure,
-          StackTrace.current,
-        );
-      }
 
       return const Ok(null);
     } catch (e, stackTrace) {

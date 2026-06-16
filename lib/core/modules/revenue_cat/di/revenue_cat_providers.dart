@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/modules/revenue_cat/data/repositories/revenue_cat_repository_impl.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
@@ -6,6 +9,7 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscri
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/restore_purchases.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'revenue_cat_providers.g.dart';
@@ -49,4 +53,70 @@ Future<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) asy
   }
 
   return result.get()!;
+}
+
+// ── Identity Sync ─────────────────────────────────────────────────────────────
+
+/// Single source of truth for keeping the RevenueCat App User ID in sync with
+/// the Supabase auth identity.
+///
+/// RevenueCat is configured anonymously at startup (see `main.dart`); this
+/// listener links the anonymous customer to the Supabase auth UUID on sign-in
+/// and reverts to a fresh anonymous ID on sign-out. Centralizing it here means
+/// every current and future auth path is covered without each one having to
+/// remember to call `logIn`/`logOut`.
+///
+/// Must be kept alive for the whole app lifecycle — read it once at the root
+/// widget so the subscription is established at startup.
+@Riverpod(keepAlive: true)
+void revenueCatIdentitySync(final Ref ref) {
+  final logIn = ref.watch(logInRevenueCatUseCaseProvider);
+  final logOut = ref.watch(logOutRevenueCatUseCaseProvider);
+  final auth = Supabase.instance.client.auth;
+
+  Future<void> syncLogIn(final String userId) async {
+    final result = await logIn(userId);
+    if (result.isFailure) {
+      AppLogger.error(
+        'RevenueCat login failed (ignored)',
+        result.getError()!,
+        StackTrace.current,
+      );
+    }
+  }
+
+  Future<void> syncLogOut() async {
+    final result = await logOut();
+    if (result.isFailure) {
+      AppLogger.error(
+        'RevenueCat logout failed (ignored)',
+        result.getError()!,
+        StackTrace.current,
+      );
+    }
+  }
+
+  // Link an already-restored session at startup. The `initialSession` event is
+  // emitted asynchronously and may fire before this listener subscribes, so we
+  // read the current session directly rather than relying on the stream.
+  final initialUser = auth.currentSession?.user;
+  if (initialUser != null) {
+    unawaited(syncLogIn(initialUser.id));
+  }
+
+  final subscription = auth.onAuthStateChange.listen((final state) {
+    switch (state.event) {
+      case AuthChangeEvent.signedIn:
+        final user = state.session?.user;
+        if (user != null) {
+          unawaited(syncLogIn(user.id));
+        }
+      case AuthChangeEvent.signedOut:
+        unawaited(syncLogOut());
+      default:
+        break;
+    }
+  });
+
+  ref.onDispose(subscription.cancel);
 }

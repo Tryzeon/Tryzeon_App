@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
-import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:tryzeon/feature/auth/data/repositories/auth_repository_impl.dart';
@@ -60,16 +59,11 @@ AuthRepository authRepository(final Ref ref) {
   final cacheService = ref.watch(cacheServiceProvider);
   final analyticsEventQueueService = ref.watch(analyticsEventQueueServiceProvider);
 
-  final logInRevenueCat = ref.watch(logInRevenueCatUseCaseProvider);
-  final logOutRevenueCat = ref.watch(logOutRevenueCatUseCaseProvider);
-
   return AuthRepositoryImpl(
     remoteDataSource: remoteDataSource,
     localDataSource: localDataSource,
     cacheService: cacheService,
     analyticsEventQueueService: analyticsEventQueueService,
-    logInRevenueCat: logInRevenueCat,
-    logOutRevenueCat: logOutRevenueCat,
   );
 }
 

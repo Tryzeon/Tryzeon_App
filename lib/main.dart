@@ -12,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -62,12 +63,6 @@ Future<void> main() async {
     final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
     await Purchases.configure(purchasesConfig);
 
-    // Log user identity – RevenueCat will use an anonymous ID until login
-    // After user logs in (Supabase auth), call Purchases.logIn(userId) to link
-    final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser != null) {
-      await Purchases.logIn(currentUser.id);
-    }
   } catch (e, stack) {
     debugPrint('[RevenueCat] Initialization failed: $e');
     await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
@@ -81,6 +76,8 @@ class Tryzeon extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    ref.watch(revenueCatIdentitySyncProvider);
+
     // Analytics Lifecycle Observer
     useOnAppLifecycleStateChange((final previous, final current) {
       if (current == AppLifecycleState.paused || current == AppLifecycleState.detached) {
