@@ -1,6 +1,5 @@
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -36,7 +35,14 @@ class ProductRepositoryImpl implements ProductRepository {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final UserLocation? userLocation,
+    final String? material,
+    final Set<ProductElasticity>? elasticities,
+    final Set<String>? fits,
+    final Set<ProductThickness>? thicknesses,
+    final Set<String>? styles,
+    final Set<ProductSeason>? seasons,
+    final int? limit,
+    final int? offset,
     final bool forceRefresh = false,
   }) async {
     try {
@@ -49,7 +55,14 @@ class ProductRepositoryImpl implements ProductRepository {
         categories: categories,
         channels: channels,
         gender: gender,
-        userLocation: userLocation,
+        material: material,
+        elasticities: elasticities,
+        fits: fits,
+        thicknesses: thicknesses,
+        styles: styles,
+        seasons: seasons,
+        limit: limit,
+        offset: offset,
       );
 
       // Save remote results to local cache (Write-through)

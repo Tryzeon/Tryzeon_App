@@ -1,5 +1,4 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
@@ -19,7 +18,14 @@ abstract class ProductRepository {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final UserLocation? userLocation,
+    final String? material,
+    final Set<ProductElasticity>? elasticities,
+    final Set<String>? fits,
+    final Set<ProductThickness>? thicknesses,
+    final Set<String>? styles,
+    final Set<ProductSeason>? seasons,
+    final int? limit,
+    final int? offset,
     final bool forceRefresh = false,
   });
 
