@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { GoogleGenAI } from "npm:@google/genai";
-import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
+import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { getAIClient, VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
 import { detectMimeType } from "../_shared/image-utils.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
@@ -67,9 +67,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const adminClient = getAdminClient();
     const okMinute = await checkRateLimit(
-      adminClient,
       user!.id,
       "image_analysis:minute",
       15,
@@ -77,8 +75,8 @@ Deno.serve(async (req) => {
     );
     
     if (!okMinute) return rateLimitedResponse();
+
     const okDay = await checkRateLimit(
-      adminClient,
       user!.id,
       "image_analysis:day",
       200,
