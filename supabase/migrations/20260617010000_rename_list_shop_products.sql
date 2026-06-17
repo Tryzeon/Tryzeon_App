@@ -125,11 +125,9 @@ GRANT ALL ON FUNCTION "public"."list_shop_products"(
   "text"[], "text"[], "text", boolean, integer, integer
 ) TO "service_role";
 
--- Drop the old function (single Flutter client; renamed atomically in this migration).
-DROP FUNCTION IF EXISTS "public"."get_shop_products"(
-  "uuid", "text", "text"[], integer, integer, "text"[],
-  "public"."product_gender", "text", boolean
-);
+-- NOTE: the old "get_shop_products" function is intentionally RETAINED here so
+-- the previous app build keeps working during store review. Drop it in a later
+-- migration only after the new client (calling list_shop_products) is approved.
 
 -- Indexes supporting the new filters and stable sort.
 -- styles/seasons use array-overlap (&&) -> GIN.
