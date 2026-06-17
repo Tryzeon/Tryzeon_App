@@ -115,10 +115,13 @@ class ShopPage extends HookConsumerWidget {
     }
 
     Widget buildFilterButton() {
-      return IconButton.filledTonal(
+      final button = IconButton.filledTonal(
         icon: const Icon(Icons.filter_list_rounded, size: 18),
         onPressed: handleShowFilterSheet,
       );
+      final count = filterState.activeFilterCount;
+      if (count == 0) return button;
+      return Badge.count(count: count, child: button);
     }
 
     final filter = filterState;
