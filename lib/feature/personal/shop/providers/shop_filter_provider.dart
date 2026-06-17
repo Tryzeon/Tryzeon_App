@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
@@ -27,6 +28,44 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
   void setChannels(final Set<StoreChannel>? channels) {
     state = state.copyWith(
       channels: (channels == null || channels.isEmpty) ? null : channels,
+    );
+  }
+
+  void setMaterials(final Set<String>? materials) {
+    state = state.copyWith(
+      materials: (materials == null || materials.isEmpty) ? null : materials,
+    );
+  }
+
+  void setElasticities(final Set<ProductElasticity>? elasticities) {
+    state = state.copyWith(
+      elasticities:
+          (elasticities == null || elasticities.isEmpty) ? null : elasticities,
+    );
+  }
+
+  void setFits(final Set<String>? fits) {
+    state = state.copyWith(
+      fits: (fits == null || fits.isEmpty) ? null : fits,
+    );
+  }
+
+  void setThicknesses(final Set<ProductThickness>? thicknesses) {
+    state = state.copyWith(
+      thicknesses:
+          (thicknesses == null || thicknesses.isEmpty) ? null : thicknesses,
+    );
+  }
+
+  void setStyles(final Set<ClothingStyle>? styles) {
+    state = state.copyWith(
+      styles: (styles == null || styles.isEmpty) ? null : styles,
+    );
+  }
+
+  void setSeasons(final Set<ProductSeason>? seasons) {
+    state = state.copyWith(
+      seasons: (seasons == null || seasons.isEmpty) ? null : seasons,
     );
   }
 
