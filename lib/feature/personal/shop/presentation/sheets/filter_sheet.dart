@@ -19,6 +19,7 @@ class FilterSheet extends HookConsumerWidget {
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
+      useSafeArea: true,
       showDragHandle: true,
       builder: (final BuildContext context) => const FilterSheet(),
     );
@@ -38,10 +39,12 @@ class FilterSheet extends HookConsumerWidget {
     final currentMaxPrice = useState(initial.maxPrice);
     final selectedChannels = useState<Set<StoreChannel>>({...?initial.channels});
     final selectedFits = useState<Set<String>>({...?initial.fits});
-    final selectedElasticities =
-        useState<Set<ProductElasticity>>({...?initial.elasticities});
-    final selectedThicknesses =
-        useState<Set<ProductThickness>>({...?initial.thicknesses});
+    final selectedElasticities = useState<Set<ProductElasticity>>({
+      ...?initial.elasticities,
+    });
+    final selectedThicknesses = useState<Set<ProductThickness>>({
+      ...?initial.thicknesses,
+    });
     final selectedSeasons = useState<Set<ProductSeason>>({...?initial.seasons});
     final selectedStyles = useState<Set<ClothingStyle>>({...?initial.styles});
     final selectedMaterials = useState<Set<String>>({...?initial.materials});
@@ -81,144 +84,136 @@ class FilterSheet extends HookConsumerWidget {
       child: SafeArea(
         bottom: true,
         top: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('篩選條件', style: textTheme.titleLarge),
-                const SizedBox(height: AppSpacing.lg),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FilterChipGroup<StoreChannel>(
-                          title: '販售通路',
-                          options: StoreChannel.values,
-                          selected: selectedChannels.value,
-                          labelOf: (final c) => c.label,
-                          onChanged: (final next) => selectedChannels.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('篩選條件', style: textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.lg),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FilterChipGroup<StoreChannel>(
+                        title: '販售通路',
+                        options: StoreChannel.values,
+                        selected: selectedChannels.value,
+                        labelOf: (final c) => c.label,
+                        onChanged: (final next) => selectedChannels.value = next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        Text('價格範圍', style: textTheme.titleMedium),
-                        const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '\$${priceRange.value.start.round()}',
-                              style: textTheme.labelLarge
-                                  ?.copyWith(color: colorScheme.primary),
+                      Text('價格範圍', style: textTheme.titleMedium),
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '\$${priceRange.value.start.round()}',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: colorScheme.primary,
                             ),
-                            Text(
-                              priceRange.value.end.round() >= kMaxPrice
-                                  ? '\$${kMaxPrice.round()}+'
-                                  : '\$${priceRange.value.end.round()}',
-                              style: textTheme.labelLarge
-                                  ?.copyWith(color: colorScheme.primary),
+                          ),
+                          Text(
+                            priceRange.value.end.round() >= kMaxPrice
+                                ? '\$${kMaxPrice.round()}+'
+                                : '\$${priceRange.value.end.round()}',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: colorScheme.primary,
                             ),
-                          ],
-                        ),
-                        RangeSlider(
-                          values: priceRange.value,
-                          min: 0,
-                          max: kMaxPrice,
-                          divisions: 100,
-                          onChanged: (final RangeValues values) {
-                            priceRange.value = values;
-                            currentMinPrice.value = values.start.round();
-                            currentMaxPrice.value =
-                                values.end >= kMaxPrice ? null : values.end.round();
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                          ),
+                        ],
+                      ),
+                      RangeSlider(
+                        values: priceRange.value,
+                        min: 0,
+                        max: kMaxPrice,
+                        divisions: 100,
+                        onChanged: (final RangeValues values) {
+                          priceRange.value = values;
+                          currentMinPrice.value = values.start.round();
+                          currentMaxPrice.value = values.end >= kMaxPrice
+                              ? null
+                              : values.end.round();
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        FilterChipGroup<String>(
-                          title: '版型',
-                          options: kFitPresets,
-                          selected: selectedFits.value,
-                          labelOf: (final f) => f,
-                          onChanged: (final next) => selectedFits.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                      FilterChipGroup<String>(
+                        title: '版型',
+                        options: kFitPresets,
+                        selected: selectedFits.value,
+                        labelOf: (final f) => f,
+                        onChanged: (final next) => selectedFits.value = next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        FilterChipGroup<ProductElasticity>(
-                          title: '彈性',
-                          options: ProductElasticity.values,
-                          selected: selectedElasticities.value,
-                          labelOf: (final e) => e.label,
-                          onChanged: (final next) =>
-                              selectedElasticities.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                      FilterChipGroup<ProductElasticity>(
+                        title: '彈性',
+                        options: ProductElasticity.values,
+                        selected: selectedElasticities.value,
+                        labelOf: (final e) => e.label,
+                        onChanged: (final next) => selectedElasticities.value = next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        FilterChipGroup<ProductThickness>(
-                          title: '厚度',
-                          options: ProductThickness.values,
-                          selected: selectedThicknesses.value,
-                          labelOf: (final t) => t.label,
-                          onChanged: (final next) =>
-                              selectedThicknesses.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                      FilterChipGroup<ProductThickness>(
+                        title: '厚度',
+                        options: ProductThickness.values,
+                        selected: selectedThicknesses.value,
+                        labelOf: (final t) => t.label,
+                        onChanged: (final next) => selectedThicknesses.value = next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        FilterChipGroup<ProductSeason>(
-                          title: '季節',
-                          options: ProductSeason.values,
-                          selected: selectedSeasons.value,
-                          labelOf: (final s) => s.label,
-                          onChanged: (final next) => selectedSeasons.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                      FilterChipGroup<ProductSeason>(
+                        title: '季節',
+                        options: ProductSeason.values,
+                        selected: selectedSeasons.value,
+                        labelOf: (final s) => s.label,
+                        onChanged: (final next) => selectedSeasons.value = next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        FilterChipGroup<ClothingStyle>(
-                          title: '風格',
-                          options: ClothingStyle.values,
-                          selected: selectedStyles.value,
-                          labelOf: (final s) => s.label,
-                          onChanged: (final next) => selectedStyles.value = next,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                      FilterChipGroup<ClothingStyle>(
+                        title: '風格',
+                        options: ClothingStyle.values,
+                        selected: selectedStyles.value,
+                        labelOf: (final s) => s.label,
+                        onChanged: (final next) => selectedStyles.value = next,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                        FilterChipGroup<String>(
-                          title: '材質',
-                          options: kMaterialPresets,
-                          selected: selectedMaterials.value,
-                          labelOf: (final m) => m,
-                          onChanged: (final next) =>
-                              selectedMaterials.value = next,
-                        ),
-                      ],
-                    ),
+                      FilterChipGroup<String>(
+                        title: '材質',
+                        options: kMaterialPresets,
+                        selected: selectedMaterials.value,
+                        labelOf: (final m) => m,
+                        onChanged: (final next) => selectedMaterials.value = next,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: resetFilters,
-                        child: const Text('清除'),
-                      ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: resetFilters,
+                      child: const Text('清除'),
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: applyFilters,
-                        child: const Text('套用'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: FilledButton(onPressed: applyFilters, child: const Text('套用')),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
