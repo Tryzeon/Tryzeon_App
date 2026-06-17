@@ -24,8 +24,10 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
     state = state.copyWith(minPrice: min, maxPrice: max);
   }
 
-  void setChannels(final Set<StoreChannel> channels) {
-    state = state.copyWith(channels: channels);
+  void setChannels(final Set<StoreChannel>? channels) {
+    state = state.copyWith(
+      channels: (channels == null || channels.isEmpty) ? null : channels,
+    );
   }
 
   void setCategories(final Set<String> categoryIds) {

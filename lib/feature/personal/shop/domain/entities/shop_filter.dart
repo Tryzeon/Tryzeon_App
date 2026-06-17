@@ -15,7 +15,7 @@ sealed class ShopFilter with _$ShopFilter {
     final int? maxPrice,
     final Set<String>? categories,
     final ProductGender? gender,
-    @Default(StoreChannel.all) final Set<StoreChannel> channels,
+    final Set<StoreChannel>? channels,
     final String? material,
     final Set<ProductElasticity>? elasticities,
     final Set<String>? fits,

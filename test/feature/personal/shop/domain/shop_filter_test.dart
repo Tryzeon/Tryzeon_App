@@ -11,6 +11,7 @@ void main() {
     expect(filter.thicknesses, isNull);
     expect(filter.styles, isNull);
     expect(filter.seasons, isNull);
+    expect(filter.channels, isNull);
   });
 
   test('filters differing only by elasticities are not equal (cache-key safe)', () {

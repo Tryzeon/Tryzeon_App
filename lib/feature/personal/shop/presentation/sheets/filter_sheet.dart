@@ -32,15 +32,12 @@ class FilterSheet extends HookConsumerWidget {
     );
     final currentMinPrice = useState(initial.minPrice);
     final currentMaxPrice = useState(initial.maxPrice);
-    final selectedChannels = useState<Set<StoreChannel>>({...initial.channels});
+    final selectedChannels = useState<Set<StoreChannel>>({...?initial.channels});
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final canApply = selectedChannels.value.isNotEmpty;
-
     void applyFilters() {
-      if (!canApply) return;
       ref
           .read(shopFilterProvider.notifier)
           .setPriceRange(min: currentMinPrice.value, max: currentMaxPrice.value);
@@ -53,7 +50,7 @@ class FilterSheet extends HookConsumerWidget {
       currentMinPrice.value = null;
       currentMaxPrice.value = null;
       priceRange.value = const RangeValues(0, kMaxPrice);
-      selectedChannels.value = {...StoreChannel.all};
+      selectedChannels.value = {};
       ref.read(shopFilterProvider.notifier).reset();
     }
 
@@ -94,14 +91,6 @@ class FilterSheet extends HookConsumerWidget {
                   );
                 }).toList(),
               ),
-              if (!canApply) ...[
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '請至少選擇一個通路',
-                  style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
-                ),
-              ],
-
               const SizedBox(height: AppSpacing.lg),
 
               // 價格範圍
@@ -150,7 +139,7 @@ class FilterSheet extends HookConsumerWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: FilledButton(
-                      onPressed: canApply ? applyFilters : null,
+                      onPressed: applyFilters,
                       child: const Text('套用'),
                     ),
                   ),
