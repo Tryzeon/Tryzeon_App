@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
@@ -21,11 +22,11 @@ class ShopRemoteDataSource {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final String? material,
+    final Set<String>? materials,
     final Set<ProductElasticity>? elasticities,
     final Set<String>? fits,
     final Set<ProductThickness>? thicknesses,
-    final Set<String>? styles,
+    final Set<ClothingStyle>? styles,
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
@@ -56,7 +57,7 @@ class ShopRemoteDataSource {
         categories: categories,
         channels: channels,
         gender: gender,
-        material: material,
+        materials: materials,
         elasticities: elasticities,
         fits: fits,
         thicknesses: thicknesses,
@@ -88,11 +89,11 @@ class ShopRemoteDataSource {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final String? material,
+    final Set<String>? materials,
     final Set<ProductElasticity>? elasticities,
     final Set<String>? fits,
     final Set<ProductThickness>? thicknesses,
-    final Set<String>? styles,
+    final Set<ClothingStyle>? styles,
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
@@ -112,11 +113,11 @@ class ShopRemoteDataSource {
       'p_max_price': maxPrice,
       'p_channels': _channelsParam(channels),
       'p_gender': gender?.value,
-      'p_material': (material == null || material.isEmpty) ? null : material,
+      'p_materials': nonEmpty(materials),
       'p_elasticities': nonEmpty(elasticities?.map((final e) => e.value)),
       'p_fits': nonEmpty(fits),
       'p_thicknesses': nonEmpty(thicknesses?.map((final e) => e.value)),
-      'p_styles': nonEmpty(styles),
+      'p_styles': nonEmpty(styles?.map((final e) => e.value)),
       'p_seasons': nonEmpty(seasons?.map((final e) => e.value)),
       'p_sort_column': sortColumn,
       'p_sort_ascending': sortAscending,

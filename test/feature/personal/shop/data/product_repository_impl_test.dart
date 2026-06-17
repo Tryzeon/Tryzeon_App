@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_datasource.dart';
@@ -20,17 +21,17 @@ class _RecordingRemote implements ShopRemoteDataSource {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final String? material,
+    final Set<String>? materials,
     final Set<ProductElasticity>? elasticities,
     final Set<String>? fits,
     final Set<ProductThickness>? thicknesses,
-    final Set<String>? styles,
+    final Set<ClothingStyle>? styles,
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
   }) async {
     captured = {
-      'material': material,
+      'materials': materials,
       'elasticities': elasticities,
       'fits': fits,
       'thicknesses': thicknesses,
@@ -65,11 +66,11 @@ void main() {
     );
 
     final result = await repo.listProducts(
-      material: 'wool',
+      materials: {'wool'},
       elasticities: {ProductElasticity.medium},
       fits: {'slim'},
       thicknesses: {ProductThickness.high},
-      styles: {'street'},
+      styles: {ClothingStyle.streetwear},
       seasons: {ProductSeason.winter},
       limit: 30,
       offset: 60,
@@ -77,11 +78,11 @@ void main() {
 
     expect(result.isSuccess, isTrue);
     expect(remote.captured, isNotNull);
-    expect(remote.captured!['material'], 'wool');
+    expect(remote.captured!['materials'], {'wool'});
     expect(remote.captured!['elasticities'], {ProductElasticity.medium});
     expect(remote.captured!['fits'], {'slim'});
     expect(remote.captured!['thicknesses'], {ProductThickness.high});
-    expect(remote.captured!['styles'], {'street'});
+    expect(remote.captured!['styles'], {ClothingStyle.streetwear});
     expect(remote.captured!['seasons'], {ProductSeason.winter});
     expect(remote.captured!['limit'], 30);
     expect(remote.captured!['offset'], 60);

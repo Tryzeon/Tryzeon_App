@@ -1,6 +1,7 @@
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
@@ -35,11 +36,11 @@ class ProductRepositoryImpl implements ProductRepository {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final String? material,
+    final Set<String>? materials,
     final Set<ProductElasticity>? elasticities,
     final Set<String>? fits,
     final Set<ProductThickness>? thicknesses,
-    final Set<String>? styles,
+    final Set<ClothingStyle>? styles,
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
@@ -55,7 +56,7 @@ class ProductRepositoryImpl implements ProductRepository {
         categories: categories,
         channels: channels,
         gender: gender,
-        material: material,
+        materials: materials,
         elasticities: elasticities,
         fits: fits,
         thicknesses: thicknesses,

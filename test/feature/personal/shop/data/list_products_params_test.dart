@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
@@ -12,8 +13,8 @@ void main() {
       thicknesses: {ProductThickness.low},
       seasons: {ProductSeason.summer},
       fits: {'slim'},
-      styles: {'casual'},
-      material: 'cotton',
+      styles: {ClothingStyle.casual},
+      materials: {'棉'},
       limit: 20,
       offset: 40,
     );
@@ -23,7 +24,7 @@ void main() {
     expect(params['p_seasons'], ['summer']);
     expect(params['p_fits'], ['slim']);
     expect(params['p_styles'], ['casual']);
-    expect(params['p_material'], 'cotton');
+    expect(params['p_materials'], ['棉']);
     expect(params['p_limit'], 20);
     expect(params['p_offset'], 40);
     expect(params['p_sort_column'], 'price');

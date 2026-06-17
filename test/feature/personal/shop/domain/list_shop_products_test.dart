@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
@@ -23,11 +24,11 @@ class _CapturingRepo implements ProductRepository {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final String? material,
+    final Set<String>? materials,
     final Set<ProductElasticity>? elasticities,
     final Set<String>? fits,
     final Set<ProductThickness>? thicknesses,
-    final Set<String>? styles,
+    final Set<ClothingStyle>? styles,
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
@@ -42,7 +43,7 @@ class _CapturingRepo implements ProductRepository {
       'categories': categories,
       'gender': gender,
       'channels': channels,
-      'material': material,
+      'materials': materials,
       'elasticities': elasticities,
       'fits': fits,
       'thicknesses': thicknesses,
@@ -78,11 +79,11 @@ void main() {
         categories: {'cat-1'},
         gender: ProductGender.female,
         channels: {StoreChannel.online},
-        material: 'linen',
+        materials: {'linen'},
         elasticities: {ProductElasticity.low},
         fits: {'oversize'},
         thicknesses: {ProductThickness.high},
-        styles: {'minimal'},
+        styles: {ClothingStyle.minimalist},
         seasons: {ProductSeason.spring},
       ),
       limit: 24,
@@ -101,11 +102,11 @@ void main() {
     expect(repo.captured!['categories'], {'cat-1'});
     expect(repo.captured!['gender'], ProductGender.female);
     expect(repo.captured!['channels'], {StoreChannel.online});
-    expect(repo.captured!['material'], 'linen');
+    expect(repo.captured!['materials'], {'linen'});
     expect(repo.captured!['elasticities'], {ProductElasticity.low});
     expect(repo.captured!['fits'], {'oversize'});
     expect(repo.captured!['thicknesses'], {ProductThickness.high});
-    expect(repo.captured!['styles'], {'minimal'});
+    expect(repo.captured!['styles'], {ClothingStyle.minimalist});
     expect(repo.captured!['seasons'], {ProductSeason.spring});
     expect(repo.captured!['limit'], 24);
     expect(repo.captured!['offset'], 48);

@@ -24,7 +24,7 @@ class ListShopProducts {
       categories: filter.categories,
       gender: filter.gender,
       channels: filter.channels,
-      material: filter.material,
+      materials: filter.materials,
       elasticities: filter.elasticities,
       fits: filter.fits,
       thicknesses: filter.thicknesses,
