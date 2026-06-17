@@ -76,7 +76,7 @@ class FilterSheet extends HookConsumerWidget {
       selectedSeasons.value = {};
       selectedStyles.value = {};
       selectedMaterials.value = {};
-      ref.read(shopFilterProvider.notifier).reset();
+      ref.read(shopFilterProvider.notifier).clearFilters();
     }
 
     return Container(

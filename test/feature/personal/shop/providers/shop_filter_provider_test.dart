@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 
 void main() {
@@ -39,15 +40,25 @@ void main() {
     expect(container.read(shopFilterProvider).elasticities, {ProductElasticity.high});
   });
 
-  test('reset clears filters but preserves gender', () {
+  test('clearFilters clears sheet filters but preserves page-level state', () {
     final container = makeContainer();
     final notifier = container.read(shopFilterProvider.notifier);
     notifier.setGender(ProductGender.female);
+    notifier.setSearch('shirt');
+    notifier.setSort(ProductSortOption.priceLowToHigh);
+    notifier.setCategories({'cat-1'});
     notifier.setMaterials({'棉'});
     notifier.setChannels({StoreChannel.online});
-    notifier.reset();
+
+    notifier.clearFilters();
+
     final state = container.read(shopFilterProvider);
+    // page-level state preserved
     expect(state.gender, ProductGender.female);
+    expect(state.searchQuery, 'shirt');
+    expect(state.sortOption, ProductSortOption.priceLowToHigh);
+    expect(state.categories, {'cat-1'});
+    // sheet filters cleared
     expect(state.materials, isNull);
     expect(state.channels, isNull);
   });

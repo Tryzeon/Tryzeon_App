@@ -71,7 +71,17 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
     state = state.copyWith(gender: gender, categories: null);
   }
 
-  void reset() {
-    state = ShopFilter(gender: state.gender);
+  void clearFilters() {
+    state = state.copyWith(
+      minPrice: null,
+      maxPrice: null,
+      channels: null,
+      materials: null,
+      elasticities: null,
+      fits: null,
+      thicknesses: null,
+      styles: null,
+      seasons: null,
+    );
   }
 }
