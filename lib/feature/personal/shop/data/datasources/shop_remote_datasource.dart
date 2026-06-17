@@ -88,6 +88,53 @@ class ShopRemoteDataSource {
     return products;
   }
 
+  static Map<String, dynamic> buildListProductsParams({
+    final String? storeId,
+    final String? searchQuery,
+    required final String sortColumn,
+    required final bool sortAscending,
+    final int? minPrice,
+    final int? maxPrice,
+    final Set<String>? categories,
+    final Set<StoreChannel>? channels,
+    final ProductGender? gender,
+    final String? material,
+    final Set<ProductElasticity>? elasticities,
+    final Set<String>? fits,
+    final Set<ProductThickness>? thicknesses,
+    final Set<String>? styles,
+    final Set<ProductSeason>? seasons,
+    final int? limit,
+    final int? offset,
+  }) {
+    List<String>? nonEmpty(final Iterable<String>? values) {
+      if (values == null || values.isEmpty) return null;
+      return values.toList();
+    }
+
+    return {
+      'p_store_id': storeId,
+      'p_search_query': (searchQuery == null || searchQuery.isEmpty)
+          ? null
+          : searchQuery,
+      'p_category_ids': nonEmpty(categories),
+      'p_min_price': minPrice,
+      'p_max_price': maxPrice,
+      'p_channels': _channelsParam(channels),
+      'p_gender': gender?.value,
+      'p_material': (material == null || material.isEmpty) ? null : material,
+      'p_elasticities': nonEmpty(elasticities?.map((final e) => e.value)),
+      'p_fits': nonEmpty(fits),
+      'p_thicknesses': nonEmpty(thicknesses?.map((final e) => e.value)),
+      'p_styles': nonEmpty(styles),
+      'p_seasons': nonEmpty(seasons?.map((final e) => e.value)),
+      'p_sort_column': sortColumn,
+      'p_sort_ascending': sortAscending,
+      'p_limit': limit,
+      'p_offset': offset,
+    };
+  }
+
   static List<String>? _channelsParam(final Set<StoreChannel>? channels) {
     if (channels == null || channels.isEmpty) return null;
     if (channels.length == StoreChannel.values.length) return null;
