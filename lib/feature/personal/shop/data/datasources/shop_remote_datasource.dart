@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/store_images_api.dart';
-import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
@@ -22,7 +21,14 @@ class ShopRemoteDataSource {
     final Set<String>? categories,
     final Set<StoreChannel>? channels,
     final ProductGender? gender,
-    final UserLocation? userLocation,
+    final String? material,
+    final Set<ProductElasticity>? elasticities,
+    final Set<String>? fits,
+    final Set<ProductThickness>? thicknesses,
+    final Set<String>? styles,
+    final Set<ProductSeason>? seasons,
+    final int? limit,
+    final int? offset,
   }) async {
     final String sortColumn;
     final bool isAscending;
@@ -39,25 +45,29 @@ class ShopRemoteDataSource {
     }
 
     final response = await _supabaseClient.rpc(
-      'get_shop_products',
-      params: {
-        'p_store_id': storeId,
-        'p_search_query': (searchQuery == null || searchQuery.isEmpty)
-            ? null
-            : searchQuery,
-        'p_category_ids': (categories == null || categories.isEmpty)
-            ? null
-            : categories.toList(),
-        'p_min_price': minPrice,
-        'p_max_price': maxPrice,
-        'p_channels': _channelsParam(channels),
-        'p_gender': gender?.value,
-        'p_sort_column': sortColumn,
-        'p_sort_ascending': isAscending,
-      },
+      'list_shop_products',
+      params: buildListProductsParams(
+        storeId: storeId,
+        searchQuery: searchQuery,
+        sortColumn: sortColumn,
+        sortAscending: isAscending,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        categories: categories,
+        channels: channels,
+        gender: gender,
+        material: material,
+        elasticities: elasticities,
+        fits: fits,
+        thicknesses: thicknesses,
+        styles: styles,
+        seasons: seasons,
+        limit: limit,
+        offset: offset,
+      ),
     );
 
-    var products = (response as List).map((final item) {
+    return (response as List).map((final item) {
       final map = _withProductImageUrl(Map<String, dynamic>.from(item as Map));
       if (map['store_profiles'] != null) {
         map['store_profiles'] = _withStoreLogoUrl(
@@ -66,26 +76,6 @@ class ShopRemoteDataSource {
       }
       return ShopProductModel.fromJson(map);
     }).toList();
-
-    if (userLocation != null) {
-      final sameDistrict = <ShopProductModel>[];
-      final sameCity = <ShopProductModel>[];
-      final otherCity = <ShopProductModel>[];
-
-      for (final product in products) {
-        if (userLocation.isSameDistrict(product.storeInfo.address)) {
-          sameDistrict.add(product);
-        } else if (userLocation.isSameCity(product.storeInfo.address)) {
-          sameCity.add(product);
-        } else {
-          otherCity.add(product);
-        }
-      }
-
-      products = [...sameDistrict, ...sameCity, ...otherCity];
-    }
-
-    return products;
   }
 
   static Map<String, dynamic> buildListProductsParams({
