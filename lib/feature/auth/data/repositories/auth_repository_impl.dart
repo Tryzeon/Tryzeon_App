@@ -56,7 +56,6 @@ class AuthRepositoryImpl implements AuthRepository {
         await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
       }
 
-
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('$provider login failed', e, stackTrace);
@@ -94,7 +93,6 @@ class AuthRepositoryImpl implements AuthRepository {
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
       }
-
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -154,7 +152,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await _remoteDataSource.verifyEmailOTP(email: email, token: token);
 
-
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Email OTP verification failed', e, stackTrace);
@@ -198,7 +195,6 @@ class AuthRepositoryImpl implements AuthRepository {
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
       }
-
 
       return const Ok(null);
     } catch (e, stackTrace) {

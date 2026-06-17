@@ -62,7 +62,6 @@ Future<void> main() async {
 
     final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
     await Purchases.configure(purchasesConfig);
-
   } catch (e, stack) {
     debugPrint('[RevenueCat] Initialization failed: $e');
     await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);

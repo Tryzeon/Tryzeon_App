@@ -44,8 +44,7 @@ class _RecordingRemote implements ShopRemoteDataSource {
   }
 
   @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _NoopLocal implements ShopLocalDataSource {
@@ -53,8 +52,7 @@ class _NoopLocal implements ShopLocalDataSource {
   Future<void> saveProducts(final List<ShopProductModel> products) async {}
 
   @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {

@@ -13,9 +13,7 @@ void main() {
 
   test('setStyles stores a non-empty selection', () {
     final container = makeContainer();
-    container
-        .read(shopFilterProvider.notifier)
-        .setStyles({ClothingStyle.casual});
+    container.read(shopFilterProvider.notifier).setStyles({ClothingStyle.casual});
     expect(container.read(shopFilterProvider).styles, {ClothingStyle.casual});
   });
 
@@ -36,12 +34,7 @@ void main() {
 
   test('setElasticities stores selection', () {
     final container = makeContainer();
-    container
-        .read(shopFilterProvider.notifier)
-        .setElasticities({ProductElasticity.high});
-    expect(
-      container.read(shopFilterProvider).elasticities,
-      {ProductElasticity.high},
-    );
+    container.read(shopFilterProvider.notifier).setElasticities({ProductElasticity.high});
+    expect(container.read(shopFilterProvider).elasticities, {ProductElasticity.high});
   });
 }

@@ -105,9 +105,7 @@ class ShopRemoteDataSource {
 
     return {
       'p_store_id': storeId,
-      'p_search_query': (searchQuery == null || searchQuery.isEmpty)
-          ? null
-          : searchQuery,
+      'p_search_query': (searchQuery == null || searchQuery.isEmpty) ? null : searchQuery,
       'p_category_ids': nonEmpty(categories),
       'p_min_price': minPrice,
       'p_max_price': maxPrice,

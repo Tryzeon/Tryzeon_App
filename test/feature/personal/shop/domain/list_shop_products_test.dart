@@ -93,10 +93,7 @@ void main() {
     expect(repo.captured, isNotNull);
     expect(repo.captured!['storeId'], 'store-1');
     expect(repo.captured!['searchQuery'], 'shirt');
-    expect(
-      repo.captured!['sortOption'],
-      ProductSortOption.priceLowToHigh,
-    );
+    expect(repo.captured!['sortOption'], ProductSortOption.priceLowToHigh);
     expect(repo.captured!['minPrice'], 100);
     expect(repo.captured!['maxPrice'], 900);
     expect(repo.captured!['categories'], {'cat-1'});
