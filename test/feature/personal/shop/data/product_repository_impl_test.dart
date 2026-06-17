@@ -32,6 +32,8 @@ class _RecordingRemote implements ShopRemoteDataSource {
     captured = {
       'material': material,
       'elasticities': elasticities,
+      'fits': fits,
+      'thicknesses': thicknesses,
       'styles': styles,
       'seasons': seasons,
       'limit': limit,
@@ -65,6 +67,8 @@ void main() {
     final result = await repo.getProducts(
       material: 'wool',
       elasticities: {ProductElasticity.medium},
+      fits: {'slim'},
+      thicknesses: {ProductThickness.high},
       styles: {'street'},
       seasons: {ProductSeason.winter},
       limit: 30,
@@ -72,8 +76,11 @@ void main() {
     );
 
     expect(result.isSuccess, isTrue);
+    expect(remote.captured, isNotNull);
     expect(remote.captured!['material'], 'wool');
     expect(remote.captured!['elasticities'], {ProductElasticity.medium});
+    expect(remote.captured!['fits'], {'slim'});
+    expect(remote.captured!['thicknesses'], {ProductThickness.high});
     expect(remote.captured!['styles'], {'street'});
     expect(remote.captured!['seasons'], {ProductSeason.winter});
     expect(remote.captured!['limit'], 30);
