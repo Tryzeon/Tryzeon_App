@@ -34,6 +34,14 @@ class _CapturingRepo implements ProductRepository {
     final bool forceRefresh = false,
   }) async {
     captured = {
+      'storeId': storeId,
+      'searchQuery': searchQuery,
+      'sortOption': sortOption,
+      'minPrice': minPrice,
+      'maxPrice': maxPrice,
+      'categories': categories,
+      'gender': gender,
+      'channels': channels,
       'material': material,
       'elasticities': elasticities,
       'fits': fits,
@@ -62,6 +70,14 @@ void main() {
 
     await usecase(
       filter: const ShopFilter(
+        storeId: 'store-1',
+        searchQuery: 'shirt',
+        sortOption: ProductSortOption.priceLowToHigh,
+        minPrice: 100,
+        maxPrice: 900,
+        categories: {'cat-1'},
+        gender: ProductGender.female,
+        channels: {StoreChannel.online},
         material: 'linen',
         elasticities: {ProductElasticity.low},
         fits: {'oversize'},
@@ -73,6 +89,18 @@ void main() {
       offset: 48,
     );
 
+    expect(repo.captured, isNotNull);
+    expect(repo.captured!['storeId'], 'store-1');
+    expect(repo.captured!['searchQuery'], 'shirt');
+    expect(
+      repo.captured!['sortOption'],
+      ProductSortOption.priceLowToHigh,
+    );
+    expect(repo.captured!['minPrice'], 100);
+    expect(repo.captured!['maxPrice'], 900);
+    expect(repo.captured!['categories'], {'cat-1'});
+    expect(repo.captured!['gender'], ProductGender.female);
+    expect(repo.captured!['channels'], {StoreChannel.online});
     expect(repo.captured!['material'], 'linen');
     expect(repo.captured!['elasticities'], {ProductElasticity.low});
     expect(repo.captured!['fits'], {'oversize'});
