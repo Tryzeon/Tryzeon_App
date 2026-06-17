@@ -31,13 +31,6 @@ class ShopPage extends HookConsumerWidget {
 
     final adsAsync = ref.watch(shopAdsProvider);
 
-    // 使用者位置（附近店家排序用）
-    final userLocationAsync = ref.watch(userLocationProvider);
-    final userLocation = userLocationAsync.maybeWhen(
-      data: (final location) => location,
-      orElse: () => null,
-    );
-
     // 篩選/排序狀態
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
@@ -128,7 +121,7 @@ class ShopPage extends HookConsumerWidget {
       );
     }
 
-    final filter = filterState.copyWith(userLocation: userLocation);
+    final filter = filterState;
     final productsAsync = ref.watch(shopProductsProvider(filter));
 
     return Scaffold(
