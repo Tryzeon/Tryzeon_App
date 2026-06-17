@@ -72,6 +72,6 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
   }
 
   void reset() {
-    state = const ShopFilter();
+    state = ShopFilter(gender: state.gender);
   }
 }
