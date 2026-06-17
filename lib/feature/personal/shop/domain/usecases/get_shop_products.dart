@@ -11,6 +11,8 @@ class GetShopProducts {
 
   Future<Result<List<ShopProduct>, Failure>> call({
     required final ShopFilter filter,
+    final int? limit,
+    final int? offset,
     final bool forceRefresh = false,
   }) async {
     return _repository.getProducts(
@@ -22,7 +24,14 @@ class GetShopProducts {
       categories: filter.categories,
       gender: filter.gender,
       channels: filter.channels,
-      userLocation: filter.userLocation,
+      material: filter.material,
+      elasticities: filter.elasticities,
+      fits: filter.fits,
+      thicknesses: filter.thicknesses,
+      styles: filter.styles,
+      seasons: filter.seasons,
+      limit: limit,
+      offset: offset,
       forceRefresh: forceRefresh,
     );
   }
