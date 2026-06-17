@@ -31,7 +31,7 @@ class ProductRepositoryImpl implements ProductRepository {
   static const _uuid = Uuid();
 
   @override
-  Future<Result<List<Product>, Failure>> getProducts({
+  Future<Result<List<Product>, Failure>> listProducts({
     required final String storeId,
     final bool forceRefresh = false,
   }) async {
@@ -39,7 +39,7 @@ class ProductRepositoryImpl implements ProductRepository {
       // 1. Try Local Cache
       if (!forceRefresh) {
         try {
-          final cachedProducts = await _localDataSource.getProducts(storeId: storeId);
+          final cachedProducts = await _localDataSource.listProducts(storeId: storeId);
           switch (cachedProducts) {
             case CacheHit<List<ProductModel>>(:final data):
               return Ok(_mappr.convertList<ProductModel, Product>(data));
@@ -58,7 +58,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       // 2. Try Remote
-      final remoteProducts = await _remoteDataSource.getProducts(storeId: storeId);
+      final remoteProducts = await _remoteDataSource.listProducts(storeId: storeId);
 
       // 3. Update Cache
       try {

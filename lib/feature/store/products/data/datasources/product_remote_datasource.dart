@@ -15,7 +15,7 @@ class ProductRemoteDataSource {
   static const _productsTable = AppConstants.tableProducts;
   static const _productSizesTable = AppConstants.tableProductVariants;
 
-  Future<List<ProductModel>> getProducts({required final String storeId}) async {
+  Future<List<ProductModel>> listProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
         .select('*, product_variants(*)')

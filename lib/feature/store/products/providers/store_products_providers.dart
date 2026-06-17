@@ -14,7 +14,7 @@ import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.dart';
-import 'package:tryzeon/feature/store/products/domain/usecases/get_products.dart';
+import 'package:tryzeon/feature/store/products/domain/usecases/list_products.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_sort_condition.dart';
@@ -49,8 +49,8 @@ ProductRepository productRepository(final Ref ref) {
 }
 
 @riverpod
-GetProducts getProductsUseCase(final Ref ref) {
-  return GetProducts(productRepository: ref.watch(productRepositoryProvider));
+ListProducts listProductsUseCase(final Ref ref) {
+  return ListProducts(productRepository: ref.watch(productRepositoryProvider));
 }
 
 @riverpod
@@ -94,8 +94,8 @@ Future<List<Product>> products(final Ref ref) async {
     throw const UnknownFailure('Store profile not found');
   }
 
-  final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
-  final result = await getProductsUseCase(storeId: profile.id);
+  final listProductsUseCase = ref.watch(listProductsUseCaseProvider);
+  final result = await listProductsUseCase(storeId: profile.id);
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -160,10 +160,10 @@ Future<void> refreshProducts(final WidgetRef ref) async {
 
   if (profile == null) return;
 
-  final getProductsUseCase = ref.read(getProductsUseCaseProvider);
+  final listProductsUseCase = ref.read(listProductsUseCaseProvider);
 
   try {
-    await getProductsUseCase(storeId: profile.id, forceRefresh: true);
+    await listProductsUseCase(storeId: profile.id, forceRefresh: true);
     ref.invalidate(productsProvider);
     await ref.read(productsProvider.future);
   } catch (_) {

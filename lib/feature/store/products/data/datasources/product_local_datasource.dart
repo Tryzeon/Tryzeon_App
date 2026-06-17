@@ -50,7 +50,7 @@ class ProductLocalDataSource {
     await _cacheEntryLocalDataSource.markHasData(cacheKeyForProduct(model.id));
   }
 
-  Future<CacheLookup<List<ProductModel>>> getProducts({
+  Future<CacheLookup<List<ProductModel>>> listProducts({
     required final String storeId,
   }) async {
     final isar = await _isarService.db;

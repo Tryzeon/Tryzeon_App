@@ -3,8 +3,8 @@ import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-class GetProducts {
-  GetProducts({required final ProductRepository productRepository})
+class ListProducts {
+  ListProducts({required final ProductRepository productRepository})
     : _productRepository = productRepository;
 
   final ProductRepository _productRepository;
@@ -13,6 +13,6 @@ class GetProducts {
     required final String storeId,
     final bool forceRefresh = false,
   }) async {
-    return _productRepository.getProducts(storeId: storeId, forceRefresh: forceRefresh);
+    return _productRepository.listProducts(storeId: storeId, forceRefresh: forceRefresh);
   }
 }
