@@ -7,14 +7,14 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
-import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/list_shop_products.dart';
 import 'package:typed_result/typed_result.dart';
 
 class _CapturingRepo implements ProductRepository {
   Map<String, Object?>? captured;
 
   @override
-  Future<Result<List<ShopProduct>, Failure>> getProducts({
+  Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
     final ProductSortOption sortOption = ProductSortOption.latest,
     final String? searchQuery,
@@ -66,7 +66,7 @@ class _CapturingRepo implements ProductRepository {
 void main() {
   test('maps ShopFilter advanced fields and pagination to the repository', () async {
     final repo = _CapturingRepo();
-    final usecase = GetShopProducts(repo);
+    final usecase = ListShopProducts(repo);
 
     await usecase(
       filter: const ShopFilter(

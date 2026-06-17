@@ -4,8 +4,8 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-class GetShopProducts {
-  GetShopProducts(this._repository);
+class ListShopProducts {
+  ListShopProducts(this._repository);
 
   final ProductRepository _repository;
 
@@ -15,7 +15,7 @@ class GetShopProducts {
     final int? offset,
     final bool forceRefresh = false,
   }) async {
-    return _repository.getProducts(
+    return _repository.listProducts(
       storeId: filter.storeId,
       searchQuery: filter.searchQuery,
       sortOption: filter.sortOption,

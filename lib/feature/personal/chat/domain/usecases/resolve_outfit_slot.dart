@@ -8,22 +8,22 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 
 typedef CategoriesByNameCallback = Future<Map<String, ProductCategory>> Function();
 typedef GetWardrobeItemsCallback = Future<List<WardrobeItem>> Function();
-typedef GetShopProductsCallback = Future<List<ShopProduct>> Function(ShopFilter filter);
+typedef ListShopProductsCallback = Future<List<ShopProduct>> Function(ShopFilter filter);
 
 class ResolveOutfitSlot {
   ResolveOutfitSlot({
     required final CategoriesByNameCallback getCategoriesByName,
     required final GetWardrobeItemsCallback getWardrobeItems,
-    required final GetShopProductsCallback getShopProducts,
+    required final ListShopProductsCallback listShopProducts,
   }) : _getCategoriesByName = getCategoriesByName,
        _getWardrobeItems = getWardrobeItems,
-       _getShopProducts = getShopProducts;
+       _listShopProducts = listShopProducts;
 
   static const int _maxPerSlot = 5;
 
   final CategoriesByNameCallback _getCategoriesByName;
   final GetWardrobeItemsCallback _getWardrobeItems;
-  final GetShopProductsCallback _getShopProducts;
+  final ListShopProductsCallback _listShopProducts;
 
   Future<ResolvedOutfitSlot> call(final OutfitSlot slot) async {
     final categories = await _getCategoriesByName();
@@ -56,7 +56,7 @@ class ResolveOutfitSlot {
       }
     }
 
-    final products = await _getShopProducts(
+    final products = await _listShopProducts(
       ShopFilter(
         categories: {cat.id},
         searchQuery: slot.tags.isEmpty ? null : slot.tags.join(' '),

@@ -93,8 +93,8 @@ ResolveOutfitSlot resolveOutfitSlotUseCase(final Ref ref) {
       return {for (final c in applicable) c.name: c};
     },
     getWardrobeItems: () => ref.read(wardrobeItemsProvider.future),
-    getShopProducts: (final filter) async {
-      final useCase = ref.read(getShopProductsProvider);
+    listShopProducts: (final filter) async {
+      final useCase = ref.read(listShopProductsProvider);
       final result = await useCase(filter: filter);
       return result.isSuccess ? result.get()! : const [];
     },

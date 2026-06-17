@@ -26,7 +26,7 @@ class ProductRepositoryImpl implements ProductRepository {
   static const _mappr = PersonalMappr();
 
   @override
-  Future<Result<List<ShopProduct>, Failure>> getProducts({
+  Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
@@ -46,7 +46,7 @@ class ProductRepositoryImpl implements ProductRepository {
     final bool forceRefresh = false,
   }) async {
     try {
-      final result = await _remoteDataSource.getProducts(
+      final result = await _remoteDataSource.listProducts(
         storeId: storeId,
         searchQuery: searchQuery,
         sortOption: sortOption,

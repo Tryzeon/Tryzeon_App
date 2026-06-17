@@ -16,11 +16,11 @@ import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analyt
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_tryon_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_view_count.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/list_shop_products.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'shop_providers.g.dart';
@@ -69,8 +69,8 @@ AdRepository adRepository(final Ref ref) {
 // --- Use Cases ---
 
 @riverpod
-GetShopProducts getShopProducts(final Ref ref) {
-  return GetShopProducts(ref.watch(productRepositoryProvider));
+ListShopProducts listShopProducts(final Ref ref) {
+  return ListShopProducts(ref.watch(productRepositoryProvider));
 }
 
 @riverpod
@@ -107,8 +107,8 @@ IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
 
 @riverpod
 Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) async {
-  final getShopProductsUseCase = ref.watch(getShopProductsProvider);
-  final result = await getShopProductsUseCase(filter: filter);
+  final listShopProductsUseCase = ref.watch(listShopProductsProvider);
+  final result = await listShopProductsUseCase(filter: filter);
   if (result.isFailure) {
     throw result.getError()!;
   }
@@ -148,8 +148,8 @@ Future<ShopStoreInfo> storeInfo(final Ref ref, final String storeId) async {
 /// 強制刷新商品列表
 Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
   try {
-    final getShopProductsUseCase = ref.read(getShopProductsProvider);
-    await getShopProductsUseCase(filter: filter, forceRefresh: true);
+    final listShopProductsUseCase = ref.read(listShopProductsProvider);
+    await listShopProductsUseCase(filter: filter, forceRefresh: true);
     ref.invalidate(shopProductsProvider(filter));
     await ref.read(shopProductsProvider(filter).future);
   } catch (_) {

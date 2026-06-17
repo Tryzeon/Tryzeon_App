@@ -11,7 +11,7 @@ class _RecordingRemote implements ShopRemoteDataSource {
   Map<String, Object?>? captured;
 
   @override
-  Future<List<ShopProductModel>> getProducts({
+  Future<List<ShopProductModel>> listProducts({
     final String? storeId,
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
@@ -64,7 +64,7 @@ void main() {
       localDataSource: _NoopLocal(),
     );
 
-    final result = await repo.getProducts(
+    final result = await repo.listProducts(
       material: 'wool',
       elasticities: {ProductElasticity.medium},
       fits: {'slim'},

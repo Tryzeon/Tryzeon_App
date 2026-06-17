@@ -12,7 +12,7 @@ class ShopRemoteDataSource {
   static const _productsTable = AppConstants.tableProducts;
   static const _storeProfileTable = AppConstants.tableStoreProfiles;
 
-  Future<List<ShopProductModel>> getProducts({
+  Future<List<ShopProductModel>> listProducts({
     final String? storeId,
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
