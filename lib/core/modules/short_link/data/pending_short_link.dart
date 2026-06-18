@@ -9,4 +9,11 @@ class PendingShortLink {
 
   final String code;
   final String source;
+
+  @override
+  bool operator ==(final Object other) =>
+      other is PendingShortLink && other.code == code && other.source == source;
+
+  @override
+  int get hashCode => Object.hash(code, source);
 }
