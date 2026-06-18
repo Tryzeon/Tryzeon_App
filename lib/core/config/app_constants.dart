@@ -31,6 +31,7 @@ class AppConstants {
   static const String functionDeleteAccount = 'delete-account';
   static const String functionLogAnalyticsEvents = 'log_analytics_events';
   static const String functionAnalyzeWardrobeImage = 'analyze-wardrobe-image';
+  static const String functionRecordLinkOpen = 'record_link_open';
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';

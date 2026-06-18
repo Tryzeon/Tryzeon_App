@@ -2,6 +2,8 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/modules/short_link/data/pending_short_link.dart';
+import 'package:tryzeon/core/modules/short_link/data/short_link_code.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/auth_refresh_listenable.dart';
 import 'package:tryzeon/core/router/routes/auth_routes.dart';
@@ -41,7 +43,17 @@ Raw<GoRouter> appRouter(final Ref ref) {
       final isAuthPath = path == AppRoutes.login;
 
       // 1. 未登入 → 導向登入頁
-      if (!isLoggedIn) return isAuthPath ? null : AppRoutes.login;
+      if (!isLoggedIn) {
+        if (isAuthPath) return null;
+        // 僅 /s/{code} 短連結才暫存掃碼意圖;登入後由 deferredLinkSync 收尾導頁。
+        if (path.startsWith('/s/')) {
+          final shortCode = shortLinkCodeFromUrl(path);
+          if (shortCode != null) {
+            await PendingShortLink.stash(code: shortCode, source: 'app');
+          }
+        }
+        return AppRoutes.login;
+      }
 
       // 2. 已登入但仍處於登入頁 → 導向首頁
       if (isAuthPath) return _resolveHomePath(ref);
