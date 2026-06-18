@@ -9,9 +9,10 @@ import 'package:tryzeon/core/modules/short_link/short_link_destination.dart';
 
 /// Resolver for an in-app short link (`tryzeon.com/s/{code}`).
 ///
-/// Reached in every authenticated case: an installed App Link open, and the
-/// router redirect after a captured link is consumed (post auth + onboarding).
-/// Records the open, clears the pending link, and navigates to the target.
+/// Reached in every authenticated case (an installed App Link open, and the
+/// router redirect after a captured link is consumed). Records the open, clears
+/// the pending link, and navigates to the target — which the onboarding gate
+/// lets through (deep-link content takes priority over onboarding).
 class LinkResolverPage extends HookConsumerWidget {
   const LinkResolverPage({required this.code, super.key});
 

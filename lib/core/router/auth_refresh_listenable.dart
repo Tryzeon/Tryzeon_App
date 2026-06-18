@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 /// refreshListenable parameter.
 class AuthRefreshListenable extends ChangeNotifier {
   AuthRefreshListenable(final Stream<dynamic> stream) {
-    _subscription = stream.asBroadcastStream().listen((final _) => notifyListeners());
+    _subscription = stream.listen((final _) => notifyListeners());
   }
 
   late final StreamSubscription<dynamic> _subscription;

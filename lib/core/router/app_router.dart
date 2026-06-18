@@ -37,7 +37,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
     initialLocation: AppRoutes.login,
     refreshListenable: refreshListenable,
     observers: [FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)],
-    redirect: (final context, final state) async {
+    redirect: (final context, final state) {
       final isLoggedIn = supabase.auth.currentSession != null;
       final path = state.matchedLocation;
       final isAuthPath = path == AppRoutes.login;
@@ -54,48 +54,24 @@ Raw<GoRouter> appRouter(final Ref ref) {
         return AppRoutes.login;
       }
 
-      // 2. 已登入 + 已 onboarding + 有 pending（且不在 resolver 上）→ 導向 /s/{code}。
-      //    未 onboarding 時跳過，讓步驟 5 的 onboarding 攔截先跑；
-      //    !path.startsWith('/s/') 可避免 resolver 自我重導的迴圈。
+      // 2. 已登入 + 有 pending 短連結 → 立即導向 /s/{code} 消費。Deep link 優先於
+      //    onboarding；!path.startsWith('/s/') 避免 resolver 自我重導迴圈。
       final pending = ref.read(pendingLinkProvider);
-      final isOnboarded =
-          ref.read(userProfileProvider).asData?.value?.isOnboarded ?? false;
-      if (pending != null && isOnboarded && !path.startsWith('/s/')) {
+      if (pending != null && !path.startsWith('/s/')) {
         return '/s/${pending.code}';
-      }
-
-      // 2b. 直接開 /s/{code} 但尚未 onboarding（已登入、未經 step 1 stash 的情況）→
-      //     先暫存掃碼意圖、強制先 onboarding，完成後由步驟 2 消費，避免 resolver
-      //     在 onboarding 前就消費掉目標。await profile 取得「確定」狀態，才不會在
-      //     profile 仍載入時把已 onboarding 的使用者誤導去 onboarding 頁。
-      if (path.startsWith('/s/')) {
-        bool onboarded;
-        try {
-          final profile = await ref.read(userProfileProvider.future);
-          onboarded = profile?.isOnboarded ?? false;
-        } catch (_) {
-          onboarded = true; // 載入失敗則不阻擋 resolver
-        }
-        if (!onboarded) {
-          final shortCode = shortLinkCodeFromUrl(path);
-          if (shortCode != null) {
-            ref.read(pendingLinkProvider.notifier).set(code: shortCode, source: 'app');
-          }
-          return AppRoutes.personalOnboarding;
-        }
       }
 
       // 3. 已登入但仍處於登入頁 → 導向首頁
       if (isAuthPath) return _resolveHomePath(ref);
 
-      // 4. 商家 Onboarding 攔截 (排除 Deep Link 與 Onboarding 頁面本身)
-      final storeProfileAsync = ref.read(storeProfileProvider);
-      final storeRedirect = _handleStoreOnboardingRedirect(path, storeProfileAsync);
+      // 4. 商家 Onboarding 攔截（排除 Deep Link 與 Onboarding 頁面本身）
+      final storeRedirect =
+          _handleStoreOnboardingRedirect(path, ref.read(storeProfileProvider));
       if (storeRedirect != null) return storeRedirect;
 
-      // 5. 個人 Onboarding 攔截
-      final userProfileAsync = ref.read(userProfileProvider);
-      final personalRedirect = _handlePersonalOnboardingRedirect(path, userProfileAsync);
+      // 5. 個人 Onboarding 攔截（deep link 內容頁在內部豁免，優先顯示）
+      final personalRedirect =
+          _handlePersonalOnboardingRedirect(path, ref.read(userProfileProvider));
       if (personalRedirect != null) return personalRedirect;
 
       return null;
@@ -159,6 +135,12 @@ String? _handlePersonalOnboardingRedirect(
   final AsyncValue<dynamic> userProfileAsync,
 ) {
   if (!path.startsWith('/personal')) return null;
+
+  if (path.startsWith('/personal/shop/product/') ||
+      path.startsWith('/personal/shop/store/')) {
+    return null;
+  }
+  
   if (userProfileAsync.isLoading || userProfileAsync.hasError) return null;
 
   final profile = userProfileAsync.asData?.value;
