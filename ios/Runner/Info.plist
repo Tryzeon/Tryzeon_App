@@ -57,6 +57,8 @@
 	<string>Tryzeon requires camera access so you can take a profile photo to create your virtual try-on avatar and capture photos of clothing items to upload.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Tryzeon requires your location while using the app to calculate the distance to local clothing stores and recommend nearby fashion retailers based on your current position.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Tryzeon requires your location to calculate the distance to local clothing stores and recommend nearby fashion retailers based on your current position.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Tryzeon requires permission to save photos so you can download and save your generated virtual try-on result images directly to your device's photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
