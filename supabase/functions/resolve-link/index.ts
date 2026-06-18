@@ -72,9 +72,11 @@ Deno.serve(async (req) => {
       console.error("resolve-link: failed to record open:", insertError);
     }
 
-    // Forward to the platform link for deferred deep linking. Falls back to the
-    // web destination so desktop / mis-configured codes still land somewhere.
-    if (link.forward_url) {
+    // Only forward real mobile traffic to the deferred-deep-link provider
+    // (ChottuLink), which handles the App Store / Play redirect and deferred
+    // install. Desktop / unknown clients go straight to the web destination.
+    const isMobile = platform === "ios" || platform === "android";
+    if (isMobile && link.forward_url) {
       return redirect(link.forward_url);
     }
     return redirect(`${WEB_BASE_URL}/${link.target_type}/${link.target_id}`);
