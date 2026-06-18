@@ -67,11 +67,12 @@ class ProductImageEditor extends StatelessWidget {
                 child: child,
               ),
               itemCount: images.length + (canAddMore ? 1 : 0),
-              onReorderItem: (final oldIndex, final newIndex) {
+              onReorder: (final oldIndex, final newIndex) {
                 if (oldIndex >= images.length) return;
                 final updated = List<ImageItem>.from(images);
                 final item = updated.removeAt(oldIndex);
-                final insertAt = newIndex.clamp(0, updated.length);
+                final target = newIndex > oldIndex ? newIndex - 1 : newIndex;
+                final insertAt = target.clamp(0, updated.length);
                 updated.insert(insertAt, item);
                 onImagesChanged(updated);
               },
