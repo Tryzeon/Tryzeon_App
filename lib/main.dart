@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:chottu_link/chottu_link.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -13,6 +14,7 @@ import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
+import 'package:tryzeon/core/modules/short_link/providers/short_link_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -67,6 +69,14 @@ Future<void> main() async {
     await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
   }
 
+  // ChottuLink SDK — powers deferred deep linking for tryzeon.com/s/{code}.
+  try {
+    await ChottuLink.init(apiKey: Env.chottuLinkApiKey);
+  } catch (e, stack) {
+    debugPrint('[ChottuLink] Initialization failed: $e');
+    await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
+  }
+
   runApp(const ProviderScope(retry: customRetry, child: Tryzeon()));
 }
 
@@ -76,6 +86,7 @@ class Tryzeon extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     ref.watch(revenueCatIdentitySyncProvider);
+    ref.watch(deferredLinkSyncProvider);
 
     // Analytics Lifecycle Observer
     useOnAppLifecycleStateChange((final previous, final current) {
