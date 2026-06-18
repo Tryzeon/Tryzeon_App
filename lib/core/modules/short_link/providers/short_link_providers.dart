@@ -81,10 +81,7 @@ void deferredLinkSync(final Ref ref) {
       return;
     }
 
-    await PendingShortLink.stash(
-      code: code,
-      source: (resolved.isDeferred ?? false) ? 'deferred' : 'app',
-    );
+    await PendingShortLink.stash(code: code, source: 'deferred');
 
     await flush();
   });
