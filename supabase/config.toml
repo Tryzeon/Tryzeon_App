@@ -1,2 +1,5 @@
 [functions.revenuecat-webhook]
 verify_jwt = false
+
+[functions.resolve-link]
+verify_jwt = false
