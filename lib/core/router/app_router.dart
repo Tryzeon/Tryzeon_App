@@ -65,13 +65,17 @@ Raw<GoRouter> appRouter(final Ref ref) {
       if (isAuthPath) return _resolveHomePath(ref);
 
       // 4. 商家 Onboarding 攔截（排除 Deep Link 與 Onboarding 頁面本身）
-      final storeRedirect =
-          _handleStoreOnboardingRedirect(path, ref.read(storeProfileProvider));
+      final storeRedirect = _handleStoreOnboardingRedirect(
+        path,
+        ref.read(storeProfileProvider),
+      );
       if (storeRedirect != null) return storeRedirect;
 
       // 5. 個人 Onboarding 攔截（deep link 內容頁在內部豁免，優先顯示）
-      final personalRedirect =
-          _handlePersonalOnboardingRedirect(path, ref.read(userProfileProvider));
+      final personalRedirect = _handlePersonalOnboardingRedirect(
+        path,
+        ref.read(userProfileProvider),
+      );
       if (personalRedirect != null) return personalRedirect;
 
       return null;
@@ -140,7 +144,7 @@ String? _handlePersonalOnboardingRedirect(
       path.startsWith('/personal/shop/store/')) {
     return null;
   }
-  
+
   if (userProfileAsync.isLoading || userProfileAsync.hasError) return null;
 
   final profile = userProfileAsync.asData?.value;
