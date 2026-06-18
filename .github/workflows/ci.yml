@@ -75,6 +75,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Free up disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false   # keep Flutter/Java tool cache
+          android: false      # Android SDK is needed to build the APK
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
