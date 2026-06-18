@@ -79,6 +79,11 @@ dev_dependencies:
 dependency_overrides:
   test_api: 0.7.10
   matcher: 0.12.19
+  # Local fork of chottu_link 1.1.1 — patched so the SDK only intercepts its own
+  # *.chottu.link hosts and lets tryzeon.com Universal/App Links flow to go_router.
+  # See third_party/chottu_link/PATCH_NOTES.md.
+  chottu_link:
+    path: third_party/chottu_link
 
 flutter:
   assets:

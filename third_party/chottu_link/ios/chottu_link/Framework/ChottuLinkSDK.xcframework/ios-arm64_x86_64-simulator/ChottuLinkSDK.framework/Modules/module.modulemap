@@ -1,0 +1,3 @@
+framework module ChottuLinkSDK {
+  header "ChottuLinkSDK-Swift.h"
+}

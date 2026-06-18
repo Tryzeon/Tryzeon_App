@@ -17,6 +17,8 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "**/*.gr.dart"
+    # Vendored fork of chottu_link — keep its sources out of our strict lints.
+    - "third_party/**"
 
 linter:
   # The lint rules applied to this project can be customized in the
