@@ -66,17 +66,8 @@ class FilterSheet extends HookConsumerWidget {
     }
 
     void resetFilters() {
-      currentMinPrice.value = null;
-      currentMaxPrice.value = null;
-      priceRange.value = const RangeValues(0, kMaxPrice);
-      selectedChannels.value = {};
-      selectedFits.value = {};
-      selectedElasticities.value = {};
-      selectedThicknesses.value = {};
-      selectedSeasons.value = {};
-      selectedStyles.value = {};
-      selectedMaterials.value = {};
       ref.read(shopFilterProvider.notifier).clearFilters();
+      Navigator.of(context, rootNavigator: true).pop();
     }
 
     return Container(
