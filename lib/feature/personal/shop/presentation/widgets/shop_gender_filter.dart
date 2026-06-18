@@ -13,8 +13,8 @@ class ShopGenderFilter extends StatelessWidget {
   final ValueChanged<ProductGender?> onChanged;
 
   static const List<(ProductGender?, String)> _options = [
-    (ProductGender.male, '男裝'),
     (ProductGender.female, '女裝'),
+    (ProductGender.male, '男裝'),
   ];
 
   @override

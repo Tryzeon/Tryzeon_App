@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -35,13 +36,16 @@ class ShopPage extends HookConsumerWidget {
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
 
-    // 進入頁面時，性別篩選預設為使用者個人資料的性別（只設定一次）。
+    // 進入頁面時，性別篩選預設為使用者個人資料的性別；若沒有設定性別，
+    // 則預設為第一個選項（女裝）。（只設定一次）
     final profileGender = userProfile?.gender;
     useEffect(() {
-      if (profileGender != null && ref.read(shopFilterProvider).gender == null) {
+      if (ref.read(shopFilterProvider).gender == null) {
         Future.microtask(() {
           if (!context.mounted) return;
-          filterNotifier.setGender(profileGender.toProductGender());
+          filterNotifier.setGender(
+            profileGender?.toProductGender() ?? ProductGender.female,
+          );
         });
       }
       return null;
