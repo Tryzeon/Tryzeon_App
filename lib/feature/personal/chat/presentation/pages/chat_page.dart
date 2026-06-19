@@ -7,6 +7,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_notifier.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_bubble.dart';
@@ -14,7 +16,9 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_header.d
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_starter_chips.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_thinking_bubble.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/recommendation_bubble.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/shop_product_bubble.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/tool_step_bubble.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/wardrobe_item_bubble.dart';
 
 class ChatPage extends HookConsumerWidget {
   const ChatPage({super.key});
@@ -122,12 +126,7 @@ class ChatPage extends HookConsumerWidget {
                   itemCount: state.messages.length + (state.isLoading ? 1 : 0),
                   itemBuilder: (final context, final index) {
                     if (index < state.messages.length) {
-                      final message = state.messages[index];
-                      final rec = message.recommendation;
-                      if (rec != null) {
-                        return RecommendationBubble(recommendation: rec);
-                      }
-                      return ChatBubble(message: message);
+                      return _MessageView(message: state.messages[index]);
                     }
                     return const ChatThinkingBubble();
                   },
@@ -145,5 +144,35 @@ class ChatPage extends HookConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Renders one conversation turn as a column of part-bubbles. Each block renders
+class _MessageView extends StatelessWidget {
+  const _MessageView({required this.message});
+
+  final ChatMessage message;
+
+  @override
+  Widget build(final BuildContext context) {
+    final isUser = message.role == ChatRole.user;
+
+    final children = <Widget>[];
+    for (final block in message.content) {
+      switch (block) {
+        case TextBlock(:final text):
+          children.add(ChatBubble(text: text, isUser: isUser));
+        case ToolUseBlock():
+          children.add(ToolUseBubble(block: block));
+        case ToolResultBlock():
+          children.add(ToolResultBubble(block: block));
+        case ShopProductBlock(:final product):
+          children.add(ShopProductBubble(product: product));
+        case WardrobeProductBlock(:final item):
+          children.add(WardrobeItemBubble(item: item));
+      }
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children);
   }
 }

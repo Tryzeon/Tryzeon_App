@@ -1,17 +1,16 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
 
 part 'chat_reply.freezed.dart';
 
-/// One LLM turn. Render whatever is present: [message] as a text bubble,
-/// [recommendation] as a RecommendationBubble. Both may be set, or neither
-/// (caller shows a fallback). [usage] is the post-call quota snapshot.
+/// The full conversation after a turn — the server echoes the history it was
+/// sent plus the new turns it generated — together with the post-call quota
+/// snapshot. The client replaces its history with [messages].
 @freezed
 sealed class ChatReply with _$ChatReply {
   const factory ChatReply({
-    final String? message,
-    final ChatRecommendation? recommendation,
+    @Default([]) final List<ChatMessage> messages,
     final DailyUsage? usage,
   }) = _ChatReply;
 }

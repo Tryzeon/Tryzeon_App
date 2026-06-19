@@ -1,9 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/personal/shop/data/models/product_row_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 
@@ -69,12 +69,7 @@ class ShopRemoteDataSource {
     );
 
     return (response as List).map((final item) {
-      final map = _withProductImageUrl(Map<String, dynamic>.from(item as Map));
-      if (map['store_profiles'] != null) {
-        map['store_profiles'] = _withStoreLogoUrl(
-          Map<String, dynamic>.from(map['store_profiles'] as Map),
-        );
-      }
+      final map = productRowWithImageUrls(Map<String, dynamic>.from(item as Map));
       return ShopProductModel.fromJson(map);
     }).toList();
   }
@@ -141,11 +136,7 @@ class ShopRemoteDataSource {
         .eq('id', productId)
         .single();
 
-    final map = _withProductImageUrl(response);
-    if (map['store_profiles'] != null) {
-      map['store_profiles'] = _withStoreLogoUrl(map['store_profiles']);
-    }
-
+    final map = productRowWithImageUrls(Map<String, dynamic>.from(response));
     return ShopProductModel.fromJson(map);
   }
 
@@ -155,24 +146,6 @@ class ShopRemoteDataSource {
         .select('id, name, address, logo_path, channels')
         .eq('id', storeId)
         .single();
-    return _withStoreLogoUrl(response);
-  }
-
-  Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
-    final map = Map<String, dynamic>.from(json);
-    final rawPaths = map['image_paths'];
-    final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
-    map['image_paths'] = imagePaths;
-    map['image_urls'] = imagePaths.map(StoreImagesApi.publicUrl).toList();
-    return map;
-  }
-
-  Map<String, dynamic> _withStoreLogoUrl(final Map<String, dynamic> json) {
-    final map = Map<String, dynamic>.from(json);
-    final logoPath = map['logo_path'] as String?;
-    if (logoPath != null && logoPath.isNotEmpty) {
-      map['logo_url'] = StoreImagesApi.publicUrl(logoPath);
-    }
-    return map;
+    return withStoreLogoUrl(response);
   }
 }

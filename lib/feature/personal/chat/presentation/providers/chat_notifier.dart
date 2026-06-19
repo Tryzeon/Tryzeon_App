@@ -6,6 +6,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_reply.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -17,6 +18,17 @@ const String _greetingText = '嗨！我是你的穿搭顧問 👗 告訴我你�
 const String _rateLimitMessage = '今天的對話次數已達上限，升級方案就能繼續聊喔！';
 const String _emptyReplyMessage = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
 const String _errorMessage = '發生錯誤，請稍後再試';
+
+const ChatMessage _greetingMessage = ChatMessage(
+  role: ChatRole.assistant,
+  content: [ContentBlock.text(_greetingText)],
+);
+
+ChatMessage _assistantText(final String text) =>
+    ChatMessage(role: ChatRole.assistant, content: [ContentBlock.text(text)]);
+
+ChatMessage _userText(final String text) =>
+    ChatMessage(role: ChatRole.user, content: [ContentBlock.text(text)]);
 
 @freezed
 sealed class ChatState with _$ChatState {
@@ -36,15 +48,14 @@ class ChatNotifier extends _$ChatNotifier {
   @override
   ChatState build() {
     ref.onDispose(_events.close);
-    return const ChatState(messages: [ChatMessage(text: _greetingText, isUser: false)]);
+    return const ChatState(messages: [_greetingMessage]);
   }
 
   void reset() {
     state = ChatState(
-      messages: const [ChatMessage(text: _greetingText, isUser: false)],
+      messages: const [_greetingMessage],
       generation: state.generation + 1,
     );
-    ref.invalidate(resolvedOutfitProvider);
   }
 
   void _append(final ChatMessage message) {
@@ -57,12 +68,12 @@ class ChatNotifier extends _$ChatNotifier {
     final trimmed = text.trim();
     if (trimmed.isEmpty || state.isLoading) return;
 
-    _append(ChatMessage(text: trimmed, isUser: true));
+    _append(_userText(trimmed));
 
     final localGen = state.generation;
-    final history = state.messages
-        .where((final m) => !(m.text == _greetingText && !m.isUser))
-        .toList();
+
+    // remove first greeting message
+    final history = state.messages.skip(1).toList();
     state = state.copyWith(isLoading: true);
 
     final result = await ref.read(chatActionProvider.notifier).execute(history);
@@ -75,29 +86,22 @@ class ChatNotifier extends _$ChatNotifier {
 
   void _applyResult(final Result<ChatReply, Failure> result) {
     if (result.isSuccess) {
-      final reply = result.get()!;
-      final message = reply.message;
-      final recommendation = reply.recommendation;
-
-      if (message != null && message.isNotEmpty) {
-        _append(ChatMessage(text: message, isUser: false));
+      final newMessages = result.get()!.messages;
+      if (newMessages.isEmpty) {
+        _append(_assistantText(_emptyReplyMessage));
+        return;
       }
-      if (recommendation != null && recommendation.slots.isNotEmpty) {
-        _append(ChatMessage(text: '', isUser: false, recommendation: recommendation));
-      }
-      if ((message == null || message.isEmpty) && recommendation == null) {
-        _append(const ChatMessage(text: _emptyReplyMessage, isUser: false));
-      }
+      state = state.copyWith(messages: [...state.messages, ...newMessages]);
       return;
     }
 
     final failure = result.getError();
     if (failure is RateLimitFailure) {
-      _append(const ChatMessage(text: _rateLimitMessage, isUser: false));
+      _append(_assistantText(_rateLimitMessage));
       _events.add(const ChatEvent.rateLimited());
       return;
     }
 
-    _append(ChatMessage(text: failure?.displayMessage() ?? _errorMessage, isUser: false));
+    _append(_assistantText(failure?.displayMessage() ?? _errorMessage));
   }
 }

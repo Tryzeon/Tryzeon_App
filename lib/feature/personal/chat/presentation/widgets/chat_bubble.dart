@@ -3,18 +3,17 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 
 class ChatBubble extends HookWidget {
-  const ChatBubble({super.key, required this.message});
+  const ChatBubble({super.key, required this.text, required this.isUser});
 
-  final ChatMessage message;
+  final String text;
+  final bool isUser;
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isUser = message.isUser;
 
     final styleSheet = useMemoized(
       () => MarkdownStyleSheet.fromTheme(theme).copyWith(
@@ -44,7 +43,7 @@ class ChatBubble extends HookWidget {
             bottomRight: Radius.circular(isUser ? 0 : AppRadius.card),
           ),
         ),
-        child: MarkdownBody(data: message.text, selectable: true, styleSheet: styleSheet),
+        child: MarkdownBody(data: text, selectable: true, styleSheet: styleSheet),
       ),
     );
   }
