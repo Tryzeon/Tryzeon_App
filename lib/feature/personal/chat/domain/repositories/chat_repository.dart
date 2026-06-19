@@ -5,8 +5,5 @@ import 'package:typed_result/typed_result.dart';
 
 abstract class ChatRepository {
   /// Sends the full conversation [history] and returns the next LLM turn.
-  Future<Result<ChatReply, Failure>> sendMessage(
-    final List<ChatMessage> history, {
-    final String? gender,
-  });
+  Future<Result<ChatReply, Failure>> sendMessage(final List<ChatMessage> history);
 }

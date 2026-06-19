@@ -8,10 +8,7 @@ class SendChatMessageUseCase {
   SendChatMessageUseCase(this._repository);
   final ChatRepository _repository;
 
-  Future<Result<ChatReply, Failure>> call(
-    final List<ChatMessage> history, {
-    final String? gender,
-  }) {
-    return _repository.sendMessage(history, gender: gender);
+  Future<Result<ChatReply, Failure>> call(final List<ChatMessage> history) {
+    return _repository.sendMessage(history);
   }
 }
