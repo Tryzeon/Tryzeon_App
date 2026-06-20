@@ -17,6 +17,23 @@ function platformFromUserAgent(ua: string | null): string {
 }
 
 /**
+ * Best-effort acquisition channel from the in-app browser's User-Agent.
+ * Order matters: match the most specific tokens first (Instagram/Messenger
+ * carry their own marker but also share Facebook's FBAN/FBAV indirectly).
+ * Returns null when undetectable (e.g. a plain Safari/Chrome open after the
+ * link was copied out of the originating app) — never guess.
+ */
+function channelFromUserAgent(ua: string | null): string | null {
+  if (!ua) return null;
+  if (/Instagram/i.test(ua)) return "instagram";
+  if (/\bLine\//i.test(ua)) return "line";
+  if (/Messenger|Orca-Android/i.test(ua)) return "messenger";
+  if (/Barcelona/i.test(ua)) return "threads"; // Threads codename
+  if (/FBAN|FBAV|FB_IAB/i.test(ua)) return "facebook";
+  return null;
+}
+
+/**
  * The code is the last path segment. The site redirects
  * tryzeon.com/s/{code} -> .../functions/v1/resolve-link/{code}.
  */
@@ -60,11 +77,14 @@ Deno.serve(async (req) => {
     }
 
     // Log the anonymous (not-installed) open.
-    const platform = platformFromUserAgent(req.headers.get("User-Agent"));
+    const userAgent = req.headers.get("User-Agent");
+    const platform = platformFromUserAgent(userAgent);
+    const channel = channelFromUserAgent(userAgent);
     const { error: insertError } = await adminClient.from("link_events").insert({
       code: link.code,
       source: "web",
       platform,
+      channel,
     });
 
     if (insertError) {
