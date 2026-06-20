@@ -54,7 +54,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
       if (result != OkCancelResult.ok) return;
       await controller.switchToStore();
       if (!context.mounted) return;
-      context.go(AppRoutes.storeAccount);
+      context.go(AppRoutes.dashboardAccount);
     }
 
     Future<void> handleContactUs() async {

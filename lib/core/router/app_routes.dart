@@ -27,15 +27,15 @@ abstract final class AppRoutes {
   static const String personalPaywall = '/personal/paywall';
 
   // Store owner dashboard (tabs)
-  static const String storeProducts = '/dashboard/products';
-  static const String storeAccount = '/dashboard/account';
+  static const String dashboardProducts = '/dashboard/products';
+  static const String dashboardAccount = '/dashboard/account';
 
   // Store owner dashboard (full screen, outside shell)
-  static const String storeOnboarding = '/dashboard/onboarding';
-  static const String storeSettings = '/dashboard/settings';
-  static const String storeSettingsProfile = '/dashboard/settings/profile';
-  static const String storeProductAdd = '/dashboard/products/add';
-  static const String storeProductDetail = '/dashboard/products/:id';
+  static const String dashboardOnboarding = '/dashboard/onboarding';
+  static const String dashboardSettings = '/dashboard/settings';
+  static const String dashboardSettingsProfile = '/dashboard/settings/profile';
+  static const String dashboardProductAdd = '/dashboard/products/add';
+  static const String dashboardProductDetail = '/dashboard/products/:id';
 
   // Deep link content routes (top-level, redirect to feature routes)
   static const String deepLinkProduct = '/product/:productId';
@@ -44,7 +44,7 @@ abstract final class AppRoutes {
   static const String deepLinkShort = '/s/:code';
 
   static String homeForUserType(final UserType userType) {
-    return userType == UserType.store ? storeAccount : personalHome;
+    return userType == UserType.store ? dashboardAccount : personalHome;
   }
 
   static String personalShopProductPath(final String productId) =>
@@ -56,6 +56,6 @@ abstract final class AppRoutes {
   static String personalWardrobeItemPath(final String itemId) =>
       '/personal/wardrobe/item/$itemId';
 
-  static String storeProductDetailPath(final String productId) =>
+  static String dashboardProductDetailPath(final String productId) =>
       '/dashboard/products/$productId';
 }

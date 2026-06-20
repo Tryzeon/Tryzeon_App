@@ -111,7 +111,7 @@ class StoreSettingsPage extends HookConsumerWidget {
                   title: '店家資料',
                   trailingValue: profile?.name,
                   isFirst: true,
-                  onTap: () => context.push(AppRoutes.storeSettingsProfile),
+                  onTap: () => context.push(AppRoutes.dashboardSettingsProfile),
                 ),
                 const _SectionLabel('支援'),
                 NavRow(

@@ -17,7 +17,7 @@ final storeShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: AppRoutes.storeProducts,
+          path: AppRoutes.dashboardProducts,
           builder: (final context, final state) => const StoreProductsPage(),
         ),
       ],
@@ -26,7 +26,7 @@ final storeShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: AppRoutes.storeAccount,
+          path: AppRoutes.dashboardAccount,
           builder: (final context, final state) => const StoreAccountPage(),
         ),
       ],
@@ -37,11 +37,11 @@ final storeShellRoute = StatefulShellRoute.indexedStack(
 // Full-screen routes (no shell)
 final storeFullScreenRoutes = [
   GoRoute(
-    path: AppRoutes.storeOnboarding,
+    path: AppRoutes.dashboardOnboarding,
     builder: (final context, final state) => const StoreOnboardingPage(),
   ),
   GoRoute(
-    path: AppRoutes.storeSettings,
+    path: AppRoutes.dashboardSettings,
     builder: (final context, final state) => const StoreSettingsPage(),
     routes: [
       GoRoute(
@@ -50,13 +50,13 @@ final storeFullScreenRoutes = [
       ),
     ],
   ),
-  // Must precede storeProductDetail ('/:id') so the static path wins.
+  // Must precede dashboardProductDetail ('/:id') so the static path wins.
   GoRoute(
-    path: AppRoutes.storeProductAdd,
+    path: AppRoutes.dashboardProductAdd,
     builder: (final context, final state) => const AddProductPage(),
   ),
   GoRoute(
-    path: AppRoutes.storeProductDetail,
+    path: AppRoutes.dashboardProductDetail,
     builder: (final context, final state) {
       final productId = state.pathParameters['id']!;
       return EditProductPage(productId: productId);

@@ -111,7 +111,7 @@ class StoreProductsPage extends HookConsumerWidget {
           bottom: PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0,
         ),
         child: FloatingActionButton(
-          onPressed: () => context.push(AppRoutes.storeProductAdd),
+          onPressed: () => context.push(AppRoutes.dashboardProductAdd),
           tooltip: '新增商品',
           child: const Icon(Icons.add_rounded),
         ),

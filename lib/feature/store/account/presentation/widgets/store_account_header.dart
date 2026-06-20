@@ -52,7 +52,7 @@ class StoreAccountHeader extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 tooltip: '設定',
-                onPressed: () => context.push(AppRoutes.storeSettings),
+                onPressed: () => context.push(AppRoutes.dashboardSettings),
               ),
             ),
           ],

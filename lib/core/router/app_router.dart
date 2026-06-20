@@ -121,11 +121,11 @@ String? _handleStoreOnboardingRedirect(
   if (storeProfileAsync.isLoading || storeProfileAsync.hasError) return null;
 
   final hasProfile = storeProfileAsync.asData?.value != null;
-  if (path == AppRoutes.storeOnboarding) {
-    return hasProfile ? AppRoutes.storeAccount : null;
+  if (path == AppRoutes.dashboardOnboarding) {
+    return hasProfile ? AppRoutes.dashboardAccount : null;
   }
 
-  return hasProfile ? null : AppRoutes.storeOnboarding;
+  return hasProfile ? null : AppRoutes.dashboardOnboarding;
 }
 
 String? _handlePersonalOnboardingRedirect(
