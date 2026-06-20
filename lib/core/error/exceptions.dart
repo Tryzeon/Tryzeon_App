@@ -22,3 +22,9 @@ class UnauthenticatedException extends AppException {
 class UserCanceledException extends AppException {
   const UserCanceledException([super.message]);
 }
+
+/// Thrown when a requested resource does not exist (e.g. a deleted product
+/// or a store id that points to nothing).
+class NotFoundException extends AppException {
+  const NotFoundException([super.message]);
+}

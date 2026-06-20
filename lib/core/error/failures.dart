@@ -48,6 +48,10 @@ class UserCanceledFailure extends Failure {
   const UserCanceledFailure([super.message]);
 }
 
+class NotFoundFailure extends Failure {
+  const NotFoundFailure([super.message]);
+}
+
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
   final eString = e.toString();
@@ -59,6 +63,14 @@ Failure mapExceptionToFailure(final Object e) {
   // Handle ClientException with SocketException escaping Supabase
   if (eString.contains('SocketException') || eString.contains('ClientException')) {
     return const NetworkFailure();
+  }
+
+  // PGRST116 = no rows, 22P02 = invalid uuid syntax
+  if (e is PostgrestException) {
+    final details = '${e.code} ${e.message}';
+    if (details.contains('PGRST116') || details.contains('22P02')) {
+      return const NotFoundFailure();
+    }
   }
 
   if (e is FunctionException) {
@@ -78,6 +90,7 @@ Failure mapExceptionToFailure(final Object e) {
     ServerException(message: final msg) => ServerFailure(msg),
     UnauthenticatedException(message: final msg) => AuthFailure(msg),
     UserCanceledException(message: final msg) => UserCanceledFailure(msg),
+    NotFoundException(message: final msg) => NotFoundFailure(msg),
 
     // Supabase Exceptions
     PostgrestException() => const ServerFailure(),

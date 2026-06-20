@@ -10,6 +10,9 @@ extension FailureMessage on Failure {
       ServerFailure(message: final msg?) => msg,
       ServerFailure() => '伺服器發生錯誤，請稍後再試',
 
+      NotFoundFailure(message: final msg?) => msg,
+      NotFoundFailure() => '找不到資源，可能已被移除或失效',
+
       AuthFailure(message: final msg?) => msg,
       AuthFailure() => '登入狀態異常，請稍後再試',
 
