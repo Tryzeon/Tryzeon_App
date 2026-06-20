@@ -50,6 +50,16 @@ async function fetchRowsByIds(
   return map;
 }
 
+// Maps the stored age_range bucket codes to human labels for the AI prompt.
+const AGE_RANGE_LABELS: Record<string, string> = {
+  under_12: "12 歲以下",
+  "13_17": "13–17 歲",
+  "18_24": "18–24 歲",
+  "25_34": "25–34 歲",
+  "35_54": "35–54 歲",
+  "55_plus": "55 歲以上",
+};
+
 Deno.serve(async (req) => {
   let quotaManager: QuotaManager | undefined;
 
@@ -92,7 +102,7 @@ Deno.serve(async (req) => {
     const [{ data: profile }, { data: categories, error: catErr }] = await Promise.all([
       adminClient
         .from("user_profiles")
-        .select("name, gender, age, style_preferences")
+        .select("name, gender, age_range, style_preferences")
         .eq("user_id", user!.id)
         .maybeSingle(),
       adminClient.from("product_categories").select("id, name"),
@@ -109,7 +119,7 @@ Deno.serve(async (req) => {
 
     const userName = nonEmptyStr(profile?.name);
     const userGender = nonEmptyStr(profile?.gender);
-    const userAge = typeof profile?.age === "number" ? profile.age : null;
+    const userAge = AGE_RANGE_LABELS[nonEmptyStr(profile?.age_range) ?? ""] ?? null;
     const userStyles = Array.isArray(profile?.style_preferences)
       ? (profile.style_preferences as string[])
       : [];
