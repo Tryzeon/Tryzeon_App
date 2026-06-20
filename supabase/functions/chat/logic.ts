@@ -1,6 +1,15 @@
 // Pure helpers for the chat agent loop. No external imports so they unit-test
 // offline (no Gemini SDK, no network).
 
+// Columns a wardrobe item needs to render a card. Shared by the search tool and
+// the by-id answer fetch so the two queries can't drift.
+export const WARDROBE_SELECT = "id, image_path, category, tags, created_at, updated_at";
+
+// Shop product shape for an answer card — mirrors the product detail page so the
+// client renders it directly (variants + the owning store's public fields).
+export const PRODUCT_SELECT =
+  "*, product_variants(*), store_profiles!products_store_id_fkey(id, name, address, logo_path, channels)";
+
 const nonEmptyArray = (v: unknown): unknown[] | null =>
   Array.isArray(v) && v.length > 0 ? v : null;
 
@@ -43,14 +52,14 @@ export function mapSearchProductsArgs(
 export type ContentBlock = Record<string, any>;
 export type ChatMessage = { role: string; content: ContentBlock[] };
 
-// Map the standard conversation to Gemini `contents`. The whole history is
-// replayed verbatim and uncompressed: assistant tool_use → functionCall, full
-// user tool_result → functionResponse (its tool name resolved from the paired
-// tool_use id), text passes through. Recommended product blocks collapse to a
-// short id reference (their full data is already replayed in the tool_result, so
-// nothing is lost).
-export function toContents(messages: ChatMessage[]): any[] {
-  // tool_use id → tool name, so a tool_result can name its function for Gemini.
+// Map the standard conversation to AI SDK `ModelMessage[]`. The whole history is
+// replayed verbatim and uncompressed: assistant tool_use → a `tool-call` part,
+// the paired user tool_result → a `tool` message with a `tool-result` part (its
+// tool name resolved from the tool_use id), text passes through. Recommended
+// product blocks collapse to a short id reference (their full data is already
+// replayed in the tool_result, so nothing is lost to the model).
+export function toModelMessages(messages: ChatMessage[]): any[] {
+  // tool_use id → tool name, so a tool_result can name its tool.
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
     if (m?.role !== "assistant") continue;
@@ -59,35 +68,61 @@ export function toContents(messages: ChatMessage[]): any[] {
     }
   }
 
-  const contents: any[] = [];
+  const out: any[] = [];
   for (const m of messages ?? []) {
     const blocks = Array.isArray(m?.content) ? m.content : [];
-    const parts: any[] = [];
+
     if (m?.role === "user") {
-      for (const b of blocks) {
-        if (b?.type === "text" && nonEmptyStr(b.text)) parts.push({ text: b.text });
-        else if (b?.type === "tool_result") {
-          const name = nameOf.get(String(b.tool_use_id)) ?? "tool";
-          parts.push({ functionResponse: { name, response: b.content ?? {} } });
-        }
+      // tool_result blocks become a `tool` message; plain text stays a user turn.
+      const toolResults = blocks.filter((b) => b?.type === "tool_result");
+      if (toolResults.length) {
+        out.push({
+          role: "tool",
+          content: toolResults.map((b) => ({
+            type: "tool-result",
+            toolCallId: String(b.tool_use_id),
+            toolName: nameOf.get(String(b.tool_use_id)) ?? "unknown",
+            output: { type: "json", value: b.content ?? {} },
+          })),
+        });
       }
-      if (parts.length) contents.push({ role: "user", parts });
-    } else if (m?.role === "assistant") {
-      for (const b of blocks) {
-        if (b?.type === "text" && nonEmptyStr(b.text)) {
-          parts.push({ text: b.text });
-        } else if (b?.type === "tool_use" && b.name) {
-          parts.push({ functionCall: { name: b.name, args: b.input ?? {} } });
-        } else if (b?.type === "shop_product") {
-          parts.push({ text: `（推薦商品 id:${b.id ?? b.item?.id ?? ""}）` });
-        } else if (b?.type === "wardrobe_product") {
-          parts.push({ text: `（推薦衣櫃單品 id:${b.id ?? b.item?.id ?? ""}）` });
-        }
+      const text = blocks
+        .filter((b) => b?.type === "text")
+        .map((b) => nonEmptyStr(b.text))
+        .filter((t): t is string => t !== null)
+        .join("\n");
+      if (text) out.push({ role: "user", content: text });
+      continue;
+    }
+
+    // assistant
+    const toolUses = blocks.filter((b) => b?.type === "tool_use" && b.name);
+    const lines: string[] = [];
+    for (const b of blocks) {
+      const t = b?.type === "text" ? nonEmptyStr(b.text) : null;
+      if (t) lines.push(t);
+      else if (b?.type === "shop_product") lines.push(`（推薦商品 id:${b.id ?? b.item?.id ?? ""}）`);
+      else if (b?.type === "wardrobe_product") lines.push(`（推薦衣櫃單品 id:${b.id ?? b.item?.id ?? ""}）`);
+    }
+    const text = lines.join("\n").trim();
+
+    if (toolUses.length) {
+      const content: any[] = [];
+      if (text) content.push({ type: "text", text });
+      for (const b of toolUses) {
+        content.push({
+          type: "tool-call",
+          toolCallId: String(b.id),
+          toolName: String(b.name),
+          input: b.input ?? {},
+        });
       }
-      if (parts.length) contents.push({ role: "model", parts });
+      out.push({ role: "assistant", content });
+    } else if (text) {
+      out.push({ role: "assistant", content: text });
     }
   }
-  return contents;
+  return out;
 }
 
 // One ordered piece of a respond() call: a line of text, or a reference to a
@@ -113,4 +148,66 @@ export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
     }
   }
   return refs;
+}
+
+// One step of the AI SDK agent run: the tool calls it made and their results.
+export type AgentStep = {
+  toolCalls: { toolCallId: string; toolName: string; input: unknown }[];
+  toolResults: { toolCallId: string; output: unknown }[];
+};
+
+// Rebuild the standard wire turns from the run's steps — the inverse of
+// toModelMessages. Each search step becomes a paired assistant `tool_use` turn +
+// user `tool_result` turn; the terminal `respond` call carries no result and is
+// resolved by the caller, so it is skipped here.
+export function stepsToTurns(steps: AgentStep[]): ChatMessage[] {
+  const turns: ChatMessage[] = [];
+  for (const step of steps ?? []) {
+    const searchCalls = step.toolCalls.filter((tc) => tc.toolName !== "respond");
+    if (searchCalls.length === 0) continue;
+    turns.push({
+      role: "assistant",
+      content: searchCalls.map((tc) => ({
+        type: "tool_use",
+        id: tc.toolCallId,
+        name: tc.toolName,
+        input: tc.input,
+      })),
+    });
+    turns.push({
+      role: "user",
+      content: searchCalls.map((tc) => {
+        const tr = step.toolResults.find((r) => r.toolCallId === tc.toolCallId);
+        return {
+          type: "tool_result",
+          tool_use_id: tc.toolCallId,
+          content: (tr?.output as Record<string, unknown>) ?? {},
+        };
+      }),
+    });
+  }
+  return turns;
+}
+
+// Assemble the ordered answer blocks from parsed refs + the rows fetched by id.
+// Text passes through; product/wardrobe refs become card blocks, dropping any id
+// whose row is missing (e.g. a since-deleted item).
+export function assembleAnswerBlocks(
+  refs: AnswerRef[],
+  products: Map<string, Record<string, any>>,
+  wardrobe: Map<string, Record<string, any>>,
+): ContentBlock[] {
+  const blocks: ContentBlock[] = [];
+  for (const ref of refs) {
+    if (ref.type === "text") {
+      blocks.push({ type: "text", text: ref.text });
+    } else if (ref.type === "product") {
+      const item = products.get(ref.id);
+      if (item) blocks.push({ type: "shop_product", item });
+    } else {
+      const item = wardrobe.get(ref.id);
+      if (item) blocks.push({ type: "wardrobe_product", item });
+    }
+  }
+  return blocks;
 }
