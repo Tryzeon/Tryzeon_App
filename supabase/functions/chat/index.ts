@@ -1,6 +1,6 @@
 // default model: gemini-2.5-flash
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { generateText, stepCountIs } from "npm:ai@^6.0.208";
+import { streamText, stepCountIs } from "npm:ai@^6.0.208";
 import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager } from "../_shared/quota.ts";
@@ -12,10 +12,10 @@ import {
   nonEmptyStr,
   parseAnswerRefs,
   PRODUCT_SELECT,
-  stepsToTurns,
   toModelMessages,
   WARDROBE_SELECT,
 } from "./logic.ts";
+import { encodeEvent } from "./stream.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
 const CHAT_MODEL = Deno.env.get("CHAT_MODEL") ?? "gemini-2.5-flash";
@@ -155,49 +155,73 @@ ${categoryLines}`;
     // `execute`, so the loop halts and hands its call back to us as the answer.
     const tools = buildTools({ adminClient, userId: user!.id, categoryIdsByName });
 
-    const result = await generateText({
-      model: vertex(CHAT_MODEL),
-      system: systemInstruction,
-      messages: toModelMessages(messages as ChatMessage[]),
-      tools,
-      stopWhen: stepCountIs(10),
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (ev: Record<string, unknown>) => controller.enqueue(encodeEvent(ev));
+        try {
+          const result = streamText({
+            model: vertex(CHAT_MODEL),
+            system: systemInstruction,
+            messages: toModelMessages(messages as ChatMessage[]),
+            tools,
+            stopWhen: stepCountIs(10),
+          });
+
+          // Forward each search as it happens. `respond` is the answer carrier,
+          // not a progress step, so it is not emitted here.
+          for await (const part of result.fullStream) {
+            if (part.type === "tool-call" && part.toolName !== "respond") {
+              send({ type: "tool_use", id: part.toolCallId, name: part.toolName, input: part.input });
+            } else if (part.type === "tool-result") {
+              send({ type: "tool_result", tool_use_id: part.toolCallId, content: part.output });
+            }
+          }
+
+          const toolCalls = await result.toolCalls;
+          const respondCall = toolCalls.find((tc) => tc.toolName === "respond");
+          let answerBlocks: ContentBlock[];
+          if (respondCall) {
+            const refs = parseAnswerRefs(respondCall.input as Record<string, any>);
+            const [products, wardrobe] = await Promise.all([
+              fetchRowsByIds(
+                adminClient.from("products").select(PRODUCT_SELECT),
+                refs.filter((r) => r.type === "product").map((r) => r.id),
+              ),
+              fetchRowsByIds(
+                adminClient.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", user!.id),
+                refs.filter((r) => r.type === "wardrobe").map((r) => r.id),
+              ),
+            ]);
+            answerBlocks = assembleAnswerBlocks(refs, products, wardrobe);
+          } else {
+            const text = ((await result.text) ?? "").trim();
+            answerBlocks = text ? [{ type: "text", text }] : [];
+          }
+          if (answerBlocks.length === 0) {
+            answerBlocks = [{ type: "text", text: FALLBACK_TEXT }];
+          }
+
+          send({
+            type: "done",
+            message: { role: "assistant", content: answerBlocks },
+            usage,
+          });
+        } catch (err) {
+          console.error("Chat stream error:", err);
+          await quotaManager?.rollbackQuota();
+          send({ type: "error", code: "INTERNAL_ERROR" });
+        } finally {
+          controller.close();
+        }
+      },
     });
 
-    // Rebuild the standard wire turns from the run. Each search becomes a paired
-    // assistant tool_use turn + user tool_result turn; respond → the answer.
-    const newTurns: ChatMessage[] = stepsToTurns(result.steps);
-
-    const respondCall = result.toolCalls.find((tc) => tc.toolName === "respond");
-    let answerBlocks: ContentBlock[];
-    if (respondCall) {
-      // Model labels each pick (product = shop, wardrobe = wardrobe) + gives an
-      // id; fetch those ids from their table (concurrently) to build the cards.
-      const refs = parseAnswerRefs(respondCall.input as Record<string, any>);
-      const [products, wardrobe] = await Promise.all([
-        fetchRowsByIds(
-          adminClient.from("products").select(PRODUCT_SELECT),
-          refs.filter((r) => r.type === "product").map((r) => r.id),
-        ),
-        fetchRowsByIds(
-          adminClient.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", user!.id),
-          refs.filter((r) => r.type === "wardrobe").map((r) => r.id),
-        ),
-      ]);
-      answerBlocks = assembleAnswerBlocks(refs, products, wardrobe);
-    } else {
-      // Model answered with plain text (e.g. a clarifying question).
-      const text = (result.text ?? "").trim();
-      answerBlocks = text ? [{ type: "text", text }] : [];
-    }
-    if (answerBlocks.length === 0) {
-      answerBlocks = [{ type: "text", text: FALLBACK_TEXT }];
-    }
-    newTurns.push({ role: "assistant", content: answerBlocks });
-
-    return new Response(
-      JSON.stringify({ messages: newTurns, usage }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson",
+        "Cache-Control": "no-cache",
+      },
+    });
 
   } catch (err) {
     console.error("Unexpected error:", err);

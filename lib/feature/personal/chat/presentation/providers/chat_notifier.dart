@@ -5,11 +5,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_reply.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
-import 'package:typed_result/typed_result.dart';
 
 part 'chat_notifier.freezed.dart';
 part 'chat_notifier.g.dart';
@@ -69,39 +68,48 @@ class ChatNotifier extends _$ChatNotifier {
     if (trimmed.isEmpty || state.isLoading) return;
 
     _append(_userText(trimmed));
-
     final localGen = state.generation;
 
     // remove first greeting message
     final history = state.messages.skip(1).toList();
     state = state.copyWith(isLoading: true);
 
-    final result = await ref.read(chatActionProvider.notifier).execute(history);
+    final stream = ref.read(chatActionProvider.notifier).execute(history);
+    var terminated = false;
+    await for (final event in stream) {
+      if (_isStale(localGen)) return; // reset() mid-stream cancels the subscription
+      switch (event) {
+        case ChatToolStarted(:final block):
+          _append(ChatMessage(role: ChatRole.assistant, content: [block]));
+        case ChatToolFinished(:final block):
+          _append(ChatMessage(role: ChatRole.user, content: [block]));
+        case ChatReplied(:final answer):
+          terminated = true;
+          if (answer.content.isEmpty) {
+            _append(_assistantText(_emptyReplyMessage));
+          } else {
+            _append(answer);
+          }
+        case ChatFailed(:final failure):
+          terminated = true;
+          _applyFailure(failure);
+      }
+    }
 
     if (_isStale(localGen)) return;
-
-    _applyResult(result);
+    if (!terminated) {
+      // Stream ended without a terminal answer or failure (e.g. dropped connection).
+      _append(_assistantText(_errorMessage));
+    }
     state = state.copyWith(isLoading: false);
   }
 
-  void _applyResult(final Result<ChatReply, Failure> result) {
-    if (result.isSuccess) {
-      final newMessages = result.get()!.messages;
-      if (newMessages.isEmpty) {
-        _append(_assistantText(_emptyReplyMessage));
-        return;
-      }
-      state = state.copyWith(messages: [...state.messages, ...newMessages]);
-      return;
-    }
-
-    final failure = result.getError();
+  void _applyFailure(final Failure failure) {
     if (failure is RateLimitFailure) {
       _append(_assistantText(_rateLimitMessage));
       _events.add(const ChatEvent.rateLimited());
       return;
     }
-
-    _append(_assistantText(failure?.displayMessage() ?? _errorMessage));
+    _append(_assistantText(failure.displayMessage()));
   }
 }
