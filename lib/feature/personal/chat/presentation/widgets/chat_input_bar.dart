@@ -35,11 +35,10 @@ class ChatInputBar extends StatelessWidget {
               ),
               child: TextField(
                 controller: controller,
-                enabled: enabled,
                 maxLines: 1,
                 textInputAction: TextInputAction.send,
                 keyboardType: TextInputType.text,
-                onSubmitted: (_) => onSend(),
+                onSubmitted: enabled ? (_) => onSend() : null,
                 style: theme.textTheme.bodyLarge,
                 decoration: const InputDecoration(
                   hintText: '請輸入您的回答...',
