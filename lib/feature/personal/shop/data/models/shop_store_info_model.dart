@@ -8,6 +8,7 @@ class ShopStoreInfoModel {
     required this.id,
     required this.name,
     required this.channels,
+    this.slug,
     this.address,
     this.logoUrl,
   });
@@ -18,6 +19,7 @@ class ShopStoreInfoModel {
   final String id;
   final String name;
   final List<String> channels;
+  final String? slug;
   final String? address;
   final String? logoUrl;
 

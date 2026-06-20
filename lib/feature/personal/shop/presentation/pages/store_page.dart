@@ -72,7 +72,8 @@ class StorePage extends HookConsumerWidget {
                 final store = storeInfoAsync.value!;
                 share_plus.SharePlus.instance.share(
                   share_plus.ShareParams(
-                    text: '${AppConstants.webBaseUrl}/store/${store.id}',
+                    text:
+                        '${AppConstants.webBaseUrl}/store/${store.slug ?? store.id}',
                   ),
                 );
               },

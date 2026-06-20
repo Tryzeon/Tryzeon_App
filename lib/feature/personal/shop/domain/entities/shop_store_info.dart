@@ -9,6 +9,7 @@ sealed class ShopStoreInfo with _$ShopStoreInfo {
     required final String id,
     required final String name,
     required final Set<StoreChannel> channels,
+    final String? slug,
     final String? address,
     final String? logoUrl,
   }) = _ShopStoreInfo;

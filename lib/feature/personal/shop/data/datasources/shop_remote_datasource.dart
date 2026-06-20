@@ -131,7 +131,7 @@ class ShopRemoteDataSource {
         .select('''
           *,
           product_variants(*),
-          store_profiles!products_store_id_fkey(id, name, address, logo_path, channels)
+          store_profiles!products_store_id_fkey(id, name, slug, address, logo_path, channels)
         ''')
         .eq('id', productId)
         .single();
@@ -147,7 +147,7 @@ class ShopRemoteDataSource {
     final column = _uuidPattern.hasMatch(storeIdOrSlug) ? 'id' : 'slug';
     final response = await _supabaseClient
         .from(_storeProfileTable)
-        .select('id, name, address, logo_path, channels')
+        .select('id, name, slug, address, logo_path, channels')
         .eq(column, storeIdOrSlug)
         .single();
     return withStoreLogoUrl(response);
