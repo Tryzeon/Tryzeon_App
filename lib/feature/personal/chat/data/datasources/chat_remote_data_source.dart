@@ -31,8 +31,12 @@ class ChatRemoteDataSource {
       AppConstants.functionChat,
       body: {'messages': messages},
     );
-    final data = response.data as Map<String, dynamic>;
+    return parseReply(response.data as Map<String, dynamic>);
+  }
 
+  /// Parses the server's reply body into domain entities. Static and pure so it
+  /// can be unit-tested directly, without a [SupabaseClient].
+  static ChatReply parseReply(final Map<String, dynamic> data) {
     final usageJson = data['usage'] as Map<String, dynamic>?;
     return ChatReply(
       messages: _parseMessages(data['messages'] as List<dynamic>?),
@@ -68,7 +72,7 @@ class ChatRemoteDataSource {
 
   // ── wire → domain ──
 
-  List<ChatMessage> _parseMessages(final List<dynamic>? raw) {
+  static List<ChatMessage> _parseMessages(final List<dynamic>? raw) {
     final result = <ChatMessage>[];
     for (final m in raw ?? const []) {
       if (m is! Map<String, dynamic>) continue;
@@ -80,7 +84,7 @@ class ChatRemoteDataSource {
 
   /// Each block is already a resolved real item or a raw tool trace, so we build
   /// the matching [ContentBlock] directly — no extra wardrobe/shop lookups.
-  List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
+  static List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
     final result = <ContentBlock>[];
     for (final raw in blocksJson ?? const []) {
       if (raw is! Map<String, dynamic>) continue;

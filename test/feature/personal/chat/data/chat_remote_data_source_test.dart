@@ -1,18 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
-import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:typed_result/typed_result.dart';
-
-class _FakeDataSource implements ChatRemoteDataSource {
-  _FakeDataSource(this.response);
-  final Map<String, dynamic> response;
-
-  @override
-  Future<Map<String, dynamic>> sendMessage(final List<ChatMessage> history) async =>
-      response;
-}
 
 Map<String, dynamic> _shopRow() => {
   'id': 'p1',
@@ -45,15 +34,8 @@ Map<String, dynamic> _wardrobeRow() => {
 };
 
 void main() {
-  ChatRepositoryImpl repoWith(final Map<String, dynamic> response) =>
-      ChatRepositoryImpl(remoteDataSource: _FakeDataSource(response));
-
-  final history = [
-    const ChatMessage(role: ChatRole.user, content: [ContentBlock.text('hi')]),
-  ];
-
-  test('parses a paired tool_use → tool_result → answer conversation', () async {
-    final repo = repoWith({
+  test('parses a paired tool_use → tool_result → answer conversation', () {
+    final reply = ChatRemoteDataSource.parseReply({
       'messages': [
         {
           'role': 'assistant',
@@ -89,7 +71,6 @@ void main() {
       ],
     });
 
-    final reply = (await repo.sendMessage(history)).get()!;
     expect(reply.messages, hasLength(3));
 
     final use = reply.messages[0].content.single as ToolUseBlock;
@@ -109,8 +90,8 @@ void main() {
     expect((answer.content[2] as WardrobeProductBlock).item.id, 'w1');
   });
 
-  test('parses a text-only answer turn', () async {
-    final repo = repoWith({
+  test('parses a text-only answer turn', () {
+    final reply = ChatRemoteDataSource.parseReply({
       'messages': [
         {
           'role': 'assistant',
@@ -120,20 +101,17 @@ void main() {
         },
       ],
     });
-    final reply = (await repo.sendMessage(history)).get()!;
     expect(reply.messages.single.role, ChatRole.assistant);
     expect((reply.messages.single.content.single as TextBlock).text, '是白天還是晚上？');
   });
 
-  test('empty messages yields no turns', () async {
-    final repo = repoWith({'messages': <dynamic>[]});
-    final reply = (await repo.sendMessage(history)).get()!;
+  test('empty messages yields no turns', () {
+    final reply = ChatRemoteDataSource.parseReply({'messages': <dynamic>[]});
     expect(reply.messages, isEmpty);
   });
 
-  test('empty body yields no turns', () async {
-    final repo = repoWith(<String, dynamic>{});
-    final reply = (await repo.sendMessage(history)).get()!;
+  test('empty body yields no turns', () {
+    final reply = ChatRemoteDataSource.parseReply(<String, dynamic>{});
     expect(reply.messages, isEmpty);
   });
 }
