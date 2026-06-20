@@ -32,9 +32,6 @@ class StorePage extends HookConsumerWidget {
       orElse: () => null,
     );
 
-    final filter = ShopFilter(storeId: storeId);
-    final productsAsync = ref.watch(shopProductsProvider(filter));
-
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -87,6 +84,8 @@ class StorePage extends HookConsumerWidget {
       ),
       body: storeInfoAsync.when(
         data: (final storeInfo) {
+          final filter = ShopFilter(storeId: storeInfo.id);
+          final productsAsync = ref.watch(shopProductsProvider(filter));
           return RefreshIndicator(
             onRefresh: () async {
               await Future.wait([
