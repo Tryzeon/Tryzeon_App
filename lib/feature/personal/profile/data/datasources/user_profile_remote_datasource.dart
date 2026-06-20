@@ -22,7 +22,7 @@ class UserProfileRemoteDataSource {
     final response = await _supabaseClient
         .from(_userProfileTable)
         .select(
-          'user_id, name, email, avatar_path, measurements, gender, age, style_preferences, is_onboarded, created_at, updated_at',
+          'user_id, name, email, avatar_path, measurements, gender, age_range, style_preferences, is_onboarded, created_at, updated_at',
         )
         .eq('user_id', user.id)
         .single();
@@ -49,14 +49,14 @@ class UserProfileRemoteDataSource {
   Future<UserProfileModel> updateUserProfile({
     required final String name,
     final String? gender,
-    final int? age,
+    final String? ageRange,
   }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
         .from(_userProfileTable)
-        .update({'name': name, 'gender': gender, 'age': age})
+        .update({'name': name, 'gender': gender, 'age_range': ageRange})
         .eq('user_id', user.id)
         .select()
         .single();
@@ -82,7 +82,7 @@ class UserProfileRemoteDataSource {
 
   Future<UserProfileModel> completeUserOnboarding({
     final String? gender,
-    final int? age,
+    final String? ageRange,
     final List<String>? stylePreferences,
   }) async {
     final user = _supabaseClient.auth.currentUser;
@@ -92,7 +92,7 @@ class UserProfileRemoteDataSource {
         .from(_userProfileTable)
         .update({
           'gender': gender,
-          'age': age,
+          'age_range': ageRange,
           'style_preferences': stylePreferences,
           'is_onboarded': true,
         })

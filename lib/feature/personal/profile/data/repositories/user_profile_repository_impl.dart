@@ -11,6 +11,7 @@ import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -76,13 +77,13 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   Future<Result<void, Failure>> updateUserProfile({
     required final String name,
     final Gender? gender,
-    final int? age,
+    final AgeRange? ageRange,
   }) async {
     try {
       final updatedProfile = await _remoteDataSource.updateUserProfile(
         name: name,
         gender: gender?.value,
-        age: age,
+        ageRange: ageRange?.value,
       );
       await _localDataSource.saveUserProfile(updatedProfile);
 
@@ -133,13 +134,13 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   @override
   Future<Result<void, Failure>> completeUserOnboarding({
     final Gender? gender,
-    final int? age,
+    final AgeRange? ageRange,
     final List<ClothingStyle>? stylePreferences,
   }) async {
     try {
       final updatedProfile = await _remoteDataSource.completeUserOnboarding(
         gender: gender?.value,
-        age: age,
+        ageRange: ageRange?.value,
         stylePreferences: stylePreferences?.map((final style) => style.value).toList(),
       );
 

@@ -80,7 +80,9 @@ class PersonalOnboardingPage extends HookConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: notifier.nextStep,
+                        onPressed: _canAdvance(currentStep, onboardingState)
+                            ? notifier.nextStep
+                            : null,
                         child: const Text('下一步'),
                       ),
                     )
@@ -114,6 +116,13 @@ class PersonalOnboardingPage extends HookConsumerWidget {
       ),
     );
   }
+
+  // Gender (step 0) and age (step 1) are required; style (step 2) is skippable.
+  bool _canAdvance(final int step, final OnboardingState state) => switch (step) {
+    0 => state.gender != null,
+    1 => state.ageRange != null,
+    _ => true,
+  };
 
   Future<void> _handleComplete(
     final BuildContext context,

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/providers/onboarding_notifier.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 void main() {
@@ -11,24 +12,24 @@ void main() {
     return container;
   }
 
-  test('initial state has no gender, no age and empty styles', () {
+  test('initial state has no gender, no ageRange and empty styles', () {
     final container = makeContainer();
     final state = container.read(onboardingProvider);
     expect(state.currentStep, 0);
     expect(state.gender, isNull);
-    expect(state.age, isNull);
+    expect(state.ageRange, isNull);
     expect(state.stylePreferences, isEmpty);
   });
 
-  test('setAge stores a value and can clear it back to null', () {
+  test('setAgeRange stores the selected range', () {
     final container = makeContainer();
     final notifier = container.read(onboardingProvider.notifier);
 
-    notifier.setAge(25);
-    expect(container.read(onboardingProvider).age, 25);
+    notifier.setAgeRange(AgeRange.age25to34);
+    expect(container.read(onboardingProvider).ageRange, AgeRange.age25to34);
 
-    notifier.setAge(null);
-    expect(container.read(onboardingProvider).age, isNull);
+    notifier.setAgeRange(AgeRange.age18to24);
+    expect(container.read(onboardingProvider).ageRange, AgeRange.age18to24);
   });
 
   test('setGender stores the selected gender', () {

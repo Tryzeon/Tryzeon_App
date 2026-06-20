@@ -59,21 +59,6 @@ class AppValidators {
     return null;
   }
 
-  static String? validateAge(final String? value) {
-    final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) {
-      return null; // Optional field
-    }
-    final number = int.tryParse(trimmed);
-    if (number == null) {
-      return '請輸入有效數字';
-    }
-    if (number < 4 || number > 100) {
-      return '請輸入 4 至 100 之間的年齡';
-    }
-    return null;
-  }
-
   static String? validateUrl(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return null; // Optional

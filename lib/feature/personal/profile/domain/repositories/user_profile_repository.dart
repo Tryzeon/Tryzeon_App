@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:typed_result/typed_result.dart';
@@ -15,7 +16,7 @@ abstract class UserProfileRepository {
   Future<Result<void, Failure>> updateUserProfile({
     required final String name,
     final Gender? gender,
-    final int? age,
+    final AgeRange? ageRange,
   });
 
   Future<Result<void, Failure>> updateStylePreferences({
@@ -33,7 +34,7 @@ abstract class UserProfileRepository {
 
   Future<Result<void, Failure>> completeUserOnboarding({
     final Gender? gender,
-    final int? age,
+    final AgeRange? ageRange,
     final List<ClothingStyle>? stylePreferences,
   });
 }

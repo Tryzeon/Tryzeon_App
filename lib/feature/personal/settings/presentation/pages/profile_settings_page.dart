@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,6 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -51,15 +51,14 @@ class _PersonalProfileForm extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: profile.name);
-    final ageController = useTextEditingController(text: profile.age?.toString() ?? '');
+    final ageRange = useState<AgeRange?>(profile.ageRange);
     final gender = useState<Gender?>(profile.gender);
     final isLoading = useState(false);
 
     final userName = useValueListenable(nameController).text;
-    final ageText = useValueListenable(ageController).text;
 
     final nameChanged = userName.trim() != profile.name;
-    final ageChanged = int.tryParse(ageText.trim()) != profile.age;
+    final ageChanged = ageRange.value != profile.ageRange;
     final genderChanged = gender.value != profile.gender;
     final hasChanges = nameChanged || ageChanged || genderChanged;
 
@@ -76,7 +75,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
       final result = await updateUseCase(
         name: nameController.text.trim(),
         gender: gender.value,
-        age: int.tryParse(ageController.text.trim()),
+        ageRange: ageRange.value,
       );
 
       if (!context.mounted) return;
@@ -114,13 +113,21 @@ class _PersonalProfileForm extends HookConsumerWidget {
               decoration: const InputDecoration(labelText: '姓名'),
             ),
             const SizedBox(height: AppSpacing.lg),
-            TextFormField(
-              controller: ageController,
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: AppValidators.validateAge,
-              decoration: const InputDecoration(labelText: '年齡'),
+            Text(
+              '年齡',
+              style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            ...AgeRange.values.map(
+              (final value) => RadioListTile<AgeRange>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(value.label),
+                value: value,
+                // ignore: deprecated_member_use
+                groupValue: ageRange.value,
+                // ignore: deprecated_member_use
+                onChanged: (final selected) => ageRange.value = selected,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(

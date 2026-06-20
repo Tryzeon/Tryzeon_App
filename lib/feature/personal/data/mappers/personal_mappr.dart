@@ -9,6 +9,7 @@ import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
+import '../../profile/domain/entities/age_range.dart';
 import '../../profile/domain/entities/gender.dart';
 import '../../profile/domain/entities/user_profile.dart';
 import '../../shop/data/models/shop_product_model.dart';
@@ -32,6 +33,7 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileModel, UserProfile>(
       fields: [
         Field('gender', custom: UserProfileMapprHelper.genderFromString),
+        Field('ageRange', custom: UserProfileMapprHelper.ageRangeFromString),
         Field(
           'stylePreferences',
           custom: UserProfileMapprHelper.stylePreferencesFromStrings,
@@ -41,6 +43,7 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfile, UserProfileModel>(
       fields: [
         Field('gender', custom: UserProfileMapprHelper.genderToString),
+        Field('ageRange', custom: UserProfileMapprHelper.ageRangeToString),
         Field(
           'stylePreferences',
           custom: UserProfileMapprHelper.stylePreferencesToStrings,
@@ -129,6 +132,11 @@ class UserProfileMapprHelper {
       Gender.tryFromString(source.gender);
 
   static String? genderToString(final UserProfile source) => source.gender?.value;
+
+  static AgeRange? ageRangeFromString(final UserProfileModel source) =>
+      AgeRange.tryFromString(source.ageRange);
+
+  static String? ageRangeToString(final UserProfile source) => source.ageRange?.value;
 
   static List<ClothingStyle>? stylePreferencesFromStrings(
     final UserProfileModel source,

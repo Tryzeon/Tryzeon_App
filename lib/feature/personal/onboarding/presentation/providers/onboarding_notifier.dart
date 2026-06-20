@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/onboarding/providers/personal_onboarding_providers.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -15,7 +16,7 @@ sealed class OnboardingState with _$OnboardingState {
   const factory OnboardingState({
     @Default(0) final int currentStep,
     final Gender? gender,
-    final int? age,
+    final AgeRange? ageRange,
     @Default([]) final List<ClothingStyle> stylePreferences,
     @Default(false) final bool isSubmitting,
   }) = _OnboardingState;
@@ -30,8 +31,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     state = state.copyWith(gender: gender);
   }
 
-  void setAge(final int? age) {
-    state = state.copyWith(age: age);
+  void setAgeRange(final AgeRange ageRange) {
+    state = state.copyWith(ageRange: ageRange);
   }
 
   void toggleStylePreference(final ClothingStyle style) {
@@ -68,7 +69,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     final useCase = ref.read(completeOnboardingUseCaseProvider);
     final result = await useCase(
       gender: state.gender,
-      age: state.age,
+      ageRange: state.ageRange,
       stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,
     );
 
