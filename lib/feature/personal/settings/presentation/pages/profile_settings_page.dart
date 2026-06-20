@@ -102,7 +102,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '你的名字不會被公開顯示。',
+              '您的資訊不會被公開顯示。',
               style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.lg),
