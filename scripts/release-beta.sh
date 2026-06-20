@@ -31,8 +31,14 @@ if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
+current_branch=$(git branch --show-current)
+if [[ "$current_branch" != "main" ]]; then
+  echo "Error: releases must be run from 'main' (current branch: '$current_branch')" >&2
+  exit 1
+fi
+
 # Check for unpushed commits
-if [[ -n $(git log origin/$(git branch --show-current)..HEAD) ]]; then
+if [[ -n $(git log "origin/$current_branch..HEAD") ]]; then
   echo "Error: You have unpushed commits" >&2
   exit 1
 fi
