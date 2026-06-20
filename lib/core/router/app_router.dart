@@ -19,11 +19,6 @@ import 'package:typed_result/typed_result.dart';
 
 part 'app_router.g.dart';
 
-/// Matches deep link paths like `/store/<uuid>`.
-final _storeDeepLinkPattern = RegExp(
-  '^/store/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
-);
-
 @riverpod
 Raw<GoRouter> appRouter(final Ref ref) {
   final supabase = Supabase.instance.client;
@@ -122,8 +117,7 @@ String? _handleStoreOnboardingRedirect(
   final String path,
   final AsyncValue<dynamic> storeProfileAsync,
 ) {
-  if (!path.startsWith('/store')) return null;
-  if (_storeDeepLinkPattern.hasMatch(path)) return null;
+  if (!path.startsWith('/dashboard')) return null;
   if (storeProfileAsync.isLoading || storeProfileAsync.hasError) return null;
 
   final hasProfile = storeProfileAsync.asData?.value != null;
