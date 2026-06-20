@@ -11,6 +11,7 @@ class StoreProfileModel {
     required this.createdAt,
     required this.updatedAt,
     required this.channels,
+    this.slug,
     this.address,
     this.logoPath,
     this.logoUrl,
@@ -25,6 +26,7 @@ class StoreProfileModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<String> channels;
+  final String? slug;
   final String? address;
   final String? logoPath;
   final String? logoUrl;

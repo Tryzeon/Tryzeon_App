@@ -20,7 +20,7 @@ class StoreProfileRemoteDataSource {
     final response = await _supabaseClient
         .from(_storeProfileTable)
         .select(
-          'id, owner_id, name, address, logo_path, channels, created_at, updated_at',
+          'id, owner_id, name, slug, address, logo_path, channels, created_at, updated_at',
         )
         .eq('owner_id', user.id)
         .maybeSingle();

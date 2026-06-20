@@ -12,6 +12,7 @@ sealed class StoreProfile with _$StoreProfile {
     required final DateTime createdAt,
     required final DateTime updatedAt,
     required final Set<StoreChannel> channels,
+    final String? slug,
     final String? address,
     final String? logoPath,
     final String? logoUrl,
