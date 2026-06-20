@@ -140,12 +140,20 @@ class ShopRemoteDataSource {
     return ShopProductModel.fromJson(map);
   }
 
-  Future<Map<String, dynamic>> getStoreProfile(final String storeId) async {
+  /// Resolves a store by its canonical uuid [storeIdOrSlug] or, when the value
+  /// is not a uuid, by its human-readable `slug`. Both forms back the same
+  /// `/store/...` deep link so existing uuid links keep working.
+  Future<Map<String, dynamic>> getStoreProfile(final String storeIdOrSlug) async {
+    final column = _uuidPattern.hasMatch(storeIdOrSlug) ? 'id' : 'slug';
     final response = await _supabaseClient
         .from(_storeProfileTable)
         .select('id, name, address, logo_path, channels')
-        .eq('id', storeId)
+        .eq(column, storeIdOrSlug)
         .single();
     return withStoreLogoUrl(response);
   }
+
+  static final _uuidPattern = RegExp(
+    r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  );
 }
