@@ -45,10 +45,6 @@ class PersonalOnboardingPage extends HookConsumerWidget {
               )
             : null,
         automaticallyImplyLeading: false,
-        actions: [
-          if (currentStep < _totalSteps - 1)
-            TextButton(onPressed: notifier.skipStep, child: const Text('略過')),
-        ],
       ),
       body: Column(
         children: [
@@ -84,7 +80,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: notifier.canProceed ? notifier.nextStep : null,
+                        onPressed: notifier.nextStep,
                         child: const Text('下一步'),
                       ),
                     )

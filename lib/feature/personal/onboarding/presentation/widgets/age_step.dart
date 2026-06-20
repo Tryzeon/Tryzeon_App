@@ -9,9 +9,8 @@ import '../providers/onboarding_notifier.dart';
 class AgeStep extends HookConsumerWidget {
   const AgeStep({super.key});
 
-  static const _minAge = 4;
+  static const _minAge = 13;
   static const _maxAge = 100;
-  static const _defaultAge = 25;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -19,12 +18,7 @@ class AgeStep extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final notifier = ref.read(onboardingProvider.notifier);
 
-    final controller = useFixedExtentScrollController(initialItem: _defaultAge - _minAge);
-
-    useEffect(() {
-      Future.microtask(() => notifier.setAge(_defaultAge));
-      return null;
-    }, const []);
+    final controller = useFixedExtentScrollController();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
@@ -34,37 +28,33 @@ class AgeStep extends HookConsumerWidget {
           const SizedBox(height: AppSpacing.smMd),
           Text('你的年齡', style: textTheme.headlineMedium),
           const SizedBox(height: AppSpacing.sm),
-          Text('您的年齡不會公開顯示', style: textTheme.bodyMedium),
+          Text('我們會優先推薦符合你年齡的風格，可略過，日後可在設定中修改。', style: textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.xl),
           Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 120,
-                  height: 300,
-                  child: CupertinoPicker(
-                    scrollController: controller,
-                    itemExtent: 48,
-                    onSelectedItemChanged: (final index) {
-                      notifier.setAge(_minAge + index);
-                    },
-                    selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                      background: colorScheme.primaryContainer.withValues(
-                        alpha: AppOpacity.strong,
-                      ),
-                    ),
-                    children: List.generate(
-                      _maxAge - _minAge + 1,
-                      (final i) => Center(
-                        child: Text('${_minAge + i}', style: textTheme.headlineSmall),
-                      ),
-                    ),
+            child: SizedBox(
+              width: 160,
+              height: 300,
+              child: CupertinoPicker(
+                scrollController: controller,
+                itemExtent: 48,
+                onSelectedItemChanged: (final index) {
+                  notifier.setAge(index == 0 ? null : _minAge + index - 1);
+                },
+                selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                  background: colorScheme.primaryContainer.withValues(
+                    alpha: AppOpacity.strong,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Text('歲', style: textTheme.titleLarge),
-              ],
+                children: [
+                  Center(child: Text('不指定', style: textTheme.headlineSmall)),
+                  ...List.generate(
+                    _maxAge - _minAge + 1,
+                    (final i) => Center(
+                      child: Text('${_minAge + i} 歲', style: textTheme.headlineSmall),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

@@ -30,7 +30,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     state = state.copyWith(gender: gender);
   }
 
-  void setAge(final int age) {
+  void setAge(final int? age) {
     state = state.copyWith(age: age);
   }
 
@@ -50,29 +50,11 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     }
   }
 
-  void skipStep() {
-    state = switch (state.currentStep) {
-      0 => state.copyWith(gender: null),
-      1 => state.copyWith(age: null),
-      2 => state.copyWith(stylePreferences: []),
-      _ => state,
-    };
-
-    nextStep();
-  }
-
   void previousStep() {
     if (state.currentStep > 0) {
       state = state.copyWith(currentStep: state.currentStep - 1);
     }
   }
-
-  bool get canProceed => switch (state.currentStep) {
-    0 => state.gender != null,
-    1 => state.age != null,
-    2 => true, // Style is skippable
-    _ => false,
-  };
 
   Future<Result<void, Failure>> completeOnboarding() async {
     state = state.copyWith(isSubmitting: true);
