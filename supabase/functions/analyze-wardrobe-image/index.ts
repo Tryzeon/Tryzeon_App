@@ -1,8 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { GoogleGenAI } from "npm:@google/genai";
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
-import { getAIClient, VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
-import { detectMimeType } from "../_shared/image-utils.ts";
+import {
+  analyzeImage,
+  rateLimitedResponse,
+  validateBase64,
+} from "../_shared/image-analysis.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 // "unknown" is a sentinel the model may emit but is never a real category;
@@ -16,15 +18,6 @@ const VALID_CATEGORIES = [
   "others",
 ];
 const SCHEMA_CATEGORIES = [...VALID_CATEGORIES, "unknown"];
-
-const MAX_BASE64_LENGTH = 8 * 1024 * 1024;
-
-function rateLimitedResponse(): Response {
-  return new Response(
-    JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
-    { status: 429, headers: { "Content-Type": "application/json" } },
-  );
-}
 
 const ANALYSIS_PROMPT =
   `你是時尚衣物標註助手。分析這張單一衣物的照片，輸出 JSON。
@@ -53,19 +46,10 @@ Deno.serve(async (req) => {
     if (errorResponse) return errorResponse;
 
     const body = await req.json().catch(() => null);
-    const base64: string | undefined = body?.base64;
-    if (!base64 || typeof base64 !== "string" || base64.length < 16) {
-      return new Response(
-        JSON.stringify({ error: "Missing or invalid base64", code: "BAD_REQUEST" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
-    }
-    if (base64.length > MAX_BASE64_LENGTH) {
-      return new Response(
-        JSON.stringify({ error: "Image payload too large", code: "PAYLOAD_TOO_LARGE" }),
-        { status: 413, headers: { "Content-Type": "application/json" } },
-      );
-    }
+
+    const validation = validateBase64(body?.base64);
+    if (!validation.ok) return validation.response;
+    const base64 = validation.value;
 
     const okMinute = await checkRateLimit(
       user!.id,
@@ -73,7 +57,7 @@ Deno.serve(async (req) => {
       15,
       60,
     );
-    
+
     if (!okMinute) return rateLimitedResponse();
 
     const okDay = await checkRateLimit(
@@ -84,30 +68,11 @@ Deno.serve(async (req) => {
     );
     if (!okDay) return rateLimitedResponse();
 
-    const ai: GoogleGenAI = getAIClient();
-    const result = await ai.models.generateContent({
-      model: VERTEX_CONFIG.CHAT_MODEL!,
-      contents: [
-        {
-          role: "user",
-          parts: [
-            { text: ANALYSIS_PROMPT },
-            { inlineData: { mimeType: detectMimeType(base64), data: base64 } },
-          ],
-        },
-      ],
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: ANALYSIS_SCHEMA,
-      },
+    const parsed = await analyzeImage<{ category?: string; tags?: unknown }>({
+      base64,
+      prompt: ANALYSIS_PROMPT,
+      schema: ANALYSIS_SCHEMA,
     });
-
-    let parsed: { category?: string; tags?: unknown };
-    try {
-      parsed = JSON.parse(result.text ?? "{}");
-    } catch {
-      parsed = {};
-    }
 
     const category =
       typeof parsed.category === "string" && VALID_CATEGORIES.includes(parsed.category)

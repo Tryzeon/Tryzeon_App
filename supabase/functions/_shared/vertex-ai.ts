@@ -9,23 +9,17 @@ let _aiClient: GoogleGenAI | null = null;
 export function getAIClient(): GoogleGenAI {
   if (!_aiClient) {
     const apiKey = Deno.env.get("VERTEX_API_KEY");
-    const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
-    const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";
 
     if (!apiKey) {
       throw new Error("VERTEX_API_KEY environment variable is required");
     }
 
-    if (!project) {
-      throw new Error("GOOGLE_CLOUD_PROJECT environment variable is required");
-    }
-
+    // Vertex AI express mode: authenticate with the API key alone. Passing
+    // project/location alongside apiKey is rejected by @google/genai
+    // ("Project/location and API key are mutually exclusive").
     _aiClient = new GoogleGenAI({
+      vertexai: true,
       apiKey: apiKey,
-      vertexai: {
-        project: project,
-        location: location,
-      },
     });
   }
 
