@@ -27,10 +27,7 @@ class StylePreferenceStep extends HookConsumerWidget {
               children: [
                 Text('你喜歡的風格', style: textTheme.headlineMedium),
                 const SizedBox(height: AppSpacing.sm),
-                Text(
-                  '僅用於推薦你喜歡的風格，不會公開顯示，可略過，日後可在設定中修改。',
-                  style: textTheme.bodyMedium,
-                ),
+                Text('僅用於推薦你喜歡的風格，不會公開顯示，可略過，日後可在設定中修改。', style: textTheme.bodyMedium),
               ],
             ),
           ),

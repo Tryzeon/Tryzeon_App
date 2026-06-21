@@ -22,10 +22,7 @@ class AgeStep extends HookConsumerWidget {
           const SizedBox(height: AppSpacing.smMd),
           Text('你的年齡', style: textTheme.headlineMedium),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            '僅用於推薦符合你的風格，不會公開顯示，日後可在設定中修改。',
-            style: textTheme.bodyMedium,
-          ),
+          Text('僅用於推薦符合你的風格，不會公開顯示，日後可在設定中修改。', style: textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.lg),
           ...AgeRange.values.map(
             (final range) => RadioListTile<AgeRange>(

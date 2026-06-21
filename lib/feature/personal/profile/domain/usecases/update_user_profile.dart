@@ -14,10 +14,6 @@ class UpdateUserProfile {
     final Gender? gender,
     final AgeRange? ageRange,
   }) {
-    return _repository.updateUserProfile(
-      name: name,
-      gender: gender,
-      ageRange: ageRange,
-    );
+    return _repository.updateUserProfile(name: name, gender: gender, ageRange: ageRange);
   }
 }

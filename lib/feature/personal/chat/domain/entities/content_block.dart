@@ -32,5 +32,6 @@ sealed class ContentBlock with _$ContentBlock {
   const factory ContentBlock.shopProduct(final ShopProduct product) = ShopProductBlock;
 
   /// A recommended wardrobe item, rendered as a card.
-  const factory ContentBlock.wardrobeProduct(final WardrobeItem item) = WardrobeProductBlock;
+  const factory ContentBlock.wardrobeProduct(final WardrobeItem item) =
+      WardrobeProductBlock;
 }

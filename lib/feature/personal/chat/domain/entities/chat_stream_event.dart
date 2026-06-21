@@ -12,7 +12,8 @@ part 'chat_stream_event.freezed.dart';
 @freezed
 sealed class ChatStreamEvent with _$ChatStreamEvent {
   const factory ChatStreamEvent.toolStarted(final ToolUseBlock block) = ChatToolStarted;
-  const factory ChatStreamEvent.toolFinished(final ToolResultBlock block) = ChatToolFinished;
+  const factory ChatStreamEvent.toolFinished(final ToolResultBlock block) =
+      ChatToolFinished;
   const factory ChatStreamEvent.replied({
     required final ChatMessage answer,
     final DailyUsage? usage,

@@ -24,7 +24,9 @@ class ChatRemoteDataSource {
   Stream<ChatStreamEvent> sendMessageStream(final List<ChatMessage> history) async* {
     final url = '${Env.supabaseUrl}/functions/v1/${AppConstants.functionChat}';
     final accessToken = _supabase.auth.currentSession?.accessToken ?? '';
-    final body = jsonEncode({'messages': [for (final m in history) messageToWire(m)]});
+    final body = jsonEncode({
+      'messages': [for (final m in history) messageToWire(m)],
+    });
 
     final response = await _dio.post<ResponseBody>(
       url,
