@@ -59,9 +59,9 @@ class ProductFormData {
       storeId: storeId,
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
-      price: double.tryParse(priceController.text) ?? 0.0,
+      price: double.parse(priceController.text),
       images: newImageFiles,
-      gender: selectedGender.value ?? ProductGender.unisex,
+      gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -87,8 +87,8 @@ class ProductFormData {
       sizeIdsToDelete: deltas.sizeIdsToDelete,
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
-      price: double.tryParse(priceController.text) ?? 0.0,
-      gender: selectedGender.value ?? ProductGender.unisex,
+      price: double.parse(priceController.text),
+      gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -114,8 +114,8 @@ class ProductFormData {
       storeId: storeId,
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
-      price: double.tryParse(priceController.text) ?? 0.0,
-      gender: selectedGender.value ?? ProductGender.unisex,
+      price: double.parse(priceController.text),
+      gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text,
       material: selectedMaterial.value,
       elasticity: selectedElasticity.value,
