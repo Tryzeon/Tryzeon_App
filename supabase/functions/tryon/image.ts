@@ -175,37 +175,54 @@ export async function generateTryonImage(
     },
   };
 
+  const MAX_ATTEMPTS = 3;
+
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify(requestBody),
-    });
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Failed to generate image. Status:", response.status);
-      console.error("Error response:", errorText);
-      throw new Error(`Failed to generate image: ${response.statusText} - ${errorText}`);
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to generate image. Status:", response.status);
+        console.error("Error response:", errorText);
 
-    const data = await response.json();
-    
-    const candidates = data.candidates ?? [];
-    
-    for (const candidate of candidates) {
-      const parts = candidate.content?.parts ?? [];
-      for (const part of parts) {
-        if (part.inlineData?.mimeType?.startsWith("image/") && part.inlineData.data) {
-          return part.inlineData.data;
+        if (response.status === 429 && attempt < MAX_ATTEMPTS) {
+          const backoffMs = 1000 * attempt;
+          console.warn(
+            `Vertex ${response.status}, retrying in ${backoffMs}ms ` +
+              `(attempt ${attempt}/${MAX_ATTEMPTS - 1})`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+          continue;
+        }
+
+        throw new Error(`Failed to generate image: ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      const candidates = data.candidates ?? [];
+
+      for (const candidate of candidates) {
+        const parts = candidate.content?.parts ?? [];
+        for (const part of parts) {
+          if (part.inlineData?.mimeType?.startsWith("image/") && part.inlineData.data) {
+            return part.inlineData.data;
+          }
         }
       }
+
+      console.error("No image data in response:", JSON.stringify(data));
+      return null;
     }
 
-    console.error("No image data in response:", JSON.stringify(data));
     return null;
   } catch (error) {
     console.error("Error generating try-on image:", error);
