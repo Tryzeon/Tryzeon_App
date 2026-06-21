@@ -37,26 +37,6 @@ class ProductBasicFieldsEditor extends HookWidget {
     final priceFocusNode = useFocusNode();
     final purchaseLinkFocusNode = useFocusNode();
 
-    // Only offer categories that apply to the product's gender (unisex → all).
-    final gender = useValueListenable(selectedGender);
-    final allCategories = productCategoriesAsync.asData?.value;
-
-    // When gender changes, drop any selected categories that no longer apply.
-    // SelectionFormField mirrors this prune into its validation automatically.
-    useEffect(() {
-      if (allCategories == null || gender == ProductGender.unisex) return null;
-      final validIds = allCategories
-          .where((final c) => c.appliesTo(gender))
-          .map((final c) => c.id)
-          .toSet();
-      final current = selectedCategoryIds.value;
-      final pruned = current.intersection(validIds);
-      if (pruned.length != current.length) {
-        selectedCategoryIds.value = pruned;
-      }
-      return null;
-    }, [gender, allCategories]);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -88,10 +68,7 @@ class ProductBasicFieldsEditor extends HookWidget {
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
         productCategoriesAsync.when(
-          data: (final allCategories) {
-            final categories = gender == ProductGender.unisex
-                ? allCategories
-                : allCategories.where((final c) => c.appliesTo(gender)).toList();
+          data: (final categories) {
             return SelectionFormField<Set<String>>(
               controller: selectedCategoryIds,
               validator: (final value) =>
