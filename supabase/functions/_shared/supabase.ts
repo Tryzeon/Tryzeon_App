@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient, User } from "jsr:@supabase/supabase-js@2";
+import { jsonError } from "./http.ts";
 
 export const CONFIG = {
     SUPABASE_URL: Deno.env.get("SUPABASE_URL")!,
@@ -17,10 +18,7 @@ export const getAuthenticatedUserClient = async (
         return {
             userClient: null,
             user: null,
-            errorResponse: new Response(
-                JSON.stringify({ error: "Unauthorized", code: "UNAUTHORIZED" }),
-                { status: 401, headers: { "Content-Type": "application/json" } }
-            ),
+            errorResponse: jsonError("Unauthorized", "UNAUTHORIZED", 401),
         };
     }
 
@@ -39,10 +37,7 @@ export const getAuthenticatedUserClient = async (
         return {
             userClient: null,
             user: null,
-            errorResponse: new Response(
-                JSON.stringify({ error: "Unauthorized", code: "UNAUTHORIZED" }),
-                { status: 401, headers: { "Content-Type": "application/json" } }
-            ),
+            errorResponse: jsonError("Unauthorized", "UNAUTHORIZED", 401),
         };
     }
 

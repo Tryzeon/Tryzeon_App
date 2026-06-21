@@ -5,6 +5,7 @@ import {
   listPublicImagesFromR2,
   R2ObjectInfo,
 } from "../_shared/r2.ts";
+import { json } from "../_shared/http.ts";
 
 const DEFAULT_GRACE_HOURS = 24;
 const DEFAULT_MAX_DELETE = 500;
@@ -15,13 +16,6 @@ interface SweepBody {
   dryRun?: boolean;
   graceHours?: number;
   maxDelete?: number;
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 async function collectReferencedKeys(): Promise<Set<string>> {

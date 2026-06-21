@@ -2,12 +2,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
-import {
-  analyzeImage,
-  jsonError,
-  rateLimitedResponse,
-  validateBase64,
-} from "../_shared/image-analysis.ts";
+import { analyzeImage, validateBase64 } from "../_shared/image-analysis.ts";
+import { json, jsonError, rateLimitedResponse } from "../_shared/http.ts";
 
 const STYLE_VALUES = [
   "japanese", "korean", "western", "british", "chinese",
@@ -99,19 +95,16 @@ Deno.serve(async (req) => {
     const categoryIds = categoryName ? (idsByName.get(categoryName) ?? []) : [];
     const name = str(parsed.name);
 
-    return new Response(
-      JSON.stringify({
-        name: name ? name.slice(0, 20) : null,
-        categoryIds,
-        gender: inList(parsed.gender, GENDER_VALUES),
-        styles: filterList(parsed.styles, STYLE_VALUES, 3),
-        seasons: filterList(parsed.seasons, SEASON_VALUES, 4),
-        material: str(parsed.material),
-        fit: str(parsed.fit),
-        thickness: inList(parsed.thickness, THICKNESS_VALUES),
-      }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return json({
+      name: name ? name.slice(0, 20) : null,
+      categoryIds,
+      gender: inList(parsed.gender, GENDER_VALUES),
+      styles: filterList(parsed.styles, STYLE_VALUES, 3),
+      seasons: filterList(parsed.seasons, SEASON_VALUES, 4),
+      material: str(parsed.material),
+      fit: str(parsed.fit),
+      thickness: inList(parsed.thickness, THICKNESS_VALUES),
+    });
   } catch (err) {
     console.error("analyze-product-image error", err);
     return jsonError("Internal error", "INTERNAL", 500);

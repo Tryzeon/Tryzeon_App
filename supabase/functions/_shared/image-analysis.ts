@@ -1,21 +1,9 @@
 import { GoogleGenAI } from "npm:@google/genai";
 import { getAIClient, VERTEX_CONFIG } from "./vertex-ai.ts";
 import { detectMimeType } from "./image-utils.ts";
+import { jsonError } from "./http.ts";
 
 export const MAX_BASE64_LENGTH = 8 * 1024 * 1024;
-
-/** Builds a JSON error response with the standard `{ error, code }` body. */
-export function jsonError(message: string, code: string, status: number): Response {
-  return new Response(
-    JSON.stringify({ error: message, code }),
-    { status, headers: { "Content-Type": "application/json" } },
-  );
-}
-
-/** Standard 429 for the image-analysis rate limiters. */
-export function rateLimitedResponse(): Response {
-  return jsonError("Rate limit exceeded", "RATE_LIMIT_EXCEEDED", 429);
-}
 
 type ValidationResult =
   | { ok: true; value: string }

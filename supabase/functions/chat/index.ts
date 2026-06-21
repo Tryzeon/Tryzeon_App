@@ -16,6 +16,7 @@ import {
   WARDROBE_SELECT,
 } from "./logic.ts";
 import { encodeEvent } from "./stream.ts";
+import { jsonError, rateLimitedResponse } from "../_shared/http.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
 const CHAT_MODEL = Deno.env.get("CHAT_MODEL") ?? "gemini-2.5-flash";
@@ -70,18 +71,12 @@ Deno.serve(async (req) => {
 
     const bodyText = await req.text();
     if (!bodyText) {
-      return new Response(
-        JSON.stringify({ error: "Empty request body", code: "BAD_REQUEST" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonError("Empty request body", "BAD_REQUEST", 400);
     }
     const { messages } = JSON.parse(bodyText);
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields", code: "VALIDATION_ERROR" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonError("Missing required fields", "VALIDATION_ERROR", 400);
     }
 
     const adminClient = getAdminClient();
@@ -89,14 +84,7 @@ Deno.serve(async (req) => {
 
     const { allowed, usage } = await quotaManager.incrementQuota();
     if (!allowed) {
-      return new Response(
-        JSON.stringify({
-          error: "Rate limit exceeded",
-          code: "RATE_LIMIT_EXCEEDED",
-          usage: usage,
-        }),
-        { status: 429, headers: { "Content-Type": "application/json" } }
-      );
+      return rateLimitedResponse(usage);
     }
 
     const [{ data: profile }, { data: categories, error: catErr }] = await Promise.all([
@@ -111,10 +99,7 @@ Deno.serve(async (req) => {
     if (catErr) {
       console.error("Failed to fetch product_categories:", catErr);
       await quotaManager?.rollbackQuota();
-      return new Response(
-        JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonError("Internal server error", "INTERNAL_ERROR", 500);
     }
 
     const userName = nonEmptyStr(profile?.name);
@@ -241,9 +226,6 @@ ${categoryLines}`;
 
     await quotaManager?.rollbackQuota();
 
-    return new Response(
-      JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonError("Internal server error", "INTERNAL_ERROR", 500);
   }
 });

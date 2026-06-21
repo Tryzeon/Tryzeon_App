@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { deletePublicImagesFromR2, generatePresignedPutUrl } from "../_shared/r2.ts";
+import { json } from "../_shared/http.ts";
 
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -22,13 +23,6 @@ function validateContentLength(value: unknown): Response | number {
 }
 
 type AdminClient = ReturnType<typeof getAdminClient>;
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 function logoKey(storeId: string, contentType: string): string {
   const ext = MIME_TO_EXT[contentType];

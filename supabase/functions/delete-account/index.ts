@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { json } from "../_shared/http.ts";
 
 // --- Configuration ---
 const CONFIG = {
@@ -166,20 +167,13 @@ Deno.serve(async (req) => {
     }
 
     // 5. Success response
-    return new Response(
-      JSON.stringify({ message: "Account deleted successfully" }),
-      { headers: { "Content-Type": "application/json" } }
-    );
-
+    return json({ message: "Account deleted successfully" });
   } catch (err) {
     console.error(err);
 
     const status = err instanceof AppError ? err.statusCode : 500;
     const message = err instanceof AppError ? err.message : "Internal Server Error";
 
-    return new Response(
-      JSON.stringify({ message }),
-      { status, headers: { "Content-Type": "application/json" } }
-    );
+    return json({ message }, status);
   }
 });

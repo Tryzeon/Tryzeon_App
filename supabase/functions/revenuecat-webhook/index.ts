@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient } from "../_shared/supabase.ts";
+import { json } from "../_shared/http.ts";
 
 // ── Configuration ──────────────────────────────────────────────────────────
 
@@ -71,10 +72,7 @@ Deno.serve(async (req) => {
 
     if (!authHeader || authHeader !== expectedHeader) {
       console.warn("Unauthorized webhook attempt");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
+      return json({ error: "Unauthorized" }, 401);
     }
 
     // 2. Parse event payload
@@ -82,19 +80,13 @@ Deno.serve(async (req) => {
     const event = payload.event;
 
     if (!event || !event.type) {
-      return new Response(
-        JSON.stringify({ message: "Invalid payload" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return json({ message: "Invalid payload" }, 400);
     }
 
     // 3. Handle TEST event — just acknowledge
     if (event.type === "TEST") {
       console.log("Received TEST event from RevenueCat");
-      return new Response(
-        JSON.stringify({ message: "TEST event received" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return json({ message: "TEST event received" }, 200);
     }
 
     // 4. Resolve user_id from app_user_id
@@ -102,10 +94,7 @@ Deno.serve(async (req) => {
     const userId = event.app_user_id;
     if (!userId) {
       console.warn("Missing app_user_id in webhook event");
-      return new Response(
-        JSON.stringify({ message: "Missing app_user_id" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return json({ message: "Missing app_user_id" }, 200);
     }
 
     // 5. Determine plan based on event type
@@ -122,10 +111,7 @@ Deno.serve(async (req) => {
     } else {
       // CANCELLATION, BILLING_ISSUE, SUBSCRIPTION_PAUSED
       // Plan doesn't change — user still has access until expiration.
-      return new Response(
-        JSON.stringify({ message: "OK" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return json({ message: "OK" }, 200);
     }
 
     // 6. Upsert subscriptions table
@@ -142,24 +128,15 @@ Deno.serve(async (req) => {
     if (upsertError) {
       console.error("Failed to upsert subscription:", upsertError);
       // Still return 200 to prevent RevenueCat retries for DB errors we can investigate
-      return new Response(
-        JSON.stringify({ message: "Upsert failed", error: upsertError.message }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return json({ message: "Upsert failed", error: upsertError.message }, 200);
     }
 
-    return new Response(
-      JSON.stringify({ message: "OK" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return json({ message: "OK" }, 200);
   } catch (err) {
     console.error("Webhook handler error:", err);
 
     // Always return 200 to prevent infinite retries from RevenueCat.
     // Errors are logged for investigation.
-    return new Response(
-      JSON.stringify({ message: "Internal error (logged)" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return json({ message: "Internal error (logged)" }, 200);
   }
 });

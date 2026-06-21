@@ -1,10 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
-import {
-  analyzeImage,
-  rateLimitedResponse,
-  validateBase64,
-} from "../_shared/image-analysis.ts";
+import { analyzeImage, validateBase64 } from "../_shared/image-analysis.ts";
+import { json, jsonError, rateLimitedResponse } from "../_shared/http.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 // "unknown" is a sentinel the model may emit but is never a real category;
@@ -84,15 +81,9 @@ Deno.serve(async (req) => {
         .slice(0, 6)
       : [];
 
-    return new Response(
-      JSON.stringify({ tags, category }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return json({ tags, category });
   } catch (err) {
     console.error("analyze-wardrobe-image error", err);
-    return new Response(
-      JSON.stringify({ error: "Internal error", code: "INTERNAL" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return jsonError("Internal error", "INTERNAL", 500);
   }
 });
