@@ -69,6 +69,7 @@ class ChatPage extends HookConsumerWidget {
       final trimmed = text.trim();
       if (trimmed.isEmpty) return;
       controller.clear();
+      FocusScope.of(context).unfocus();
       ref.read(chatProvider.notifier).sendMessage(trimmed);
     }
 
