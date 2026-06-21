@@ -1,7 +1,8 @@
 import { GoogleGenAI } from "npm:@google/genai";
 import { getAIClient, VERTEX_CONFIG } from "./vertex-ai.ts";
 import { detectMimeType } from "./image-utils.ts";
-import { jsonError } from "./http.ts";
+import { jsonError, rateLimitedResponse } from "./http.ts";
+import { checkRateLimit } from "./rate-limit.ts";
 
 export const MAX_BASE64_LENGTH = 8 * 1024 * 1024;
 
@@ -18,6 +19,17 @@ export function validateBase64(base64: unknown): ValidationResult {
     return { ok: false, response: jsonError("Image payload too large", "PAYLOAD_TOO_LARGE", 413) };
   }
   return { ok: true, value: base64 };
+}
+
+export async function checkImageAnalysisRateLimit(
+  userId: string,
+  bucketPrefix: string,
+): Promise<Response | null> {
+  const okMinute = await checkRateLimit(userId, `${bucketPrefix}:minute`, 15, 60);
+  if (!okMinute) return rateLimitedResponse();
+  const okDay = await checkRateLimit(userId, `${bucketPrefix}:day`, 200, 86400);
+  if (!okDay) return rateLimitedResponse();
+  return null;
 }
 
 /** Runs a single-image structured-output analysis and returns the parsed object. */

@@ -1,9 +1,12 @@
 // supabase/functions/analyze-product-image/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
-import { checkRateLimit } from "../_shared/rate-limit.ts";
-import { analyzeImage, validateBase64 } from "../_shared/image-analysis.ts";
-import { json, jsonError, rateLimitedResponse } from "../_shared/http.ts";
+import {
+  analyzeImage,
+  checkImageAnalysisRateLimit,
+  validateBase64,
+} from "../_shared/image-analysis.ts";
+import { json, jsonError } from "../_shared/http.ts";
 
 const STYLE_VALUES = [
   "japanese", "korean", "western", "british", "chinese",
@@ -64,10 +67,8 @@ Deno.serve(async (req) => {
     if (!validation.ok) return validation.response;
     const base64 = validation.value;
 
-    const okMinute = await checkRateLimit(user!.id, "product_image_analysis:minute", 15, 60);
-    if (!okMinute) return rateLimitedResponse();
-    const okDay = await checkRateLimit(user!.id, "product_image_analysis:day", 200, 86400);
-    if (!okDay) return rateLimitedResponse();
+    const limited = await checkImageAnalysisRateLimit(user!.id, "product_image_analysis");
+    if (limited) return limited;
 
     // Load global categories and build a name -> ids map (server-side mapping).
     const admin = getAdminClient();

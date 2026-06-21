@@ -1,8 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
-import { analyzeImage, validateBase64 } from "../_shared/image-analysis.ts";
-import { json, jsonError, rateLimitedResponse } from "../_shared/http.ts";
-import { checkRateLimit } from "../_shared/rate-limit.ts";
+import {
+  analyzeImage,
+  checkImageAnalysisRateLimit,
+  validateBase64,
+} from "../_shared/image-analysis.ts";
+import { json, jsonError } from "../_shared/http.ts";
 
 // "unknown" is a sentinel the model may emit but is never a real category;
 // keep it in the schema enum so the model has an explicit "can't tell" option,
@@ -48,22 +51,8 @@ Deno.serve(async (req) => {
     if (!validation.ok) return validation.response;
     const base64 = validation.value;
 
-    const okMinute = await checkRateLimit(
-      user!.id,
-      "image_analysis:minute",
-      15,
-      60,
-    );
-
-    if (!okMinute) return rateLimitedResponse();
-
-    const okDay = await checkRateLimit(
-      user!.id,
-      "image_analysis:day",
-      200,
-      86400,
-    );
-    if (!okDay) return rateLimitedResponse();
+    const limited = await checkImageAnalysisRateLimit(user!.id, "wardrobe_image_analysis");
+    if (limited) return limited;
 
     const parsed = await analyzeImage<{ category?: string; tags?: unknown }>({
       base64,
