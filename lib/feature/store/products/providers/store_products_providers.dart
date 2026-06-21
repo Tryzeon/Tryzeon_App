@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -10,8 +11,11 @@ import 'package:tryzeon/feature/store/analytics/providers/store_analytics_provid
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/repositories/product_repository_impl.dart';
+import 'package:tryzeon/feature/store/products/data/services/product_image_analyzer_impl.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/products/domain/services/product_image_analyzer.dart';
+import 'package:tryzeon/feature/store/products/domain/usecases/analyze_product_image.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/list_products.dart';
@@ -144,6 +148,14 @@ Future<Product> productById(final Ref ref, final String productId) async {
 
   return result.get()!;
 }
+
+@riverpod
+ProductImageAnalyzer productImageAnalyzer(final Ref ref) =>
+    ProductImageAnalyzerImpl(ref.watch(imageAnalysisApiProvider));
+
+@Riverpod(keepAlive: true)
+AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>
+    AnalyzeProductImage(ref.watch(productImageAnalyzerProvider));
 
 /// 強制刷新商品列表
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作

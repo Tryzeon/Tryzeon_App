@@ -18,6 +18,7 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
     required this.selectedThickness,
     required this.selectedStyles,
     required this.selectedSeasons,
+    this.controller,
   });
 
   final ValueNotifier<String?> selectedMaterial;
@@ -27,11 +28,14 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
   final ValueNotifier<List<ProductSeason>?> selectedSeasons;
 
+  final ExpansibleController? controller;
+
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return ExpansionTile(
+      controller: controller,
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(top: AppSpacing.sm),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,

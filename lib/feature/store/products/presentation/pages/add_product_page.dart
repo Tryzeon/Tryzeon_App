@@ -24,6 +24,32 @@ class AddProductPage extends HookConsumerWidget {
     final isSaving = useState(false);
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
+    final isAnalyzing = useState(false);
+    final analyzedPath = useRef<String?>(null);
+    final advancedController = useMemoized(ExpansibleController.new);
+
+    // Analyze the main (first) image once it is added, and pre-fill empty
+    // fields. Runs once per distinct main-image file; failures degrade to a
+    // no-op (the usecase returns an empty result).
+    final newFiles = formData.newImageFiles;
+    final mainImageFile = newFiles.isEmpty ? null : newFiles.first;
+    useEffect(() {
+      final file = mainImageFile;
+      if (file == null || analyzedPath.value == file.path) return null;
+      analyzedPath.value = file.path;
+      isAnalyzing.value = true;
+      Future<void>(() async {
+        final result = await ref.read(analyzeProductImageUseCaseProvider)(file);
+        if (!context.mounted) return;
+
+        formData.applyAnalysis(result);
+
+        if (result.hasAdvancedFields) advancedController.expand();
+        isAnalyzing.value = false;
+      });
+      return null;
+    }, [mainImageFile]);
+
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
 
@@ -88,6 +114,8 @@ class AddProductPage extends HookConsumerWidget {
           sizeManager: sizeManager,
           productCategoriesAsync: productCategoriesAsync,
           onRetryCategories: () => ref.invalidate(productCategoriesProvider),
+          isAnalyzing: isAnalyzing.value,
+          advancedController: advancedController,
           onPickImage: (final remainingCount) async {
             return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
           },

@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 
@@ -73,6 +74,34 @@ class ProductFormData {
       seasons: selectedSeasons.value,
       sizes: sizes,
     );
+  }
+
+  /// Pre-fills empty fields from an analysis result.
+  void applyAnalysis(final ProductAnalysisResult r) {
+    if (nameController.text.trim().isEmpty && (r.name?.isNotEmpty ?? false)) {
+      nameController.text = r.name!;
+    }
+    if (selectedCategoryIds.value.isEmpty && r.categoryIds.isNotEmpty) {
+      selectedCategoryIds.value = r.categoryIds.toSet();
+    }
+    if (selectedGender.value == null && r.gender != null) {
+      selectedGender.value = r.gender;
+    }
+    if (selectedThickness.value == null && r.thickness != null) {
+      selectedThickness.value = r.thickness;
+    }
+    if ((selectedStyles.value?.isEmpty ?? true) && r.styles.isNotEmpty) {
+      selectedStyles.value = r.styles;
+    }
+    if ((selectedSeasons.value?.isEmpty ?? true) && r.seasons.isNotEmpty) {
+      selectedSeasons.value = r.seasons;
+    }
+    if ((selectedMaterial.value?.isEmpty ?? true) && (r.material?.isNotEmpty ?? false)) {
+      selectedMaterial.value = r.material;
+    }
+    if ((selectedFit.value?.isEmpty ?? true) && (r.fit?.isNotEmpty ?? false)) {
+      selectedFit.value = r.fit;
+    }
   }
 
   UpdateProductParams toUpdateProductParams({

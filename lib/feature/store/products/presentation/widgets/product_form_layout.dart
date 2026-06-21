@@ -22,6 +22,8 @@ class ProductFormLayout extends StatelessWidget {
     required this.onPickImage,
     required this.productCategoriesAsync,
     required this.onRetryCategories,
+    this.isAnalyzing = false,
+    this.advancedController,
     super.key,
   });
   final ProductFormData formData;
@@ -29,6 +31,8 @@ class ProductFormLayout extends StatelessWidget {
   final Future<List<File>?> Function(int remainingCount) onPickImage;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
+  final bool isAnalyzing;
+  final ExpansibleController? advancedController;
 
   @override
   Widget build(final BuildContext context) {
@@ -78,6 +82,16 @@ class ProductFormLayout extends StatelessWidget {
               ],
             ),
           ),
+          if (isAnalyzing)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                0,
+              ),
+              child: _AnalyzingIndicator(),
+            ),
           const SizedBox(height: AppSpacing.lg),
           const Divider(),
           const SizedBox(height: AppSpacing.lg),
@@ -108,6 +122,7 @@ class ProductFormLayout extends StatelessWidget {
                   selectedThickness: formData.selectedThickness,
                   selectedStyles: formData.selectedStyles,
                   selectedSeasons: formData.selectedSeasons,
+                  controller: advancedController,
                 ),
               ],
             ),
@@ -163,6 +178,32 @@ class _FormSectionLabel extends StatelessWidget {
             style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _AnalyzingIndicator extends StatelessWidget {
+  const _AnalyzingIndicator();
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(
+          width: 14,
+          height: 14,
+          child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Text(
+          'AI 分析中…',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
