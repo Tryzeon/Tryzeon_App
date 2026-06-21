@@ -63,12 +63,11 @@ Deno.serve(async (req) => {
     const extension = mimeTypeToExtension(mimeType);
 
     const bytes = base64ToUint8Array(cleanBase64);
-    const imageBuffer = bytes.buffer;
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `${user!.id}/${timestamp}.${extension}`;
 
-    const imageUrl = await uploadTryonImageToR2(imageBuffer, fileName, mimeType);
+    const imageUrl = await uploadTryonImageToR2(bytes, fileName, mimeType);
 
     return json({ imageUrl: imageUrl, usage: usage });
   } catch (err) {

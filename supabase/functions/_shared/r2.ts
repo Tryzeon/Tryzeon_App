@@ -67,18 +67,18 @@ async function uploadToR2(
   });
 }
 
-export async function uploadTryonVideoToR2(buffer: ArrayBuffer, fileName: string): Promise<string> {
+export async function uploadTryonVideoToR2(body: Uint8Array, fileName: string): Promise<string> {
   const bucketName = Deno.env.get("R2_TRYON_VIDEOS_BUCKET_NAME")!;
-  return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), "video/mp4");
+  return await uploadToR2(bucketName, fileName, body, "video/mp4");
 }
 
 export async function uploadTryonImageToR2(
-  buffer: ArrayBuffer,
+  body: Uint8Array,
   fileName: string,
   contentType: string,
 ): Promise<string> {
   const bucketName = Deno.env.get("R2_TRYON_IMAGES_BUCKET_NAME")!;
-  return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), contentType);
+  return await uploadToR2(bucketName, fileName, body, contentType);
 }
 
 const PUBLIC_CACHE_CONTROL = "public, max-age=31536000, immutable";
