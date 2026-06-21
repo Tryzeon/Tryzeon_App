@@ -29,7 +29,7 @@ class ProductFormData {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
-  final ValueNotifier<ProductGender> selectedGender;
+  final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<String?> selectedMaterial;
   final ValueNotifier<String?> selectedFit;
   final ValueNotifier<List<ImageItem>> images;
@@ -61,7 +61,7 @@ class ProductFormData {
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
       images: newImageFiles,
-      gender: selectedGender.value,
+      gender: selectedGender.value ?? ProductGender.unisex,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -88,7 +88,7 @@ class ProductFormData {
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
-      gender: selectedGender.value,
+      gender: selectedGender.value ?? ProductGender.unisex,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -115,7 +115,7 @@ class ProductFormData {
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
-      gender: selectedGender.value,
+      gender: selectedGender.value ?? ProductGender.unisex,
       purchaseLink: purchaseLinkController.text,
       material: selectedMaterial.value,
       elasticity: selectedElasticity.value,
@@ -142,9 +142,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final purchaseLinkController = useTextEditingController(
     text: initialProduct?.purchaseLink,
   );
-  final selectedGender = useValueNotifier<ProductGender>(
-    initialProduct?.gender ?? ProductGender.unisex,
-  );
+  // Null until the store owner picks one (required, validated on submit). Edit
+  // flow seeds the existing product's gender, which is always set.
+  final selectedGender = useValueNotifier<ProductGender?>(initialProduct?.gender);
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
   final selectedFit = useValueNotifier<String?>(initialProduct?.fit);
 

@@ -27,7 +27,7 @@ class ProductBasicFieldsEditor extends HookWidget {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
-  final ValueNotifier<ProductGender> selectedGender;
+  final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
@@ -64,7 +64,18 @@ class ProductBasicFieldsEditor extends HookWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('性別', required: true),
-        ProductGenderSelector(selectedGender: selectedGender),
+        SelectionFormField<ProductGender?>(
+          controller: selectedGender,
+          validator: (final value) =>
+              AppValidators.validateNonEmpty(value, message: '請選擇性別'),
+          builder: (final state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ProductGenderSelector(selectedGender: selectedGender),
+              if (state.hasError) _ErrorText(state.errorText!),
+            ],
+          ),
+        ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
         productCategoriesAsync.when(
