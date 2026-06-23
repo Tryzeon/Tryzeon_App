@@ -9,10 +9,12 @@ class ToolUseBubble extends StatelessWidget {
 
   final ToolUseBlock block;
 
+  // The backend only ever streams these two search tools as progress; the
+  // default is unreachable but required for exhaustiveness, so keep it neutral.
   static String _verb(final String name) => switch (name) {
     'search_products' => '正在搜尋商品',
     'search_wardrobe' => '正在查詢衣櫃',
-    _ => '正在使用 $name',
+    _ => '正在搜尋',
   };
 
   // Compact summary of the search params so the user sees what was searched.

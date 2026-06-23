@@ -35,7 +35,7 @@ const vertex = createVertex({
   },
 });
 
-// Fetch the rows the model referenced in respond(), keyed by id, by running the
+// Fetch the rows the model referenced in its answer output, keyed by id, by running the
 // caller's prepared query with an `.in("id", ids)` filter. Empty ids → empty map
 // (no query); missing ids (e.g. a since-deleted item) are simply absent.
 async function fetchRowsByIds(
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
   try {
     // Auth: Verify JWT and get user securely
-    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
     const bodyText = await req.text();

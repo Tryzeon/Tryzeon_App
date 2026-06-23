@@ -125,15 +125,15 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
   return out;
 }
 
-// One ordered piece of a respond() call: a line of text, or a reference to a
-// shop product / wardrobe item by its real id (the model labels which).
+// One ordered piece of the structured answer output: a line of text, or a
+// reference to a shop product / wardrobe item by its real id (the model labels which).
 export type AnswerRef =
   | { type: "text"; text: string }
   | { type: "product"; id: string }
   | { type: "wardrobe"; id: string };
 
-// Parse a respond() tool call into ordered refs. The model picks the block type
-// (product = shop, wardrobe = wardrobe) and gives the id; the edge fetches each
+// Parse the structured answer output into ordered refs. The model picks the block
+// type (product = shop, wardrobe = wardrobe) and gives the id; the edge fetches each
 // id from the matching table. Empty text and id-less product/wardrobe blocks drop.
 export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
   const rawBlocks = Array.isArray(args?.blocks) ? args.blocks : [];
@@ -148,45 +148,6 @@ export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
     }
   }
   return refs;
-}
-
-// One step of the AI SDK agent run: the tool calls it made and their results.
-export type AgentStep = {
-  toolCalls: { toolCallId: string; toolName: string; input: unknown }[];
-  toolResults: { toolCallId: string; output: unknown }[];
-};
-
-// Rebuild the standard wire turns from the run's steps — the inverse of
-// toModelMessages. Each search step becomes a paired assistant `tool_use` turn +
-// user `tool_result` turn; the terminal `respond` call carries no result and is
-// resolved by the caller, so it is skipped here.
-export function stepsToTurns(steps: AgentStep[]): ChatMessage[] {
-  const turns: ChatMessage[] = [];
-  for (const step of steps ?? []) {
-    const searchCalls = step.toolCalls.filter((tc) => tc.toolName !== "respond");
-    if (searchCalls.length === 0) continue;
-    turns.push({
-      role: "assistant",
-      content: searchCalls.map((tc) => ({
-        type: "tool_use",
-        id: tc.toolCallId,
-        name: tc.toolName,
-        input: tc.input,
-      })),
-    });
-    turns.push({
-      role: "user",
-      content: searchCalls.map((tc) => {
-        const tr = step.toolResults.find((r) => r.toolCallId === tc.toolCallId);
-        return {
-          type: "tool_result",
-          tool_use_id: tc.toolCallId,
-          content: (tr?.output as Record<string, unknown>) ?? {},
-        };
-      }),
-    });
-  }
-  return turns;
 }
 
 // Assemble the ordered answer blocks from parsed refs + the rows fetched by id.
