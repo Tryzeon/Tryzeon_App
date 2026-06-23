@@ -33,6 +33,7 @@ class AppConstants {
   static const String functionAnalyzeWardrobeImage = 'analyze-wardrobe-image';
   static const String functionAnalyzeProductImage = 'analyze-product-image';
   static const String functionRecordLinkOpen = 'record_link_open';
+  static const String functionParseSizeVoice = 'parse-size-voice';
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
