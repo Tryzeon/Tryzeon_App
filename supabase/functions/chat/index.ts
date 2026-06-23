@@ -1,10 +1,10 @@
 // default model: gemini-2.5-flash
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { streamText, stepCountIs } from "npm:ai@^6.0.208";
+import { streamText, stepCountIs, Output } from "npm:ai@^6.0.208";
 import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager } from "../_shared/quota.ts";
-import { buildTools } from "./tools.ts";
+import { answerSchema, buildTools } from "./tools.ts";
 import {
   assembleAnswerBlocks,
   type ChatMessage,
@@ -131,16 +131,17 @@ Deno.serve(async (req) => {
 判斷意圖再決定搜哪裡：
 - 使用者想「找 / 買某件單品」時，直接 search_products。
 - 使用者想「幫我配一套 / 用我現有的搭」時，先 search_wardrobe，缺的品類再 search_products。
-輸出（務必遵守）：
-- 需求不清楚時，用 respond 送出一個 text 區塊友善追問，不要呼叫搜尋工具。
-- 有結果時，用 respond 送出「有序」的 blocks：text（說明）、product（商店商品，用 search_products 回傳的 id）、wardrobe（衣櫃單品，用 search_wardrobe 回傳的 id）。
-- 推薦任何一件衣服或單品時，一律用 product 或 wardrobe 區塊承載，由 id 對應真實商品才能在畫面上渲染成商品卡。
-- 嚴禁在 text 區塊裡寫出商品 id，或用純文字描述某件具體商品來「假裝推薦」——這樣不會被渲染成卡片。text 區塊只用於說明、過場與追問，絕不放任何商品 id 或當作推薦單品的載體。
-- 一個 product/wardrobe 區塊只放一件；要推薦多件就放多個。
+最終回覆格式（務必遵守）：你的最終回覆是一個「有序」的 blocks 陣列，依序顯示給使用者。每個 block 的 type 只能是 text、product 或 wardrobe：
+- text：一段說明、過場或追問文字（放在 text 欄位）。
+- product：商店商品，id 必須是 search_products 回傳的商品 id。
+- wardrobe：衣櫃單品，id 必須是 search_wardrobe 回傳的單品 id。
+- 需求不清楚時，只回一個 text block 友善追問，不要呼叫搜尋工具。
+- 推薦任何一件衣服或單品時，一律用 product 或 wardrobe block 承載，由 id 對應真實商品才能在畫面上渲染成商品卡。
+- 嚴禁在 text block 裡寫出商品 id，或用純文字描述某件具體商品來「假裝推薦」——這樣不會被渲染成卡片。text block 只用於說明、過場與追問，絕不放任何商品 id 或當作推薦單品的載體。
+- 一個 product/wardrobe block 只放一件；要推薦多件就放多個。
 - 整套穿搭：用「text 描述部位（如：上身…）→ 該部位的 product 或 wardrobe」交錯排列。
 - 搜尋可能回 0 筆。某條件找不到時，放寬條件（移除精確過濾或簡化 query）再搜一次；仍找不到就用 text 說明並追問。
 - 商店單品用 product、衣櫃單品用 wardrobe，type 與 id 來源要對應；嚴禁編造 id。每一回合都必須有輸出，絕不空白。
-- 一定要用 respond 工具送出最終回覆，不要只回純文字。
 
 【使用者資訊】（推薦時可參考；是否套用到搜尋條件由你自行判斷，不強制。例如可視情況把性別或偏好風格帶入 search_products 的 gender / styles 參數）
 ${userContextLines}
@@ -149,8 +150,8 @@ ${userContextLines}
 ${categoryLines}`;
 
     // The AI SDK runs the agent loop: search_* tools have `execute` so it calls
-    // them and re-prompts automatically (capped by stopWhen); `respond` has no
-    // `execute`, so the loop halts and hands its call back to us as the answer.
+    // them and re-prompts automatically (capped by stopWhen). The final answer is
+    // produced as structured `output` (answerSchema), not a tool call.
     const tools = buildTools({ adminClient, userId: user!.id, categoryIdsByName });
 
     const stream = new ReadableStream({
@@ -162,24 +163,22 @@ ${categoryLines}`;
             system: systemInstruction,
             messages: toModelMessages(messages as ChatMessage[]),
             tools,
+            output: Output.object({ schema: answerSchema }),
             stopWhen: stepCountIs(10),
           });
 
-          // Forward each search as it happens. `respond` is the answer carrier,
-          // not a progress step, so it is not emitted here.
           for await (const part of result.fullStream) {
-            if (part.type === "tool-call" && part.toolName !== "respond") {
+            if (part.type === "tool-call") {
               send({ type: "tool_use", id: part.toolCallId, name: part.toolName, input: part.input });
             } else if (part.type === "tool-result") {
               send({ type: "tool_result", tool_use_id: part.toolCallId, content: part.output });
             }
           }
 
-          const toolCalls = await result.toolCalls;
-          const respondCall = toolCalls.find((tc) => tc.toolName === "respond");
           let answerBlocks: ContentBlock[];
-          if (respondCall) {
-            const refs = parseAnswerRefs(respondCall.input as Record<string, any>);
+          try {
+            const output = (await result.output) as Record<string, any>;
+            const refs = parseAnswerRefs(output);
             const [products, wardrobe] = await Promise.all([
               fetchRowsByIds(
                 adminClient.from("products").select(PRODUCT_SELECT),
@@ -191,9 +190,9 @@ ${categoryLines}`;
               ),
             ]);
             answerBlocks = assembleAnswerBlocks(refs, products, wardrobe);
-          } else {
-            const text = ((await result.text) ?? "").trim();
-            answerBlocks = text ? [{ type: "text", text }] : [];
+          } catch (outErr) {
+            console.error("Structured output unavailable:", outErr);
+            answerBlocks = [];
           }
           if (answerBlocks.length === 0) {
             answerBlocks = [{ type: "text", text: FALLBACK_TEXT }];

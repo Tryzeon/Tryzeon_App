@@ -39,9 +39,18 @@ async function runSearchWardrobe(
   return (data ?? []) as Record<string, any>[];
 }
 
-// The agent's tools. search_* have an `execute` so the AI SDK runs them and
-// loops automatically; `respond` has NO `execute`, which halts the loop and
-// hands the final answer back to the caller to resolve (by-id product fetch).
+export const answerSchema = z.object({
+  blocks: z.array(
+    z.object({
+      type: z.enum(["text", "product", "wardrobe"]).describe("text、product 或 wardrobe"),
+      text: z.string().optional().describe("type=text 時的文字內容"),
+      id: z.string().optional().describe(
+        "type=product 時為 search_products 回傳的商品 id；type=wardrobe 時為 search_wardrobe 回傳的衣櫃單品 id",
+      ),
+    }),
+  ),
+});
+
 export function buildTools(deps: {
   adminClient: AdminClient;
   userId: string;
@@ -51,7 +60,7 @@ export function buildTools(deps: {
   return {
     search_products: tool({
       description:
-        "搜尋商店真實上架商品。需要具體單品時呼叫；回傳的 id 之後用於 respond。除 query 與 category_name 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
+        "搜尋商店真實上架商品。需要具體單品時呼叫；回傳的 id 之後用於最終回覆的 product block。除 query 與 category_name 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
       inputSchema: z.object({
         query: z.string().optional().describe(
           "只比對『商品名稱』與『店家/品牌名稱』。多個詞以空白分隔，且每個詞都必須出現在商品名稱中（AND），所以請用少量、可能出現在名稱裡的字（如『襯衫』『洋裝』或品牌名）。顏色、材質、風格、季節、分類請勿放這裡——改用對應參數。",
@@ -97,22 +106,6 @@ export function buildTools(deps: {
       execute: async (args) => ({
         items: await runSearchWardrobe(adminClient, userId, args),
       }),
-    }),
-    respond: tool({
-      description:
-        "送出最終回覆。blocks 是有序的內容區塊，依序顯示給使用者：text（一段話）、product（商店商品，用 search_products 回傳的 id）、wardrobe（衣櫃單品，用 search_wardrobe 回傳的 id）。一個 product/wardrobe 區塊只放一件；要多件就放多個。整套穿搭就用「text 描述某部位 → 該部位的 product/wardrobe」交錯表達。",
-      inputSchema: z.object({
-        blocks: z.array(
-          z.object({
-            type: z.enum(["text", "product", "wardrobe"]).describe("text、product 或 wardrobe"),
-            text: z.string().optional().describe("type=text 時的文字內容"),
-            id: z.string().optional().describe(
-              "type=product 時為 search_products 回傳的商品 id；type=wardrobe 時為 search_wardrobe 回傳的衣櫃單品 id",
-            ),
-          }),
-        ),
-      }),
-      // No execute → the SDK stops the loop and returns this call for us to handle.
     }),
   };
 }
