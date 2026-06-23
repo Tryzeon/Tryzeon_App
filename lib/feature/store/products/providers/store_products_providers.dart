@@ -11,9 +11,12 @@ import 'package:tryzeon/feature/store/analytics/providers/store_analytics_provid
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/repositories/product_repository_impl.dart';
+import 'package:tryzeon/feature/store/products/data/services/audio_recorder_service_impl.dart';
 import 'package:tryzeon/feature/store/products/data/services/product_image_analyzer_impl.dart';
+import 'package:tryzeon/feature/store/products/data/services/size_voice_parser.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/products/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/products/domain/services/product_image_analyzer.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/analyze_product_image.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/create_product.dart';
@@ -156,6 +159,14 @@ ProductImageAnalyzer productImageAnalyzer(final Ref ref) =>
 @Riverpod(keepAlive: true)
 AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>
     AnalyzeProductImage(ref.watch(productImageAnalyzerProvider));
+
+@riverpod
+SizeVoiceParser sizeVoiceParser(final Ref ref) =>
+    SizeVoiceParser(Supabase.instance.client);
+
+@Riverpod(keepAlive: true)
+AudioRecorderService audioRecorderService(final Ref ref) =>
+    AudioRecorderServiceImpl();
 
 /// 強制刷新商品列表
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/measurements/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
 
@@ -23,6 +24,7 @@ class ProductSizeManager {
     required this.addSize,
     required this.removeSize,
     required this.changeUnit,
+    required this.appendParsedSizes,
   });
 
   final List<ProductSizeEntryController> sizeEntries;
@@ -30,6 +32,7 @@ class ProductSizeManager {
   final VoidCallback addSize;
   final void Function(int index) removeSize;
   final void Function(MeasurementUnit unit) changeUnit;
+  final void Function(List<ParsedSize> parsed) appendParsedSizes;
 
   List<CreateProductSizeParams> toCreateProductSizeParams() {
     return sizeEntries
@@ -117,11 +120,25 @@ ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}
     }
   }
 
+  void appendParsedSizes(final List<ParsedSize> parsed) {
+    if (parsed.isEmpty) return;
+    final added = parsed
+        .map(
+          (final p) => ProductSizeEntryController.fromParsedSize(
+            p,
+            targetUnit: selectedUnit.value,
+          ),
+        )
+        .toList();
+    sizeEntries.value = [...sizeEntries.value, ...added];
+  }
+
   return ProductSizeManager(
     sizeEntries: sizeEntries.value,
     selectedUnit: selectedUnit.value,
     addSize: addSize,
     removeSize: removeSize,
     changeUnit: changeUnit,
+    appendParsedSizes: appendParsedSizes,
   );
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/measurements/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ProductSizeEntryController {
@@ -31,6 +32,28 @@ class ProductSizeEntryController {
       name: size.name,
       measurements: size.measurements,
     );
+  }
+
+  factory ProductSizeEntryController.fromParsedSize(
+    final ParsedSize parsed, {
+    required final MeasurementUnit targetUnit,
+  }) {
+    final controller = ProductSizeEntryController(name: parsed.name);
+
+    String format(final double v) =>
+        v.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+
+    for (final entry in parsed.measurements.entries) {
+      final m = entry.value;
+      final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
+      controller.measurementControllers[entry.key]?.text = format(m.value * factor);
+      final offset = m.offset;
+      if (offset != null) {
+        controller.offsetControllers[entry.key]?.text = format(offset * factor);
+      }
+    }
+
+    return controller;
   }
 
   final String? id;

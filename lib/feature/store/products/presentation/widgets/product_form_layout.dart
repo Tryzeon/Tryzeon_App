@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/common/product_categories/domain/entities/produc
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
+import 'package:tryzeon/feature/store/products/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_advanced_fields_editor.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_fields_editor.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_image_editor.dart';
@@ -22,6 +23,8 @@ class ProductFormLayout extends StatelessWidget {
     required this.onPickImage,
     required this.productCategoriesAsync,
     required this.onRetryCategories,
+    required this.voiceStatus,
+    required this.onVoicePressed,
     this.isAnalyzing = false,
     this.advancedController,
     super.key,
@@ -31,6 +34,8 @@ class ProductFormLayout extends StatelessWidget {
   final Future<List<File>?> Function(int remainingCount) onPickImage;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
+  final SizeVoiceStatus voiceStatus;
+  final VoidCallback onVoicePressed;
   final bool isAnalyzing;
   final ExpansibleController? advancedController;
 
@@ -143,6 +148,8 @@ class ProductFormLayout extends StatelessWidget {
               onUnitChanged: sizeManager.changeUnit,
               onAdd: sizeManager.addSize,
               onRemove: sizeManager.removeSize,
+              voiceStatus: voiceStatus,
+              onVoicePressed: onVoicePressed,
             ),
           ),
         ],

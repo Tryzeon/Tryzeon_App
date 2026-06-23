@@ -5,6 +5,7 @@ import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/measurements/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
+import 'package:tryzeon/feature/store/products/presentation/hooks/use_size_voice_input.dart';
 
 class ProductSizeListEditor extends StatelessWidget {
   const ProductSizeListEditor({
@@ -14,6 +15,8 @@ class ProductSizeListEditor extends StatelessWidget {
     required this.onUnitChanged,
     required this.onAdd,
     required this.onRemove,
+    required this.voiceStatus,
+    required this.onVoicePressed,
   });
 
   final List<ProductSizeEntryController> entries;
@@ -21,6 +24,8 @@ class ProductSizeListEditor extends StatelessWidget {
   final ValueChanged<MeasurementUnit> onUnitChanged;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
+  final SizeVoiceStatus voiceStatus;
+  final VoidCallback onVoicePressed;
 
   static const List<String> _standardSizes = ['S', 'M', 'L', 'XL', '2XL'];
 
@@ -35,7 +40,43 @@ class ProductSizeListEditor extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Spacer(),
+            IconButton(
+              onPressed: voiceStatus == SizeVoiceStatus.uploading
+                  ? null
+                  : onVoicePressed,
+              visualDensity: VisualDensity.compact,
+              tooltip: '語音輸入尺寸',
+              icon: switch (voiceStatus) {
+                SizeVoiceStatus.uploading => SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: AppStroke.regular,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                SizeVoiceStatus.recording => Icon(
+                    Icons.stop_circle_rounded,
+                    size: 20,
+                    color: colorScheme.error,
+                  ),
+                SizeVoiceStatus.idle => Icon(
+                    Icons.mic_none_rounded,
+                    size: 20,
+                    color: colorScheme.primary,
+                  ),
+              },
+            ),
+            Expanded(
+              child: Text(
+                voiceStatus == SizeVoiceStatus.recording
+                    ? '錄音中…再按一下停止'
+                    : '可語音輸入：例「M 號，胸圍九十公分，腰圍七十二」',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
             DropdownButtonHideUnderline(
               child: DropdownButton<MeasurementUnit>(
                 value: selectedUnit,
