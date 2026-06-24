@@ -2,8 +2,8 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -13,9 +13,7 @@ abstract class ProductRepository {
   Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
     final String? searchQuery,
-    final ProductSortOption sortOption = ProductSortOption.latest,
-    final double? userLatitude,
-    final double? userLongitude,
+    final ShopSort sort = const ShopSort.latest(),
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,

@@ -2,8 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
 part 'shop_filter_provider.g.dart';
 
@@ -17,23 +17,8 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
     state = state.copyWith(searchQuery: normalized);
   }
 
-  void setSort(final ProductSortOption option) {
-    state = state.copyWith(
-      sortOption: option,
-      userLatitude: null,
-      userLongitude: null,
-    );
-  }
-
-  void setProximitySort({
-    required final double latitude,
-    required final double longitude,
-  }) {
-    state = state.copyWith(
-      sortOption: ProductSortOption.proximity,
-      userLatitude: latitude,
-      userLongitude: longitude,
-    );
+  void setSort(final ShopSort sort) {
+    state = state.copyWith(sort: sort);
   }
 
   void setPriceRange({final int? min, final int? max}) {

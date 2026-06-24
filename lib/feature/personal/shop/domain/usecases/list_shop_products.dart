@@ -18,9 +18,7 @@ class ListShopProducts {
     return _repository.listProducts(
       storeId: filter.storeId,
       searchQuery: filter.searchQuery,
-      sortOption: filter.sortOption,
-      userLatitude: filter.userLatitude,
-      userLongitude: filter.userLongitude,
+      sort: filter.sort,
       minPrice: filter.minPrice,
       maxPrice: filter.maxPrice,
       categories: filter.categories,

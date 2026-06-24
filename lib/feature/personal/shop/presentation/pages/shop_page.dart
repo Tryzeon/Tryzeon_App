@@ -11,7 +11,7 @@ import 'package:tryzeon/feature/common/product_attributes/entities/product_attri
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/extensions/user_gender_extension.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -70,13 +70,13 @@ class ShopPage extends HookConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     void handleSortByLatest() {
-      filterNotifier.setSort(ProductSortOption.latest);
+      filterNotifier.setSort(const ShopSort.latest());
     }
 
     void handleSortByPrice() {
-      final next = filterState.sortOption == ProductSortOption.priceLowToHigh
-          ? ProductSortOption.priceHighToLow
-          : ProductSortOption.priceLowToHigh;
+      final next = filterState.sort is ShopSortPriceLowToHigh
+          ? const ShopSort.priceHighToLow()
+          : const ShopSort.priceLowToHigh();
       filterNotifier.setSort(next);
     }
 
@@ -112,9 +112,11 @@ class ShopPage extends HookConsumerWidget {
           TopNotification.show(context, message: '無法取得目前位置，請稍後再試');
           return;
         }
-        filterNotifier.setProximitySort(
-          latitude: coords.latitude,
-          longitude: coords.longitude,
+        filterNotifier.setSort(
+          ShopSort.proximity(
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          ),
         );
       } finally {
         if (context.mounted) isLocating.value = false;
@@ -148,7 +150,7 @@ class ShopPage extends HookConsumerWidget {
     }
 
     Widget buildComprehensiveSortButton() {
-      final isActive = filterState.sortOption == ProductSortOption.latest;
+      final isActive = filterState.sort is ShopSortLatest;
       return buildSortButton(
         label: '綜合',
         icon: Icons.emoji_events_outlined,
@@ -159,9 +161,9 @@ class ShopPage extends HookConsumerWidget {
 
     Widget buildPriceSortButton() {
       final isActive =
-          filterState.sortOption == ProductSortOption.priceLowToHigh ||
-          filterState.sortOption == ProductSortOption.priceHighToLow;
-      final isAscending = filterState.sortOption == ProductSortOption.priceLowToHigh;
+          filterState.sort is ShopSortPriceLowToHigh ||
+          filterState.sort is ShopSortPriceHighToLow;
+      final isAscending = filterState.sort is ShopSortPriceLowToHigh;
 
       return buildSortButton(
         label: '價格',
@@ -172,7 +174,7 @@ class ShopPage extends HookConsumerWidget {
     }
 
     Widget buildProximitySortButton() {
-      final isActive = filterState.sortOption == ProductSortOption.proximity;
+      final isActive = filterState.sort is ShopSortProximity;
       return buildSortButton(
         label: '附近',
         icon: Icons.near_me_outlined,

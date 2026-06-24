@@ -5,7 +5,7 @@ import 'package:tryzeon/feature/common/product_attributes/entities/product_attri
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/product_row_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
 class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);
@@ -16,9 +16,7 @@ class ShopRemoteDataSource {
   Future<List<ShopProductModel>> listProducts({
     final String? storeId,
     final String? searchQuery,
-    final ProductSortOption sortOption = ProductSortOption.latest,
-    final double? userLatitude,
-    final double? userLongitude,
+    final ShopSort sort = const ShopSort.latest(),
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
@@ -33,32 +31,22 @@ class ShopRemoteDataSource {
     final int? limit,
     final int? offset,
   }) async {
-    final String sortColumn;
-    final bool isAscending;
-    switch (sortOption) {
-      case ProductSortOption.priceLowToHigh:
-        sortColumn = 'price';
-        isAscending = true;
-      case ProductSortOption.priceHighToLow:
-        sortColumn = 'price';
-        isAscending = false;
-      case ProductSortOption.proximity:
-        sortColumn = 'proximity';
-        isAscending = true;
-      case ProductSortOption.latest:
-        sortColumn = 'created_at';
-        isAscending = false;
-    }
+    final (:column, :ascending) = sortParams(sort);
+    // Coordinates only exist on the proximity variant; other sorts carry none.
+    final (userLat, userLng) = switch (sort) {
+      ShopSortProximity(:final latitude, :final longitude) => (latitude, longitude),
+      _ => (null, null),
+    };
 
     final response = await _supabaseClient.rpc(
       'list_shop_products',
       params: buildListProductsParams(
         storeId: storeId,
         searchQuery: searchQuery,
-        sortColumn: sortColumn,
-        sortAscending: isAscending,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
+        sortColumn: column,
+        sortAscending: ascending,
+        userLatitude: userLat,
+        userLongitude: userLng,
         minPrice: minPrice,
         maxPrice: maxPrice,
         categories: categories,
@@ -79,6 +67,19 @@ class ShopRemoteDataSource {
       final map = productRowWithImageUrls(Map<String, dynamic>.from(item as Map));
       return ShopProductModel.fromJson(map);
     }).toList();
+  }
+
+  /// Maps a [ShopSort] to the RPC's sort column and direction. Pure and
+  /// exhaustive — adding a [ShopSort] variant without handling it here is a
+  /// compile error. Coordinates are not part of this mapping; they live on
+  /// the proximity variant and are read directly where needed.
+  static ({String column, bool ascending}) sortParams(final ShopSort sort) {
+    return switch (sort) {
+      ShopSortLatest() => (column: 'created_at', ascending: false),
+      ShopSortPriceLowToHigh() => (column: 'price', ascending: true),
+      ShopSortPriceHighToLow() => (column: 'price', ascending: false),
+      ShopSortProximity() => (column: 'proximity', ascending: true),
+    };
   }
 
   static Map<String, dynamic> buildListProductsParams({

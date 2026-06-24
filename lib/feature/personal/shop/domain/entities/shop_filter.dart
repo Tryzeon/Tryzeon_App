@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
 part 'shop_filter.freezed.dart';
 
@@ -11,9 +11,7 @@ sealed class ShopFilter with _$ShopFilter {
   const factory ShopFilter({
     final String? storeId,
     final String? searchQuery,
-    @Default(ProductSortOption.latest) final ProductSortOption sortOption,
-    final double? userLatitude,
-    final double? userLongitude,
+    @Default(ShopSort.latest()) final ShopSort sort,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,

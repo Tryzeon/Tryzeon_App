@@ -9,8 +9,8 @@ import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_dataso
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -30,9 +30,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
     final String? searchQuery,
-    final ProductSortOption sortOption = ProductSortOption.latest,
-    final double? userLatitude,
-    final double? userLongitude,
+    final ShopSort sort = const ShopSort.latest(),
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
@@ -52,9 +50,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final result = await _remoteDataSource.listProducts(
         storeId: storeId,
         searchQuery: searchQuery,
-        sortOption: sortOption,
-        userLatitude: userLatitude,
-        userLongitude: userLongitude,
+        sort: sort,
         minPrice: minPrice,
         maxPrice: maxPrice,
         categories: categories,
