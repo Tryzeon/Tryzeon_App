@@ -7,18 +7,18 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
 void main() {
   test('sortParams maps each ShopSort variant to its column and direction', () {
-    expect(
-      ShopRemoteDataSource.sortParams(const ShopSort.latest()),
-      (column: 'created_at', ascending: false),
-    );
-    expect(
-      ShopRemoteDataSource.sortParams(const ShopSort.priceLowToHigh()),
-      (column: 'price', ascending: true),
-    );
-    expect(
-      ShopRemoteDataSource.sortParams(const ShopSort.priceHighToLow()),
-      (column: 'price', ascending: false),
-    );
+    expect(ShopRemoteDataSource.sortParams(const ShopSort.latest()), (
+      column: 'created_at',
+      ascending: false,
+    ));
+    expect(ShopRemoteDataSource.sortParams(const ShopSort.priceLowToHigh()), (
+      column: 'price',
+      ascending: true,
+    ));
+    expect(ShopRemoteDataSource.sortParams(const ShopSort.priceHighToLow()), (
+      column: 'price',
+      ascending: false,
+    ));
     expect(
       ShopRemoteDataSource.sortParams(
         const ShopSort.proximity(latitude: 25.033, longitude: 121.565),

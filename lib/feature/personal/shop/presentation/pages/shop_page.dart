@@ -113,10 +113,7 @@ class ShopPage extends HookConsumerWidget {
           return;
         }
         filterNotifier.setSort(
-          ShopSort.proximity(
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          ),
+          ShopSort.proximity(latitude: coords.latitude, longitude: coords.longitude),
         );
       } finally {
         if (context.mounted) isLocating.value = false;
