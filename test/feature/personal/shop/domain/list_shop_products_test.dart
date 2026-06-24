@@ -3,9 +3,9 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/list_shop_products.dart';
@@ -17,7 +17,7 @@ class _CapturingRepo implements ProductRepository {
   @override
   Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
-    final ProductSortOption sortOption = ProductSortOption.latest,
+    final ShopSort sort = const ShopSort.latest(),
     final String? searchQuery,
     final int? minPrice,
     final int? maxPrice,
@@ -37,7 +37,7 @@ class _CapturingRepo implements ProductRepository {
     captured = {
       'storeId': storeId,
       'searchQuery': searchQuery,
-      'sortOption': sortOption,
+      'sort': sort,
       'minPrice': minPrice,
       'maxPrice': maxPrice,
       'categories': categories,
@@ -73,7 +73,7 @@ void main() {
       filter: const ShopFilter(
         storeId: 'store-1',
         searchQuery: 'shirt',
-        sortOption: ProductSortOption.priceLowToHigh,
+        sort: ShopSort.priceLowToHigh(),
         minPrice: 100,
         maxPrice: 900,
         categories: {'cat-1'},
@@ -93,7 +93,7 @@ void main() {
     expect(repo.captured, isNotNull);
     expect(repo.captured!['storeId'], 'store-1');
     expect(repo.captured!['searchQuery'], 'shirt');
-    expect(repo.captured!['sortOption'], ProductSortOption.priceLowToHigh);
+    expect(repo.captured!['sort'], const ShopSort.priceLowToHigh());
     expect(repo.captured!['minPrice'], 100);
     expect(repo.captured!['maxPrice'], 900);
     expect(repo.captured!['categories'], {'cat-1'});
@@ -107,5 +107,21 @@ void main() {
     expect(repo.captured!['seasons'], {ProductSeason.spring});
     expect(repo.captured!['limit'], 24);
     expect(repo.captured!['offset'], 48);
+  });
+
+  test('forwards the proximity sort with its coordinates to the repository', () async {
+    final repo = _CapturingRepo();
+    final usecase = ListShopProducts(repo);
+
+    await usecase(
+      filter: const ShopFilter(
+        sort: ShopSort.proximity(latitude: 25.033, longitude: 121.565),
+      ),
+    );
+
+    expect(
+      repo.captured!['sort'],
+      const ShopSort.proximity(latitude: 25.033, longitude: 121.565),
+    );
   });
 }

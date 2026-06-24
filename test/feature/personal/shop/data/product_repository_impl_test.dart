@@ -9,7 +9,7 @@ import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_dataso
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_repository_impl.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:typed_result/typed_result.dart';
 
 class _RecordingRemote implements ShopRemoteDataSource {
@@ -19,7 +19,7 @@ class _RecordingRemote implements ShopRemoteDataSource {
   Future<List<ShopProductModel>> listProducts({
     final String? storeId,
     final String? searchQuery,
-    final ProductSortOption sortOption = ProductSortOption.latest,
+    final ShopSort sort = const ShopSort.latest(),
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
@@ -35,6 +35,7 @@ class _RecordingRemote implements ShopRemoteDataSource {
     final int? offset,
   }) async {
     captured = {
+      'sort': sort,
       'materials': materials,
       'elasticities': elasticities,
       'fits': fits,
@@ -110,6 +111,23 @@ void main() {
     expect(remote.captured!['seasons'], {ProductSeason.winter});
     expect(remote.captured!['limit'], 30);
     expect(remote.captured!['offset'], 60);
+  });
+
+  test('forwards the proximity sort to the datasource', () async {
+    final remote = _RecordingRemote();
+    final repo = ProductRepositoryImpl(
+      remoteDataSource: remote,
+      localDataSource: _NoopLocal(),
+    );
+
+    await repo.listProducts(
+      sort: const ShopSort.proximity(latitude: 25.033, longitude: 121.565),
+    );
+
+    expect(
+      remote.captured!['sort'],
+      const ShopSort.proximity(latitude: 25.033, longitude: 121.565),
+    );
   });
 
   test('getProduct returns NotFoundFailure when the product does not exist', () async {
