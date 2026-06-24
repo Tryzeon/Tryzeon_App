@@ -29,7 +29,11 @@ SizeVoiceInput useSizeVoiceInput({
   final status = useState(SizeVoiceStatus.idle);
   final autoStopTimer = useRef<Timer?>(null);
 
-  useEffect(() => () => autoStopTimer.value?.cancel(), const []);
+  useEffect(
+    () =>
+        () => autoStopTimer.value?.cancel(),
+    const [],
+  );
 
   Future<void> stopAndParse(final AudioRecorderService recorder) async {
     autoStopTimer.value?.cancel();

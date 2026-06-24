@@ -41,30 +41,28 @@ class ProductSizeListEditor extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: voiceStatus == SizeVoiceStatus.uploading
-                  ? null
-                  : onVoicePressed,
+              onPressed: voiceStatus == SizeVoiceStatus.uploading ? null : onVoicePressed,
               visualDensity: VisualDensity.compact,
               tooltip: '語音輸入尺寸',
               icon: switch (voiceStatus) {
                 SizeVoiceStatus.uploading => SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: AppStroke.regular,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                SizeVoiceStatus.recording => Icon(
-                    Icons.stop_circle_rounded,
-                    size: 20,
-                    color: colorScheme.error,
-                  ),
-                SizeVoiceStatus.idle => Icon(
-                    Icons.mic_none_rounded,
-                    size: 20,
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppStroke.regular,
                     color: colorScheme.onSurface,
                   ),
+                ),
+                SizeVoiceStatus.recording => Icon(
+                  Icons.stop_circle_rounded,
+                  size: 20,
+                  color: colorScheme.error,
+                ),
+                SizeVoiceStatus.idle => Icon(
+                  Icons.mic_none_rounded,
+                  size: 20,
+                  color: colorScheme.onSurface,
+                ),
               },
             ),
             Expanded(
@@ -72,9 +70,7 @@ class ProductSizeListEditor extends StatelessWidget {
                 voiceStatus == SizeVoiceStatus.recording
                     ? '錄音中…再按一下停止'
                     : '可語音輸入：例「M 號，胸圍九十公分，腰圍七十二」',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
             DropdownButtonHideUnderline(

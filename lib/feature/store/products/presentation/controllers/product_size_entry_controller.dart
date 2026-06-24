@@ -40,8 +40,7 @@ class ProductSizeEntryController {
   }) {
     final controller = ProductSizeEntryController(name: parsed.name);
 
-    String format(final double v) =>
-        v.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+    String format(final double v) => v.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
 
     for (final entry in parsed.measurements.entries) {
       final m = entry.value;

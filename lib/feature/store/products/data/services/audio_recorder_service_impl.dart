@@ -18,12 +18,8 @@ class AudioRecorderServiceImpl implements AudioRecorderService {
       return RecorderStartResult.permissionDenied;
     }
     final dir = await getTemporaryDirectory();
-    final path =
-        '${dir.path}/size_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-    await _recorder.start(
-      const RecordConfig(encoder: AudioEncoder.aacLc),
-      path: path,
-    );
+    final path = '${dir.path}/size_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
     _path = path;
     return RecorderStartResult.started;
   }

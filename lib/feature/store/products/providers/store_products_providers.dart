@@ -165,8 +165,7 @@ SizeVoiceParser sizeVoiceParser(final Ref ref) =>
     SizeVoiceParser(Supabase.instance.client);
 
 @Riverpod(keepAlive: true)
-AudioRecorderService audioRecorderService(final Ref ref) =>
-    AudioRecorderServiceImpl();
+AudioRecorderService audioRecorderService(final Ref ref) => AudioRecorderServiceImpl();
 
 /// 強制刷新商品列表
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作

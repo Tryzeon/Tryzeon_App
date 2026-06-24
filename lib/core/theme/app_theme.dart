@@ -20,8 +20,12 @@ class AppColors {
   // wired through `ColorScheme.primaryContainer`. High-emphasis surfaces (CTA
   // buttons, prices, active states) use neutral charcoal via `primary`.
   static const Color brand = Color(0xFF6750A4); // deep violet — accent text/icon on light
-  static const Color brandContainer = Color(0xFFE8DEF8); // soft lavender — chip / tag surface
-  static const Color onBrandContainer = Color(0xFF463371); // deep violet — on brandContainer
+  static const Color brandContainer = Color(
+    0xFFE8DEF8,
+  ); // soft lavender — chip / tag surface
+  static const Color onBrandContainer = Color(
+    0xFF463371,
+  ); // deep violet — on brandContainer
 
   // ── Neutral tonal palette (high = light) ──────────────────────────────
   static const Color neutral100 = Color(0xFFFFFFFF); // page background

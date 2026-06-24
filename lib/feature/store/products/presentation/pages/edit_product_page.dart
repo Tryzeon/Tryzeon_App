@@ -58,9 +58,8 @@ class _EditProductContent extends HookConsumerWidget {
     final voiceInput = useSizeVoiceInput(
       ref: ref,
       sizeManager: sizeManager,
-      onApplied: (final count) => messenger.showSnackBar(
-        SnackBar(content: Text('已新增 $count 筆尺寸，請檢查數字')),
-      ),
+      onApplied: (final count) =>
+          messenger.showSnackBar(SnackBar(content: Text('已新增 $count 筆尺寸，請檢查數字'))),
       onError: (final message) =>
           messenger.showSnackBar(SnackBar(content: Text(message))),
       onPermissionDenied: () => messenger.showSnackBar(
