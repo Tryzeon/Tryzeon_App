@@ -17,6 +17,8 @@ class ShopRemoteDataSource {
     final String? storeId,
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
+    final double? userLatitude,
+    final double? userLongitude,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
@@ -40,6 +42,9 @@ class ShopRemoteDataSource {
       case ProductSortOption.priceHighToLow:
         sortColumn = 'price';
         isAscending = false;
+      case ProductSortOption.proximity:
+        sortColumn = 'proximity';
+        isAscending = true;
       case ProductSortOption.latest:
         sortColumn = 'created_at';
         isAscending = false;
@@ -52,6 +57,8 @@ class ShopRemoteDataSource {
         searchQuery: searchQuery,
         sortColumn: sortColumn,
         sortAscending: isAscending,
+        userLatitude: userLatitude,
+        userLongitude: userLongitude,
         minPrice: minPrice,
         maxPrice: maxPrice,
         categories: categories,
@@ -79,6 +86,8 @@ class ShopRemoteDataSource {
     final String? searchQuery,
     required final String sortColumn,
     required final bool sortAscending,
+    final double? userLatitude,
+    final double? userLongitude,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
@@ -114,6 +123,8 @@ class ShopRemoteDataSource {
       'p_seasons': nonEmpty(seasons?.map((final e) => e.value)),
       'p_sort_column': sortColumn,
       'p_sort_ascending': sortAscending,
+      'p_user_lat': userLatitude,
+      'p_user_lng': userLongitude,
       'p_limit': limit,
       'p_offset': offset,
     };

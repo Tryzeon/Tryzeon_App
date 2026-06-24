@@ -1,7 +1,11 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
@@ -35,6 +39,7 @@ class ShopPage extends HookConsumerWidget {
     // 篩選/排序狀態
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
+    final isLocating = useState(false);
 
     // 進入頁面時，性別篩選預設為使用者個人資料的性別；若沒有設定性別，
     // 則預設為第一個選項（女裝）。（只設定一次）
@@ -75,6 +80,47 @@ class ShopPage extends HookConsumerWidget {
       filterNotifier.setSort(next);
     }
 
+    Future<void> handleSortByProximity() async {
+      if (isLocating.value) return;
+      isLocating.value = true;
+      try {
+        final locationService = ref.read(locationServiceProvider);
+        final permission = await locationService.requestPermission();
+        if (!context.mounted) return;
+
+        if (permission == LocationPermission.denied) {
+          TopNotification.show(context, message: '需開啟定位才能依距離排序');
+          return;
+        }
+        if (permission == LocationPermission.deniedForever) {
+          final result = await showAppOkCancelDialog(
+            context: context,
+            title: '需要定位權限',
+            message: '為了依距離排序店家，我們需要您的位置權限。請前往設定開啟權限。',
+            okLabel: '前往設定',
+            cancelLabel: '取消',
+          );
+          if (result == OkCancelResult.ok) {
+            await Geolocator.openAppSettings();
+          }
+          return;
+        }
+
+        final coords = await locationService.getCoordinates();
+        if (!context.mounted) return;
+        if (coords == null) {
+          TopNotification.show(context, message: '無法取得目前位置，請稍後再試');
+          return;
+        }
+        filterNotifier.setProximitySort(
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        );
+      } finally {
+        if (context.mounted) isLocating.value = false;
+      }
+    }
+
     void handleShowFilterSheet() {
       FilterSheet.show(context: context);
     }
@@ -84,12 +130,19 @@ class ShopPage extends HookConsumerWidget {
       required final IconData icon,
       required final bool isActive,
       required final VoidCallback onTap,
+      final bool isLoading = false,
     }) {
       return ChoiceChip(
         label: Text(label),
-        avatar: Icon(icon, size: 16),
+        avatar: isLoading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
+              )
+            : Icon(icon, size: 16),
         selected: isActive,
-        onSelected: (_) => onTap(),
+        onSelected: isLoading ? null : (_) => onTap(),
         showCheckmark: false,
       );
     }
@@ -115,6 +168,17 @@ class ShopPage extends HookConsumerWidget {
         icon: !isActive || isAscending ? Icons.arrow_upward : Icons.arrow_downward,
         isActive: isActive,
         onTap: handleSortByPrice,
+      );
+    }
+
+    Widget buildProximitySortButton() {
+      final isActive = filterState.sortOption == ProductSortOption.proximity;
+      return buildSortButton(
+        label: '附近',
+        icon: Icons.near_me_outlined,
+        isActive: isActive,
+        onTap: handleSortByProximity,
+        isLoading: isLocating.value,
       );
     }
 
@@ -223,6 +287,8 @@ class ShopPage extends HookConsumerWidget {
                                       buildComprehensiveSortButton(),
                                       const SizedBox(width: AppSpacing.sm),
                                       buildPriceSortButton(),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      buildProximitySortButton(),
                                       const Spacer(),
                                       buildFilterButton(),
                                     ],

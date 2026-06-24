@@ -12,8 +12,10 @@ abstract class ProductRepository {
   /// Fetches a list of products based on the provided filters.
   Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
-    final ProductSortOption sortOption = ProductSortOption.latest,
     final String? searchQuery,
+    final ProductSortOption sortOption = ProductSortOption.latest,
+    final double? userLatitude,
+    final double? userLongitude,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,

@@ -12,6 +12,8 @@ sealed class ShopFilter with _$ShopFilter {
     final String? storeId,
     final String? searchQuery,
     @Default(ProductSortOption.latest) final ProductSortOption sortOption,
+    final double? userLatitude,
+    final double? userLongitude,
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,

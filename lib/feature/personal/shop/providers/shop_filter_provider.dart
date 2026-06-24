@@ -18,7 +18,22 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
   }
 
   void setSort(final ProductSortOption option) {
-    state = state.copyWith(sortOption: option);
+    state = state.copyWith(
+      sortOption: option,
+      userLatitude: null,
+      userLongitude: null,
+    );
+  }
+
+  void setProximitySort({
+    required final double latitude,
+    required final double longitude,
+  }) {
+    state = state.copyWith(
+      sortOption: ProductSortOption.proximity,
+      userLatitude: latitude,
+      userLongitude: longitude,
+    );
   }
 
   void setPriceRange({final int? min, final int? max}) {

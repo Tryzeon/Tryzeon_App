@@ -19,6 +19,8 @@ class ListShopProducts {
       storeId: filter.storeId,
       searchQuery: filter.searchQuery,
       sortOption: filter.sortOption,
+      userLatitude: filter.userLatitude,
+      userLongitude: filter.userLongitude,
       minPrice: filter.minPrice,
       maxPrice: filter.maxPrice,
       categories: filter.categories,
