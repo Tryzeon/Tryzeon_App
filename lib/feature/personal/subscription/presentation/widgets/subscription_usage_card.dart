@@ -153,7 +153,9 @@ class _ActivePill extends StatelessWidget {
     return Chip(
       label: Text(
         '啟用中',
-        style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary),
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onPrimaryContainer,
+        ),
       ),
       backgroundColor: theme.colorScheme.primaryContainer,
       side: BorderSide.none,

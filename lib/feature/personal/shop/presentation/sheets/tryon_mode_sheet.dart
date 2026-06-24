@@ -146,7 +146,7 @@ class _ModeCard extends StatelessWidget {
                       color: colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon, color: colorScheme.primary, size: 18),
+                    child: Icon(icon, color: colorScheme.onPrimaryContainer, size: 18),
                   ),
                   const SizedBox(width: AppSpacing.md),
 

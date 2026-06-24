@@ -110,7 +110,7 @@ class _SubscriptionContent extends ConsumerWidget {
                           label: Text(
                             '啟用中',
                             style: textTheme.labelSmall?.copyWith(
-                              color: colorScheme.primary,
+                              color: colorScheme.onPrimaryContainer,
                             ),
                           ),
                           backgroundColor: colorScheme.primaryContainer,

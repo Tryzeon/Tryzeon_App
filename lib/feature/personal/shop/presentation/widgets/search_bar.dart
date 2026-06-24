@@ -45,7 +45,7 @@ class ShopSearchBar extends HookConsumerWidget {
             FocusScope.of(context).unfocus();
             onSearch(controller.text);
           },
-          icon: Icon(Icons.search, size: 20, color: colorScheme.primary),
+          icon: Icon(Icons.search, size: 20, color: colorScheme.onPrimaryContainer),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.primaryContainer,
             padding: const EdgeInsets.all(AppSpacing.smMd),

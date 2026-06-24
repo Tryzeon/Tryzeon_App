@@ -102,7 +102,10 @@ class _CategoryCard extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: AppRadius.dialogAll,
               side: isSelected
-                  ? BorderSide(color: colorScheme.primary, width: AppStroke.regular)
+                  ? BorderSide(
+                      color: colorScheme.onPrimaryContainer,
+                      width: AppStroke.regular,
+                    )
                   : BorderSide.none,
             ),
             child: SizedBox(
