@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Design/spec docs under `docs/superpowers/` are gitignored and intentionally NOT committed. Write them there for reference, but never `git add -f` or commit them.
 - Development in this project does not require creating a branch — make changes directly on `main` and commit there. The user manages these changes themselves.
+- Always propose the best-practice solution. Do not compromise the design to minimize change scope or migration effort — optimize for correctness and quality, not for avoiding churn.
 
 ## Project
 
