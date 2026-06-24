@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Working notes
 
 - Design/spec docs under `docs/superpowers/` are gitignored and intentionally NOT committed. Write them there for reference, but never `git add -f` or commit them.
+- Development in this project does not require creating a branch — make changes directly on `main` and commit there. The user manages these changes themselves.
 
 ## Project
 
