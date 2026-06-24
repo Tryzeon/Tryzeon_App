@@ -1,10 +1,10 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -75,7 +75,7 @@ class _EditProductContent extends HookConsumerWidget {
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
     Future<void> deleteProduct() async {
-      final dialogResult = await showOkCancelAlertDialog(
+      final dialogResult = await showAppOkCancelDialog(
         context: context,
         title: '刪除商品',
         message: '確定要刪除「${product.name}」嗎?\n此操作無法復原。',

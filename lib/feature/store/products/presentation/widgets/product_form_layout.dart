@@ -175,7 +175,7 @@ class _FormSectionLabel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(number, style: textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+        Text(number, style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurface)),
         const SizedBox(height: AppSpacing.xs),
         Text(title, style: textTheme.titleMedium),
         if (helper != null) ...[

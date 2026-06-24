@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
@@ -105,7 +105,7 @@ class ChatPage extends HookConsumerWidget {
           children: [
             ChatHeader(
               onRefresh: () async {
-                final result = await showOkCancelAlertDialog(
+                final result = await showAppOkCancelDialog(
                   context: context,
                   message: '你確定要重設整個對話嗎？',
                   okLabel: '確定',

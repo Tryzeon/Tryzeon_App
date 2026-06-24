@@ -40,7 +40,7 @@ class StoreAccountPage extends HookConsumerWidget {
                       width: 24,
                       height: 2,
                       decoration: BoxDecoration(
-                        color: colorScheme.primary,
+                        color: colorScheme.outline,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),

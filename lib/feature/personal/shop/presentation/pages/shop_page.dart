@@ -142,7 +142,6 @@ class ShopPage extends HookConsumerWidget {
                 onRefresh: () async {
                   await refreshShopProducts(ref, filter);
                 },
-                color: colorScheme.primary,
                 child: LayoutBuilder(
                   builder: (final context, final constraints) {
                     return SingleChildScrollView(

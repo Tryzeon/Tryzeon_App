@@ -1,8 +1,8 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -68,7 +68,7 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
     final imageFileAsync = ref.watch(wardrobeItemImageProvider(item.imagePath));
 
     Future<void> handleDelete() async {
-      final confirmResult = await showOkCancelAlertDialog(
+      final confirmResult = await showAppOkCancelDialog(
         context: context,
         title: '刪除衣物',
         message: '你確定要刪除這件衣物嗎？',

@@ -166,7 +166,9 @@ class LoginPage extends HookConsumerWidget {
           if (isLoading.value)
             Container(
               color: colorScheme.surface.withValues(alpha: 0.8),
-              child: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+              child: Center(
+                child: CircularProgressIndicator(color: colorScheme.onSurface),
+              ),
             ),
         ],
       ),

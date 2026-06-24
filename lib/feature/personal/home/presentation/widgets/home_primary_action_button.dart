@@ -45,7 +45,7 @@ class HomePrimaryActionButton extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 20, color: colorScheme.primary),
+                  Icon(icon, size: 20, color: colorScheme.onPrimary),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     label,

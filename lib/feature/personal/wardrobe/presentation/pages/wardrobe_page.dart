@@ -124,7 +124,7 @@ class WardrobePage extends HookConsumerWidget {
                       child: Icon(
                         Icons.checkroom_rounded,
                         size: AppSpacing.xxl,
-                        color: colorScheme.primary.withValues(alpha: AppOpacity.overlay),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),

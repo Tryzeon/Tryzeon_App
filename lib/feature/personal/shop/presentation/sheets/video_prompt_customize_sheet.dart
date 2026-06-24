@@ -96,7 +96,7 @@ class VideoPromptCustomizeSheet extends HookConsumerWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
               child: Row(
                 children: [
-                  Icon(Icons.edit_note_rounded, color: colorScheme.primary, size: 24),
+                  Icon(Icons.edit_note_rounded, color: colorScheme.onSurface, size: 24),
                   const SizedBox(width: AppSpacing.smMd),
                   Text('自訂影片風格', style: textTheme.titleLarge),
                 ],

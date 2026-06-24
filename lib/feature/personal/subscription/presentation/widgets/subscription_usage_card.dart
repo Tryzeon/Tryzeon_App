@@ -209,7 +209,7 @@ class _UsageStat extends StatelessWidget {
             minHeight: 2,
             backgroundColor: colorScheme.surfaceContainerHighest,
             valueColor: AlwaysStoppedAnimation<Color>(
-              canShowProgress ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+              canShowProgress ? colorScheme.onSurface : colorScheme.surfaceContainerHighest,
             ),
           ),
         ),

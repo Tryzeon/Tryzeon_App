@@ -1,6 +1,6 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 
 class UpgradeDialog {
@@ -9,7 +9,7 @@ class UpgradeDialog {
     final String? title,
     final String? content,
   }) async {
-    final result = await showOkCancelAlertDialog(
+    final result = await showAppOkCancelDialog(
       context: context,
       title: title ?? '已達使用上限',
       message: content ?? '您的使用次數已達上限\n升級至更高方案以獲得更多額度！',

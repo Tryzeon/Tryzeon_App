@@ -54,7 +54,7 @@ class TryOnModeSheet extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
               child: Row(
                 children: [
-                  Icon(Icons.auto_awesome, color: colorScheme.primary, size: 24),
+                  Icon(Icons.auto_awesome, color: colorScheme.onSurface, size: 24),
                   const SizedBox(width: AppSpacing.smMd),
                   Text('選擇試穿方式', style: textTheme.titleLarge),
                 ],

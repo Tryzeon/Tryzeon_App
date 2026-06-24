@@ -35,7 +35,7 @@ class StoreAccountHeader extends StatelessWidget {
               children: [
                 Text(
                   '歡迎回來，',
-                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.primary),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(

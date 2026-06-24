@@ -52,7 +52,7 @@ class ProductSizeListEditor extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: AppStroke.regular,
-                      color: colorScheme.primary,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 SizeVoiceStatus.recording => Icon(
@@ -63,7 +63,7 @@ class ProductSizeListEditor extends StatelessWidget {
                 SizeVoiceStatus.idle => Icon(
                     Icons.mic_none_rounded,
                     size: 20,
-                    color: colorScheme.primary,
+                    color: colorScheme.onSurface,
                   ),
               },
             ),

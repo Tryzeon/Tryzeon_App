@@ -279,6 +279,50 @@ class AppTheme {
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 15),
       ),
 
+      // ── Radio ────────────────────────────────────────────────────────────
+      // Spec: selected dot is neutral charcoal — consistent with the switch,
+      // checkbox, and confirmation dialog actions (no coloured accent).
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith((final states) {
+          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          return colorScheme.onSurfaceVariant;
+        }),
+      ),
+
+      // ── Switch ───────────────────────────────────────────────────────────
+      // Spec: on-state is neutral charcoal (not the lavender accent). White
+      // thumb on a charcoal track when selected; defaults when off.
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((final states) {
+          if (states.contains(WidgetState.selected)) return colorScheme.surface;
+          return null;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((final states) {
+          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          return null;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((final states) {
+          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          return null;
+        }),
+      ),
+
+      // ── Checkbox ─────────────────────────────────────────────────────────
+      // Spec: checked box is neutral charcoal with a white tick.
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((final states) {
+          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          return null;
+        }),
+        checkColor: WidgetStateProperty.all(colorScheme.surface),
+      ),
+
+      // ── Progress Indicator ───────────────────────────────────────────────
+      // Spec: spinners/bars are neutral charcoal, not the brand accent.
+      // NOTE: RefreshIndicator does NOT read this theme (it falls back to
+      // colorScheme.primary), so its `color` is set explicitly at each site.
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: colorScheme.onSurface),
+
       // ── Expansion Tile ───────────────────────────────────────────────────
       // Spec: no top/bottom dividers (design system forbids stacked lines).
       expansionTileTheme: const ExpansionTileThemeData(

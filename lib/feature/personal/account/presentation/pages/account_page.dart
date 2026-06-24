@@ -330,7 +330,9 @@ class _SectionLabel extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           text,
-          style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

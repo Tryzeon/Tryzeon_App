@@ -39,7 +39,7 @@ class ProductStoreInfo extends StatelessWidget {
                         ? CachedNetworkImageProvider(storeInfo.logoUrl!)
                         : null,
                     child: storeInfo.logoUrl == null
-                        ? Icon(Icons.store, color: colorScheme.primary)
+                        ? Icon(Icons.store, color: colorScheme.onSurfaceVariant)
                         : null,
                   ),
                   const SizedBox(width: AppSpacing.smMd),

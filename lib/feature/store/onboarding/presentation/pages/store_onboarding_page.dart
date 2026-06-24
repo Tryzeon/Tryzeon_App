@@ -1,8 +1,8 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -31,7 +31,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
     }
 
     Future<void> switchToPersonalAccount() async {
-      final result = await showOkCancelAlertDialog(
+      final result = await showAppOkCancelDialog(
         context: context,
         title: '切換帳號',
         message: '你確定要切換到個人版帳號嗎？',
@@ -45,7 +45,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
     }
 
     Future<void> handleLogout() async {
-      final result = await showOkCancelAlertDialog(
+      final result = await showAppOkCancelDialog(
         context: context,
         title: '登出',
         message: '你確定要登出嗎？',
@@ -92,7 +92,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
                   '品牌專區 · TRYZEON',
-                  style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.smMd),
@@ -197,7 +199,7 @@ class _OnboardingNote extends StatelessWidget {
             width: 24,
             child: Text(
               number,
-              style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+              style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurface),
             ),
           ),
           const SizedBox(width: AppSpacing.smMd),

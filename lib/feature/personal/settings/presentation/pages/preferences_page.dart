@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
@@ -28,26 +29,16 @@ class PreferencesPage extends HookConsumerWidget {
         }
 
         if (permission == LocationPermission.deniedForever) {
-          await showDialog(
+          final result = await showAppOkCancelDialog(
             context: context,
-            builder: (final context) => AlertDialog.adaptive(
-              title: const Text('需要定位權限'),
-              content: const Text('為了推薦附近的店家，我們需要您的位置權限。請前往設定開啟權限。'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('取消'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Geolocator.openAppSettings();
-                  },
-                  child: const Text('前往設定'),
-                ),
-              ],
-            ),
+            title: '需要定位權限',
+            message: '為了推薦附近的店家，我們需要您的位置權限。請前往設定開啟權限。',
+            okLabel: '前往設定',
+            cancelLabel: '取消',
           );
+          if (result == OkCancelResult.ok) {
+            await Geolocator.openAppSettings();
+          }
           return;
         }
       }
@@ -114,7 +105,7 @@ class _ToggleRow extends StatelessWidget {
                   height: AppSpacing.mdLg,
                   child: CircularProgressIndicator(
                     strokeWidth: AppStroke.regular,
-                    color: colorScheme.primary,
+                    color: colorScheme.onSurface,
                   ),
                 )
               : Switch(value: value, onChanged: onChanged),

@@ -92,7 +92,6 @@ class StorePage extends HookConsumerWidget {
                 refreshShopProducts(ref, filter),
               ]);
             },
-            color: colorScheme.primary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(

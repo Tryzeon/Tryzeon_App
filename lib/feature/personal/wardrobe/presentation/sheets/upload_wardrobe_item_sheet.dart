@@ -173,7 +173,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
                   minHeight: 6,
                   backgroundColor: colorScheme
                       .surfaceContainerHighest, // usually mapped from colorScheme, mapped as outlineVariant
-                  color: percentage >= 0.9 ? colorScheme.error : colorScheme.primary,
+                  color: percentage >= 0.9 ? colorScheme.error : colorScheme.onSurface,
                 ),
               ),
             ],

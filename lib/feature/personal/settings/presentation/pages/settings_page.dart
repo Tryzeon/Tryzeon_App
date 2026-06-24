@@ -1,10 +1,10 @@
 // lib/feature/personal/settings/presentation/pages/settings_page.dart
 
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -31,7 +31,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
     });
 
     Future<void> handleSignOut() async {
-      final result = await showOkCancelAlertDialog(
+      final result = await showAppOkCancelDialog(
         context: context,
         title: '登出',
         message: '你確定要登出嗎？',
@@ -44,7 +44,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
     }
 
     Future<void> switchToStore() async {
-      final result = await showOkCancelAlertDialog(
+      final result = await showAppOkCancelDialog(
         context: context,
         title: '切換帳號',
         message: '你確定要切換到店家版帳號嗎？',
@@ -58,7 +58,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
     }
 
     Future<void> handleContactUs() async {
-      final result = await showOkCancelAlertDialog(
+      final result = await showAppOkCancelDialog(
         context: context,
         title: '聯絡我們',
         message: '即將前往 Tryzeon 官方 Instagram，是否繼續？',
@@ -72,7 +72,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
     }
 
     Future<void> handleDeleteAccount() async {
-      final dialogResult = await showOkCancelAlertDialog(
+      final dialogResult = await showAppOkCancelDialog(
         context: context,
         title: '刪除帳號',
         message: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料（如有）等，且無法復原。您確定要繼續嗎？',
@@ -169,7 +169,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    final resolved = color ?? theme.colorScheme.primary;
+    final resolved = color ?? theme.colorScheme.onSurfaceVariant;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
