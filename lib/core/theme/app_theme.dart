@@ -13,11 +13,15 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   AppColors._();
 
-  // ── Brand — Terracotta ────────────────────────────────────────────────
-  static const Color primary = Color(0xFFB5674A);
-  static const Color primaryLight = Color(0xFFC8856C);
-  static const Color primaryDark = Color(0xFF924F37);
-  static const Color primaryContainer = Color(0xFFF5EDE9);
+  // ── Brand — Lavender (from logo) ──────────────────────────────────────
+  // The logo's lavender (#C1AAE6 / #D3C4EF) is too light to carry white text,
+  // so the brand colour is NOT used for high-emphasis CTAs. Instead it lives
+  // as a low-emphasis tonal accent — selected chips, tags, section tints —
+  // wired through `ColorScheme.primaryContainer`. High-emphasis surfaces (CTA
+  // buttons, prices, active states) use neutral charcoal via `primary`.
+  static const Color brand = Color(0xFF6750A4); // deep violet — accent text/icon on light
+  static const Color brandContainer = Color(0xFFE8DEF8); // soft lavender — chip / tag surface
+  static const Color onBrandContainer = Color(0xFF463371); // deep violet — on brandContainer
 
   // ── Neutral tonal palette (high = light) ──────────────────────────────
   static const Color neutral100 = Color(0xFFFFFFFF); // page background
@@ -160,11 +164,10 @@ class AppTheme {
   static ThemeData get lightTheme {
     const colorScheme = ColorScheme(
       brightness: Brightness.light,
-      // Primary — Terracotta
-      primary: AppColors.primary,
+      primary: AppColors.neutral10,
       onPrimary: AppColors.neutral100,
-      primaryContainer: AppColors.primaryContainer,
-      onPrimaryContainer: AppColors.primaryDark,
+      primaryContainer: AppColors.brandContainer,
+      onPrimaryContainer: AppColors.onBrandContainer,
       // Secondary — neutral charcoal (neutral10 as bg → white text, contrast ~14:1)
       secondary: AppColors.neutral10,
       onSecondary: AppColors.neutral100,
@@ -197,7 +200,7 @@ class AppTheme {
       scrim: Colors.black,
       inverseSurface: AppColors.neutral10,
       onInverseSurface: AppColors.neutral100,
-      inversePrimary: AppColors.primaryLight,
+      inversePrimary: AppColors.brand,
     );
 
     // Shared button style helpers
@@ -255,7 +258,7 @@ class AppTheme {
       ),
 
       // ── Floating Action Button ───────────────────────────────────────────
-      // Spec: solid Terracotta CTA, white icon, circular, soft elevation.
+      // Spec: solid charcoal CTA, white icon, circular, soft elevation.
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
@@ -267,7 +270,7 @@ class AppTheme {
       ),
 
       // ── Slider ───────────────────────────────────────────────────────────
-      // Spec: thin 2px track, classic round thumb, Terracotta accent.
+      // Spec: thin 2px track, classic round thumb, charcoal accent.
       // Bypasses M3 expressive slider; value indicator suppressed (callers
       // surface the value separately).
       sliderTheme: SliderThemeData(
@@ -343,7 +346,7 @@ class AppTheme {
       ),
 
       // ── Buttons ──────────────────────────────────────────────────────────
-      // Primary: filled Terracotta, white label, radius 8px
+      // Primary: filled charcoal, white label, radius 8px
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: colorScheme.primary,
@@ -371,7 +374,7 @@ class AppTheme {
           ),
         ),
       ),
-      // Ghost: transparent bg, Terracotta text, radius 8px
+      // Ghost: transparent bg, charcoal text, radius 8px
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: colorScheme.primary,
@@ -459,7 +462,9 @@ class AppTheme {
       ),
 
       // ── Chip ─────────────────────────────────────────────────────────────
-      // Spec: pill shape, outline border, no elevation
+      // Spec: pill shape, outline border, no elevation. Selected state is the
+      // signature brand moment — lavender fill (primaryContainer) with deep
+      // violet label (onPrimaryContainer) and no border.
       chipTheme: ChipThemeData(
         backgroundColor: colorScheme.surface,
         selectedColor: colorScheme.primaryContainer,
@@ -472,10 +477,14 @@ class AppTheme {
           vertical: AppSpacing.xs,
         ),
         labelStyle: TextStyle(fontSize: 12, color: colorScheme.onSurface),
+        secondaryLabelStyle: TextStyle(
+          fontSize: 12,
+          color: colorScheme.onPrimaryContainer,
+        ),
       ),
 
       // ── Bottom Navigation Bar ─────────────────────────────────────────────
-      // Spec: white bg, top border 1px outline, Terracotta active, no pill
+      // Spec: white bg, top border 1px outline, charcoal active, no pill
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: colorScheme.surface,
         indicatorColor: Colors.transparent, // disable M3 pill indicator
