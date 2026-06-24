@@ -14,6 +14,8 @@ sealed class StoreProfile with _$StoreProfile {
     required final Set<StoreChannel> channels,
     final String? slug,
     final String? address,
+    final double? latitude,
+    final double? longitude,
     final String? logoPath,
     final String? logoUrl,
   }) = _StoreProfile;

@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -84,9 +85,31 @@ class _StoreProfileForm extends HookConsumerWidget {
       isLoading.value = true;
 
       final trimmedAddress = storeAddressController.text.trim();
+      final addressChanged = trimmedAddress != (profile.address ?? '');
+
+      double? latitude = profile.latitude;
+      double? longitude = profile.longitude;
+      if (addressChanged) {
+        if (trimmedAddress.isEmpty) {
+          latitude = null;
+          longitude = null;
+        } else {
+          final coords = await ref
+              .read(geocodingServiceProvider)
+              .geocodeAddress(trimmedAddress);
+          latitude = coords?.latitude;
+          longitude = coords?.longitude;
+          if (coords == null && context.mounted) {
+            TopNotification.show(context, message: '地址無法定位，將不會出現在附近排序');
+          }
+        }
+      }
+
       final targetProfile = profile.copyWith(
         name: storeNameController.text.trim(),
         address: trimmedAddress.isEmpty ? null : trimmedAddress,
+        latitude: latitude,
+        longitude: longitude,
         channels: selectedChannels.value,
       );
 

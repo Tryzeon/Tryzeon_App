@@ -14,6 +14,8 @@ class StoreProfileCollection {
   late List<String> channels;
   String? slug;
   String? address;
+  double? latitude;
+  double? longitude;
   String? logoPath;
   String? logoUrl;
 

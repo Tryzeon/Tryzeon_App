@@ -13,6 +13,8 @@ class StoreProfileModel {
     required this.channels,
     this.slug,
     this.address,
+    this.latitude,
+    this.longitude,
     this.logoPath,
     this.logoUrl,
   });
@@ -28,6 +30,8 @@ class StoreProfileModel {
   final List<String> channels;
   final String? slug;
   final String? address;
+  final double? latitude;
+  final double? longitude;
   final String? logoPath;
   final String? logoUrl;
 
