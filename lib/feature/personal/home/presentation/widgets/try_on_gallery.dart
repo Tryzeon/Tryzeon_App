@@ -57,7 +57,7 @@ class TryOnGallery extends HookWidget {
             final result = tryonResults[index - 1];
 
             if (result.isLoading) {
-              return const _SkeletonItem();
+              return const _LoadingAnimationItem();
             }
 
             if (result.mode == TryOnMode.video) {
@@ -134,38 +134,36 @@ class TryOnGallery extends HookWidget {
   }
 }
 
-class _SkeletonItem extends HookWidget {
-  const _SkeletonItem();
+/// Placeholder shown while a try-on result is being generated. Plays the
+/// bundled brand loading animation on a loop, muted, filling the page.
+class _LoadingAnimationItem extends HookWidget {
+  const _LoadingAnimationItem();
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    useAutomaticKeepAlive();
 
-    final animationController = useAnimationController(
-      duration: const Duration(milliseconds: 1500),
+    final colorScheme = Theme.of(context).colorScheme;
+    final controller = useMemoized(
+      () => VideoPlayerController.asset(AppConstants.tryOnLoadingAnimation),
     );
+    final isInitialized = useState(false);
 
     useEffect(() {
-      animationController.repeat(reverse: true);
-      return null;
-    }, const []);
+      controller.initialize().then((_) {
+        controller.setLooping(true);
+        controller.setVolume(0);
+        controller.play();
+        isInitialized.value = true;
+      });
+      return controller.dispose;
+    }, [controller]);
 
-    final opacity = useAnimation(
-      Tween<double>(
-        begin: 0.6,
-        end: 0.85,
-      ).animate(CurvedAnimation(parent: animationController, curve: AppCurves.standard)),
-    );
-
-    return Container(
-      color: colorScheme.onSurface.withValues(alpha: opacity),
-      child: Center(
-        child: Icon(
-          Icons.auto_awesome,
-          color: colorScheme.surface.withValues(alpha: AppOpacity.strong),
-          size: 48,
-        ),
-      ),
+    return ColoredBox(
+      color: colorScheme.surface,
+      child: isInitialized.value
+          ? _coverVideoFill(controller)
+          : const SizedBox.expand(),
     );
   }
 }
@@ -228,29 +226,31 @@ class _ImageItem extends HookWidget {
   }
 }
 
+/// Scales a [VideoPlayer] to cover the available height, cropping horizontal
+/// overflow — equivalent to BoxFit.cover for a portrait gallery page.
+Widget _coverVideoFill(final VideoPlayerController controller) {
+  return LayoutBuilder(
+    builder: (final context, final constraints) {
+      final screenHeight = constraints.maxHeight;
+      final scaledWidth = screenHeight * controller.value.aspectRatio;
+      return ClipRect(
+        child: OverflowBox(
+          maxWidth: double.infinity,
+          maxHeight: screenHeight,
+          child: SizedBox(
+            width: scaledWidth,
+            height: screenHeight,
+            child: VideoPlayer(controller),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 class _VideoPlayerItem extends HookWidget {
   const _VideoPlayerItem({required this.videoUrl});
   final String videoUrl;
-
-  Widget _buildVideoFill(final VideoPlayerController controller) {
-    return LayoutBuilder(
-      builder: (final context, final constraints) {
-        final screenHeight = constraints.maxHeight;
-        final scaledWidth = screenHeight * controller.value.aspectRatio;
-        return ClipRect(
-          child: OverflowBox(
-            maxWidth: double.infinity,
-            maxHeight: screenHeight,
-            child: SizedBox(
-              width: scaledWidth,
-              height: screenHeight,
-              child: VideoPlayer(controller),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(final BuildContext context) {
@@ -302,7 +302,7 @@ class _VideoPlayerItem extends HookWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  _buildVideoFill(controller),
+                  _coverVideoFill(controller),
                   if (isPaused.value)
                     Icon(
                       Icons.play_arrow_rounded,
