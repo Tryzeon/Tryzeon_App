@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -31,12 +30,8 @@ class AddProductPage extends HookConsumerWidget {
           messenger.showSnackBar(SnackBar(content: Text('已新增 $count 筆尺寸，請檢查數字'))),
       onError: (final message) =>
           messenger.showSnackBar(SnackBar(content: Text(message))),
-      onPermissionDenied: () => messenger.showSnackBar(
-        const SnackBar(
-          content: Text('需要麥克風權限才能語音輸入'),
-          action: SnackBarAction(label: '前往設定', onPressed: openAppSettings),
-        ),
-      ),
+      onPermissionDenied: () =>
+          messenger.showSnackBar(const SnackBar(content: Text('需要麥克風權限才能語音輸入，請至系統設定開啟'))),
     );
     final isSaving = useState(false);
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
