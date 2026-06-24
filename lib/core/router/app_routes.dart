@@ -21,7 +21,6 @@ abstract final class AppRoutes {
   static const String personalSettingsProfile = '/personal/settings/profile';
   static const String personalSettingsBodyMeasurements =
       '/personal/settings/body-measurements';
-  static const String personalSettingsPreferences = '/personal/settings/preferences';
   static const String personalSettingsStyle = '/personal/settings/style-preferences';
   static const String personalSubscription = '/personal/settings/subscription';
   static const String personalPaywall = '/personal/paywall';

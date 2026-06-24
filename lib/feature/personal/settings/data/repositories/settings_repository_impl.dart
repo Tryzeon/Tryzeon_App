@@ -8,31 +8,6 @@ import 'package:typed_result/typed_result.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   @override
-  @override
-  Future<Result<bool, Failure>> getRecommendNearbyShops() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return Ok(prefs.getBool(AppConstants.keyRecommendNearbyShops) ?? false);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to read settings', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
-  @override
-  Future<Result<void, Failure>> setRecommendNearbyShops(final bool value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(AppConstants.keyRecommendNearbyShops, value);
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to save settings', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
   Future<Result<VideoPromptConfig, Failure>> getVideoPromptConfig() async {
     try {
       final prefs = await SharedPreferences.getInstance();

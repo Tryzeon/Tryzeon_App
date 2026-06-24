@@ -110,11 +110,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
                   title: '風格偏好',
                   onTap: () => context.push(AppRoutes.personalSettingsStyle),
                 ),
-                NavRow(
-                  icon: Icons.tune,
-                  title: '偏好設定',
-                  onTap: () => context.push(AppRoutes.personalSettingsPreferences),
-                ),
                 const _SectionLabel('支援'),
                 NavRow(
                   icon: Icons.storefront_outlined,
