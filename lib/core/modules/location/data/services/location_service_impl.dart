@@ -1,6 +1,7 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/core/modules/location/domain/services/location_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
@@ -99,6 +100,23 @@ class LocationServiceImpl implements LocationService {
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get location', e, stackTrace);
+      return null;
+    }
+  }
+
+  @override
+  Future<GeoCoordinates?> getCoordinates() async {
+    try {
+      if (!await hasPermission()) return null;
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+      return (latitude: position.latitude, longitude: position.longitude);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get coordinates', e, stackTrace);
       return null;
     }
   }

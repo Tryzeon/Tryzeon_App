@@ -9,7 +9,9 @@ import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.dart
 import 'package:tryzeon/core/modules/analytics/data/models/analytics_event_model.dart';
 import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
+import 'package:tryzeon/core/modules/location/data/services/geocoding_service_impl.dart';
 import 'package:tryzeon/core/modules/location/data/services/location_service_impl.dart';
+import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/core/modules/location/domain/services/location_service.dart';
 
 part 'core_providers.g.dart';
@@ -39,6 +41,12 @@ AnalyticsEventQueueService analyticsEventQueueService(final Ref ref) {
 @riverpod
 LocationService locationService(final Ref ref) {
   return LocationServiceImpl();
+}
+
+/// Geocoding Service Provider
+@riverpod
+GeocodingService geocodingService(final Ref ref) {
+  return GeocodingServiceImpl();
 }
 
 /// Cache Service Provider
