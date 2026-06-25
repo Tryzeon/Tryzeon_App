@@ -88,10 +88,9 @@ class LoginPage extends HookConsumerWidget {
                   Center(
                     child: Column(
                       children: [
-                        Icon(
-                          Icons.checkroom_rounded,
-                          size: 48,
-                          color: colorScheme.primary,
+                        Image.asset(
+                          'assets/images/logo/tryzeon_mark.png',
+                          height: 56,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
