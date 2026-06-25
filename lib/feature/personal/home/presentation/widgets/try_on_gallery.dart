@@ -161,9 +161,7 @@ class _LoadingAnimationItem extends HookWidget {
 
     return ColoredBox(
       color: colorScheme.surface,
-      child: isInitialized.value
-          ? _coverVideoFill(controller)
-          : const SizedBox.expand(),
+      child: isInitialized.value ? _coverVideoFill(controller) : const SizedBox.expand(),
     );
   }
 }
