@@ -38,7 +38,8 @@ class AppConstants {
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
   static const String tryOnLoadingAnimation = 'assets/videos/tryon_loading.mp4';
-  static const String logoWordmark = 'assets/images/logo/tryzeon_wordmark.png';
+  static const String logoMark = 'assets/images/logo/tryzeon_logomark.png';
+  static const String logoWordmarkText = 'assets/images/logo/tryzeon_wordmark.png';
 
   // Logic
   static const int maxProductImages = 3;

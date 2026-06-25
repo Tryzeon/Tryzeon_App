@@ -386,10 +386,18 @@ class HomePage extends HookConsumerWidget {
             Positioned(
               top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
               left: AppSpacing.lg,
-              child: Image.asset(
-                AppConstants.logoWordmark,
-                height: 28,
-                fit: BoxFit.contain,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset(AppConstants.logoMark, height: 28, fit: BoxFit.contain),
+                  const SizedBox(width: AppSpacing.xs),
+                  Image.asset(
+                    AppConstants.logoWordmarkText,
+                    height: 28,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
             ),
 

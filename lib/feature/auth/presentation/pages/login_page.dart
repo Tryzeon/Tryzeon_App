@@ -89,7 +89,7 @@ class LoginPage extends HookConsumerWidget {
                     child: Column(
                       children: [
                         Image.asset(
-                          'assets/images/logo/tryzeon_mark.png',
+                          'assets/images/logo/tryzeon_logomark.png',
                           height: 56,
                         ),
                         const SizedBox(height: AppSpacing.md),
