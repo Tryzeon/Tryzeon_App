@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -108,28 +111,39 @@ class ProductCard extends HookConsumerWidget {
                       Positioned(
                         bottom: AppSpacing.sm,
                         right: AppSpacing.sm,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
+                        child: Skeleton.ignore(
+                          child: GestureDetector(
                             onTap: () {
+                              HapticFeedback.mediumImpact();
                               TryOnModeSheet.show(
                                 context: context,
                                 hasVideoAccess: hasVideoAccess,
                                 onModeSelected: (final mode) => handleTryon(mode: mode),
                               );
                             },
-                            borderRadius: AppRadius.pillAll,
-                            child: Skeleton.ignore(
-                              child: Container(
-                                padding: const EdgeInsets.all(AppSpacing.sm),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary,
-                                  borderRadius: AppRadius.pillAll,
-                                ),
-                                child: Icon(
-                                  Icons.auto_awesome,
-                                  color: colorScheme.onPrimary,
-                                  size: 20,
+                            child: ClipRRect(
+                              borderRadius: AppRadius.pillAll,
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                                child: Container(
+                                  padding: const EdgeInsets.all(AppSpacing.sm),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: AppOpacity.overlay,
+                                    ),
+                                    border: Border.all(
+                                      color: colorScheme.onPrimary.withValues(
+                                        alpha: AppOpacity.medium,
+                                      ),
+                                      width: AppStroke.thin,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.auto_awesome,
+                                    color: colorScheme.primaryContainer,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
