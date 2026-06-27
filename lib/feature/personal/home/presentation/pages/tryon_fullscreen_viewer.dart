@@ -64,8 +64,7 @@ class _ViewerLayer extends HookWidget {
                 initialScale: PhotoViewComputedScale.covered,
                 minScale: PhotoViewComputedScale.covered,
                 maxScale: PhotoViewComputedScale.covered * 3,
-                onTapUp: (final context, final details, final controllerValue) =>
-                    close(),
+                onTapUp: (final context, final details, final controllerValue) => close(),
                 loadingBuilder: (final context, final event) =>
                     const Center(child: CircularProgressIndicator()),
               ),

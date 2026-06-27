@@ -148,8 +148,8 @@ class _LoadingAnimationItem extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final controller = useMemoized(() {
-      final order = _sessionOrder ??=
-          (AppConstants.tryOnLoadingAnimations.toList()..shuffle());
+      final order = _sessionOrder ??= (AppConstants.tryOnLoadingAnimations.toList()
+        ..shuffle());
       final asset = order[_nextIndex % order.length];
       _nextIndex = (_nextIndex + 1) % order.length;
       return VideoPlayerController.asset(asset);
