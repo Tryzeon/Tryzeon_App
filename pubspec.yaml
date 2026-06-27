@@ -64,6 +64,7 @@ dependencies:
   image_background_remover: ^2.0.0
   photo_view: ^0.15.0
   chottu_link: ^1.1.1
+  simple_icons: ^16.23.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

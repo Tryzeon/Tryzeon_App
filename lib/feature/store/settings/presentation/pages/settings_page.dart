@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:simple_icons/simple_icons.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
@@ -60,24 +62,37 @@ class StoreSettingsPage extends HookConsumerWidget {
       await controller.signOut();
     }
 
-    Future<void> handleContactUs() async {
-      final result = await showAppOkCancelDialog(
-        context: context,
-        title: '聯絡我們',
-        message: '即將前往 Tryzeon 官方 Instagram，是否繼續？',
-        okLabel: '前往 Instagram',
-        cancelLabel: '取消',
-      );
-      if (result != OkCancelResult.ok) return;
-
-      final url = Uri.parse('https://www.instagram.com/tryzeon/');
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
+    Future<void> openContactLink(final String url, final String label) async {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         return;
       }
 
       if (!context.mounted) return;
-      TopNotification.show(context, message: '目前無法開啟 Instagram 連結');
+      TopNotification.show(context, message: '目前無法開啟 $label 連結');
+    }
+
+    Future<void> handleContactUs() async {
+      await showAppActionSheet(
+        context,
+        title: '聯絡我們',
+        actions: [
+          AppMenuAction(
+            icon: SimpleIcons.line,
+            title: 'LINE 官方帳號',
+            onTap: () => openContactLink('https://lin.ee/rY3VZMB', 'LINE'),
+          ),
+          AppMenuAction(
+            icon: SimpleIcons.instagram,
+            title: 'Instagram',
+            onTap: () => openContactLink(
+              'https://www.instagram.com/tryzeon/',
+              'Instagram',
+            ),
+          ),
+        ],
+      );
     }
 
     Future<void> handleDeleteAccount() async {
@@ -123,7 +138,6 @@ class StoreSettingsPage extends HookConsumerWidget {
                 NavRow(
                   icon: Icons.chat_bubble_outline,
                   title: '聯絡我們',
-                  trailingValue: 'Instagram',
                   onTap: handleContactUs,
                 ),
                 _SectionLabel('危險區域', color: colorScheme.error),

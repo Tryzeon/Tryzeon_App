@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:simple_icons/simple_icons.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
@@ -58,17 +60,28 @@ class PersonalSettingsPage extends HookConsumerWidget {
     }
 
     Future<void> handleContactUs() async {
-      final result = await showAppOkCancelDialog(
-        context: context,
+      await showAppActionSheet(
+        context,
         title: '聯絡我們',
-        message: '即將前往 Tryzeon 官方 Instagram，是否繼續？',
-        okLabel: '前往 Instagram',
-        cancelLabel: '取消',
+        actions: [
+          AppMenuAction(
+            icon: SimpleIcons.line,
+            title: 'LINE 官方帳號',
+            onTap: () => launchUrl(
+              Uri.parse('https://lin.ee/rY3VZMB'),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
+          AppMenuAction(
+            icon: SimpleIcons.instagram,
+            title: 'Instagram',
+            onTap: () => launchUrl(
+              Uri.parse('https://www.instagram.com/tryzeon/'),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
+        ],
       );
-      if (result != OkCancelResult.ok) return;
-
-      final url = Uri.parse('https://www.instagram.com/tryzeon/');
-      launchUrl(url, mode: LaunchMode.externalApplication);
     }
 
     Future<void> handleDeleteAccount() async {
@@ -120,7 +133,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
                 NavRow(
                   icon: Icons.chat_bubble_outline,
                   title: '聯絡我們',
-                  trailingValue: 'Instagram',
                   onTap: handleContactUs,
                 ),
                 _SectionLabel('危險區域', color: colorScheme.error),
