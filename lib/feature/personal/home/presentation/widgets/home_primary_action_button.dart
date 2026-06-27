@@ -6,15 +6,15 @@ class HomePrimaryActionButton extends StatelessWidget {
   const HomePrimaryActionButton({
     super.key,
     required this.onTap,
+    required this.label,
+    required this.icon,
     this.isDisabled = false,
-    this.label = '虛擬試穿',
-    this.icon = Icons.auto_awesome_rounded,
   });
 
   final VoidCallback? onTap;
   final bool isDisabled;
   final String label;
-  final IconData icon;
+  final Widget icon;
 
   @override
   Widget build(final BuildContext context) {
@@ -45,7 +45,7 @@ class HomePrimaryActionButton extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 20, color: colorScheme.primaryContainer),
+                  icon,
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     label,

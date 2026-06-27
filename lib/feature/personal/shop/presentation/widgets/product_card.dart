@@ -139,10 +139,11 @@ class ProductCard extends HookConsumerWidget {
                                     ),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(
-                                    Icons.auto_awesome,
-                                    color: colorScheme.primaryContainer,
-                                    size: 20,
+                                  child: Image.asset(
+                                    AppConstants.logoMark,
+                                    width: 20,
+                                    height: 20,
+                                    fit: BoxFit.contain,
                                   ),
                                 ),
                               ),

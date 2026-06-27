@@ -478,7 +478,18 @@ class HomePage extends HookConsumerWidget {
                   right: AppSpacing.lg,
                   child: HomePrimaryActionButton(
                     label: hasAvatar ? '虛擬試穿' : '上傳照片',
-                    icon: hasAvatar ? Icons.auto_awesome_rounded : Icons.upload_rounded,
+                    icon: hasAvatar
+                        ? Image.asset(
+                            AppConstants.logoMark,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                          )
+                        : Icon(
+                            Icons.upload_rounded,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                          ),
                     isDisabled: isUploadingAvatar.value,
                     onTap: hasAvatar ? tryOnFromLocal : uploadAvatar,
                   ),
