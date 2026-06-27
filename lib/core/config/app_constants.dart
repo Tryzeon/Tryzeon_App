@@ -37,7 +37,13 @@ class AppConstants {
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
-  static const String tryOnLoadingAnimation = 'assets/videos/tryon_loading.mp4';
+  static const List<String> tryOnLoadingAnimations = [
+    'assets/videos/tryon-loading-animation-1.mp4',
+    'assets/videos/tryon-loading-animation-2.mp4',
+    'assets/videos/tryon-loading-animation-3.mp4',
+    'assets/videos/tryon-loading-animation-4.mp4',
+    'assets/videos/tryon-loading-animation-5.mp4',
+  ];
   static const String logoMark = 'assets/images/logo/tryzeon_logomark.png';
   static const String logoWordmarkText = 'assets/images/logo/tryzeon_wordmark.png';
 

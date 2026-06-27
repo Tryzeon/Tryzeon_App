@@ -138,15 +138,19 @@ class TryOnGallery extends HookWidget {
 /// bundled brand loading animation on a loop, muted, filling the page.
 class _LoadingAnimationItem extends HookWidget {
   const _LoadingAnimationItem();
+  static int _nextIndex = 0;
 
   @override
   Widget build(final BuildContext context) {
     useAutomaticKeepAlive();
 
     final colorScheme = Theme.of(context).colorScheme;
-    final controller = useMemoized(
-      () => VideoPlayerController.asset(AppConstants.tryOnLoadingAnimation),
-    );
+    final controller = useMemoized(() {
+      final animations = AppConstants.tryOnLoadingAnimations;
+      final asset = animations[_nextIndex % animations.length];
+      _nextIndex = (_nextIndex + 1) % animations.length;
+      return VideoPlayerController.asset(asset);
+    });
     final isInitialized = useState(false);
 
     useEffect(() {
