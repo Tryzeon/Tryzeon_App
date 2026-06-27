@@ -138,6 +138,8 @@ class TryOnGallery extends HookWidget {
 /// bundled brand loading animation on a loop, muted, filling the page.
 class _LoadingAnimationItem extends HookWidget {
   const _LoadingAnimationItem();
+
+  static List<String>? _sessionOrder;
   static int _nextIndex = 0;
 
   @override
@@ -146,9 +148,10 @@ class _LoadingAnimationItem extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final controller = useMemoized(() {
-      final animations = AppConstants.tryOnLoadingAnimations;
-      final asset = animations[_nextIndex % animations.length];
-      _nextIndex = (_nextIndex + 1) % animations.length;
+      final order = _sessionOrder ??=
+          (AppConstants.tryOnLoadingAnimations.toList()..shuffle());
+      final asset = order[_nextIndex % order.length];
+      _nextIndex = (_nextIndex + 1) % order.length;
       return VideoPlayerController.asset(asset);
     });
     final isInitialized = useState(false);
