@@ -67,3 +67,11 @@ jobs:
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_CONTENT }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+
+      - name: Clean up signing keychain
+        if: always()
+        run: |
+          security delete-keychain fastlane_tmp_keychain 2>/dev/null || true
+          security list-keychains -d user -s ~/Library/Keychains/login.keychain-db
+          security default-keychain -d user -s ~/Library/Keychains/login.keychain-db

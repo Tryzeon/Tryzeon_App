@@ -58,6 +58,10 @@ platform :ios do
       key_content: ENV['APP_STORE_CONNECT_API_KEY_KEY_CONTENT'],
     )
 
+    setup_ci
+
+    sync_code_signing(type: "appstore")
+
     version_number = beta_version_number!
     build_number = app_store_build_number(
       api_key: api_key,
@@ -70,15 +74,7 @@ platform :ios do
 
     build_app(
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.tryzeon.app" => "match AppStore com.tryzeon.app"
-        }
-      },
-      xcargs: "FLUTTER_BUILD_NAME=#{version_number} FLUTTER_BUILD_NUMBER=#{build_number} " \
-              "CODE_SIGN_STYLE=Manual " \
-              "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.tryzeon.app' " \
-              "CODE_SIGN_IDENTITY='Apple Distribution'"
+      xcargs: "FLUTTER_BUILD_NAME=#{version_number} FLUTTER_BUILD_NUMBER=#{build_number}"
     )
     
     upload_to_testflight(
