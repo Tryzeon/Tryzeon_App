@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build-and-deploy-ios:
-    runs-on: macos-latest
+    runs-on: [self-hosted, macOS]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
