@@ -26,22 +26,7 @@ jobs:
         with:
           flutter-version: '3.41.4'
           channel: 'stable'
-          cache: true
-
-      - name: Calculate CocoaPods Key
-        id: compute-pods-key
-        run: echo "key=${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}" >> $GITHUB_OUTPUT
-
-      - name: Restore CocoaPods cache
-        id: cache-pods
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-          key: ${{ steps.compute-pods-key.outputs.key }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          cache: false
 
       - name: Create .env file
         run: |
@@ -58,15 +43,6 @@ jobs:
         run: |
           cd ios
           pod install
-
-      - name: Save CocoaPods cache
-        if: steps.cache-pods.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-          key: ${{ steps.compute-pods-key.outputs.key }}
 
       - name: Install Bundle
         run: |
