@@ -3,3 +3,9 @@ verify_jwt = false
 
 [functions.resolve-link]
 verify_jwt = false
+
+[functions.liff-tryon]
+verify_jwt = false
+
+[functions.liff-catalog]
+verify_jwt = false
