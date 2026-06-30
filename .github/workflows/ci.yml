@@ -3,8 +3,12 @@ name: CI - Smoke Test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'liff-web/**'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'liff-web/**'
   workflow_dispatch:
 
 concurrency:
