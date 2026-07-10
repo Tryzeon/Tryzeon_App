@@ -119,12 +119,14 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const _UsageInfoCard(),
+            const SizedBox(height: AppSpacing.md),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Text(
-                    '資料僅供試穿尺寸推薦，不對外顯示。',
+                    '填寫進度',
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -232,6 +234,83 @@ class _MeasurementField extends StatelessWidget {
       validator: AppValidators.validateMeasurement,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(labelText: type.label, suffixText: 'cm'),
+    );
+  }
+}
+
+class _UsageInfoCard extends StatelessWidget {
+  const _UsageInfoCard();
+
+  static const List<String> _usagePoints = [
+    '自動計算你的合身推薦尺寸。',
+    '試穿效果更貼近實際穿上的樣子。',
+    '資料僅用於上述用途，不會對外顯示。',
+  ];
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.smMd,
+      ),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: AppRadius.cardAll,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                size: 16,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  '我們如何使用你的身形資料',
+                  style: textTheme.titleSmall?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          for (final point in _usagePoints)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.smMd),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '・',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xxs),
+                  Expanded(
+                    child: Text(
+                      point,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
