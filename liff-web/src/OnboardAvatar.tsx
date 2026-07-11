@@ -1,25 +1,14 @@
-import { useEffect, useState } from "react";
-import { getIdToken, initAndLogin } from "./liff";
+import { useState } from "react";
+import { getIdToken } from "./liff";
 import { fileToBase64 } from "./image";
 import { setAvatar } from "./onboard";
 
-type Phase = "init" | "ready" | "saving" | "done" | "error";
+// LIFF is already initialized + logged in by <LiffGate> before this renders.
+type Phase = "ready" | "saving" | "done" | "error";
 
 export function OnboardAvatar() {
-  const [phase, setPhase] = useState<Phase>("init");
+  const [phase, setPhase] = useState<Phase>("ready");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await initAndLogin();
-        setPhase("ready");
-      } catch {
-        setMessage("請從 LINE 開啟此頁面");
-        setPhase("error");
-      }
-    })();
-  }, []);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

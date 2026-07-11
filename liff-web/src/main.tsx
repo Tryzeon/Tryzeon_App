@@ -1,14 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App";
-import { OnboardAvatar } from "./OnboardAvatar";
+import { BrowserRouter } from "react-router-dom";
+import { AppRouter } from "./router";
 import "./styles.css";
-
-const screen = new URLSearchParams(window.location.search).get("screen");
-const Root = screen === "onboard" ? OnboardAvatar : App;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Root />
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
   </StrictMode>,
 );
