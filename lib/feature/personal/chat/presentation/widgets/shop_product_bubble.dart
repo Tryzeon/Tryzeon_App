@@ -4,12 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/sheets/tryon_mode_sheet.dart';
-import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
 
 /// A recommended shop product as its own chat bubble: image, name, price and a
 /// try-on button. Tap opens the product detail page.
@@ -86,16 +84,6 @@ class _ShopInfo extends ConsumerWidget {
       orElse: () => false,
     );
 
-    Future<void> handleTryon({final TryOnMode mode = TryOnMode.image}) async {
-      ref
-          .read(incrementTryonCountProvider)
-          .call(productId: product.id, storeId: product.storeInfo.id)
-          .ignore();
-      await ref
-          .read(tryOnCoordinatorProvider)
-          .tryOnFromStorage(product.imagePaths, mode: mode);
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -115,14 +103,15 @@ class _ShopInfo extends ConsumerWidget {
               'NT\$${product.price.toStringAsFixed(0)}',
               style: theme.textTheme.bodyMedium,
             ),
-            FilledButton.tonalIcon(
-              onPressed: () => TryOnModeSheet.show(
-                context: context,
+            TryOnFab(
+              size: 18,
+              label: '試穿',
+              onTap: () => triggerProductTryOn(
+                context,
+                ref,
+                product,
                 hasVideoAccess: hasVideoAccess,
-                onModeSelected: (final mode) => handleTryon(mode: mode),
               ),
-              icon: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('試穿'),
             ),
           ],
         ),

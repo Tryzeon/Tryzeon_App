@@ -1,31 +1,25 @@
-import 'dart:ui';
-
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/launch_product_purchase.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/sheets/tryon_mode_sheet.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_image_viewer.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_section.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
 
 class ProductDetailBody extends HookConsumerWidget {
   const ProductDetailBody({super.key, required this.productAsync, required this.onRetry});
@@ -111,17 +105,6 @@ class _ProductDetailContent extends HookConsumerWidget {
       orElse: () => false,
     );
 
-    Future<void> handleTryon({final TryOnMode mode = TryOnMode.image}) async {
-      ref
-          .read(incrementTryonCountProvider)
-          .call(productId: product.id, storeId: product.storeInfo.id)
-          .ignore();
-
-      await ref
-          .read(tryOnCoordinatorProvider)
-          .tryOnFromStorage(product.imagePaths, mode: mode);
-    }
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,15 +119,13 @@ class _ProductDetailContent extends HookConsumerWidget {
                 bottom: AppSpacing.sm,
                 right: AppSpacing.sm,
                 child: Skeleton.ignore(
-                  child: _TryOnButton(
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      TryOnModeSheet.show(
-                        context: context,
-                        hasVideoAccess: hasVideoAccess,
-                        onModeSelected: (final mode) => handleTryon(mode: mode),
-                      );
-                    },
+                  child: TryOnFab(
+                    onTap: () => triggerProductTryOn(
+                      context,
+                      ref,
+                      product,
+                      hasVideoAccess: hasVideoAccess,
+                    ),
                   ),
                 ),
               ),
@@ -234,44 +215,6 @@ class _ProductDetailContent extends HookConsumerWidget {
                 : 0,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TryOnButton extends StatelessWidget {
-  const _TryOnButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: AppRadius.pillAll,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
-              border: Border.all(
-                color: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
-                width: AppStroke.thin,
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: Image.asset(
-              AppConstants.logoMark,
-              width: 24,
-              height: 24,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
       ),
     );
   }

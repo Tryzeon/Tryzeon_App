@@ -1,8 +1,5 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,13 +7,12 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/sheets/tryon_mode_sheet.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductCard extends HookConsumerWidget {
@@ -49,17 +45,6 @@ class ProductCard extends HookConsumerWidget {
             .call(productId: product.id, storeId: product.storeInfo.id)
             .ignore();
       }
-    }
-
-    Future<void> handleTryon({final TryOnMode mode = TryOnMode.image}) async {
-      ref
-          .read(incrementTryonCountProvider)
-          .call(productId: product.id, storeId: product.storeInfo.id)
-          .ignore();
-
-      await ref
-          .read(tryOnCoordinatorProvider)
-          .tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
     final recommendedSize = fitResult?.displayState == FitDisplayState.match
@@ -112,41 +97,12 @@ class ProductCard extends HookConsumerWidget {
                         bottom: AppSpacing.sm,
                         right: AppSpacing.sm,
                         child: Skeleton.ignore(
-                          child: GestureDetector(
-                            onTap: () {
-                              HapticFeedback.mediumImpact();
-                              TryOnModeSheet.show(
-                                context: context,
-                                hasVideoAccess: hasVideoAccess,
-                                onModeSelected: (final mode) => handleTryon(mode: mode),
-                              );
-                            },
-                            child: ClipRRect(
-                              borderRadius: AppRadius.pillAll,
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(AppSpacing.sm),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.onSurface.withValues(
-                                      alpha: AppOpacity.overlay,
-                                    ),
-                                    border: Border.all(
-                                      color: colorScheme.onPrimary.withValues(
-                                        alpha: AppOpacity.medium,
-                                      ),
-                                      width: AppStroke.thin,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Image.asset(
-                                    AppConstants.logoMark,
-                                    width: 20,
-                                    height: 20,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
+                          child: TryOnFab(
+                            onTap: () => triggerProductTryOn(
+                              context,
+                              ref,
+                              product,
+                              hasVideoAccess: hasVideoAccess,
                             ),
                           ),
                         ),
