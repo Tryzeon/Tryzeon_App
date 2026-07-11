@@ -9,3 +9,9 @@ verify_jwt = false
 
 [functions.liff-catalog]
 verify_jwt = false
+
+[functions.liff-avatar]
+verify_jwt = false
+
+[functions.line-webhook]
+verify_jwt = false
