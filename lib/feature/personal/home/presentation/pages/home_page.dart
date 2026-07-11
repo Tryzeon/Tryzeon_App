@@ -10,6 +10,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -308,6 +309,73 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    Future<void> shareImage(final TryonResult result) async {
+      final imageUrl = result.imageUrl;
+      if (imageUrl == null || imageUrl.isEmpty) {
+        throw Exception('Image URL is missing');
+      }
+
+      final originalBytes = await downloadBytes(imageUrl);
+      Uint8List imageToShare = originalBytes;
+
+      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
+      if (capabilities.requiresWatermark) {
+        imageToShare = await ImageWatermarkHelper.addWatermark(originalBytes);
+      }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              imageToShare,
+              name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}.jpg',
+              mimeType: 'image/jpeg',
+            ),
+          ],
+        ),
+      );
+    }
+
+    Future<void> shareVideo(final TryonResult result) async {
+      final videoUrl = result.videoUrl;
+      if (videoUrl == null || videoUrl.isEmpty) {
+        throw Exception('Video URL is missing');
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final tempPath =
+          '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+      try {
+        final dio = Dio();
+        await dio.download(videoUrl, tempPath);
+        await SharePlus.instance.share(ShareParams(files: [XFile(tempPath)]));
+      } finally {
+        final file = File(tempPath);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      }
+    }
+
+    Future<void> shareCurrentMedia() async {
+      try {
+        final result = galleryState.currentResult;
+        if (result == null) return;
+
+        if (result.mode == TryOnMode.video) {
+          await shareVideo(result);
+        } else {
+          await shareImage(result);
+        }
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to share media', e, stackTrace);
+        if (context.mounted) {
+          TopNotification.show(context, message: '分享失敗，請稍後再試');
+        }
+      }
+    }
+
     void toggleAvatar() {
       galleryNotifier.toggleAvatarForCurrent();
     }
@@ -427,6 +495,12 @@ class HomePage extends HookConsumerWidget {
                                 ),
                               ]
                             : [
+                                AppMenuAction(
+                                  icon: Icons.ios_share_rounded,
+                                  title: '分享',
+                                  subtitle: '分享試穿照片',
+                                  onTap: shareCurrentMedia,
+                                ),
                                 AppMenuAction(
                                   icon: Icons.download_rounded,
                                   title: '下載',
