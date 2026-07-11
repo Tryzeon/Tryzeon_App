@@ -1,5 +1,5 @@
 export function processingMessage(): object {
-  return { type: "text", text: "收到，正在試穿中，請稍等！" };
+  return { type: "text", text: "收到，正在試穿，請稍等！" };
 }
 
 export function onboardingMessage(liffUrl: string): object {
