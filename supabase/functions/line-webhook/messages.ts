@@ -38,5 +38,5 @@ export function errorMessage(
 }
 
 export function hintMessage(): object {
-  return { type: "text", text: "傳一張衣服的照片給我，我就幫你試穿 👗" };
+  return { type: "text", text: "傳一張衣服的照片給我，我就幫你試穿" };
 }
