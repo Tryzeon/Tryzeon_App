@@ -4,7 +4,7 @@ import {
   GenerationFailedError,
   QuotaExceededError,
   runTryonJob,
-} from "../_shared/tryon-run.ts";
+} from "../_shared/tryon/index.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "./profile.ts";
 import {
@@ -63,12 +63,16 @@ export async function handleImageMessage(
 
   try {
     const garmentBase64 = uint8ToBase64(bytes);
-    const { imageUrl } = await runJob(deps.admin, {
+    const result = await runJob({ admin: deps.admin }, {
       userId,
       avatar: { path: avatarPath },
-      garments: [[{ base64: garmentBase64 }]],
+      garments: [{ images: [{ base64: garmentBase64 }] }],
+      mode: "image",
     });
-    await deps.line.push(event.sourceUserId, [resultMessage(imageUrl)]);
+    if (result.kind !== "image") {
+      throw new Error("expected image result for line-webhook");
+    }
+    await deps.line.push(event.sourceUserId, [resultMessage(result.imageUrl)]);
   } catch (err) {
     const kind = err instanceof QuotaExceededError
       ? "quota"
