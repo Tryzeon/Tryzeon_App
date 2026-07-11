@@ -10,7 +10,7 @@ import {
   GenerationFailedError,
   QuotaExceededError,
   runTryonJob,
-} from "../_shared/tryon-run.ts";
+} from "../_shared/tryon/index.ts";
 
 function withCors(resp: Response): Response {
   const headers = new Headers(resp.headers);
@@ -37,12 +37,16 @@ Deno.serve(async (req) => {
     const admin = getAdminClient();
     const userId = await resolveSupabaseUser(admin, profile);
     const garmentKey = await resolveProductGarmentKey(admin, body.productId);
-    const { imageUrl, usage } = await runTryonJob(admin, {
+    const result = await runTryonJob({ admin }, {
       userId,
       avatar: { base64: body.avatarBase64 },
-      garments: [[{ path: garmentKey }]],
+      garments: [{ images: [{ path: garmentKey }] }],
+      mode: "image",
     });
-    return withCors(json({ imageUrl, usage }));
+    if (result.kind !== "image") {
+      throw new Error("expected image result for liff-tryon");
+    }
+    return withCors(json({ imageUrl: result.imageUrl, usage: result.usage }));
   } catch (err) {
     if (err instanceof ValidationError) {
       return withCors(jsonError(err.message, "VALIDATION_ERROR", 400));
