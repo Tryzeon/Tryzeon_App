@@ -1,5 +1,5 @@
 export function processingMessage(): object {
-  return { type: "text", text: "👗 收到！試穿中，大約 30 秒…" };
+  return { type: "text", text: "正在試穿中，請稍等！" };
 }
 
 export function onboardingMessage(liffUrl: string): object {
