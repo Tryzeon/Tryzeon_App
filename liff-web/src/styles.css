@@ -181,6 +181,17 @@ button { font-family: inherit; }
   cursor: pointer;
 }
 .cta.is-disabled { background: var(--surface-2); color: var(--muted); cursor: default; }
+.cta.is-loading { cursor: default; }
+.cta__spin { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .cta__hint { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; letter-spacing: 0.04em; }
 
 /* ── Ceremony (generating) ─────────────────────────────────────────────── */

@@ -55,8 +55,15 @@ export function OnboardAvatar() {
         {message && <div className="errorcard">{message}</div>}
       </main>
       <div className="actionbar">
-        <label className={`cta${phase === "saving" ? " is-disabled" : ""}`}>
-          {phase === "saving" ? "儲存中…" : "上傳我的 model 照"}
+        <label className={`cta${phase === "saving" ? " is-loading" : ""}`}>
+          {phase === "saving" ? (
+            <span className="cta__spin">
+              <span className="spinner" aria-hidden="true" />
+              儲存中…
+            </span>
+          ) : (
+            "上傳我的 model 照"
+          )}
           <input
             type="file"
             accept="image/*"
