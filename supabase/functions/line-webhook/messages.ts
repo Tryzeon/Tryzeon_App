@@ -8,7 +8,7 @@ export function onboardingMessage(liffUrl: string): object {
     altText: "先建立你的 model 照",
     template: {
       type: "buttons",
-      text: "先花 30 秒建立你的 model：上傳一張清楚全身照，之後試穿都用它。",
+      text: "想要試穿嗎？先花 3 秒上傳你的 model 照",
       actions: [{ type: "uri", label: "上傳我的 model 照", uri: liffUrl }],
     },
   };
