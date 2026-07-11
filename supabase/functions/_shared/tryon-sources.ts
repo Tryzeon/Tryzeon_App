@@ -1,6 +1,16 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { fetchImageAsBase64 } from "../_shared/image-utils.ts";
-import { ValidationError, type GarmentInput, type ImageSource } from "./request.ts";
+import { fetchImageAsBase64 } from "./image-utils.ts";
+
+export class ValidationError extends Error {}
+
+export interface ImageSource {
+  path?: string;
+  base64?: string;
+}
+
+export interface GarmentInput {
+  images: ImageSource[];
+}
 
 export type SourceResolver = (source: ImageSource) => Promise<string>;
 
@@ -9,10 +19,10 @@ export type SourceResolver = (source: ImageSource) => Promise<string>;
  * `fetchImageAsBase64` (R2 'stores/' keys vs Supabase buckets); `base64` is
  * passed through.
  */
-export function makeSourceResolver(userClient: SupabaseClient): SourceResolver {
+export function makeSourceResolver(client: SupabaseClient): SourceResolver {
   return (source: ImageSource): Promise<string> => {
     if (source.base64) return Promise.resolve(source.base64);
-    if (source.path) return fetchImageAsBase64(userClient, source.path);
+    if (source.path) return fetchImageAsBase64(client, source.path);
     throw new ValidationError("image source has no usable key");
   };
 }

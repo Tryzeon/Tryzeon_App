@@ -4,13 +4,13 @@ import { getAdminClient } from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { corsHeaders, parseLiffTryonBody, ValidationError } from "./request.ts";
 import { resolveProductGarmentKey } from "./catalog.ts";
-import { LineAuthError, verifyLineIdToken } from "./line.ts";
-import { resolveSupabaseUser } from "./identity.ts";
+import { LineAuthError, verifyLineIdToken } from "../_shared/line-identity.ts";
+import { resolveSupabaseUser } from "../_shared/line-user.ts";
 import {
   GenerationFailedError,
   QuotaExceededError,
-  runTryon,
-} from "./tryon-core.ts";
+  runTryonJob,
+} from "../_shared/tryon-run.ts";
 
 function withCors(resp: Response): Response {
   const headers = new Headers(resp.headers);
@@ -37,12 +37,11 @@ Deno.serve(async (req) => {
     const admin = getAdminClient();
     const userId = await resolveSupabaseUser(admin, profile);
     const garmentKey = await resolveProductGarmentKey(admin, body.productId);
-    const { imageUrl, usage } = await runTryon(
-      admin,
+    const { imageUrl, usage } = await runTryonJob(admin, {
       userId,
-      body.avatarBase64,
-      garmentKey,
-    );
+      avatar: { base64: body.avatarBase64 },
+      garments: [[{ path: garmentKey }]],
+    });
     return withCors(json({ imageUrl, usage }));
   } catch (err) {
     if (err instanceof ValidationError) {

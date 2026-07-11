@@ -3,10 +3,10 @@ import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.
 import { QuotaManager, FeatureName } from "../_shared/quota.ts";
 import { detectMimeType, mimeTypeToExtension, base64ToUint8Array } from "../_shared/image-utils.ts";
 import { uploadTryonImageToR2 } from "../_shared/r2.ts";
-import { generateTryonImage } from "./image.ts";
+import { generateTryonImage } from "../_shared/tryon-generate.ts";
 import { generateTryonVideo } from "./video.ts";
 import { parseTryonRequest, ValidationError } from "./request.ts";
-import { makeSourceResolver, resolveGarments } from "./garments.ts";
+import { makeSourceResolver, resolveGarments } from "../_shared/tryon-sources.ts";
 import { json, jsonError, rateLimitedResponse } from "../_shared/http.ts";
 
 Deno.serve(async (req) => {

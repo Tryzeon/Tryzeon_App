@@ -1,5 +1,5 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { LineProfile } from "./line.ts";
+import { LineProfile } from "./line-identity.ts";
 
 const SYNTHETIC_EMAIL_DOMAIN = "liff.tryzeon.app";
 

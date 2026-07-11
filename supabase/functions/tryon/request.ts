@@ -1,18 +1,11 @@
+import type { ImageSource, GarmentInput } from "../_shared/tryon-sources.ts";
+
 export const LIMITS = {
   MAX_GARMENTS: 3,
   MAX_IMAGES_PER_GARMENT: 3,
 } as const;
 
 export class ValidationError extends Error {}
-
-export interface ImageSource {
-  path?: string;
-  base64?: string;
-}
-
-export interface GarmentInput {
-  images: ImageSource[];
-}
 
 export interface TryonRequest {
   avatar: ImageSource;

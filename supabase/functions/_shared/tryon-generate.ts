@@ -1,4 +1,4 @@
-import { detectMimeType } from "../_shared/image-utils.ts";
+import { detectMimeType } from "./image-utils.ts";
 
 const SYSTEM_INSTRUCTION =
   `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. 
