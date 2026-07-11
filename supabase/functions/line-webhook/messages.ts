@@ -21,14 +21,6 @@ export function resultMessage(imageUrl: string): object {
     type: "image",
     originalContentUrl: imageUrl,
     previewImageUrl: imageUrl,
-    quickReply: {
-      items: [
-        {
-          type: "action",
-          action: { type: "message", label: "再試一件", text: "再傳一張衣服圖給我" },
-        },
-      ],
-    },
   };
 }
 
