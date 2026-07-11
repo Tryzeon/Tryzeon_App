@@ -10,17 +10,17 @@ part 'measurements.g.dart';
 sealed class Measurements with _$Measurements {
   const factory Measurements({
     final double? height,
+    final double? shoulder,
     final double? chest,
+    final double? sleeve,
     final double? waist,
     final double? hips,
-    final double? shoulder,
-    final double? sleeve,
     final double? heightOffset,
+    final double? shoulderOffset,
     final double? chestOffset,
+    final double? sleeveOffset,
     final double? waistOffset,
     final double? hipsOffset,
-    final double? shoulderOffset,
-    final double? sleeveOffset,
   }) = _Measurements;
   const Measurements._();
 
@@ -29,20 +29,20 @@ sealed class Measurements with _$Measurements {
 
   double? getValue(final MeasurementType type) => switch (type) {
     MeasurementType.height => height,
+    MeasurementType.shoulder => shoulder,
     MeasurementType.chest => chest,
+    MeasurementType.sleeve => sleeve,
     MeasurementType.waist => waist,
     MeasurementType.hips => hips,
-    MeasurementType.shoulder => shoulder,
-    MeasurementType.sleeve => sleeve,
   };
 
   double? getOffset(final MeasurementType type) => switch (type) {
     MeasurementType.height => heightOffset,
+    MeasurementType.shoulder => shoulderOffset,
     MeasurementType.chest => chestOffset,
+    MeasurementType.sleeve => sleeveOffset,
     MeasurementType.waist => waistOffset,
     MeasurementType.hips => hipsOffset,
-    MeasurementType.shoulder => shoulderOffset,
-    MeasurementType.sleeve => sleeveOffset,
   };
 
   /// 透過 Enum 動態取得數值

@@ -1,10 +1,10 @@
 enum MeasurementType {
   height('height'),
-  chest('chest'),
-  waist('waist'),
-  hips('hips'),
   shoulder('shoulder'),
-  sleeve('sleeve');
+  chest('chest'),
+  sleeve('sleeve'),
+  waist('waist'),
+  hips('hips');
 
   const MeasurementType(this.value);
   final String value;

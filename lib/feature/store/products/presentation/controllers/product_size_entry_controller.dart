@@ -78,17 +78,17 @@ class ProductSizeEntryController {
 
     return Measurements(
       height: getValue(MeasurementType.height),
+      shoulder: getValue(MeasurementType.shoulder),
       chest: getValue(MeasurementType.chest),
+      sleeve: getValue(MeasurementType.sleeve),
       waist: getValue(MeasurementType.waist),
       hips: getValue(MeasurementType.hips),
-      shoulder: getValue(MeasurementType.shoulder),
-      sleeve: getValue(MeasurementType.sleeve),
       heightOffset: getOffset(MeasurementType.height),
+      shoulderOffset: getOffset(MeasurementType.shoulder),
       chestOffset: getOffset(MeasurementType.chest),
+      sleeveOffset: getOffset(MeasurementType.sleeve),
       waistOffset: getOffset(MeasurementType.waist),
       hipsOffset: getOffset(MeasurementType.hips),
-      shoulderOffset: getOffset(MeasurementType.shoulder),
-      sleeveOffset: getOffset(MeasurementType.sleeve),
     );
   }
 
