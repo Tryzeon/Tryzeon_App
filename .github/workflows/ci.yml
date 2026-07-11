@@ -3,12 +3,34 @@ name: CI - Smoke Test
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'liff-web/**'
+    # Whitelist: only run the Flutter build smoke test when files that can
+    # actually affect the app build change.
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'android/**'
+      - 'ios/Runner/**'
+      - 'ios/Podfile'
+      - 'ios/Podfile.lock'
+      - 'assets/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
-    paths-ignore:
-      - 'liff-web/**'
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'android/**'
+      - 'ios/Runner/**'
+      - 'ios/Podfile'
+      - 'ios/Podfile.lock'
+      - 'assets/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yml'
   workflow_dispatch:
 
 concurrency:
