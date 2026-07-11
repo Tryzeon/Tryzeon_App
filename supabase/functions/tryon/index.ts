@@ -7,6 +7,7 @@ import { generateTryonImage } from "../_shared/tryon-generate.ts";
 import { generateTryonVideo } from "./video.ts";
 import { parseTryonRequest, ValidationError } from "./request.ts";
 import { makeSourceResolver, resolveGarments } from "../_shared/tryon-sources.ts";
+import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 import { json, jsonError, rateLimitedResponse } from "../_shared/http.ts";
 
 Deno.serve(async (req) => {
@@ -37,10 +38,11 @@ Deno.serve(async (req) => {
       return rateLimitedResponse(usage);
     }
 
-    const resolver = makeSourceResolver(userClient!);
+    const avatarResolver = makeSourceResolver(userClient!, USER_AVATARS_BUCKET);
+    const garmentResolver = makeSourceResolver(userClient!, WARDROBE_IMAGES_BUCKET);
     const [avatarImage, garmentGroups] = await Promise.all([
-      resolver(tryonReq.avatar),
-      resolveGarments(tryonReq.garments, resolver),
+      avatarResolver(tryonReq.avatar),
+      resolveGarments(tryonReq.garments, garmentResolver),
     ]);
 
     const tryonImageBase64 = await generateTryonImage(

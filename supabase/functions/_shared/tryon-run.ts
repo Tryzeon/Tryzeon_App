@@ -8,6 +8,7 @@ import {
 import { uploadTryonImageToR2 } from "./r2.ts";
 import { generateTryonImage } from "./tryon-generate.ts";
 import { makeSourceResolver, resolveGarments, type ImageSource } from "./tryon-sources.ts";
+import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "./storage.ts";
 
 export class QuotaExceededError extends Error {
   constructor(public usage: unknown) {
@@ -55,10 +56,11 @@ export async function runTryonJob(
   }
 
   try {
-    const resolver = makeSourceResolver(client);
+    const avatarResolver = makeSourceResolver(client, USER_AVATARS_BUCKET);
+    const garmentResolver = makeSourceResolver(client, WARDROBE_IMAGES_BUCKET);
     const [avatarBase64, garmentGroups] = await Promise.all([
-      resolver(params.avatar),
-      resolveGarments(params.garments.map((images) => ({ images })), resolver),
+      avatarResolver(params.avatar),
+      resolveGarments(params.garments.map((images) => ({ images })), garmentResolver),
     ]);
 
     const generated = await generate(avatarBase64, garmentGroups, params.scenePrompt);

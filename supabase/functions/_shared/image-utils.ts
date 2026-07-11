@@ -1,5 +1,6 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { downloadPublicImageFromR2 } from "./r2.ts";
+import { isR2PublicKey, SUPABASE_IMAGE_BUCKETS } from "./storage.ts";
 
 export function uint8ToBase64(bytes: Uint8Array): string {
   return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
@@ -7,29 +8,26 @@ export function uint8ToBase64(bytes: Uint8Array): string {
 
 /**
  * Downloads an image (Supabase Storage or Cloudflare R2 public bucket) and
- * returns it as base64. R2 is used for keys starting with `stores/` (store
- * logos and product images); Supabase Storage is used for wardrobe and avatar
- * paths.
+ * returns it as base64. Keys under the R2 public prefix route to R2; otherwise
+ * the image is fetched from the given Supabase Storage `bucket`. Callers must
+ * pass the bucket explicitly since it can't be inferred from the path — see
+ * `storage.ts` for the origin conventions.
  */
-export async function fetchImageAsBase64(supabase: SupabaseClient, path: string): Promise<string> {
-  if (path.startsWith("stores/")) {
+export async function fetchImageAsBase64(
+  supabase: SupabaseClient,
+  path: string,
+  bucket: string,
+): Promise<string> {
+  if (isR2PublicKey(path)) {
     const bytes = await downloadPublicImageFromR2(path);
     return uint8ToBase64(bytes);
   }
 
-  const folderToBucketMap: Record<string, string> = {
-    "wardrobe": "wardrobe-images",
-    "avatar": "user-avatars",
-  };
-
-  const segments = path.split('/');
-  const folder = segments.find(segment => folderToBucketMap.hasOwnProperty(segment));
-
-  if (!folder) {
-    throw new Error(`Invalid path structure: ${path}. No valid folder segment found. Expected R2 prefix (stores/) or Supabase folder: ${Object.keys(folderToBucketMap).join(", ")}`);
+  if (!SUPABASE_IMAGE_BUCKETS.includes(bucket)) {
+    throw new Error(
+      `Refusing to fetch from unknown bucket "${bucket}". Expected one of: ${SUPABASE_IMAGE_BUCKETS.join(", ")}`,
+    );
   }
-
-  const bucket = folderToBucketMap[folder];
 
   const { data, error } = await supabase.storage.from(bucket).download(path);
 

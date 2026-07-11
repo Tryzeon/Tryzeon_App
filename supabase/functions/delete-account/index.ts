@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { json } from "../_shared/http.ts";
+import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 
 // --- Configuration ---
 const CONFIG = {
@@ -77,7 +78,7 @@ class StorageCleanupService {
 
   async cleanupUserStorage(userId: string): Promise<void> {
     // 1. Clean User-Centric Buckets (files stored under userId/)
-    const userBuckets = ["user-avatars", "wardrobe-images"];
+    const userBuckets = [USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET];
     await Promise.all(
       userBuckets.map(async (bucket) => {
         try {

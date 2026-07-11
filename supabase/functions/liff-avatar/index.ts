@@ -8,9 +8,10 @@ import {
   detectMimeType,
   mimeTypeToExtension,
 } from "../_shared/image-utils.ts";
+import { USER_AVATARS_BUCKET } from "../_shared/storage.ts";
 import { avatarStoragePath } from "./path.ts";
 
-const AVATAR_BUCKET = "user-avatars";
+const AVATAR_BUCKET = USER_AVATARS_BUCKET;
 
 function corsHeaders(): Record<string, string> {
   const origin = Deno.env.get("LIFF_WEB_ORIGIN") ?? "*";

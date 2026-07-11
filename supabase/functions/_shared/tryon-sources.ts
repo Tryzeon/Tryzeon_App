@@ -16,13 +16,14 @@ export type SourceResolver = (source: ImageSource) => Promise<string>;
 
 /**
  * Builds the resolver backed by Supabase storage / R2. `path` is routed by
- * `fetchImageAsBase64` (R2 'stores/' keys vs Supabase buckets); `base64` is
- * passed through.
+ * `fetchImageAsBase64` (R2 'stores/' keys, else the given Supabase `bucket`);
+ * `base64` is passed through. Callers resolving different kinds of sources
+ * (e.g. avatar vs. wardrobe garment) need separate resolvers, one per bucket.
  */
-export function makeSourceResolver(client: SupabaseClient): SourceResolver {
+export function makeSourceResolver(client: SupabaseClient, bucket: string): SourceResolver {
   return (source: ImageSource): Promise<string> => {
     if (source.base64) return Promise.resolve(source.base64);
-    if (source.path) return fetchImageAsBase64(client, source.path);
+    if (source.path) return fetchImageAsBase64(client, source.path, bucket);
     throw new ValidationError("image source has no usable key");
   };
 }
