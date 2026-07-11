@@ -17,6 +17,7 @@ sealed class ProductAnalysisResult with _$ProductAnalysisResult {
     final String? material,
     final String? fit,
     final ProductThickness? thickness,
+    final ProductElasticity? elasticity,
   }) = _ProductAnalysisResult;
 
   const ProductAnalysisResult._();
@@ -28,5 +29,6 @@ sealed class ProductAnalysisResult with _$ProductAnalysisResult {
       seasons.isNotEmpty ||
       material != null ||
       fit != null ||
-      thickness != null;
+      thickness != null ||
+      elasticity != null;
 }

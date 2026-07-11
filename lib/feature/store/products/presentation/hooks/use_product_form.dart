@@ -90,6 +90,9 @@ class ProductFormData {
     if (selectedThickness.value == null && r.thickness != null) {
       selectedThickness.value = r.thickness;
     }
+    if (selectedElasticity.value == null && r.elasticity != null) {
+      selectedElasticity.value = r.elasticity;
+    }
     if ((selectedStyles.value?.isEmpty ?? true) && r.styles.isNotEmpty) {
       selectedStyles.value = r.styles;
     }

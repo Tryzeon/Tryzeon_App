@@ -17,6 +17,7 @@ const STYLE_VALUES = [
 const GENDER_VALUES = ["male", "female", "unisex"];
 const SEASON_VALUES = ["spring", "summer", "autumn", "winter"];
 const THICKNESS_VALUES = ["low", "medium", "high"];
+const ELASTICITY_VALUES = ["none", "low", "medium", "high"];
 
 const str = (v: unknown): string | null =>
   typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
@@ -37,6 +38,7 @@ function buildPrompt(categoryNames: string[]): string {
 - material：從以下繁中擇一，無則 null：棉, 麻, 羊毛, 蠶絲, 聚酯纖維, 尼龍, 嫘縈, 天絲, 萊卡, 混紡。
 - fit：從以下繁中擇一，無則 null：合身, 常規, 大尺碼, oversize。
 - thickness：low（薄）/ medium（適中）/ high（厚），無法判斷用 unknown。
+- elasticity：布料彈性，none（無彈性）/ low（低彈性）/ medium（中彈性）/ high（高彈性），無法判斷用 unknown。
 只回 JSON，不要多餘文字。`;
 }
 
@@ -52,8 +54,9 @@ function buildSchema(categoryNames: string[]): Record<string, unknown> {
       material: { type: "STRING" },
       fit: { type: "STRING" },
       thickness: { type: "STRING", enum: [...THICKNESS_VALUES, "unknown"] },
+      elasticity: { type: "STRING", enum: [...ELASTICITY_VALUES, "unknown"] },
     },
-    required: ["category", "gender", "styles", "seasons", "thickness"],
+    required: ["category", "gender", "styles", "seasons", "thickness", "elasticity"],
   };
 }
 
@@ -105,6 +108,7 @@ Deno.serve(async (req) => {
       material: str(parsed.material),
       fit: str(parsed.fit),
       thickness: inList(parsed.thickness, THICKNESS_VALUES),
+      elasticity: inList(parsed.elasticity, ELASTICITY_VALUES),
     });
   } catch (err) {
     console.error("analyze-product-image error", err);

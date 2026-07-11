@@ -23,6 +23,7 @@ ProductAnalysisResult parseProductAnalysisResponse(final Map<String, dynamic> da
     material: _str(data['material']),
     fit: _str(data['fit']),
     thickness: ProductThickness.tryFromString(_str(data['thickness'])),
+    elasticity: ProductElasticity.tryFromString(_str(data['elasticity'])),
   );
 }
 
