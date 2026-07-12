@@ -39,6 +39,19 @@ Code generation is required after editing any annotated file (`@riverpod`, `@fre
 - `lib/feature/store/` — store-owner side (analytics, products, profile, onboarding, settings).
 - `lib/feature/common/` — shared between personal and store.
 
+### Architecture rules
+
+Every feature follows Clean Architecture. When adding code, these are hard rules, not suggestions:
+
+- **Layering:** `data/` (datasources, models/DTOs, Isar collections, repository impls, mappers) → `domain/` (entities, repository interfaces, usecases) → `presentation/` (pages, widgets). Presentation NEVER imports `data/` or the Supabase client. All DI/wiring providers live in the feature's top-level `providers/` folder — never under `presentation/providers/` (state notifiers used only by the UI may stay in `presentation/`, but anything that constructs datasources/repositories goes in `providers/`).
+- **Usecases:** presentation/providers call usecases, never repositories directly. Usecases expose `call()` returning `Result<T, Failure>`. Multi-field inputs use a freezed params object (e.g. `CreateProductParams`) — never long positional argument lists. Name usecases as verb phrases without a `UseCase` suffix (`CreateProduct`, not `CreateProductUseCase`).
+- **DTO boundary:** Supabase/JSON rows are decoded into data models only inside `data/`; map to domain entities via auto_mappr (the feature mappr hubs, e.g. `personal_mappr.dart` / `store_mappr.dart`). Domain entities never expose `fromJson`/`toJson`.
+- **Module boundaries:** a feature may depend on another feature's `domain/` (entities, usecases, repository interfaces) or on `feature/common/*` — never on another feature's `data/` internals. If two features need the same DTO, promote the concept to `common/` or expose it through a domain contract.
+- **`feature/common/*` layout:** same nested layout as features (`domain/entities/`, not a flat `entities/` folder).
+- **Constants:** every table name, storage bucket, edge-function name, RPC name, and route segment is a constant in `AppConstants` / `AppRoutes`. No raw strings at call sites.
+- **Exception mapping:** extend `mapExceptionToFailure` with typed `is` checks when introducing a new error source. Never match on `toString()` contents, and never swallow errors with a bare `catch (_)` — at minimum log via `AppLogger`.
+- **Widgets stay thin:** no business logic (network calls, encoding, orchestration) inside `build()` or inline page callbacks — put it in a notifier/controller or usecase that returns `Result`.
+
 ### Routing
 
 `go_router` config in `lib/core/router/app_router.dart` uses two `StatefulShellRoute` shells (`personal_shell.dart`, `store_shell.dart`) selected by user role. Route trees are split into `routes/auth_routes.dart`, `personal_routes.dart`, `store_routes.dart`, `deep_link_routes.dart`. `auth_refresh_listenable.dart` rebuilds the router on Supabase auth changes. A global `navigatorKey` (in `main.dart`) is used by the `upgrader` dialog.
