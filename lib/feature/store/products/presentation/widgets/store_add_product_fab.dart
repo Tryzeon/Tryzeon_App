@@ -13,6 +13,7 @@ class StoreAddProductFab extends StatelessWidget {
       bottom: PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0,
     ),
     child: FloatingActionButton(
+      heroTag: null,
       onPressed: () => context.push(AppRoutes.dashboardProductAdd),
       tooltip: '新增商品',
       child: const Icon(Icons.add_rounded),
