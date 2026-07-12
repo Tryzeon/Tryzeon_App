@@ -123,6 +123,15 @@ class AppValidators {
     return null;
   }
 
+  static String? validateLineOaId(final String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return null; // Optional
+    if (!trimmed.startsWith('@')) {
+      return 'LINE 官方帳號 ID 需以 @ 開頭 (例如 @tryzeon)';
+    }
+    return null;
+  }
+
   static String? validateNonEmpty(final Object? value, {required final String message}) {
     if (value == null) return message;
     if (value is Iterable && value.isEmpty) return message;
