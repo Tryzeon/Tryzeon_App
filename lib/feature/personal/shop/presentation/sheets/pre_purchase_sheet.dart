@@ -1,11 +1,28 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/mappers/fit_result_ui_mapper.dart';
+
+/// The action the user picked in [PrePurchaseSheet]; null when cancelled.
+sealed class PurchaseChoice {
+  const PurchaseChoice();
+}
+
+class OnlineStoreChoice extends PurchaseChoice {
+  const OnlineStoreChoice();
+}
+
+class ContactChoice extends PurchaseChoice {
+  const ContactChoice(this.contact);
+  final StoreOrderContact contact;
+}
 
 class PrePurchaseSheet extends StatelessWidget {
   const PrePurchaseSheet({super.key, required this.product, required this.fitResult});
@@ -13,13 +30,12 @@ class PrePurchaseSheet extends StatelessWidget {
   final ShopProduct product;
   final FitResult fitResult;
 
-  /// Returns true when the user confirmed; false or null when cancelled.
-  static Future<bool?> show({
+  static Future<PurchaseChoice?> show({
     required final BuildContext context,
     required final ShopProduct product,
     required final FitResult fitResult,
   }) {
-    return showModalBottomSheet<bool>(
+    return showModalBottomSheet<PurchaseChoice>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
@@ -88,31 +104,29 @@ class PrePurchaseSheet extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
             ],
 
-            Center(
-              child: Text.rich(
-                TextSpan(
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  children: [
-                    const TextSpan(text: '即將前往 '),
-                    TextSpan(
-                      text: product.storeInfo.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const TextSpan(text: ' 商店購買頁面'),
-                  ],
-                ),
-              ),
+            _CopyMessageButton(
+              message: OrderMessageBuilder.build(product: product, fitResult: fitResult),
             ),
             const SizedBox(height: AppSpacing.smMd),
 
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('前往購買'),
-            ),
+            if (product.purchaseLink != null && product.purchaseLink!.isNotEmpty) ...[
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(const OnlineStoreChoice()),
+                child: const Text('開啟購買連結'),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+
+            for (final contact in product.storeInfo.orderContacts) ...[
+              FilledButton.tonal(
+                onPressed: () => Navigator.of(context).pop(ContactChoice(contact)),
+                child: Text(_contactLabel(contact.type)),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('取消'),
             ),
           ],
@@ -210,6 +224,40 @@ class _FitInfoRow extends StatelessWidget {
           : null,
       onTap: onTap,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
+    );
+  }
+}
+
+String _contactLabel(final OrderContactType type) => switch (type) {
+  OrderContactType.line => '用 LINE 詢問下單',
+  OrderContactType.facebook => 'FB 私訊下單',
+  OrderContactType.instagram => 'IG 私訊下單',
+};
+
+class _CopyMessageButton extends StatefulWidget {
+  const _CopyMessageButton({required this.message});
+
+  final String message;
+
+  @override
+  State<_CopyMessageButton> createState() => _CopyMessageButtonState();
+}
+
+class _CopyMessageButtonState extends State<_CopyMessageButton> {
+  bool _copied = false;
+
+  Future<void> _copy() async {
+    await Clipboard.setData(ClipboardData(text: widget.message));
+    if (!mounted) return;
+    setState(() => _copied = true);
+  }
+
+  @override
+  Widget build(final BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: _copy,
+      icon: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, size: 18),
+      label: Text(_copied ? '已複製商品資訊' : '複製商品資訊與尺寸'),
     );
   }
 }

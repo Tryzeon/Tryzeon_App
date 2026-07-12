@@ -5,6 +5,8 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/common/measurements/collections/measurements_collection.dart';
 import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
+import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
+import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_collection.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
@@ -26,7 +28,14 @@ class ShopLocalDataSource {
         ..name = model.storeInfo.name
         ..address = model.storeInfo.address
         ..logoUrl = model.storeInfo.logoUrl
-        ..channels = model.storeInfo.channels;
+        ..channels = model.storeInfo.channels
+        ..orderContacts = model.storeInfo.orderContacts
+            .map(
+              (final c) => StoreOrderContactEmbedded()
+                ..type = c.type
+                ..value = c.value,
+            )
+            .toList();
 
       List<ProductSizeEmbedded>? sizes;
       if (model.sizes != null) {
@@ -109,6 +118,9 @@ class ShopLocalDataSource {
       address: collection.storeInfo.address,
       logoUrl: collection.storeInfo.logoUrl,
       channels: collection.storeInfo.channels,
+      orderContacts: collection.storeInfo.orderContacts
+          .map((final e) => StoreOrderContactModel(type: e.type, value: e.value))
+          .toList(),
     );
 
     List<ProductSizeModel>? sizes;

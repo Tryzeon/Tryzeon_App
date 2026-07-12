@@ -97,7 +97,7 @@ class _ProductDetailContent extends HookConsumerWidget {
       [userProfile, product.sizes],
     );
 
-    final canPurchase = hasPurchaseLink(product);
+    final canPurchase = productHasPurchaseOptions(product);
 
     final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
     final hasVideoAccess = capabilitiesAsync.maybeWhen(

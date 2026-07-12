@@ -6,7 +6,9 @@ import '../../../../feature/common/measurements/data/mappers/measurements_mappr.
 import '../../../../feature/common/product_attributes/entities/product_attributes.dart';
 import '../../../../feature/common/product_size/entities/product_size.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
+import '../../../common/store/data/models/store_order_contact_model.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
+import '../../../common/store/domain/entities/store_order_contact.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/age_range.dart';
@@ -76,6 +78,10 @@ import 'personal_mappr.auto_mappr.dart';
       ],
     ),
 
+    MapType<StoreOrderContactModel, StoreOrderContact>(
+      fields: [Field('type', custom: ShopStoreInfoMapprHelper.codeToOrderContactType)],
+    ),
+
     // ShopStoreInfo mappings (read-only for consumer)
     MapType<ShopStoreInfoModel, ShopStoreInfo>(
       fields: [Field('channels', custom: ShopStoreInfoMapprHelper.codesToChannelSet)],
@@ -125,6 +131,9 @@ class ShopProductMapprHelper {
 class ShopStoreInfoMapprHelper {
   static Set<StoreChannel> codesToChannelSet(final ShopStoreInfoModel source) =>
       StoreChannel.setFromCodes(source.channels);
+
+  static OrderContactType codeToOrderContactType(final StoreOrderContactModel source) =>
+      OrderContactType.fromCode(source.type) ?? OrderContactType.line;
 }
 
 class UserProfileMapprHelper {
