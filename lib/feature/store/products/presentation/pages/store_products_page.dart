@@ -1,12 +1,10 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/products/presentation/sheets/product_sort_sheet.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_search_bar.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/store_add_product_fab.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 
 class StoreProductsPage extends HookConsumerWidget {
@@ -106,16 +104,7 @@ class StoreProductsPage extends HookConsumerWidget {
           ],
         ),
       ),
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0,
-        ),
-        child: FloatingActionButton(
-          onPressed: () => context.push(AppRoutes.dashboardProductAdd),
-          tooltip: '新增商品',
-          child: const Icon(Icons.add_rounded),
-        ),
-      ),
+      floatingActionButton: const StoreAddProductFab(),
     );
   }
 }
