@@ -107,6 +107,8 @@ class WardrobeRemoteDataSource {
   }
 
   Future<String> createSignedUrl(final String path) async {
-    return _supabaseClient.storage.from(_bucket).createSignedUrl(path, 3600);
+    return _supabaseClient.storage
+        .from(_bucket)
+        .createSignedUrl(path, AppConstants.signedUrlTtlSeconds);
   }
 }

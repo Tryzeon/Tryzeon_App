@@ -20,6 +20,7 @@ class AppConstants {
   static const String tableAnalyticsEvents = 'analytics_events';
   static const String tableAnalyticsProductMonthlySummary =
       'analytics_product_monthly_summary';
+  static const String tableUserDailyUsage = 'user_daily_usage';
 
   // Supabase Buckets
   static const String bucketUserAvatars = 'user-avatars';
@@ -34,6 +35,12 @@ class AppConstants {
   static const String functionAnalyzeProductImage = 'analyze-product-image';
   static const String functionRecordLinkOpen = 'record_link_open';
   static const String functionParseSizeVoice = 'parse-size-voice';
+  static const String functionStoreImages = 'store-images';
+  static const String functionStoreImagesPresignLogo =
+      '$functionStoreImages/presign-logo';
+  static const String functionStoreImagesPresignProducts =
+      '$functionStoreImages/presign-products';
+  static const String functionStoreImagesDelete = '$functionStoreImages/delete';
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
@@ -52,6 +59,7 @@ class AppConstants {
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
   static const double productVisibilityThreshold = 0.5;
+  static const int signedUrlTtlSeconds = 3600;
 
   // RevenueCat
   static const String entitlementFreeId = 'free';

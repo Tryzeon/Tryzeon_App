@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
@@ -23,7 +24,7 @@ class StoreImagesApi {
     final bytes = await logo.readAsBytes();
 
     final response = await _supabaseClient.functions.invoke(
-      'store-images/presign-logo',
+      AppConstants.functionStoreImagesPresignLogo,
       body: {
         'storeId': storeId,
         'contentType': contentType,
@@ -51,7 +52,7 @@ class StoreImagesApi {
     final allBytes = await Future.wait(images.map((final f) => f.readAsBytes()));
 
     final response = await _supabaseClient.functions.invoke(
-      'store-images/presign-products',
+      AppConstants.functionStoreImagesPresignProducts,
       body: {
         'storeId': storeId,
         'productId': productId,
@@ -92,7 +93,7 @@ class StoreImagesApi {
   }) async {
     if (keys.isEmpty) return;
     await _supabaseClient.functions.invoke(
-      'store-images/delete',
+      AppConstants.functionStoreImagesDelete,
       body: {'storeId': storeId, 'keys': keys},
     );
   }

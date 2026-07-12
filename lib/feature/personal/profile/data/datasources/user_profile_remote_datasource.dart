@@ -138,6 +138,8 @@ class UserProfileRemoteDataSource {
   }
 
   Future<String> createSignedUrl(final String avatarPath) async {
-    return _supabaseClient.storage.from(_avatarBucket).createSignedUrl(avatarPath, 3600);
+    return _supabaseClient.storage
+        .from(_avatarBucket)
+        .createSignedUrl(avatarPath, AppConstants.signedUrlTtlSeconds);
   }
 }
