@@ -3,6 +3,10 @@ class AppValidators {
     r"^[a-zA-Z0-9.!#$%&'*+\-/=?^_`{|}~]+@[a-zA-Z0-9]+(\.[a-zA-Z]+)+$",
   );
 
+  /// Legal characters for a FB/IG handle (letters, digits, '.', '_'). Matching
+  /// the charset alone rejects URLs and '@' without needing separate checks.
+  static final _socialHandleRegex = RegExp(r'^[A-Za-z0-9._]+$');
+
   static String? validateEmail(final String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
@@ -128,6 +132,15 @@ class AppValidators {
     if (trimmed.isEmpty) return null; // Optional
     if (!trimmed.startsWith('@')) {
       return 'LINE 官方帳號 ID 需以 @ 開頭 (例如 @tryzeon)';
+    }
+    return null;
+  }
+
+  static String? validateSocialHandle(final String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return null; // Optional
+    if (!_socialHandleRegex.hasMatch(trimmed)) {
+      return '帳號僅能包含英數字、. 或 _';
     }
     return null;
   }

@@ -354,18 +354,20 @@ class _StoreProfileForm extends HookConsumerWidget {
             TextFormField(
               controller: facebookController,
               textInputAction: TextInputAction.next,
+              validator: AppValidators.validateSocialHandle,
               decoration: const InputDecoration(
-                labelText: 'Facebook 粉專',
-                hintText: '粉專網址或帳號',
+                labelText: 'Facebook 粉專用戶名',
+                hintText: 'MyShop',
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             TextFormField(
               controller: instagramController,
               textInputAction: TextInputAction.done,
+              validator: AppValidators.validateSocialHandle,
               decoration: const InputDecoration(
                 labelText: 'Instagram 帳號',
-                hintText: '@your.shop',
+                hintText: 'my.shop',
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
