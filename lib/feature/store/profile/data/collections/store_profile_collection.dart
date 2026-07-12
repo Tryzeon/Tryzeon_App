@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 
 part 'store_profile_collection.g.dart';
 
@@ -18,6 +19,7 @@ class StoreProfileCollection {
   double? longitude;
   String? logoPath;
   String? logoUrl;
+  List<StoreOrderContactEmbedded> orderContacts = [];
 
   @Index()
   late DateTime createdAt;

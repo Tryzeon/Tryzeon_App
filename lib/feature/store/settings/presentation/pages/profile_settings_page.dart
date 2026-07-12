@@ -15,6 +15,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -69,11 +70,48 @@ class _StoreProfileForm extends HookConsumerWidget {
 
     final channelsChanged = !setEquals(selectedChannels.value, profile.channels);
 
+    String initialContact(final OrderContactType type) {
+      for (final c in profile.orderContacts) {
+        if (c.type == type) return c.value;
+      }
+      return '';
+    }
+
+    final lineController = useTextEditingController(
+      text: initialContact(OrderContactType.line),
+    );
+    final facebookController = useTextEditingController(
+      text: initialContact(OrderContactType.facebook),
+    );
+    final instagramController = useTextEditingController(
+      text: initialContact(OrderContactType.instagram),
+    );
+
+    final lineValue = useValueListenable(lineController).text;
+    final facebookValue = useValueListenable(facebookController).text;
+    final instagramValue = useValueListenable(instagramController).text;
+
+    List<StoreOrderContact> buildOrderContacts() {
+      final list = <StoreOrderContact>[];
+      void add(final OrderContactType type, final String raw) {
+        final v = raw.trim();
+        if (v.isNotEmpty) list.add(StoreOrderContact(type: type, value: v));
+      }
+
+      add(OrderContactType.line, lineValue);
+      add(OrderContactType.facebook, facebookValue);
+      add(OrderContactType.instagram, instagramValue);
+      return list;
+    }
+
+    final contactsChanged = !listEquals(buildOrderContacts(), profile.orderContacts);
+
     final hasChanges =
         storeName.trim() != profile.name ||
         storeAddress.trim() != (profile.address ?? '') ||
         newLogo != null ||
-        channelsChanged;
+        channelsChanged ||
+        contactsChanged;
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -111,6 +149,7 @@ class _StoreProfileForm extends HookConsumerWidget {
         latitude: latitude,
         longitude: longitude,
         channels: selectedChannels.value,
+        orderContacts: buildOrderContacts(),
       );
 
       final updateUseCase = ref.read(updateStoreProfileUseCaseProvider);
@@ -290,6 +329,44 @@ class _StoreProfileForm extends HookConsumerWidget {
                   ],
                 );
               },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              '訂購聯絡方式',
+              style: textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '沒有線上商店時，顧客可透過這些管道私訊下單。',
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextFormField(
+              controller: lineController,
+              textInputAction: TextInputAction.next,
+              validator: AppValidators.validateLineOaId,
+              decoration: const InputDecoration(
+                labelText: 'LINE 官方帳號 ID',
+                hintText: '@tryzeon',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: facebookController,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'Facebook 粉專',
+                hintText: '粉專網址或帳號',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: instagramController,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                labelText: 'Instagram 帳號',
+                hintText: '@your.shop',
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
             SizedBox(

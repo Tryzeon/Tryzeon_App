@@ -1,5 +1,8 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
+import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
 import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
 import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
@@ -47,6 +50,16 @@ import 'store_mappr.auto_mappr.dart';
     // Collection mappings (String ↔ String, only field name mapping needed)
     MapType<ProductModel, ProductCollection>(fields: [Field('productId', from: 'id')]),
     MapType<ProductCollection, ProductModel>(fields: [Field('id', from: 'productId')]),
+
+    // StoreOrderContact mappings (enum <-> code at Model <-> Entity boundary)
+    MapType<StoreOrderContactModel, StoreOrderContact>(
+      fields: [Field('type', custom: StoreMapprHelper.codeToOrderContactType)],
+    ),
+    MapType<StoreOrderContact, StoreOrderContactModel>(
+      fields: [Field('type', custom: StoreMapprHelper.orderContactTypeToCode)],
+    ),
+    MapType<StoreOrderContactModel, StoreOrderContactEmbedded>(),
+    MapType<StoreOrderContactEmbedded, StoreOrderContactModel>(),
 
     // StoreProfile mappings — convert channels at Model ↔ Entity boundary
     MapType<StoreProfileModel, StoreProfile>(
@@ -108,4 +121,10 @@ class StoreMapprHelper {
 
   static List<String> channelSetToCodes(final StoreProfile source) =>
       StoreChannel.codesFromSet(source.channels);
+
+  static OrderContactType codeToOrderContactType(final StoreOrderContactModel source) =>
+      OrderContactType.fromCode(source.type) ?? OrderContactType.line;
+
+  static String orderContactTypeToCode(final StoreOrderContact source) =>
+      source.type.code;
 }

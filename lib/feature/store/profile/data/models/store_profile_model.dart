@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
 
 part 'store_profile_model.g.dart';
 
@@ -17,6 +18,7 @@ class StoreProfileModel {
     this.longitude,
     this.logoPath,
     this.logoUrl,
+    this.orderContacts = const [],
   });
 
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) =>
@@ -34,6 +36,7 @@ class StoreProfileModel {
   final double? longitude;
   final String? logoPath;
   final String? logoUrl;
+  final List<StoreOrderContactModel> orderContacts;
 
   Map<String, dynamic> toJson() => _$StoreProfileModelToJson(this);
 }
