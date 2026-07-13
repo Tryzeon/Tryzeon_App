@@ -18,7 +18,7 @@ import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_image
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_section.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_store_info.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
 
 class ProductDetailBody extends HookConsumerWidget {

@@ -12,7 +12,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';

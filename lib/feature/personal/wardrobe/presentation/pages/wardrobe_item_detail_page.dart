@@ -7,7 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/trigger_wardrobe_item_tryon.dart';

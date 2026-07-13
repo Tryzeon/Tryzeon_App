@@ -14,7 +14,7 @@ import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
+import 'package:tryzeon/feature/personal/settings/providers/personal_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PersonalSettingsPage extends HookConsumerWidget {

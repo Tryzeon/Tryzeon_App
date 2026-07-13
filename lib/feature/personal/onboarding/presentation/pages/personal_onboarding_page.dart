@@ -8,9 +8,8 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/age_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/gender_selection_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/style_preference_step.dart';
+import 'package:tryzeon/feature/personal/onboarding/providers/onboarding_notifier.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../providers/onboarding_notifier.dart';
 
 class PersonalOnboardingPage extends HookConsumerWidget {
   const PersonalOnboardingPage({super.key});

@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/presentation/style_preference_grid.dart';
 
-import '../providers/onboarding_notifier.dart';
+import 'package:tryzeon/feature/personal/onboarding/providers/onboarding_notifier.dart';
 
 class StylePreferenceStep extends HookConsumerWidget {
   const StylePreferenceStep({super.key});

@@ -12,7 +12,7 @@ import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
-import 'package:tryzeon/feature/store/settings/presentation/providers/store_settings_controller.dart';
+import 'package:tryzeon/feature/store/settings/providers/store_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class StoreSettingsPage extends HookConsumerWidget {

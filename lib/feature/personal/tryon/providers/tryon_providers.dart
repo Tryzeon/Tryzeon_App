@@ -8,7 +8,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon_usecase.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
-import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'tryon_providers.g.dart';

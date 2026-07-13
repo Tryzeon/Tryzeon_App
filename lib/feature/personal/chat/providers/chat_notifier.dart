@@ -7,7 +7,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
+import 'package:tryzeon/feature/personal/chat/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 
 part 'chat_notifier.freezed.dart';

@@ -13,7 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
+import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/modules/short_link/providers/short_link_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';

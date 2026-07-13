@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/onboarding/providers/onboarding_notifier.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
-
-import '../providers/onboarding_notifier.dart';
 
 class AgeStep extends HookConsumerWidget {
   const AgeStep({super.key});

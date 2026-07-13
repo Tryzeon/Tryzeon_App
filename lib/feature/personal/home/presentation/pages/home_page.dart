@@ -32,7 +32,7 @@ import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.d
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';

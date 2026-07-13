@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
+import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -13,11 +13,11 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/measurements/utils/measurements_completion.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/settings/providers/personal_settings_controller.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
-import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({super.key});

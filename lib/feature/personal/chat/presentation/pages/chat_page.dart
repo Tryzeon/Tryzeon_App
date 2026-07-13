@@ -9,8 +9,6 @@ import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_notifier.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_header.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
@@ -19,6 +17,8 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_thinking
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/shop_product_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/tool_step_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/wardrobe_item_bubble.dart';
+import 'package:tryzeon/feature/personal/chat/providers/chat_event.dart';
+import 'package:tryzeon/feature/personal/chat/providers/chat_notifier.dart';
 
 class ChatPage extends HookConsumerWidget {
   const ChatPage({super.key});

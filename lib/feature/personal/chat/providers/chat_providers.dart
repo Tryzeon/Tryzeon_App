@@ -8,7 +8,7 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/send_chat_message.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
-import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 
 part 'chat_providers.g.dart';
 
