@@ -1,11 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_media_datasource.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_media_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/prepare_tryon_avatar_source.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/save_tryon_media.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon_usecase.dart';
 import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
@@ -32,6 +38,40 @@ TryOnRepository tryOnRepository(final Ref ref) {
 TryonUseCase tryonUseCase(final Ref ref) {
   final tryOnRepository = ref.watch(tryOnRepositoryProvider);
   return TryonUseCase(tryOnRepository: tryOnRepository);
+}
+
+// Media (save/share) — data source, repository, use cases
+@riverpod
+TryOnMediaDataSource tryOnMediaDataSource(final Ref ref) {
+  return TryOnMediaDataSource();
+}
+
+@riverpod
+TryOnMediaRepository tryOnMediaRepository(final Ref ref) {
+  return TryOnMediaRepositoryImpl(
+    dataSource: ref.watch(tryOnMediaDataSourceProvider),
+  );
+}
+
+@riverpod
+SaveTryonMedia saveTryonMediaUseCase(final Ref ref) {
+  return SaveTryonMedia(
+    mediaRepository: ref.watch(tryOnMediaRepositoryProvider),
+  );
+}
+
+@riverpod
+ShareTryonMedia shareTryonMediaUseCase(final Ref ref) {
+  return ShareTryonMedia(
+    mediaRepository: ref.watch(tryOnMediaRepositoryProvider),
+  );
+}
+
+@riverpod
+PrepareTryonAvatarSource prepareTryonAvatarSourceUseCase(final Ref ref) {
+  return PrepareTryonAvatarSource(
+    mediaRepository: ref.watch(tryOnMediaRepositoryProvider),
+  );
 }
 
 /// Mutation orchestrator for try-on. Wraps [TryonUseCase] and additionally

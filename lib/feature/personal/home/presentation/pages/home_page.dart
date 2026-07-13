@@ -1,18 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
@@ -21,9 +14,9 @@ import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/core/utils/image_watermark_helper.dart';
+import 'package:tryzeon/feature/personal/home/presentation/controllers/home_controller.dart';
+import 'package:tryzeon/feature/personal/home/presentation/state/try_on_outcome.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
@@ -31,13 +24,7 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indica
 import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -81,119 +68,29 @@ class HomePage extends HookConsumerWidget {
       if (imageFile == null) return;
 
       isUploadingAvatar.value = true;
-
-      try {
-        // Upload
-        final profile = await ref.read(userProfileProvider.future);
-        if (profile == null) return;
-
-        final result = await ref.read(updateUserAvatarUseCaseProvider)(
-          avatarFile: imageFile,
-          previousAvatarPath: profile.avatarPath,
-        );
-
-        if (!context.mounted) return;
-
-        if (result.isSuccess) {
-          ref.invalidate(userProfileProvider);
-          ref.invalidate(avatarFileProvider);
-          await ref.read(avatarFileProvider.future);
-        } else {
-          TopNotification.show(
-            context,
-            message: result.getError()!.displayMessage(context),
-          );
-        }
-      } catch (e, stackTrace) {
-        AppLogger.error('Failed to upload avatar', e, stackTrace);
-        if (context.mounted) {
-          TopNotification.show(context, message: '上傳照片失敗，請稍後再試');
-        }
-      } finally {
-        if (context.mounted) {
-          isUploadingAvatar.value = false;
-        }
-      }
-    }
-
-    Future<Uint8List> downloadBytes(final String url) async {
-      final file = await DefaultCacheManager().getSingleFile(url);
-      return file.readAsBytes();
-    }
-
-    Future<void> performTryOn({
-      required final List<TryOnGarment> garments,
-      final TryOnMode mode = TryOnMode.image,
-    }) async {
-      String? customAvatarBase64;
-      final customAvatarUrl = galleryState.customAvatarResult?.imageUrl;
-      if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
-        try {
-          final bytes = await downloadBytes(customAvatarUrl);
-          customAvatarBase64 = base64Encode(bytes);
-        } catch (e, stackTrace) {
-          AppLogger.error('Failed to download custom avatar', e, stackTrace);
-          if (context.mounted) {
-            TopNotification.show(context, message: '無法載入照片，請重新試穿');
-          }
-          return;
-        }
-      }
-
-      final profile = await ref.read(userProfileProvider.future);
-      final defaultAvatarPath = profile?.avatarPath;
-
-      // Custom avatar wins; otherwise use the profile avatar path (the backend
-      // fetches it directly, so a failed local preview must not block try-on).
-      final TryOnImageSource? avatar = customAvatarBase64 != null
-          ? TryOnImageSource.base64(customAvatarBase64)
-          : (defaultAvatarPath != null && defaultAvatarPath.isNotEmpty)
-          ? TryOnImageSource.path(defaultAvatarPath)
-          : null;
-      if (avatar == null) {
-        if (context.mounted) {
-          TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
-        }
-        return;
-      }
-
-      final requestId = UniqueKey().toString();
-      final placeholderResult = TryonResult(id: requestId, mode: mode, isLoading: true);
-      galleryNotifier.addPlaceholder(placeholderResult);
-
-      String? scenePrompt;
-      String? transitionPrompt;
-      if (mode == TryOnMode.video) {
-        final promptConfig = await ref.read(videoPromptConfigProvider.future);
-        scenePrompt = promptConfig.scenePrompt;
-        transitionPrompt = promptConfig.transitionPrompt;
-      }
-
       final result = await ref
-          .read(tryonActionProvider.notifier)
-          .execute(
-            TryOnParams(
-              requestId: requestId,
-              avatar: avatar,
-              garments: garments,
-              mode: mode,
-              scenePrompt: scenePrompt,
-              transitionPrompt: transitionPrompt,
-            ),
-          );
-
+          .read(homeControllerProvider.notifier)
+          .uploadAvatar(imageFile);
       if (!context.mounted) return;
+      if (result.isFailure) {
+        TopNotification.show(
+          context,
+          message: result.getError()!.displayMessage(context),
+        );
+      }
+      isUploadingAvatar.value = false;
+    }
 
-      if (result.isSuccess) {
-        final tryonResult = result.get()!.copyWith(isLoading: false);
-        galleryNotifier.replaceById(requestId, tryonResult);
-        HapticFeedback.heavyImpact();
-      } else {
-        galleryNotifier.removeById(requestId);
-
-        final failure = result.getError()!;
-        if (failure is RateLimitFailure) {
-          final isVideo = mode == TryOnMode.video;
+    void handleTryOnOutcome(final TryOnOutcome outcome) {
+      if (!context.mounted) return;
+      switch (outcome) {
+        case TryOnSucceeded():
+          HapticFeedback.heavyImpact();
+        case TryOnAvatarMissing():
+          TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
+        case TryOnAvatarLoadFailed():
+          TopNotification.show(context, message: '無法載入照片，請重新試穿');
+        case TryOnRateLimited(:final isVideo):
           UpgradeDialog.show(
             context,
             title: isVideo ? '影片試穿次數已達上限' : '試穿次數已達上限',
@@ -201,9 +98,8 @@ class HomePage extends HookConsumerWidget {
                 ? '您的今日影片試穿次數已達上限\n升級至更高方案以獲得更多影片次數！'
                 : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
           );
-        } else {
+        case TryOnFailed(:final failure):
           TopNotification.show(context, message: failure.displayMessage(context));
-        }
       }
     }
 
@@ -215,164 +111,46 @@ class HomePage extends HookConsumerWidget {
       );
       if (clothesImage == null) return;
 
-      final clothesBytes = await clothesImage.readAsBytes();
-      final clothesBase64 = base64Encode(clothesBytes);
-      performTryOn(
-        garments: [
-          TryOnGarment(images: [TryOnImageSource.base64(clothesBase64)]),
-        ],
-        mode: TryOnMode.image,
-      );
+      final outcome = await ref
+          .read(homeControllerProvider.notifier)
+          .tryOnFromLocalImage(clothesImage);
+      handleTryOnOutcome(outcome);
     }
 
     Future<void> tryOnFromStorage(
       final List<String> clothesPaths, {
       final TryOnMode mode = TryOnMode.image,
     }) async {
-      performTryOn(
-        garments: [
-          TryOnGarment(images: clothesPaths.map(TryOnImageSource.path).toList()),
-        ],
-        mode: mode,
-      );
-    }
-
-    Future<void> downloadVideo(final TryonResult result) async {
-      final videoUrl = result.videoUrl;
-      if (videoUrl == null || videoUrl.isEmpty) {
-        throw Exception('Video URL is missing');
-      }
-
-      // 1. Download to temp file
-      final tempDir = await getTemporaryDirectory();
-      final tempPath =
-          '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}.mp4';
-
-      try {
-        final dio = Dio();
-        await dio.download(result.videoUrl!, tempPath);
-
-        // 2. Save to gallery
-        await Gal.putVideo(tempPath);
-
-        if (context.mounted) {
-          AppSnackBar.show(context, message: '影片已儲存到相簿');
-        }
-      } finally {
-        // 3. Clean up temp file
-        final file = File(tempPath);
-        if (await file.exists()) {
-          await file.delete();
-        }
-      }
-    }
-
-    Future<void> downloadImage(final TryonResult result) async {
-      final imageUrl = result.imageUrl;
-      if (imageUrl == null || imageUrl.isEmpty) {
-        throw Exception('Image URL is missing');
-      }
-
-      final originalBytes = await downloadBytes(imageUrl);
-      Uint8List imageToSave = originalBytes;
-
-      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
-      if (capabilities.requiresWatermark) {
-        imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
-      }
-
-      await Gal.putImageBytes(
-        imageToSave,
-        name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
-      );
-
-      if (context.mounted) {
-        AppSnackBar.show(context, message: '照片已儲存到相簿');
-      }
+      final outcome = await ref
+          .read(homeControllerProvider.notifier)
+          .tryOnFromStoragePaths(clothesPaths, mode: mode);
+      handleTryOnOutcome(outcome);
     }
 
     Future<void> downloadCurrentMedia() async {
-      try {
-        final result = galleryState.currentResult;
-        if (result == null) return;
+      final result = galleryState.currentResult;
+      if (result == null) return;
 
-        if (result.mode == TryOnMode.video) {
-          await downloadVideo(result);
-        } else {
-          await downloadImage(result);
-        }
-      } catch (e, stackTrace) {
-        AppLogger.error('Failed to save media', e, stackTrace);
-        if (context.mounted) {
-          TopNotification.show(context, message: '儲存失敗，請檢查儲存權限');
-        }
-      }
-    }
-
-    Future<void> shareImage(final TryonResult result) async {
-      final imageUrl = result.imageUrl;
-      if (imageUrl == null || imageUrl.isEmpty) {
-        throw Exception('Image URL is missing');
-      }
-
-      final originalBytes = await downloadBytes(imageUrl);
-      Uint8List imageToShare = originalBytes;
-
-      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
-      if (capabilities.requiresWatermark) {
-        imageToShare = await ImageWatermarkHelper.addWatermark(originalBytes);
-      }
-
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [
-            XFile.fromData(
-              imageToShare,
-              name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}.jpg',
-              mimeType: 'image/jpeg',
-            ),
-          ],
-        ),
-      );
-    }
-
-    Future<void> shareVideo(final TryonResult result) async {
-      final videoUrl = result.videoUrl;
-      if (videoUrl == null || videoUrl.isEmpty) {
-        throw Exception('Video URL is missing');
-      }
-
-      final tempDir = await getTemporaryDirectory();
-      final tempPath =
-          '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}.mp4';
-
-      try {
-        final dio = Dio();
-        await dio.download(videoUrl, tempPath);
-        await SharePlus.instance.share(ShareParams(files: [XFile(tempPath)]));
-      } finally {
-        final file = File(tempPath);
-        if (await file.exists()) {
-          await file.delete();
-        }
+      final outcome = await ref.read(saveTryonMediaUseCaseProvider)(result);
+      if (!context.mounted) return;
+      if (outcome.isFailure) {
+        TopNotification.show(context, message: '儲存失敗，請檢查儲存權限');
+      } else {
+        AppSnackBar.show(
+          context,
+          message: result.mode == TryOnMode.video ? '影片已儲存到相簿' : '照片已儲存到相簿',
+        );
       }
     }
 
     Future<void> shareCurrentMedia() async {
-      try {
-        final result = galleryState.currentResult;
-        if (result == null) return;
+      final result = galleryState.currentResult;
+      if (result == null) return;
 
-        if (result.mode == TryOnMode.video) {
-          await shareVideo(result);
-        } else {
-          await shareImage(result);
-        }
-      } catch (e, stackTrace) {
-        AppLogger.error('Failed to share media', e, stackTrace);
-        if (context.mounted) {
-          TopNotification.show(context, message: '分享失敗，請稍後再試');
-        }
+      final outcome = await ref.read(shareTryonMediaUseCaseProvider)(result);
+      if (!context.mounted) return;
+      if (outcome.isFailure) {
+        TopNotification.show(context, message: '分享失敗，請稍後再試');
       }
     }
 
