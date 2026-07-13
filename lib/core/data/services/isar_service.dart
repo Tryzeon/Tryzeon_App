@@ -7,9 +7,9 @@ import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_c
 import 'package:tryzeon/feature/personal/shop/data/collections/shop_product_cache.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_plan_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
-import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_collection.dart';
-import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
-import 'package:tryzeon/feature/store/profile/data/collections/store_profile_collection.dart';
+import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
+import 'package:tryzeon/feature/store/products/data/collections/product_cache.dart';
+import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 
 class IsarService {
   IsarService() {
@@ -28,10 +28,10 @@ class IsarService {
           UserProfileCacheSchema,
           WardrobeItemCacheSchema,
           ShopProductCacheSchema,
-          ProductCollectionSchema,
-          StoreProfileCollectionSchema,
+          ProductCacheSchema,
+          StoreProfileCacheSchema,
           SubscriptionPlanCacheSchema,
-          ProductAnalyticsCollectionSchema,
+          ProductAnalyticsCacheSchema,
         ],
         directory: dir.path,
         inspector: false,

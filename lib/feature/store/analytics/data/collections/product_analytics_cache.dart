@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'product_analytics_collection.g.dart';
+part 'product_analytics_cache.g.dart';
 
 @collection
-class ProductAnalyticsCollection {
+class ProductAnalyticsCache {
   Id id = Isar.autoIncrement;
 
   @Index(composite: [CompositeIndex('year'), CompositeIndex('month')])

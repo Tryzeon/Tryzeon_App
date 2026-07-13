@@ -8,7 +8,7 @@ import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
-import 'package:tryzeon/feature/store/profile/data/collections/store_profile_collection.dart';
+import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileLocalDataSource {
@@ -36,21 +36,21 @@ class StoreProfileLocalDataSource {
       return const CacheEmpty();
     }
 
-    final collection = await isar.storeProfileCollections.where().findFirst();
+    final collection = await isar.storeProfileCaches.where().findFirst();
     if (collection == null) return const CacheMiss();
 
-    final model = _mappr.convert<StoreProfileCollection, StoreProfileModel>(collection);
+    final model = _mappr.convert<StoreProfileCache, StoreProfileModel>(collection);
     return CacheHit(model);
   }
 
   Future<void> saveStoreProfile(final StoreProfileModel profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      await isar.storeProfileCollections.clear();
-      final collection = _mappr.convert<StoreProfileModel, StoreProfileCollection>(
+      await isar.storeProfileCaches.clear();
+      final collection = _mappr.convert<StoreProfileModel, StoreProfileCache>(
         profile,
       );
-      await isar.storeProfileCollections.put(collection);
+      await isar.storeProfileCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKey);
   }
@@ -58,7 +58,7 @@ class StoreProfileLocalDataSource {
   Future<void> markStoreProfileAbsent() async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      await isar.storeProfileCollections.clear();
+      await isar.storeProfileCaches.clear();
     });
     await _cacheEntryLocalDataSource.markEmpty(cacheKey);
   }

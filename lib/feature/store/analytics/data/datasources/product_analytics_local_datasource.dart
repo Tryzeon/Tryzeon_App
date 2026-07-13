@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_collection.dart';
+import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
 import 'package:tryzeon/feature/store/analytics/data/models/product_analytics_summary_model.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 
@@ -30,7 +30,7 @@ class ProductAnalyticsLocalDataSource {
       return const CacheEmpty();
     }
 
-    final collections = await isar.productAnalyticsCollections
+    final collections = await isar.productAnalyticsCaches
         .filter()
         .storeIdEqualTo(storeId)
         .yearEqualTo(year)
@@ -43,7 +43,7 @@ class ProductAnalyticsLocalDataSource {
       collections
           .map(
             (final c) => _mappr
-                .convert<ProductAnalyticsCollection, ProductAnalyticsSummaryModel>(c),
+                .convert<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(c),
           )
           .toList(),
     );
@@ -61,9 +61,9 @@ class ProductAnalyticsLocalDataSource {
     await isar.writeTxn(() async {
       for (final summary in summaries) {
         final collection = _mappr
-            .convert<ProductAnalyticsSummaryModel, ProductAnalyticsCollection>(summary);
+            .convert<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(summary);
 
-        final existing = await isar.productAnalyticsCollections
+        final existing = await isar.productAnalyticsCaches
             .filter()
             .storeIdEqualTo(summary.storeId)
             .productIdEqualTo(summary.productId)
@@ -75,7 +75,7 @@ class ProductAnalyticsLocalDataSource {
           collection.id = existing.id;
         }
 
-        await isar.productAnalyticsCollections.put(collection);
+        await isar.productAnalyticsCaches.put(collection);
       }
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: summaries.isEmpty);

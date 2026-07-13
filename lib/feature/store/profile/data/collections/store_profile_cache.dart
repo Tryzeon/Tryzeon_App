@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 
-part 'store_profile_collection.g.dart';
+part 'store_profile_cache.g.dart';
 
 @collection
-class StoreProfileCollection {
+class StoreProfileCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)

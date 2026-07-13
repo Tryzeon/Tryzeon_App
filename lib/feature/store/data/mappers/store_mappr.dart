@@ -7,13 +7,13 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact
 import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
 import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
 import '../../../../feature/common/product_attributes/entities/product_attributes.dart';
-import '../../analytics/data/collections/product_analytics_collection.dart';
+import '../../analytics/data/collections/product_analytics_cache.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
-import '../../products/data/collections/product_collection.dart';
+import '../../products/data/collections/product_cache.dart';
 import '../../products/data/models/product_model.dart';
 import '../../products/domain/entities/product.dart';
-import '../../profile/data/collections/store_profile_collection.dart';
+import '../../profile/data/collections/store_profile_cache.dart';
 import '../../profile/data/models/store_profile_model.dart';
 import '../../profile/domain/entities/store_profile.dart';
 import 'store_mappr.auto_mappr.dart';
@@ -24,8 +24,8 @@ import 'store_mappr.auto_mappr.dart';
     // ProductSize mappings
     MapType<ProductSizeModel, ProductSize>(),
     MapType<ProductSize, ProductSizeModel>(),
-    MapType<ProductSizeModel, ProductSizeCollection>(),
-    MapType<ProductSizeCollection, ProductSizeModel>(),
+    MapType<ProductSizeModel, ProductSizeEmbedded>(),
+    MapType<ProductSizeEmbedded, ProductSizeModel>(),
 
     // Product mappings (String ↔ Enum conversion only at Model ↔ Entity boundary)
     MapType<ProductModel, Product>(
@@ -48,8 +48,8 @@ import 'store_mappr.auto_mappr.dart';
     ),
 
     // Collection mappings (String ↔ String, only field name mapping needed)
-    MapType<ProductModel, ProductCollection>(fields: [Field('productId', from: 'id')]),
-    MapType<ProductCollection, ProductModel>(fields: [Field('id', from: 'productId')]),
+    MapType<ProductModel, ProductCache>(fields: [Field('productId', from: 'id')]),
+    MapType<ProductCache, ProductModel>(fields: [Field('id', from: 'productId')]),
 
     // StoreOrderContact mappings (enum <-> code at Model <-> Entity boundary)
     MapType<StoreOrderContactModel, StoreOrderContact>(
@@ -68,17 +68,17 @@ import 'store_mappr.auto_mappr.dart';
     MapType<StoreProfile, StoreProfileModel>(
       fields: [Field('channels', custom: StoreMapprHelper.channelSetToCodes)],
     ),
-    MapType<StoreProfileModel, StoreProfileCollection>(
+    MapType<StoreProfileModel, StoreProfileCache>(
       fields: [Field('storeId', from: 'id')],
     ),
-    MapType<StoreProfileCollection, StoreProfileModel>(
+    MapType<StoreProfileCache, StoreProfileModel>(
       fields: [Field('id', from: 'storeId')],
     ),
 
     // ProductAnalyticsSummary mappings
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(),
-    MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCollection>(),
-    MapType<ProductAnalyticsCollection, ProductAnalyticsSummaryModel>(),
+    MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(),
+    MapType<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(),
   ],
   includes: [MeasurementsMappr()],
 )
