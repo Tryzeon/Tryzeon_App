@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
 /// Editorial-style gender filter: flat text labels with an animated Terracotta
 /// underline on the active one. No boxes, single accent — per the Clean Luxe

@@ -7,7 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_gender_selector.dart';

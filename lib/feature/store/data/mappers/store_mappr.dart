@@ -4,9 +4,9 @@ import 'package:tryzeon/feature/common/store/data/models/store_order_contact_mod
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
-import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
+import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
 import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
-import '../../../../feature/common/product_attributes/entities/product_attributes.dart';
+import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
 import '../../../../feature/common/product_size/data/collections/product_size_embedded.dart';
 import '../../analytics/data/collections/product_analytics_cache.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';

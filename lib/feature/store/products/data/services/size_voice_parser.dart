@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurement_type.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_type.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 
 MeasurementType? _typeFromKey(final String key) {

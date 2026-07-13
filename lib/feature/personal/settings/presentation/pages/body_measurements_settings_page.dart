@@ -8,7 +8,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/measurements/utils/measurements_completion.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';

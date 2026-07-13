@@ -1,5 +1,5 @@
-import 'package:tryzeon/feature/common/measurements/entities/measurement_type.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_type.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
 
 class ParsedMeasurement {
   const ParsedMeasurement({required this.value, required this.unit, this.offset});

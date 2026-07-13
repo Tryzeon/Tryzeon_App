@@ -1,6 +1,6 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 
 import '../../domain/entities/product_category.dart';
 import '../collections/product_category_cache.dart';

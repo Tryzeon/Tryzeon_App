@@ -1,5 +1,5 @@
-import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
-import 'package:tryzeon/feature/common/product_size/entities/product_size.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 

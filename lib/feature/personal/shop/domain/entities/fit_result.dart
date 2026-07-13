@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurement_type.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_type.dart';
 
 part 'fit_result.freezed.dart';
 

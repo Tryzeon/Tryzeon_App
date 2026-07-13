@@ -1,5 +1,5 @@
-import '../entities/product_attributes.dart';
-import '../entities/wardrobe_category.dart';
+import '../domain/entities/product_attributes.dart';
+import '../domain/entities/wardrobe_category.dart';
 
 const List<String> kFitPresets = ['合身', '常規', '大尺碼', 'oversize'];
 

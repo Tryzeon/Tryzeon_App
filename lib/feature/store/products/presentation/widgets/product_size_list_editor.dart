@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_size_voice_input.dart';

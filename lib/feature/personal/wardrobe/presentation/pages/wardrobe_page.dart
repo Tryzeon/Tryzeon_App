@@ -8,7 +8,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 

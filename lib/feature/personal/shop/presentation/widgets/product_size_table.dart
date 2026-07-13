@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
-import 'package:tryzeon/feature/common/product_size/entities/product_size.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/size_advisor_banner.dart';
 

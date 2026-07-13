@@ -1,4 +1,4 @@
-import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 
 /// Total number of core measurement fields the user can fill.
 int get totalMeasurementFields => MeasurementType.values.length;

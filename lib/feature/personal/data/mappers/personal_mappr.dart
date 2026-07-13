@@ -1,10 +1,10 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 
-import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
+import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
 import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
-import '../../../../feature/common/product_attributes/entities/product_attributes.dart';
-import '../../../../feature/common/product_size/entities/product_size.dart';
+import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
+import '../../../../feature/common/product_size/domain/entities/product_size.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../common/store/data/models/store_order_contact_model.dart';
 import '../../../common/store/domain/entities/store_channel.dart';

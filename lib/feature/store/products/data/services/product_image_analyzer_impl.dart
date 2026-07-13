@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
-import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/products/domain/services/product_image_analyzer.dart';
 

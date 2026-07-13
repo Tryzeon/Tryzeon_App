@@ -1,4 +1,4 @@
-import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 /// Maps the user's own [Gender] (female/male) to a [ProductGender] for

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../entities/measurement_type.dart';
+import '../../domain/entities/measurement_type.dart';
 
-export '../../entities/measurement_type.dart';
+export '../../domain/entities/measurement_type.dart';
 
 /// UI display extensions for [MeasurementType] in Presentation Layer.
 extension MeasurementTypeUiMapper on MeasurementType {

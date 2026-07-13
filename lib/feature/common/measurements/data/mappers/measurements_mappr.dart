@@ -1,6 +1,6 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
-import '../../entities/measurements.dart';
+import '../../domain/entities/measurements.dart';
 import '../collections/measurements_embedded.dart';
 import '../models/measurements_model.dart';
 import 'measurements_mappr.auto_mappr.dart';

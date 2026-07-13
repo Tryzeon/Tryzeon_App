@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
-import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_size/entities/product_size.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 
-export 'package:tryzeon/feature/common/product_size/entities/product_size.dart';
+export 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 
 part 'product.freezed.dart';
 

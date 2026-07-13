@@ -1,5 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
