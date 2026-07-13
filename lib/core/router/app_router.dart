@@ -142,7 +142,7 @@ String? _handlePersonalOnboardingRedirect(
   if (userProfileAsync.isLoading || userProfileAsync.hasError) return null;
 
   final profile = userProfileAsync.asData?.value;
-  final isOnboarded = profile?.isOnboarded ?? false;
+  final isOnboarded = (profile?.isOnboarded as bool?) ?? false;
   if (path == AppRoutes.personalOnboarding) {
     return isOnboarded ? AppRoutes.personalHome : null;
   }

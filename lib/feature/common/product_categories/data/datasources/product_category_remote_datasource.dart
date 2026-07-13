@@ -15,8 +15,12 @@ class ProductCategoryRemoteDataSource {
         .select('id, name, gender, wardrobe_category, image_male, image_female')
         .order('order', ascending: true);
 
-    return (response as List)
-        .map((final e) => ProductCategoryModel.fromJson(_withCategoryImageUrls(e)))
+    return (response as List<dynamic>)
+        .map(
+          (final e) => ProductCategoryModel.fromJson(
+            _withCategoryImageUrls(e as Map<String, dynamic>),
+          ),
+        )
         .toList();
   }
 

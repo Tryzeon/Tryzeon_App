@@ -20,7 +20,7 @@ class ProductCategoryFilter extends StatelessWidget {
   final AsyncValue<List<ProductCategory>> categoriesAsync;
   final Set<String> selectedCategoryIds;
   final ProductGender? gender;
-  final Function(String) onCategoryToggle;
+  final void Function(String) onCategoryToggle;
   final VoidCallback onRetry;
 
   @override

@@ -25,8 +25,10 @@ class WardrobeRemoteDataSource {
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
-    return (response as List).map((final e) {
-      return WardrobeItemModel.fromJson(Map<String, dynamic>.from(e));
+    return (response as List<dynamic>).map((final e) {
+      return WardrobeItemModel.fromJson(
+        Map<String, dynamic>.from(e as Map<dynamic, dynamic>),
+      );
     }).toList();
   }
 

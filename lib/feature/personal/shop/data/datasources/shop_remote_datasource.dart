@@ -38,7 +38,7 @@ class ShopRemoteDataSource {
       _ => (null, null),
     };
 
-    final response = await _supabaseClient.rpc(
+    final response = await _supabaseClient.rpc<List<dynamic>>(
       'list_shop_products',
       params: buildListProductsParams(
         storeId: storeId,
@@ -63,8 +63,10 @@ class ShopRemoteDataSource {
       ),
     );
 
-    return (response as List).map((final item) {
-      final map = productRowWithImageUrls(Map<String, dynamic>.from(item as Map));
+    return response.map((final item) {
+      final map = productRowWithImageUrls(
+        Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+      );
       return ShopProductModel.fromJson(map);
     }).toList();
   }

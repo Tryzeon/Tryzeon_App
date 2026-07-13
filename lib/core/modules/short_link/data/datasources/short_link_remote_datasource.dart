@@ -27,12 +27,10 @@ class ShortLinkRemoteDataSource {
     required final String platform,
     required final String source,
   }) async {
-    final response =
-        await _supabaseClient.rpc(
-              AppConstants.functionRecordLinkOpen,
-              params: {'p_code': code, 'p_platform': platform, 'p_source': source},
-            )
-            as List<dynamic>;
+    final response = await _supabaseClient.rpc<List<dynamic>>(
+      AppConstants.functionRecordLinkOpen,
+      params: {'p_code': code, 'p_platform': platform, 'p_source': source},
+    );
 
     if (response.isEmpty) {
       return null;

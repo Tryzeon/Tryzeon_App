@@ -21,8 +21,8 @@ class ProductRemoteDataSource {
         .select('*, product_variants(*)')
         .eq('store_id', storeId);
 
-    return (response as List).map((final e) {
-      return ProductModel.fromJson(_withProductImageUrl(e));
+    return (response as List<dynamic>).map((final e) {
+      return ProductModel.fromJson(_withProductImageUrl(e as Map<String, dynamic>));
     }).toList();
   }
 
@@ -104,7 +104,9 @@ class ProductRemoteDataSource {
   Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final rawPaths = map['image_paths'];
-    final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
+    final imagePaths = rawPaths != null
+        ? List<String>.from(rawPaths as Iterable<dynamic>)
+        : <String>[];
     map['image_paths'] = imagePaths;
     map['image_urls'] = imagePaths.map(StoreImagesApi.publicUrl).toList();
     return map;

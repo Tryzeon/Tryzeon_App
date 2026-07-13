@@ -42,8 +42,8 @@ class ProductImageViewer extends HookWidget {
 
               return GestureDetector(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
                       builder: (final context) {
                         final cs = Theme.of(context).colorScheme;
                         return Scaffold(

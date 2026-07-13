@@ -17,13 +17,17 @@ Map<String, dynamic> productRowWithImageUrls(final Map<String, dynamic> row) {
   final map = Map<String, dynamic>.from(row);
 
   final rawPaths = map['image_paths'];
-  final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
+  final imagePaths = rawPaths != null
+      ? List<String>.from(rawPaths as Iterable<dynamic>)
+      : <String>[];
   map['image_paths'] = imagePaths;
   map['image_urls'] = imagePaths.map(StoreImagesApi.publicUrl).toList();
 
   final store = map['store_profiles'];
   if (store != null) {
-    map['store_profiles'] = withStoreLogoUrl(Map<String, dynamic>.from(store as Map));
+    map['store_profiles'] = withStoreLogoUrl(
+      Map<String, dynamic>.from(store as Map<dynamic, dynamic>),
+    );
   }
   return map;
 }
