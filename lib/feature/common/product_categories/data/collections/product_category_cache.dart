@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'product_category_collection.g.dart';
+part 'product_category_cache.g.dart';
 
 @collection
-class ProductCategoryCollection {
+class ProductCategoryCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)

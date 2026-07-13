@@ -3,7 +3,7 @@ import 'package:tryzeon/feature/common/product_attributes/entities/product_attri
 import 'package:tryzeon/feature/common/product_attributes/entities/wardrobe_category.dart';
 
 import '../../domain/entities/product_category.dart';
-import '../collections/product_category_collection.dart';
+import '../collections/product_category_cache.dart';
 import '../models/product_category_model.dart';
 import 'product_category_mappr.auto_mappr.dart';
 
@@ -18,10 +18,10 @@ import 'product_category_mappr.auto_mappr.dart';
       Field('gender', custom: ProductCategoryMapprHelper.stringToGender),
     ],
   ),
-  MapType<ProductCategoryModel, ProductCategoryCollection>(
+  MapType<ProductCategoryModel, ProductCategoryCache>(
     fields: [Field('categoryId', from: 'id')],
   ),
-  MapType<ProductCategoryCollection, ProductCategoryModel>(
+  MapType<ProductCategoryCache, ProductCategoryModel>(
     fields: [Field('id', from: 'categoryId')],
   ),
 ])

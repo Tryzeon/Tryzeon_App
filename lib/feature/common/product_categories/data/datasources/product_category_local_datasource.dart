@@ -3,7 +3,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
+import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_cache.dart';
 import 'package:tryzeon/feature/common/product_categories/data/mappers/product_category_mappr.dart';
 import 'package:tryzeon/feature/common/product_categories/data/models/product_category_model.dart';
 
@@ -26,10 +26,10 @@ class ProductCategoryLocalDataSource {
       return const CacheEmpty();
     }
 
-    final collections = await isar.productCategoryCollections.where().findAll();
+    final collections = await isar.productCategoryCaches.where().findAll();
     if (collections.isEmpty) return const CacheMiss();
 
-    final models = _mappr.convertList<ProductCategoryCollection, ProductCategoryModel>(
+    final models = _mappr.convertList<ProductCategoryCache, ProductCategoryModel>(
       collections,
     );
     return CacheHit(models);
@@ -38,11 +38,11 @@ class ProductCategoryLocalDataSource {
   Future<void> saveProductCategories(final List<ProductCategoryModel> categories) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      await isar.productCategoryCollections.clear();
+      await isar.productCategoryCaches.clear();
       final collections = _mappr
-          .convertList<ProductCategoryModel, ProductCategoryCollection>(categories)
+          .convertList<ProductCategoryModel, ProductCategoryCache>(categories)
           .toList();
-      await isar.productCategoryCollections.putAll(collections);
+      await isar.productCategoryCaches.putAll(collections);
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: categories.isEmpty);
   }
