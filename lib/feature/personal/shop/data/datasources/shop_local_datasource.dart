@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/common/measurements/data/models/measurements_mod
 import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/shop_product_collection.dart';
+import 'package:tryzeon/feature/personal/shop/data/collections/shop_product_cache.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
 
@@ -41,7 +41,7 @@ class ShopLocalDataSource {
       if (model.sizes != null) {
         sizes = model.sizes!.map((final size) {
           final sizeEmbedded = ProductSizeEmbedded()
-            ..sizeId = size.id
+            ..id = size.id
             ..productId = size.productId
             ..name = size.name
             ..createdAt = size.createdAt
@@ -67,7 +67,7 @@ class ShopLocalDataSource {
         }).toList();
       }
 
-      return ShopProductCollection()
+      return ShopProductCache()
         ..productId = model.id
         ..name = model.name
         ..price = model.price
@@ -88,7 +88,7 @@ class ShopLocalDataSource {
     }).toList();
 
     await isar.writeTxn(() async {
-      await isar.shopProductCollections.putAll(collections);
+      await isar.shopProductCaches.putAll(collections);
     });
 
     for (final product in products) {
@@ -108,7 +108,7 @@ class ShopLocalDataSource {
     );
     if (cacheStatus == null) return const CacheMiss();
 
-    final collection = await isar.shopProductCollections.getByProductId(productId);
+    final collection = await isar.shopProductCaches.getByProductId(productId);
 
     if (collection == null) return const CacheMiss();
 
@@ -146,7 +146,7 @@ class ShopLocalDataSource {
         }
 
         return ProductSizeModel(
-          id: sizeEmbedded.sizeId,
+          id: sizeEmbedded.id,
           productId: sizeEmbedded.productId,
           name: sizeEmbedded.name,
           measurements: measurements,

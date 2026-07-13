@@ -2,10 +2,10 @@ import 'package:isar_community/isar.dart';
 import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 
-part 'shop_product_collection.g.dart';
+part 'shop_product_cache.g.dart';
 
 @collection
-class ShopProductCollection {
+class ShopProductCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
@@ -36,7 +36,7 @@ class ShopProductCollection {
 
 @embedded
 class ProductSizeEmbedded {
-  late String sizeId;
+  late String id;
   late String productId;
   late String name;
   MeasurementsEmbedded? measurements;
