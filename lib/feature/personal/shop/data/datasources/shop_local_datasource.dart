@@ -4,6 +4,7 @@ import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
 import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/feature/common/product_size/data/collections/product_size_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
