@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'cache_entry_collection.g.dart';
+part 'cache_entry.g.dart';
 
 @collection
-class CacheEntryCollection {
+class CacheEntry {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)

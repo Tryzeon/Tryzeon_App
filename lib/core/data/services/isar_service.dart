@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tryzeon/core/data/collections/cache_entry_collection.dart';
-import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.dart';
+import 'package:tryzeon/core/data/collections/cache_entry.dart';
+import 'package:tryzeon/feature/auth/data/collections/auth_settings_cache.dart';
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_collection.dart';
@@ -22,8 +22,8 @@ class IsarService {
       final dir = await getApplicationDocumentsDirectory();
       return Isar.open(
         [
-          CacheEntryCollectionSchema,
-          AuthSettingsCollectionSchema,
+          CacheEntrySchema,
+          AuthSettingsCacheSchema,
           ProductCategoryCollectionSchema,
           UserProfileCollectionSchema,
           WardrobeItemCollectionSchema,

@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'auth_settings_collection.g.dart';
+part 'auth_settings_cache.g.dart';
 
 @collection
-class AuthSettingsCollection {
+class AuthSettingsCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
