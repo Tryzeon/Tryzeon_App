@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:simple_icons/simple_icons.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
@@ -48,6 +49,10 @@ class PrePurchaseSheet extends StatelessWidget {
   Widget build(final BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+
+    final hasOnlineLink =
+        product.purchaseLink != null && product.purchaseLink!.isNotEmpty;
+    final contacts = product.storeInfo.orderContacts;
 
     return SafeArea(
       child: Padding(
@@ -104,27 +109,24 @@ class PrePurchaseSheet extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
             ],
 
-            _CopyMessageButton(
-              message: OrderMessageBuilder.build(product: product, fitResult: fitResult),
-            ),
-            const SizedBox(height: AppSpacing.smMd),
-
-            if (product.purchaseLink != null && product.purchaseLink!.isNotEmpty) ...[
+            if (hasOnlineLink) ...[
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(const OnlineStoreChoice()),
                 child: const Text('開啟購買連結'),
               ),
-              const SizedBox(height: AppSpacing.xs),
+              if (contacts.isNotEmpty) const SizedBox(height: AppSpacing.md),
             ],
 
-            for (final contact in product.storeInfo.orderContacts) ...[
-              FilledButton.tonal(
-                onPressed: () => Navigator.of(context).pop(ContactChoice(contact)),
-                child: Text(_contactLabel(contact.type)),
+            if (contacts.isNotEmpty)
+              _ContactChannels(
+                contacts: contacts,
+                message: OrderMessageBuilder.build(
+                  product: product,
+                  fitResult: fitResult,
+                ),
               ),
-              const SizedBox(height: AppSpacing.xs),
-            ],
 
+            const SizedBox(height: AppSpacing.sm),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('取消'),
@@ -228,36 +230,207 @@ class _FitInfoRow extends StatelessWidget {
   }
 }
 
-String _contactLabel(final OrderContactType type) => switch (type) {
-  OrderContactType.line => '用 LINE 詢問下單',
-  OrderContactType.facebook => 'FB 私訊下單',
-  OrderContactType.instagram => 'IG 私訊下單',
-};
+/// Direct-message ordering section. A titled, two-step flow — copy the order
+/// details, then open a messaging app and paste — followed by the channel row.
+/// Copy-first applies to every channel, so the steps stay generic.
+class _ContactChannels extends StatelessWidget {
+  const _ContactChannels({required this.contacts, required this.message});
 
-class _CopyMessageButton extends StatefulWidget {
-  const _CopyMessageButton({required this.message});
+  final List<StoreOrderContact> contacts;
+  final String message;
+
+  /// Indent that aligns the channel row under the step text (badge + gap).
+  static const double _stepIndent = _StepBadge.size + AppSpacing.smMd;
+
+  @override
+  Widget build(final BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '私訊店家下單',
+          style: textTheme.titleSmall?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        _StepRow(
+          number: 1,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: Text('複製商品與尺寸資訊', style: textTheme.bodyMedium)),
+              const SizedBox(width: AppSpacing.smMd),
+              _SquareCopyButton(message: message),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.smMd),
+
+        _StepRow(number: 2, child: Text('開啟社群軟體，貼上即可向店家下單', style: textTheme.bodyMedium)),
+        const SizedBox(height: AppSpacing.md),
+
+        Padding(
+          padding: const EdgeInsets.only(left: _stepIndent),
+          child: Wrap(
+            spacing: AppSpacing.smMd,
+            children: [for (final contact in contacts) _ChannelButton(contact: contact)],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A numbered step: a charcoal badge on the left with the step content beside it.
+class _StepRow extends StatelessWidget {
+  const _StepRow({required this.number, required this.child});
+
+  final int number;
+  final Widget child;
+
+  @override
+  Widget build(final BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _StepBadge(number),
+        const SizedBox(width: AppSpacing.smMd),
+        Expanded(child: child),
+      ],
+    );
+  }
+}
+
+class _StepBadge extends StatelessWidget {
+  const _StepBadge(this.number);
+
+  static const double size = 22;
+
+  final int number;
+
+  @override
+  Widget build(final BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.primary),
+      child: Text(
+        '$number',
+        style: textTheme.labelSmall?.copyWith(
+          color: colorScheme.onPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// A compact square copy button that flips to a check once the order message is
+/// on the clipboard.
+class _SquareCopyButton extends StatefulWidget {
+  const _SquareCopyButton({required this.message});
 
   final String message;
 
   @override
-  State<_CopyMessageButton> createState() => _CopyMessageButtonState();
+  State<_SquareCopyButton> createState() => _SquareCopyButtonState();
 }
 
-class _CopyMessageButtonState extends State<_CopyMessageButton> {
+class _SquareCopyButtonState extends State<_SquareCopyButton> {
   bool _copied = false;
 
   Future<void> _copy() async {
     await Clipboard.setData(ClipboardData(text: widget.message));
     if (!mounted) return;
+    await HapticFeedback.selectionClick();
     setState(() => _copied = true);
   }
 
   @override
   Widget build(final BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: _copy,
-      icon: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, size: 18),
-      label: Text(_copied ? '已複製商品資訊' : '複製商品資訊與尺寸'),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      button: true,
+      label: _copied ? '已複製商品資訊' : '複製商品資訊',
+      child: InkWell(
+        onTap: _copy,
+        borderRadius: AppRadius.inputAll,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.inputAll,
+            border: Border.all(color: colorScheme.outline),
+          ),
+          child: AnimatedSwitcher(
+            duration: AppDuration.quick,
+            child: Icon(
+              _copied ? Icons.check_rounded : Icons.copy_rounded,
+              key: ValueKey(_copied),
+              size: 20,
+              color: _copied ? AppColors.fitMatch : colorScheme.onSurface,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
+
+/// A single ordering channel rendered as a circular brand icon with a label.
+class _ChannelButton extends StatelessWidget {
+  const _ChannelButton({required this.contact});
+
+  final StoreOrderContact contact;
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      button: true,
+      label: '用 ${contact.type.label} 私訊下單',
+      child: InkWell(
+        onTap: () => Navigator.of(context).pop(ContactChoice(contact)),
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 48,
+          height: 48,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colorScheme.outline),
+          ),
+          child: Icon(
+            _channelIcon(contact.type),
+            size: 24,
+            color: _channelColor(contact.type),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+IconData _channelIcon(final OrderContactType type) => switch (type) {
+  OrderContactType.line => SimpleIcons.line,
+  OrderContactType.facebook => SimpleIcons.facebook,
+  OrderContactType.instagram => SimpleIcons.instagram,
+};
+
+Color _channelColor(final OrderContactType type) => switch (type) {
+  OrderContactType.line => SimpleIconColors.line,
+  OrderContactType.facebook => SimpleIconColors.facebook,
+  OrderContactType.instagram => SimpleIconColors.instagram,
+};
