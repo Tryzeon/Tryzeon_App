@@ -1,5 +1,5 @@
-import 'package:tryzeon/core/modules/short_link/data/datasources/short_link_remote_datasource.dart';
 import 'package:tryzeon/core/modules/short_link/data/pending_short_link.dart';
+import 'package:tryzeon/core/modules/short_link/domain/services/short_link_service.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 
 /// Records the short-link open and returns the in-app destination path.
@@ -12,14 +12,14 @@ import 'package:tryzeon/core/router/app_routes.dart';
 /// [AppRoutes.personalHome] for an unknown/inactive code or on error.
 Future<String> resolveShortLinkDestination({
   required final String code,
-  required final ShortLinkRemoteDataSource dataSource,
+  required final ShortLinkService service,
   required final PendingShortLink? pending,
   required final void Function() clearPending,
   required final String platform,
 }) async {
   final source = pending?.code == code ? pending!.source : 'app';
   try {
-    final target = await dataSource.recordOpen(
+    final target = await service.recordOpen(
       code: code,
       platform: platform,
       source: source,

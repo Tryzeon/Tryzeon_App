@@ -1,17 +1,18 @@
 import 'package:chottu_link/chottu_link.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/modules/short_link/data/datasources/short_link_remote_datasource.dart';
+import 'package:tryzeon/core/modules/short_link/data/services/short_link_service_impl.dart';
 import 'package:tryzeon/core/modules/short_link/data/short_link_code.dart';
+import 'package:tryzeon/core/modules/short_link/domain/services/short_link_service.dart';
 import 'package:tryzeon/core/modules/short_link/providers/pending_link_provider.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
 part 'short_link_providers.g.dart';
 
-/// Short Link Remote DataSource Provider
+/// Short Link Service Provider
 @riverpod
-ShortLinkRemoteDataSource shortLinkRemoteDataSource(final Ref ref) {
-  return ShortLinkRemoteDataSource(Supabase.instance.client);
+ShortLinkService shortLinkService(final Ref ref) {
+  return ShortLinkServiceImpl(Supabase.instance.client);
 }
 
 /// Captures ChottuLink deferred deep links into [pendingLinkProvider].

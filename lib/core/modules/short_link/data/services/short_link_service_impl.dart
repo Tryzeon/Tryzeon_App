@@ -1,27 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/modules/short_link/domain/entities/link_target.dart';
+import 'package:tryzeon/core/modules/short_link/domain/services/short_link_service.dart';
 
-/// Destination a short link resolves to.
-class LinkTarget {
-  const LinkTarget({required this.targetType, required this.targetId});
-
-  /// 'product' or 'store'.
-  final String targetType;
-  final String targetId;
-}
-
-class ShortLinkRemoteDataSource {
-  ShortLinkRemoteDataSource(this._supabaseClient);
+/// [ShortLinkService] implementation backed by a Supabase RPC.
+class ShortLinkServiceImpl implements ShortLinkService {
+  ShortLinkServiceImpl(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
 
-  /// Records an identified link open (the user is authenticated) and resolves
-  /// the code to its destination so the caller can navigate.
-  ///
-  /// [source] is 'app' for an installed open or 'deferred' for an open
-  /// delivered by the platform SDK after a deferred install.
-  ///
-  /// Returns `null` when the code is unknown or inactive.
+  @override
   Future<LinkTarget?> recordOpen({
     required final String code,
     required final String platform,

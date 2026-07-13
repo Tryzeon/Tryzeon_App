@@ -30,7 +30,7 @@ class LinkResolverPage extends HookConsumerWidget {
       Future<void> resolve() async {
         final destination = await resolveShortLinkDestination(
           code: code,
-          dataSource: ref.read(shortLinkRemoteDataSourceProvider),
+          service: ref.read(shortLinkServiceProvider),
           pending: ref.read(pendingLinkProvider),
           clearPending: ref.read(pendingLinkProvider.notifier).clear,
           platform: _platform,
