@@ -25,7 +25,10 @@ class StoreAccountPage extends HookConsumerWidget {
         bottom: false,
         child: RefreshIndicator(
           onRefresh: () async {
-            await refreshAnalytics(ref);
+            await Future.wait([
+              refreshStoreProfile(ref),
+              refreshAnalytics(ref),
+            ]);
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),

@@ -34,32 +34,37 @@ class AccountPage extends HookConsumerWidget {
 
     return LoadingOverlay(
       isLoading: state.isLoading,
-      child: const Scaffold(
+      child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _TopBar(),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: AppSpacing.md),
-                      _ProfileHeader(),
-                      SizedBox(height: AppSpacing.lg),
-                      Divider(),
-                      _SectionLabel('訂閱方案'),
-                      _SubscriptionSection(),
-                      _SectionLabel('身形'),
-                      _BodyMeasurementsRow(),
-                    ],
+          child: RefreshIndicator(
+            onRefresh: () => refreshUserProfile(ref),
+            edgeOffset: MediaQuery.of(context).padding.top,
+            child: const SingleChildScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TopBar(),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: AppSpacing.md),
+                        _ProfileHeader(),
+                        SizedBox(height: AppSpacing.lg),
+                        Divider(),
+                        _SectionLabel('訂閱方案'),
+                        _SubscriptionSection(),
+                        _SectionLabel('身形'),
+                        _BodyMeasurementsRow(),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(height: AppSpacing.xxl),
-              ],
+                  SizedBox(height: AppSpacing.xxl),
+                ],
+              ),
             ),
           ),
         ),
