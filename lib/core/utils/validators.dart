@@ -7,6 +7,11 @@ class AppValidators {
   /// the charset alone rejects URLs and '@' without needing separate checks.
   static final _socialHandleRegex = RegExp(r'^[A-Za-z0-9._]+$');
 
+  /// A LINE Official Account ID: a mandatory '@' then lowercase letters, digits,
+  /// '.', '-', '_'. Matching the charset alone rejects URLs, spaces and casing
+  /// typos without needing separate checks.
+  static final _lineOaIdRegex = RegExp(r'^@[a-z0-9._-]+$');
+
   static String? validateEmail(final String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
@@ -130,8 +135,8 @@ class AppValidators {
   static String? validateLineOaId(final String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) return null; // Optional
-    if (!trimmed.startsWith('@')) {
-      return 'LINE 官方帳號 ID 需以 @ 開頭 (例如 @tryzeon)';
+    if (!_lineOaIdRegex.hasMatch(trimmed)) {
+      return 'LINE 官方帳號 ID 格式錯誤 (例如 @tryzeon)';
     }
     return null;
   }
