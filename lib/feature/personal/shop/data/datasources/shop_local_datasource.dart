@@ -2,7 +2,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/common/measurements/collections/measurements_collection.dart';
+import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
 import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
@@ -48,7 +48,7 @@ class ShopLocalDataSource {
             ..updatedAt = size.updatedAt;
 
           if (size.measurements != null) {
-            sizeEmbedded.measurements = MeasurementsCollection()
+            sizeEmbedded.measurements = MeasurementsEmbedded()
               ..height = size.measurements!.height
               ..chest = size.measurements!.chest
               ..waist = size.measurements!.waist

@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/feature/common/measurements/collections/measurements_collection.dart';
+import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 
 part 'shop_product_collection.g.dart';
@@ -39,7 +39,7 @@ class ProductSizeEmbedded {
   late String sizeId;
   late String productId;
   late String name;
-  MeasurementsCollection? measurements;
+  MeasurementsEmbedded? measurements;
   late DateTime createdAt;
   late DateTime updatedAt;
 }
