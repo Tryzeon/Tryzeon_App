@@ -9,7 +9,7 @@ import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../common/store/data/models/store_order_contact_model.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../../common/store/domain/entities/store_order_contact.dart';
-import '../../profile/data/collections/user_profile_collection.dart';
+import '../../profile/data/collections/user_profile_cache.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/age_range.dart';
 import '../../profile/domain/entities/gender.dart';
@@ -18,9 +18,9 @@ import '../../shop/data/models/shop_product_model.dart';
 import '../../shop/data/models/shop_store_info_model.dart';
 import '../../shop/domain/entities/shop_product.dart';
 import '../../shop/domain/entities/shop_store_info.dart';
-import '../../subscription/data/collections/subscription_plan_collection.dart';
+import '../../subscription/data/collections/subscription_plan_cache.dart';
 import '../../subscription/data/models/subscription_plan_model.dart';
-import '../../wardrobe/data/collections/wardrobe_item_collection.dart';
+import '../../wardrobe/data/collections/wardrobe_item_cache.dart';
 import '../../wardrobe/data/models/wardrobe_item_model.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
@@ -52,8 +52,8 @@ import 'personal_mappr.auto_mappr.dart';
         ),
       ],
     ),
-    MapType<UserProfileModel, UserProfileCollection>(),
-    MapType<UserProfileCollection, UserProfileModel>(),
+    MapType<UserProfileModel, UserProfileCache>(),
+    MapType<UserProfileCache, UserProfileModel>(),
 
     // WardrobeItem mappings
     MapType<WardrobeItemModel, WardrobeItem>(
@@ -62,10 +62,10 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<WardrobeItem, WardrobeItemModel>(
       fields: [Field('category', custom: WardrobeItemMapprHelper.categoryToString)],
     ),
-    MapType<WardrobeItemModel, WardrobeItemCollection>(
+    MapType<WardrobeItemModel, WardrobeItemCache>(
       fields: [Field('itemId', from: 'id')],
     ),
-    MapType<WardrobeItemCollection, WardrobeItemModel>(
+    MapType<WardrobeItemCache, WardrobeItemModel>(
       fields: [Field('id', from: 'itemId')],
     ),
     // ShopProduct mappings (read-only for consumer)
@@ -91,10 +91,10 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<ProductSizeModel, ProductSize>(),
 
     // SubscriptionPlan mappings (Model ↔ Collection for local cache)
-    MapType<SubscriptionPlanModel, SubscriptionPlanCollection>(
+    MapType<SubscriptionPlanModel, SubscriptionPlanCache>(
       fields: [Field('planId', from: 'id')],
     ),
-    MapType<SubscriptionPlanCollection, SubscriptionPlanModel>(
+    MapType<SubscriptionPlanCache, SubscriptionPlanModel>(
       fields: [Field('id', from: 'planId')],
     ),
   ],

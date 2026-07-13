@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'subscription_plan_collection.g.dart';
+part 'subscription_plan_cache.g.dart';
 
 @collection
-class SubscriptionPlanCollection {
+class SubscriptionPlanCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)

@@ -8,7 +8,7 @@ import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
-import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
+import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileLocalDataSource {
@@ -31,19 +31,19 @@ class UserProfileLocalDataSource {
     );
     if (cacheStatus == null) return const CacheMiss();
 
-    final collection = await isar.userProfileCollections.where().findFirst();
+    final collection = await isar.userProfileCaches.where().findFirst();
     if (collection == null) return const CacheMiss();
 
-    final model = _mappr.convert<UserProfileCollection, UserProfileModel>(collection);
+    final model = _mappr.convert<UserProfileCache, UserProfileModel>(collection);
     return CacheHit(model);
   }
 
   Future<void> saveUserProfile(final UserProfileModel profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      await isar.userProfileCollections.clear();
-      final collection = _mappr.convert<UserProfileModel, UserProfileCollection>(profile);
-      await isar.userProfileCollections.put(collection);
+      await isar.userProfileCaches.clear();
+      final collection = _mappr.convert<UserProfileModel, UserProfileCache>(profile);
+      await isar.userProfileCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKey);
   }

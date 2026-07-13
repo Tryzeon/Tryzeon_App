@@ -7,7 +7,7 @@ import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
-import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_collection.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/models/wardrobe_item_model.dart';
 
 class WardrobeLocalDataSource {
@@ -32,14 +32,14 @@ class WardrobeLocalDataSource {
       return const CacheEmpty();
     }
 
-    final collections = await isar.wardrobeItemCollections
+    final collections = await isar.wardrobeItemCaches
         .where()
         .sortByCreatedAtDesc()
         .findAll();
 
     if (collections.isEmpty) return const CacheMiss();
 
-    final models = _mappr.convertList<WardrobeItemCollection, WardrobeItemModel>(
+    final models = _mappr.convertList<WardrobeItemCache, WardrobeItemModel>(
       collections,
     );
     return CacheHit(models);
@@ -48,11 +48,11 @@ class WardrobeLocalDataSource {
   Future<void> saveWardrobeItems(final List<WardrobeItemModel> items) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      await isar.wardrobeItemCollections.clear();
-      final collections = _mappr.convertList<WardrobeItemModel, WardrobeItemCollection>(
+      await isar.wardrobeItemCaches.clear();
+      final collections = _mappr.convertList<WardrobeItemModel, WardrobeItemCache>(
         items,
       );
-      await isar.wardrobeItemCollections.putAll(collections);
+      await isar.wardrobeItemCaches.putAll(collections);
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: items.isEmpty);
   }
@@ -60,8 +60,8 @@ class WardrobeLocalDataSource {
   Future<void> saveWardrobeItem(final WardrobeItemModel item) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection = _mappr.convert<WardrobeItemModel, WardrobeItemCollection>(item);
-      await isar.wardrobeItemCollections.put(collection);
+      final collection = _mappr.convert<WardrobeItemModel, WardrobeItemCache>(item);
+      await isar.wardrobeItemCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);
   }
@@ -69,10 +69,10 @@ class WardrobeLocalDataSource {
   Future<void> deleteWardrobeItem(final String id) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      await isar.wardrobeItemCollections.deleteByItemId(id);
+      await isar.wardrobeItemCaches.deleteByItemId(id);
     });
 
-    if (await isar.wardrobeItemCollections.count() == 0) {
+    if (await isar.wardrobeItemCaches.count() == 0) {
       await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: true);
     } else {
       await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);

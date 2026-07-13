@@ -3,7 +3,7 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
-import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_plan_collection.dart';
+import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_plan_cache.dart';
 import 'package:tryzeon/feature/personal/subscription/data/models/subscription_plan_model.dart';
 
 class SubscriptionCapabilitiesLocalDataSource {
@@ -31,12 +31,12 @@ class SubscriptionCapabilitiesLocalDataSource {
     if (cacheStatus == CacheEntryStatus.empty) return const CacheEmpty();
 
     final isar = await _isarService.db;
-    final collection = await isar.subscriptionPlanCollections.getByPlanId(planId);
+    final collection = await isar.subscriptionPlanCaches.getByPlanId(planId);
 
     if (collection == null) return const CacheMiss();
 
     return CacheHit(
-      _mappr.convert<SubscriptionPlanCollection, SubscriptionPlanModel>(collection),
+      _mappr.convert<SubscriptionPlanCache, SubscriptionPlanModel>(collection),
     );
   }
 
@@ -44,8 +44,8 @@ class SubscriptionCapabilitiesLocalDataSource {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       final collection = _mappr
-          .convert<SubscriptionPlanModel, SubscriptionPlanCollection>(plan);
-      await isar.subscriptionPlanCollections.putByPlanId(collection);
+          .convert<SubscriptionPlanModel, SubscriptionPlanCache>(plan);
+      await isar.subscriptionPlanCaches.putByPlanId(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(_planCacheKey(plan.id));
   }

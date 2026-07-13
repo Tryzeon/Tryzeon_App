@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'wardrobe_item_collection.g.dart';
+part 'wardrobe_item_cache.g.dart';
 
 @collection
-class WardrobeItemCollection {
+class WardrobeItemCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)

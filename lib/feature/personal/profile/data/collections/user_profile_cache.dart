@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
 
-part 'user_profile_collection.g.dart';
+part 'user_profile_cache.g.dart';
 
 @collection
-class UserProfileCollection {
+class UserProfileCache {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
