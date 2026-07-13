@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:equatable/equatable.dart';
+import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
@@ -54,23 +55,13 @@ class NotFoundFailure extends Failure {
 
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
-  final eString = e.toString();
-
-  if (e is AuthException && (e as dynamic).code == 'otp_expired') {
+  if (e is AuthException && e.code == 'otp_expired') {
     return const AuthFailure('驗證碼錯誤或過期');
   }
 
-  // Handle ClientException with SocketException escaping Supabase
-  if (eString.contains('SocketException') || eString.contains('ClientException')) {
-    return const NetworkFailure();
-  }
-
-  // PGRST116 = no rows, 22P02 = invalid uuid syntax
-  if (e is PostgrestException) {
-    final details = '${e.code} ${e.message}';
-    if (details.contains('PGRST116') || details.contains('22P02')) {
-      return const NotFoundFailure();
-    }
+  // PGRST116 = no rows, 22P02 = invalid uuid syntax — both surface as `.code`.
+  if (e is PostgrestException && (e.code == 'PGRST116' || e.code == '22P02')) {
+    return const NotFoundFailure();
   }
 
   if (e is FunctionException) {
@@ -101,6 +92,9 @@ Failure mapExceptionToFailure(final Object e) {
 
     // Network Exceptions
     SocketException() => const NetworkFailure(),
+    // http throws ClientException (often wrapping a SocketException) for
+    // transport-level failures escaping Supabase.
+    ClientException() => const NetworkFailure(),
     HandshakeException() => const NetworkFailure(),
     HttpException() => const ServerFailure(),
     TlsException() => const ServerFailure(),
