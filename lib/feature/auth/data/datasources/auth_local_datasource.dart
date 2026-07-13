@@ -16,8 +16,7 @@ class AuthLocalDataSource {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       final settings =
-          await isar.authSettingsCaches.where().findFirst() ??
-          AuthSettingsCache();
+          await isar.authSettingsCaches.where().findFirst() ?? AuthSettingsCache();
       settings.lastLoginType = type;
       await isar.authSettingsCaches.put(settings);
     });

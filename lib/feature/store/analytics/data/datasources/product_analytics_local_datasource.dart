@@ -42,8 +42,8 @@ class ProductAnalyticsLocalDataSource {
     return CacheHit(
       collections
           .map(
-            (final c) => _mappr
-                .convert<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(c),
+            (final c) =>
+                _mappr.convert<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(c),
           )
           .toList(),
     );

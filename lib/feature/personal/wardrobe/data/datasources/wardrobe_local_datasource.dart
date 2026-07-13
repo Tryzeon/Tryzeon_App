@@ -39,9 +39,7 @@ class WardrobeLocalDataSource {
 
     if (collections.isEmpty) return const CacheMiss();
 
-    final models = _mappr.convertList<WardrobeItemCache, WardrobeItemModel>(
-      collections,
-    );
+    final models = _mappr.convertList<WardrobeItemCache, WardrobeItemModel>(collections);
     return CacheHit(models);
   }
 
@@ -49,9 +47,7 @@ class WardrobeLocalDataSource {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.wardrobeItemCaches.clear();
-      final collections = _mappr.convertList<WardrobeItemModel, WardrobeItemCache>(
-        items,
-      );
+      final collections = _mappr.convertList<WardrobeItemModel, WardrobeItemCache>(items);
       await isar.wardrobeItemCaches.putAll(collections);
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: items.isEmpty);

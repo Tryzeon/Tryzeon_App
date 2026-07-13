@@ -69,12 +69,8 @@ import 'store_mappr.auto_mappr.dart';
     MapType<StoreProfile, StoreProfileModel>(
       fields: [Field('channels', custom: StoreMapprHelper.channelSetToCodes)],
     ),
-    MapType<StoreProfileModel, StoreProfileCache>(
-      fields: [Field('storeId', from: 'id')],
-    ),
-    MapType<StoreProfileCache, StoreProfileModel>(
-      fields: [Field('id', from: 'storeId')],
-    ),
+    MapType<StoreProfileModel, StoreProfileCache>(fields: [Field('storeId', from: 'id')]),
+    MapType<StoreProfileCache, StoreProfileModel>(fields: [Field('id', from: 'storeId')]),
 
     // ProductAnalyticsSummary mappings
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(),

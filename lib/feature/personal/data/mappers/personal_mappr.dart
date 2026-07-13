@@ -62,12 +62,8 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<WardrobeItem, WardrobeItemModel>(
       fields: [Field('category', custom: WardrobeItemMapprHelper.categoryToString)],
     ),
-    MapType<WardrobeItemModel, WardrobeItemCache>(
-      fields: [Field('itemId', from: 'id')],
-    ),
-    MapType<WardrobeItemCache, WardrobeItemModel>(
-      fields: [Field('id', from: 'itemId')],
-    ),
+    MapType<WardrobeItemModel, WardrobeItemCache>(fields: [Field('itemId', from: 'id')]),
+    MapType<WardrobeItemCache, WardrobeItemModel>(fields: [Field('id', from: 'itemId')]),
     // ShopProduct mappings (read-only for consumer)
     MapType<ShopProductModel, ShopProduct>(
       fields: [

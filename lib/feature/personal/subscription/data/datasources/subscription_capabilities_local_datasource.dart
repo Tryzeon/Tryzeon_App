@@ -43,8 +43,9 @@ class SubscriptionCapabilitiesLocalDataSource {
   Future<void> savePlanCapabilities(final SubscriptionPlanModel plan) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection = _mappr
-          .convert<SubscriptionPlanModel, SubscriptionPlanCache>(plan);
+      final collection = _mappr.convert<SubscriptionPlanModel, SubscriptionPlanCache>(
+        plan,
+      );
       await isar.subscriptionPlanCaches.putByPlanId(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(_planCacheKey(plan.id));

@@ -47,9 +47,7 @@ class StoreProfileLocalDataSource {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.storeProfileCaches.clear();
-      final collection = _mappr.convert<StoreProfileModel, StoreProfileCache>(
-        profile,
-      );
+      final collection = _mappr.convert<StoreProfileModel, StoreProfileCache>(profile);
       await isar.storeProfileCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKey);
