@@ -64,13 +64,18 @@ Future<void> launchProductPurchase(
 }
 
 /// Builds the outbound deep link for a store contact channel.
-/// LINE prefills the message; FB/IG can only open the chat (paste required).
+/// A LINE Official Account (`@id`) prefills the message; a personal LINE ID,
+/// FB and IG can only open the conversation (the user pastes the copied text).
 Uri _buildOrderContactUri(final StoreOrderContact contact, final String message) {
   switch (contact.type) {
     case OrderContactType.line:
-      return Uri.parse(
-        'https://line.me/R/oaMessage/${contact.value}/?${Uri.encodeComponent(message)}',
-      );
+      // The '@' prefix marks an Official Account, whose deep link can prefill;
+      // a bare ID resolves to a personal add-friend link that cannot.
+      return contact.value.startsWith('@')
+          ? Uri.parse(
+              'https://line.me/R/oaMessage/${contact.value}/?${Uri.encodeComponent(message)}',
+            )
+          : Uri.parse('https://line.me/ti/p/~${contact.value}');
     case OrderContactType.facebook:
       return Uri.parse('https://m.me/${contact.value}');
     case OrderContactType.instagram:

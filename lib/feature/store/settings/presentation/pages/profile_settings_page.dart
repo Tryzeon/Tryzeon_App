@@ -344,10 +344,10 @@ class _StoreProfileForm extends HookConsumerWidget {
             TextFormField(
               controller: lineController,
               textInputAction: TextInputAction.next,
-              validator: AppValidators.validateLineOaId,
+              validator: AppValidators.validateLineId,
               decoration: const InputDecoration(
-                labelText: 'LINE 官方帳號 ID',
-                hintText: '@tryzeon',
+                labelText: 'LINE ID',
+                hintText: '官方帳號 @tryzeon，個人帳號 myshop',
               ),
             ),
             const SizedBox(height: AppSpacing.md),

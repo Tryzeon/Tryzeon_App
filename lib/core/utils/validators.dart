@@ -12,6 +12,11 @@ class AppValidators {
   /// typos without needing separate checks.
   static final _lineOaIdRegex = RegExp(r'^@[a-z0-9._-]+$');
 
+  /// A personal LINE ID: 4–20 lowercase letters, digits, '.', '-', '_' with NO
+  /// '@' prefix (the '@' marks an Official Account). The length bounds and
+  /// charset match LINE's own ID rules.
+  static final _linePersonalIdRegex = RegExp(r'^[a-z0-9._-]{4,20}$');
+
   static String? validateEmail(final String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
@@ -132,11 +137,18 @@ class AppValidators {
     return null;
   }
 
-  static String? validateLineOaId(final String? value) {
+  /// Validates one LINE field that holds either kind of ID: an Official Account
+  /// (`@id`) or a personal ID (no `@`). The '@' prefix picks which format the
+  /// value must satisfy.
+  static String? validateLineId(final String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) return null; // Optional
-    if (!_lineOaIdRegex.hasMatch(trimmed)) {
-      return 'LINE 官方帳號 ID 格式錯誤 (例如 @tryzeon)';
+    final isOfficial = trimmed.startsWith('@');
+    final matches = isOfficial
+        ? _lineOaIdRegex.hasMatch(trimmed)
+        : _linePersonalIdRegex.hasMatch(trimmed);
+    if (!matches) {
+      return 'LINE ID 格式錯誤 (官方帳號以 @ 開頭，個人帳號 4–20 字)';
     }
     return null;
   }
