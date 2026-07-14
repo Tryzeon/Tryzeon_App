@@ -1,13 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/send_chat_message.dart';
-import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 
 part 'chat_providers.g.dart';
@@ -51,17 +49,13 @@ class ChatAction extends _$ChatAction {
 
   Stream<ChatStreamEvent> execute(final List<ChatMessage> history) async* {
     final useCase = ref.read(sendChatMessageUseCaseProvider);
+    final usageCache = ref.read(dailyUsageTodayProvider.notifier);
     await for (final event in useCase(history)) {
       switch (event) {
         case ChatReplied(:final usage):
-          if (usage != null) {
-            ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
-          }
+          usageCache.syncFromSnapshot(usage);
         case ChatFailed(:final failure):
-          if (failure is RateLimitFailure && failure.usagePayload != null) {
-            final usage = DailyUsageModel.fromJson(failure.usagePayload!).toEntity();
-            ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
-          }
+          usageCache.syncFromFailure(failure);
         case ChatToolStarted():
         case ChatToolFinished():
           break;

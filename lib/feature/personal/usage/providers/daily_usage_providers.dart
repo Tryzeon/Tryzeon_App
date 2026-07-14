@@ -1,5 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/usage/data/daily_usage_payload.dart';
 import 'package:tryzeon/feature/personal/usage/data/datasources/daily_usage_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/usage/data/repositories/daily_usage_repository_impl.dart';
 import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
@@ -22,13 +24,12 @@ DailyUsageRepository dailyUsageRepository(final Ref ref) => DailyUsageRepository
 GetTodayUsage getTodayUsageUseCase(final Ref ref) =>
     GetTodayUsage(ref.watch(dailyUsageRepositoryProvider));
 
-/// Today's usage row for the current user.
-///
-/// Two update paths:
-/// 1. `build()` — read from server (cold start, day rollover, manual refresh)
-/// 2. `updateFromResponse(...)` — push fresh state pulled from a mutation's
-///    response (e.g., tryon Edge Function returns the post-mutation usage),
-///    avoiding an extra round trip.
+/// Today's usage row for the current user, and the single owner of usage-cache
+/// writes. State is refreshed two ways:
+/// 1. `build()` — read from server (cold start, day rollover, manual refresh).
+/// 2. `syncFromSnapshot(...)` / `syncFromFailure(...)` — push the snapshot that
+///    quota-consuming mutations (tryon, chat) inline in their responses, so the
+///    cache updates without an extra round trip.
 @riverpod
 class DailyUsageToday extends _$DailyUsageToday {
   @override
@@ -41,8 +42,15 @@ class DailyUsageToday extends _$DailyUsageToday {
     return result.get()!;
   }
 
-  /// Push fresh server state into cache without re-fetching.
-  void updateFromResponse(final DailyUsage fresh) {
-    state = AsyncData(fresh);
+  void syncFromSnapshot(final DailyUsage? usage) {
+    if (usage != null) {
+      state = AsyncData(usage);
+    }
+  }
+
+  void syncFromFailure(final Failure failure) {
+    if (failure is RateLimitFailure && failure.usagePayload != null) {
+      state = AsyncData(parseDailyUsagePayload(failure.usagePayload!));
+    }
   }
 }

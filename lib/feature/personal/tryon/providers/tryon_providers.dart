@@ -13,7 +13,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/usecases/prepare_tryon_ava
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/save_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon_usecase.dart';
-import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -94,17 +93,11 @@ class TryonAction extends _$TryonAction {
     final useCase = ref.read(tryonUseCaseProvider);
     final result = await useCase(params);
 
+    final usageCache = ref.read(dailyUsageTodayProvider.notifier);
     if (result.isSuccess) {
-      final usage = result.get()!.usage;
-      if (usage != null) {
-        ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
-      }
+      usageCache.syncFromSnapshot(result.get()!.usage);
     } else {
-      final failure = result.getError();
-      if (failure is RateLimitFailure && failure.usagePayload != null) {
-        final usage = DailyUsageModel.fromJson(failure.usagePayload!).toEntity();
-        ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
-      }
+      usageCache.syncFromFailure(result.getError()!);
     }
 
     return result;

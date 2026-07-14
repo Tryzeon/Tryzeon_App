@@ -8,7 +8,7 @@ import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/product_row_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
+import 'package:tryzeon/feature/personal/usage/usage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/models/wardrobe_item_model.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
@@ -136,7 +136,7 @@ ChatStreamEvent? parseStreamLine(final String line) {
       final usageJson = decoded['usage'] as Map<String, dynamic>?;
       return ChatStreamEvent.replied(
         answer: answer,
-        usage: usageJson == null ? null : DailyUsageModel.fromJson(usageJson).toEntity(),
+        usage: usageJson == null ? null : parseDailyUsagePayload(usageJson),
       );
     case 'error':
       return const ChatStreamEvent.failed(ServerFailure());

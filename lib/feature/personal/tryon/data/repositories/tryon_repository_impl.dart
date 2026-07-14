@@ -4,7 +4,7 @@ import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_dat
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
+import 'package:tryzeon/feature/personal/usage/usage.dart';
 import 'package:typed_result/typed_result.dart';
 
 class TryOnRepositoryImpl implements TryOnRepository {
@@ -24,9 +24,7 @@ class TryOnRepositoryImpl implements TryOnRepository {
           imageUrl: data['imageUrl'] as String?,
           videoUrl: data['videoUrl'] as String?,
           mode: params.mode,
-          usage: usageJson == null
-              ? null
-              : DailyUsageModel.fromJson(usageJson).toEntity(),
+          usage: usageJson == null ? null : parseDailyUsagePayload(usageJson),
         ),
       );
     } catch (e, stackTrace) {
