@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:image_background_remover/image_background_remover.dart' as bg;
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 import '../../domain/services/background_remover.dart';
 
@@ -17,8 +18,9 @@ class BackgroundRemoverImpl implements BackgroundRemover {
     _initFuture = future;
     try {
       await future;
-    } catch (_) {
+    } catch (e, st) {
       // Don't cache a failed init — allow the next call to retry.
+      AppLogger.warning('Background remover init failed; will retry next call', e, st);
       _initFuture = null;
       rethrow;
     }

@@ -10,6 +10,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
@@ -107,8 +108,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       if (uploadFile.path != image.path) {
         try {
           await uploadFile.delete();
-        } catch (_) {
+        } catch (e, st) {
           // Best-effort cleanup; a leftover temp file is non-fatal.
+          AppLogger.warning('Failed to delete temp upload file', e, st);
         }
       }
 

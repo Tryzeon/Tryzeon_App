@@ -18,6 +18,7 @@ import 'package:tryzeon/core/modules/short_link/providers/short_link_providers.d
 import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:upgrader/upgrader.dart';
 import 'firebase_options.dart';
 
@@ -65,7 +66,7 @@ Future<void> main() async {
     final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
     await Purchases.configure(purchasesConfig);
   } catch (e, stack) {
-    debugPrint('[RevenueCat] Initialization failed: $e');
+    AppLogger.error('[RevenueCat] Initialization failed', e, stack);
     await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
   }
 
@@ -73,7 +74,7 @@ Future<void> main() async {
   try {
     await ChottuLink.init(apiKey: Env.chottuLinkApiKey);
   } catch (e, stack) {
-    debugPrint('[ChottuLink] Initialization failed: $e');
+    AppLogger.error('[ChottuLink] Initialization failed', e, stack);
     await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
   }
 

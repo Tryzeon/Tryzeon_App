@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
@@ -73,8 +74,9 @@ Future<void> refreshStoreProfile(final WidgetRef ref) async {
   try {
     ref.invalidate(storeProfileProvider);
     await ref.read(storeProfileProvider.future);
-  } catch (_) {
+  } catch (e, st) {
     // Provider 刷新失敗時（例如網絡錯誤），忽略異常
     // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料
+    AppLogger.warning('Failed to refresh store profile', e, st);
   }
 }

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
@@ -101,8 +102,9 @@ Future<void> refreshWardrobeItems(final WidgetRef ref) async {
   try {
     ref.invalidate(wardrobeItemsProvider);
     await ref.read(wardrobeItemsProvider.future);
-  } catch (_) {
+  } catch (e, st) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+    AppLogger.warning('Failed to refresh wardrobe items', e, st);
   }
 }
 

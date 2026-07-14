@@ -1,6 +1,7 @@
 import 'package:tryzeon/core/modules/short_link/data/pending_short_link.dart';
 import 'package:tryzeon/core/modules/short_link/domain/services/short_link_service.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 /// Records the short-link open and returns the in-app destination path.
 ///
@@ -29,7 +30,8 @@ Future<String> resolveShortLinkDestination({
     return target.targetType == 'store'
         ? AppRoutes.personalShopStorePath(target.targetId)
         : AppRoutes.personalShopProductPath(target.targetId);
-  } catch (_) {
+  } catch (e, st) {
+    AppLogger.warning('Failed to record short-link open; falling back to home', e, st);
     clearPending();
     return AppRoutes.personalHome;
   }

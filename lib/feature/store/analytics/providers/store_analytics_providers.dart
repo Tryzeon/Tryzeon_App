@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_remote_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/repositories/product_analytics_repository_impl.dart';
@@ -87,7 +88,8 @@ Future<void> refreshAnalytics(final WidgetRef ref) async {
 
     ref.invalidate(productAnalyticsSummariesProvider);
     await ref.read(productAnalyticsSummariesProvider.future);
-  } catch (_) {
+  } catch (e, st) {
     // Let UI show ErrorView or stale data
+    AppLogger.warning('Failed to refresh analytics', e, st);
   }
 }

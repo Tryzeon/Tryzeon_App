@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/products/domain/services/audio_recorder_service.dart';
 
 class AudioRecorderServiceImpl implements AudioRecorderService {
@@ -35,7 +36,9 @@ class AudioRecorderServiceImpl implements AudioRecorderService {
     final bytes = await file.readAsBytes();
     try {
       await file.delete();
-    } catch (_) {}
+    } catch (e, st) {
+      AppLogger.warning('Failed to delete temp recording file', e, st);
+    }
     return (bytes: bytes, mimeType: mimeType);
   }
 

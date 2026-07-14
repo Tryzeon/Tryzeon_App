@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/data/chat_wire.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
@@ -76,7 +77,8 @@ class ChatRemoteDataSource {
     try {
       final decoded = jsonDecode(utf8.decode(bytes));
       return decoded is Map<String, dynamic> ? decoded : null;
-    } catch (_) {
+    } catch (e, st) {
+      AppLogger.warning('Failed to decode JSON response body', e, st);
       return null;
     }
   }

@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
@@ -102,8 +103,9 @@ Future<void> refreshUserProfile(final WidgetRef ref) async {
     ref.invalidate(userProfileProvider);
     await ref.read(userProfileProvider.future);
     await ref.read(avatarFileProvider.future);
-  } catch (_) {
+  } catch (e, st) {
     // Provider 刷新失敗時（例如網絡錯誤），忽略異常
     // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料
+    AppLogger.warning('Failed to refresh user profile', e, st);
   }
 }

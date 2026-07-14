@@ -176,7 +176,8 @@ Future<void> refreshProducts(final WidgetRef ref) async {
       ref.invalidate(storeProfileProvider);
     }
     profile = await ref.read(storeProfileProvider.future);
-  } catch (_) {
+  } catch (e, st) {
+    AppLogger.warning('Failed to load store profile during products refresh', e, st);
     return;
   }
 
@@ -188,7 +189,8 @@ Future<void> refreshProducts(final WidgetRef ref) async {
     await listProductsUseCase(storeId: profile.id, forceRefresh: true);
     ref.invalidate(productsProvider);
     await ref.read(productsProvider.future);
-  } catch (_) {
+  } catch (e, st) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+    AppLogger.warning('Failed to refresh products', e, st);
   }
 }

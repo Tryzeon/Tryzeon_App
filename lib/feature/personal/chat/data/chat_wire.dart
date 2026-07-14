@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
@@ -107,7 +108,8 @@ ChatStreamEvent? parseStreamLine(final String line) {
   final Object? decoded;
   try {
     decoded = jsonDecode(line);
-  } catch (_) {
+  } catch (e, st) {
+    AppLogger.warning('Failed to parse chat stream line', e, st);
     return null;
   }
   if (decoded is! Map<String, dynamic>) return null;
