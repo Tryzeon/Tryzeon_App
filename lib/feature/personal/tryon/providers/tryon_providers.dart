@@ -47,23 +47,17 @@ TryOnMediaDataSource tryOnMediaDataSource(final Ref ref) {
 
 @riverpod
 TryOnMediaRepository tryOnMediaRepository(final Ref ref) {
-  return TryOnMediaRepositoryImpl(
-    dataSource: ref.watch(tryOnMediaDataSourceProvider),
-  );
+  return TryOnMediaRepositoryImpl(dataSource: ref.watch(tryOnMediaDataSourceProvider));
 }
 
 @riverpod
 SaveTryonMedia saveTryonMediaUseCase(final Ref ref) {
-  return SaveTryonMedia(
-    mediaRepository: ref.watch(tryOnMediaRepositoryProvider),
-  );
+  return SaveTryonMedia(mediaRepository: ref.watch(tryOnMediaRepositoryProvider));
 }
 
 @riverpod
 ShareTryonMedia shareTryonMediaUseCase(final Ref ref) {
-  return ShareTryonMedia(
-    mediaRepository: ref.watch(tryOnMediaRepositoryProvider),
-  );
+  return ShareTryonMedia(mediaRepository: ref.watch(tryOnMediaRepositoryProvider));
 }
 
 @riverpod

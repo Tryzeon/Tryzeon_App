@@ -71,9 +71,7 @@ class HomeController extends _$HomeController {
     final TryOnMode mode = TryOnMode.image,
   }) {
     return _runTryOn(
-      garments: [
-        TryOnGarment(images: clothesPaths.map(TryOnImageSource.path).toList()),
-      ],
+      garments: [TryOnGarment(images: clothesPaths.map(TryOnImageSource.path).toList())],
       mode: mode,
     );
   }
@@ -125,10 +123,7 @@ class HomeController extends _$HomeController {
         );
 
     if (result.isSuccess) {
-      galleryNotifier.replaceById(
-        requestId,
-        result.get()!.copyWith(isLoading: false),
-      );
+      galleryNotifier.replaceById(requestId, result.get()!.copyWith(isLoading: false));
       return const TryOnSucceeded();
     }
 

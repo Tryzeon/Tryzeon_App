@@ -49,9 +49,7 @@ class TryOnMediaRepositoryImpl implements TryOnMediaRepository {
     final Future<void> Function(String path) sink, {
     required final String onError,
   }) async {
-    final url = result.mode == TryOnMode.video
-        ? result.videoUrl
-        : result.imageUrl;
+    final url = result.mode == TryOnMode.video ? result.videoUrl : result.imageUrl;
     if (url == null || url.isEmpty) {
       return Err(ValidationFailure('${result.mode.name} URL is missing'));
     }

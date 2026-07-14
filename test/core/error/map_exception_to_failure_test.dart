@@ -25,10 +25,7 @@ void main() {
     });
 
     test('AuthRetryableFetchException maps to NetworkFailure', () {
-      expect(
-        mapExceptionToFailure(AuthRetryableFetchException()),
-        isA<NetworkFailure>(),
-      );
+      expect(mapExceptionToFailure(AuthRetryableFetchException()), isA<NetworkFailure>());
     });
 
     test('PostgrestException PGRST116 (no rows) maps to NotFoundFailure', () {
@@ -51,9 +48,7 @@ void main() {
 
     test('PostgrestException with other code maps to ServerFailure', () {
       expect(
-        mapExceptionToFailure(
-          const PostgrestException(message: 'boom', code: '500'),
-        ),
+        mapExceptionToFailure(const PostgrestException(message: 'boom', code: '500')),
         isA<ServerFailure>(),
       );
     });
@@ -99,10 +94,7 @@ void main() {
     });
 
     test('unrecognised error maps to UnknownFailure', () {
-      expect(
-        mapExceptionToFailure(const FormatException('nope')),
-        isA<UnknownFailure>(),
-      );
+      expect(mapExceptionToFailure(const FormatException('nope')), isA<UnknownFailure>());
     });
   });
 }
