@@ -4,8 +4,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-class TryonUseCase {
-  TryonUseCase({required final TryOnRepository tryOnRepository})
+class Tryon {
+  Tryon({required final TryOnRepository tryOnRepository})
     : _tryOnRepository = tryOnRepository;
 
   final TryOnRepository _tryOnRepository;

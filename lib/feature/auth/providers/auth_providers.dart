@@ -69,43 +69,43 @@ AuthRepository authRepository(final Ref ref) {
 
 // Use Case Providers
 @riverpod
-SignInWithProviderUseCase signInWithProviderUseCase(final Ref ref) {
+SignInWithProvider signInWithProviderUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return SignInWithProviderUseCase(repository);
+  return SignInWithProvider(repository);
 }
 
 @riverpod
-SendEmailOtpUseCase sendEmailOtpUseCase(final Ref ref) {
+SendEmailOtp sendEmailOtpUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return SendEmailOtpUseCase(repository);
+  return SendEmailOtp(repository);
 }
 
 @riverpod
-VerifyEmailOtpUseCase verifyEmailOtpUseCase(final Ref ref) {
+VerifyEmailOtp verifyEmailOtpUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return VerifyEmailOtpUseCase(repository);
+  return VerifyEmailOtp(repository);
 }
 
 @riverpod
-SignOutUseCase signOutUseCase(final Ref ref) {
+SignOut signOutUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return SignOutUseCase(repository);
+  return SignOut(repository);
 }
 
 @riverpod
-GetLastLoginTypeUseCase getLastLoginTypeUseCase(final Ref ref) {
+GetLastLoginType getLastLoginTypeUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return GetLastLoginTypeUseCase(repository);
+  return GetLastLoginType(repository);
 }
 
 @riverpod
-SetLastLoginTypeUseCase setLastLoginTypeUseCase(final Ref ref) {
+SetLastLoginType setLastLoginTypeUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return SetLastLoginTypeUseCase(repository);
+  return SetLastLoginType(repository);
 }
 
 @riverpod
-DeleteAccountUseCase deleteAccountUseCase(final Ref ref) {
+DeleteAccount deleteAccountUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return DeleteAccountUseCase(repository);
+  return DeleteAccount(repository);
 }

@@ -25,12 +25,12 @@ ChatRepository chatRepository(final Ref ref) {
 
 // Use Case Provider
 @riverpod
-SendChatMessageUseCase sendChatMessageUseCase(final Ref ref) {
+SendChatMessage sendChatMessageUseCase(final Ref ref) {
   final repository = ref.watch(chatRepositoryProvider);
-  return SendChatMessageUseCase(repository);
+  return SendChatMessage(repository);
 }
 
-/// Mutation orchestrator for chat. Wraps [SendChatMessageUseCase] and
+/// Mutation orchestrator for chat. Wraps [SendChatMessage] and
 /// pushes the post-mutation usage snapshot into [dailyUsageTodayProvider]'s
 /// cache, so consumers (e.g., the Account card) see the updated chat_count
 /// without an extra round trip.

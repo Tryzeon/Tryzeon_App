@@ -12,7 +12,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_reposit
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/prepare_tryon_avatar_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/save_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon_usecase.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -34,9 +34,9 @@ TryOnRepository tryOnRepository(final Ref ref) {
 
 // Use Case Providers
 @riverpod
-TryonUseCase tryonUseCase(final Ref ref) {
+Tryon tryonUseCase(final Ref ref) {
   final tryOnRepository = ref.watch(tryOnRepositoryProvider);
-  return TryonUseCase(tryOnRepository: tryOnRepository);
+  return Tryon(tryOnRepository: tryOnRepository);
 }
 
 // Media (save/share) — data source, repository, use cases
@@ -67,7 +67,7 @@ PrepareTryonAvatarSource prepareTryonAvatarSourceUseCase(final Ref ref) {
   );
 }
 
-/// Mutation orchestrator for try-on. Wraps [TryonUseCase] and additionally
+/// Mutation orchestrator for try-on. Wraps [Tryon] and additionally
 /// pushes the post-mutation usage snapshot into [dailyUsageTodayProvider]'s
 /// cache, so the Account card updates without a round trip.
 ///
