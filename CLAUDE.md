@@ -25,19 +25,20 @@ dart fix --apply && dart format .                          # autofix + format (p
 
 Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`). If imports of `*.g.dart` / `*.freezed.dart` are missing, run build_runner.
 
-`Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`; it holds `supabaseUrl`, `supabaseAnonKey`, `revenueCatApiKey`, etc.
+`Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all five keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `CHOTTULINK_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
 
 ## Architecture
 
 ### Top-level layout
 
 - `lib/main.dart` — bootstraps Firebase, Supabase (PKCE auth flow), RevenueCat, Crashlytics; wraps app in `ProviderScope` with a custom retry policy keyed off `NetworkFailure`.
-- `lib/core/` — cross-feature infrastructure: `router/` (go_router), `theme/` (`AppTheme`, Material 3 ColorScheme), `di/core_providers.dart` (shared Riverpod providers), `error/failures.dart`, `data/`, `domain/`, `modules/` (analytics, location, revenue_cat), `presentation/widgets/` (shared widgets), `extensions/`, `utils/`, `shared/`, `config/`.
+- `lib/core/` — cross-feature infrastructure: `router/` (go_router), `theme/` (`AppTheme`, Material 3 ColorScheme), `di/core_providers.dart` (shared Riverpod providers), `error/failures.dart`, `data/`, `domain/`, `modules/` (analytics, location, revenue_cat, short_link), `presentation/widgets/` (shared widgets), `extensions/`, `utils/`, `shared/`, `config/`.
 - `lib/feature/` — feature-first modules. Each feature follows clean-architecture layering: `data/` (datasources, repositories, Isar collections, DTOs) → `domain/` (entities, repository interfaces, usecases) → `presentation/` (pages, widgets) plus `providers/` for Riverpod wiring.
 - `lib/feature/auth/` — shared auth (Supabase + Apple/Google social sign-in).
 - `lib/feature/personal/` — consumer side (try-on, wardrobe, chat, shop, profile, subscription, usage, onboarding, settings).
 - `lib/feature/store/` — store-owner side (analytics, products, profile, onboarding, settings).
 - `lib/feature/common/` — shared between personal and store.
+- `liff-web/` — separate LINE LIFF web app (React 18 + Vite + TypeScript, not Flutter) for the LINE integration: avatar onboarding, catalog, try-on. Backed by the `liff-*` edge functions; built with `npm run build` inside `liff-web/`.
 
 ### Architecture rules
 
@@ -74,7 +75,11 @@ Frontend batches events (10/5s, lifecycle-aware flush) and calls the `log_analyt
 
 ### Edge Functions
 
-`supabase/functions/`: `chat`, `tryon`, `delete-account`, `cleanup-orphan-images`, `revenuecat-webhook`, plus `_shared/`. The `tryon` function is the AI image-generation entry point; `revenuecat-webhook` reconciles subscription state.
+`supabase/functions/` (plus `_shared/` helpers):
+
+- **AI:** `tryon` (AI image-generation entry point), `chat`, `analyze-product-image`, `analyze-wardrobe-image`, `parse-size-voice` (voice size input parsing).
+- **LINE integration:** `line-webhook`, `liff-avatar`, `liff-catalog`, `liff-tryon` (serve the `liff-web/` app).
+- **Infra:** `revenuecat-webhook` (reconciles subscription state), `delete-account`, `resolve-link` (short-link/deep-link resolution), `store-images` (upload), `store-images-cleanup` (orphan cleanup).
 
 ### Supabase migrations
 
