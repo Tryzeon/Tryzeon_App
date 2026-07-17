@@ -7,6 +7,7 @@ export interface ImageSource {
 
 export interface GarmentInput {
   images: ImageSource[];
+  detail?: string;
 }
 
 export type TryonMode = "image" | "video";
@@ -38,6 +39,7 @@ export interface TryonClients {
 export const LIMITS = {
   MAX_GARMENTS: 3,
   MAX_IMAGES_PER_GARMENT: 3,
+  MAX_GARMENT_DETAIL_LENGTH: 500,
 } as const;
 
 export class ValidationError extends Error {}

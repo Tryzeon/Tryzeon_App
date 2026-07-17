@@ -16,6 +16,13 @@ function normalizeSource(source: unknown, label: string): ImageSource {
   return { [keys[0]]: s[keys[0]] } as ImageSource;
 }
 
+function normalizeDetail(detail: unknown): string | undefined {
+  if (typeof detail !== "string") return undefined;
+  const trimmed = detail.trim();
+  if (trimmed.length === 0) return undefined;
+  return trimmed.slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+}
+
 /**
  * Assert the lib's domain invariants on an already-typed params object.
  * Called by runTryonJob so every caller (app, LIFF, LINE) is guarded uniformly.
@@ -43,6 +50,9 @@ export function assertTryonParams(params: TryonParams): void {
     }
     for (const img of garment.images) {
       normalizeSource(img, "garment image");
+    }
+    if (garment.detail !== undefined && typeof garment.detail !== "string") {
+      throw new ValidationError("garment detail must be a string");
     }
   }
 
@@ -76,7 +86,8 @@ export function parseTryonParams(body: unknown, userId: string): TryonParams {
       throw new ValidationError("each garment must have a non-empty images array");
     }
     const images = imagesRaw.map((img) => normalizeSource(img, "garment image"));
-    return { images };
+    const detail = normalizeDetail((rg as Record<string, unknown>).detail);
+    return detail === undefined ? { images } : { images, detail };
   });
 
   const mode = b.mode === "video" ? "video" : "image";

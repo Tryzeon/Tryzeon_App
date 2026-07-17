@@ -24,7 +24,29 @@ function buildGarmentManifest(garmentGroups: string[][]): string {
   return lines.join("\n");
 }
 
-export function buildTaskPrompt(garmentGroups: string[][], scenePrompt?: string): string {
+function buildGarmentDetailsSection(garmentDetails?: (string | undefined)[]): string {
+  if (!garmentDetails) return "";
+  const lines: string[] = [];
+  garmentDetails.forEach((detail, i) => {
+    const text = detail?.trim();
+    if (text) lines.push(`   - Garment ${i + 1}: ${text}`);
+  });
+  if (lines.length === 0) return "";
+
+  return `
+GARMENT DETAILS — AUXILIARY MATERIAL/FIT NOTES (TEXT, SECONDARY TO IMAGES)
+The notes below describe physical properties of the garment(s) to help you render fabric behavior and fit realistically. They are STRICTLY secondary to the reference images.
+- The reference IMAGES are the ONLY source of truth for appearance — color, pattern, print, silhouette, and every visible design element. NEVER let this text override, recolor, or add anything not visible in the images.
+- Use these notes ONLY to inform how the fabric drapes and behaves (sheen, stiffness, weight), how much it stretches or clings, and how loose or fitted it sits on the body.
+- If a note ever conflicts with what the images show, the images win.
+${lines.join("\n")}`;
+}
+
+export function buildTaskPrompt(
+  garmentGroups: string[][],
+  scenePrompt?: string,
+  garmentDetails?: (string | undefined)[],
+): string {
   const totalClothes = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt =
     `You will receive ${totalClothes + 1} images after this message:
@@ -96,6 +118,8 @@ OUTPUT
 - The image MUST be taller than it is wide (portrait orientation).
 - Sharp garment detail, accurate color reproduction, fashion photography quality.`;
 
+  prompt += buildGarmentDetailsSection(garmentDetails);
+
   if (scenePrompt) {
     prompt += `
 
@@ -117,8 +141,9 @@ export async function generateTryonImage(
   avatarImage: string,
   garmentGroups: string[][],
   scenePrompt?: string,
+  garmentDetails?: (string | undefined)[],
 ): Promise<string | null> {
-  const taskPrompt = buildTaskPrompt(garmentGroups, scenePrompt);
+  const taskPrompt = buildTaskPrompt(garmentGroups, scenePrompt, garmentDetails);
   const clothesImages = garmentGroups.flat();
   
   const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");

@@ -60,7 +60,13 @@ export async function runTryonJob(
       resolveGarments(params.garments, garmentResolver),
     ]);
 
-    const generated = await generate(avatarBase64, garmentGroups, params.scenePrompt);
+    const garmentDetails = params.garments.map((g) => g.detail);
+    const generated = await generate(
+      avatarBase64,
+      garmentGroups,
+      params.scenePrompt,
+      garmentDetails,
+    );
     if (!generated) {
       throw new GenerationFailedError("image generation returned null");
     }

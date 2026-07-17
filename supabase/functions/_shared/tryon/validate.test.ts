@@ -1,6 +1,6 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
 import { assertTryonParams, parseTryonParams } from "./validate.ts";
-import { ValidationError, type TryonParams } from "./types.ts";
+import { LIMITS, ValidationError, type TryonParams } from "./types.ts";
 
 const validParams: TryonParams = {
   userId: "u1",
@@ -64,6 +64,53 @@ Deno.test("parseTryonParams shapes wire body, coerces mode, attaches userId", ()
   assertEquals(params.avatar, { path: "u1/a.jpg" });
   assertEquals(params.garments, [{ images: [{ path: "u1/top/x.jpg" }] }]);
   assertEquals(params.transitionPrompt, "spin");
+});
+
+Deno.test("parseTryonParams keeps a trimmed garment detail", () => {
+  const params = parseTryonParams(
+    {
+      avatar: { base64: "A" },
+      garments: [{ images: [{ base64: "B" }], detail: "  Material: Cotton  " }],
+    },
+    "u1",
+  );
+  assertEquals(params.garments[0].detail, "Material: Cotton");
+});
+
+Deno.test("parseTryonParams drops a blank garment detail", () => {
+  const params = parseTryonParams(
+    {
+      avatar: { base64: "A" },
+      garments: [{ images: [{ base64: "B" }], detail: "   " }],
+    },
+    "u1",
+  );
+  assertEquals(params.garments[0].detail, undefined);
+});
+
+Deno.test("parseTryonParams caps garment detail length", () => {
+  const long = "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 50);
+  const params = parseTryonParams(
+    {
+      avatar: { base64: "A" },
+      garments: [{ images: [{ base64: "B" }], detail: long }],
+    },
+    "u1",
+  );
+  assertEquals(params.garments[0].detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+});
+
+Deno.test("assertTryonParams rejects a non-string garment detail", () => {
+  assertThrows(
+    () =>
+      assertTryonParams({
+        ...validParams,
+        garments: [
+          { images: [{ base64: "B" }], detail: 42 as unknown as string },
+        ],
+      }),
+    ValidationError,
+  );
 });
 
 Deno.test("parseTryonParams defaults unknown mode to image", () => {
