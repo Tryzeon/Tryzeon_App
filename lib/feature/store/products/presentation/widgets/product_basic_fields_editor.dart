@@ -109,11 +109,15 @@ class ProductBasicFieldsEditor extends HookWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        const _FieldLabel('購買連結'),
+        const _FieldLabel('購買連結（選填）'),
         TextFormField(
           controller: purchaseLinkController,
           focusNode: purchaseLinkFocusNode,
-          decoration: const InputDecoration(hintText: 'https://...'),
+          decoration: const InputDecoration(
+            hintText: 'https://...',
+            helperText: '留空則顧客會透過你在「設定 → 店家資料」中的訂購聯絡方式私訊下單',
+            helperMaxLines: 2,
+          ),
           keyboardType: TextInputType.url,
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (final _) => FocusScope.of(context).unfocus(),
