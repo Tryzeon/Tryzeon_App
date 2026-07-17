@@ -7,9 +7,9 @@ usage() {
 Usage: scripts/release-beta.sh <version> [--ios | --android]
 
 Examples:
-  scripts/release-beta.sh 1.2.0
-  scripts/release-beta.sh 1.2.0 --ios
-  scripts/release-beta.sh 1.2.0 --android
+  scripts/release-beta.sh v1.2.0
+  scripts/release-beta.sh v1.2.0 --ios
+  scripts/release-beta.sh v1.2.0 --android
 EOF
 }
 
@@ -26,10 +26,12 @@ fi
 version="$1"
 platform="${2:-all}"
 
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Version must be semantic, for example 1.2.0" >&2
+if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version must be a semantic version prefixed with 'v', for example v1.2.0" >&2
   exit 1
 fi
+
+version="${version#v}"
 
 current_branch=$(git branch --show-current)
 if [[ "$current_branch" != "main" ]]; then
