@@ -27,7 +27,7 @@ sealed class TryonGalleryState with _$TryonGalleryState {
   bool get isCurrentTheAvatar => customAvatarId != null && customAvatarId == currentId;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   @override
   TryonGalleryState build() => const TryonGalleryState();
