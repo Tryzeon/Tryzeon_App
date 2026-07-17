@@ -12,7 +12,14 @@ Map<String, String> _sourceToJson(final TryOnImageSource source) {
 }
 
 Map<String, Object> _garmentToJson(final TryOnGarment garment) {
-  return {'images': garment.images.map(_sourceToJson).toList()};
+  final json = <String, Object>{
+    AppConstants.paramGarmentImages: garment.images.map(_sourceToJson).toList(),
+  };
+  final detail = garment.detail;
+  if (detail != null && detail.isNotEmpty) {
+    json[AppConstants.paramGarmentDetail] = detail;
+  }
+  return json;
 }
 
 /// Pure mapping from [TryOnParams] to the edge function wire body.

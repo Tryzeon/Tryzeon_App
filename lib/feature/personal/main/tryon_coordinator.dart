@@ -5,7 +5,11 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 part 'tryon_coordinator.g.dart';
 
 typedef TryOnFromStorageFn =
-    Future<void> Function(List<String> clothesPaths, {TryOnMode mode});
+    Future<void> Function(
+      List<String> clothesPaths, {
+      TryOnMode mode,
+      String? garmentDetail,
+    });
 
 class TryOnCoordinator {
   VoidCallback? _navigateToHome;
@@ -26,9 +30,14 @@ class TryOnCoordinator {
   Future<void> tryOnFromStorage(
     final List<String> clothesPaths, {
     final TryOnMode mode = TryOnMode.image,
+    final String? garmentDetail,
   }) async {
     _navigateToHome?.call();
-    await _tryOnFromStorage?.call(clothesPaths, mode: mode);
+    await _tryOnFromStorage?.call(
+      clothesPaths,
+      mode: mode,
+      garmentDetail: garmentDetail,
+    );
   }
 }
 

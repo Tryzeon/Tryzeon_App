@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product_tryon_detail.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/sheets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -36,5 +37,9 @@ Future<void> _startTryOn(
 
   await ref
       .read(tryOnCoordinatorProvider)
-      .tryOnFromStorage(product.imagePaths, mode: mode);
+      .tryOnFromStorage(
+        product.imagePaths,
+        mode: mode,
+        garmentDetail: product.toTryonPromptDetail(),
+      );
 }

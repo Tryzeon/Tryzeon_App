@@ -72,6 +72,8 @@ class AppConstants {
   static const String modeVideo = 'video';
   static const String paramScenePrompt = 'scenePrompt';
   static const String paramTransitionPrompt = 'transitionPrompt';
+  static const String paramGarmentImages = 'images';
+  static const String paramGarmentDetail = 'detail';
 
   // Shared Preferences Keys
   static const String keyVideoScenePrompt = 'video_scene_prompt';

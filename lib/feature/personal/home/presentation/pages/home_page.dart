@@ -120,10 +120,15 @@ class HomePage extends HookConsumerWidget {
     Future<void> tryOnFromStorage(
       final List<String> clothesPaths, {
       final TryOnMode mode = TryOnMode.image,
+      final String? garmentDetail,
     }) async {
       final outcome = await ref
           .read(homeControllerProvider.notifier)
-          .tryOnFromStoragePaths(clothesPaths, mode: mode);
+          .tryOnFromStoragePaths(
+            clothesPaths,
+            mode: mode,
+            garmentDetail: garmentDetail,
+          );
       handleTryOnOutcome(outcome);
     }
 

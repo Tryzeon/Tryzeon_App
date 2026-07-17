@@ -66,12 +66,21 @@ class HomeController extends _$HomeController {
   }
 
   /// Runs a try-on from garment images already stored remotely (by path).
+  ///
+  /// [garmentDetail] is an optional model-facing description of the garment's
+  /// physical properties (e.g. from a shop product) threaded into the prompt.
   Future<TryOnOutcome> tryOnFromStoragePaths(
     final List<String> clothesPaths, {
     final TryOnMode mode = TryOnMode.image,
+    final String? garmentDetail,
   }) {
     return _runTryOn(
-      garments: [TryOnGarment(images: clothesPaths.map(TryOnImageSource.path).toList())],
+      garments: [
+        TryOnGarment(
+          images: clothesPaths.map(TryOnImageSource.path).toList(),
+          detail: garmentDetail,
+        ),
+      ],
       mode: mode,
     );
   }
