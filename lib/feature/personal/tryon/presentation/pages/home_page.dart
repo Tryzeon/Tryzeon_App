@@ -8,15 +8,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
-import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
@@ -24,8 +20,8 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery_actions.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_indicator.dart';
-import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -39,8 +35,7 @@ class HomePage extends HookConsumerWidget {
     final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
     final pageController = usePageController(initialPage: 0);
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final currentPage = galleryState.currentPage;
     final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
@@ -109,56 +104,10 @@ class HomePage extends HookConsumerWidget {
       await ref.read(tryonCoordinatorProvider).tryonFromLocalImage(clothesImage);
     }
 
-    Future<void> downloadCurrentMedia() async {
-      final result = galleryState.currentResult;
-      if (result == null) return;
-
-      final outcome = await ref.read(saveTryonMediaUseCaseProvider)(result);
-      if (!context.mounted) return;
-      if (outcome.isFailure) {
-        TopNotification.show(context, message: '儲存失敗，請檢查儲存權限');
-      } else {
-        AppSnackBar.show(
-          context,
-          message: result.mode == TryonMode.video ? '影片已儲存到相簿' : '照片已儲存到相簿',
-        );
-      }
-    }
-
-    Future<void> shareCurrentMedia() async {
-      final result = galleryState.currentResult;
-      if (result == null) return;
-
-      final outcome = await ref.read(shareTryonMediaUseCaseProvider)(result);
-      if (!context.mounted) return;
-      if (outcome.isFailure) {
-        TopNotification.show(context, message: '分享失敗，請稍後再試');
-      }
-    }
-
-    void toggleAvatar() {
-      galleryNotifier.toggleAvatarForCurrent();
-    }
-
-    Future<void> deleteCurrentTryon() async {
-      final result = await showAppOkCancelDialog(
-        context: context,
-        message: '確定要刪除這張試穿照片嗎？',
-        okLabel: '刪除',
-        cancelLabel: '取消',
-        isDestructiveAction: true,
-      );
-
-      if (result == OkCancelResult.ok) {
-        galleryNotifier.deleteCurrent();
-      }
-    }
-
     final bottomOffset =
         MediaQuery.paddingOf(context).bottom +
         (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0);
 
-    final currentResult = galleryState.currentResult;
     final isAvatarPage = galleryState.isAvatarPage;
     final isCurrentPending = galleryState.isCurrentPending;
 
@@ -228,53 +177,7 @@ class HomePage extends HookConsumerWidget {
                   children: [
                     TryonAvatarBadge(isVisible: isCurrentTheAvatar),
                     const SizedBox(width: AppSpacing.sm),
-                    IconButton(
-                      icon: Icon(Icons.more_vert_rounded, color: colorScheme.onPrimary),
-                      onPressed: () => showAppActionSheet(
-                        context,
-                        actions: isAvatarPage
-                            ? [
-                                AppMenuAction(
-                                  icon: Icons.swap_horiz_rounded,
-                                  title: '更換模特圖片',
-                                  subtitle: '上傳照片更換試穿模特',
-                                  onTap: uploadAvatar,
-                                ),
-                              ]
-                            : [
-                                AppMenuAction(
-                                  icon: Icons.ios_share_rounded,
-                                  title: '分享',
-                                  subtitle: '分享試穿照片',
-                                  onTap: shareCurrentMedia,
-                                ),
-                                AppMenuAction(
-                                  icon: Icons.download_rounded,
-                                  title: '下載',
-                                  subtitle: '儲存到相簿',
-                                  onTap: downloadCurrentMedia,
-                                ),
-                                if (currentResult?.mode == TryonMode.image)
-                                  AppMenuAction(
-                                    icon: isCurrentTheAvatar
-                                        ? Icons.person_off_outlined
-                                        : Icons.person_outline_rounded,
-                                    title: isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
-                                    subtitle: isCurrentTheAvatar
-                                        ? '取消使用此照片作為試穿形象'
-                                        : '使用此照片作為試穿形象',
-                                    onTap: toggleAvatar,
-                                  ),
-                                AppMenuAction(
-                                  icon: Icons.delete_outline_rounded,
-                                  title: '刪除此試穿',
-                                  subtitle: '移除這張試穿照片',
-                                  onTap: deleteCurrentTryon,
-                                  isDestructive: true,
-                                ),
-                              ],
-                      ),
-                    ),
+                    TryonGalleryActions(onReplaceAvatar: uploadAvatar),
                   ],
                 ),
               ),
@@ -309,7 +212,7 @@ class HomePage extends HookConsumerWidget {
                         : Icon(
                             Icons.upload_rounded,
                             size: 20,
-                            color: Theme.of(context).colorScheme.primaryContainer,
+                            color: colorScheme.primaryContainer,
                           ),
                     isDisabled: isUploadingAvatar,
                     onTap: hasAvatar ? tryonFromLocal : uploadAvatar,
