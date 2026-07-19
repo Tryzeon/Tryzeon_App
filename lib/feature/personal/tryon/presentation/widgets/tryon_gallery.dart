@@ -47,9 +47,9 @@ class TryonGallery extends HookWidget {
               return GestureDetector(
                 onTap: () =>
                     TryonFullscreenViewer.open(context, imageProvider: imageProvider),
-                child: _ImageItem(
+                child: _AvatarImageItem(
                   imageProvider: imageProvider,
-                  showLoadingOverlay: isUploadingAvatar,
+                  isUploading: isUploadingAvatar,
                 ),
               );
             }
@@ -63,7 +63,7 @@ class TryonGallery extends HookWidget {
                   if (videoUrl == null || videoUrl.isEmpty) {
                     return const Center(child: Text('Video unavailable'));
                   }
-                  return _VideoPlayerItem(videoUrl: videoUrl);
+                  return _TryonVideoItem(videoUrl: videoUrl);
                 }
 
                 final imageUrl = result.imageUrl;
@@ -75,7 +75,7 @@ class TryonGallery extends HookWidget {
                     context,
                     imageProvider: CachedNetworkImageProvider(imageUrl),
                   ),
-                  child: _ImageItem(imageUrl: imageUrl),
+                  child: _TryonImageItem(imageUrl: imageUrl),
                 );
             }
           },
@@ -168,12 +168,13 @@ class _LoadingAnimationItem extends HookWidget {
   }
 }
 
-class _ImageItem extends HookWidget {
-  const _ImageItem({this.imageUrl, this.imageProvider, this.showLoadingOverlay = false});
+/// Page 0 — the model photo, either the user's uploaded file or the bundled
+/// default, veiled by a spinner while a replacement uploads.
+class _AvatarImageItem extends HookWidget {
+  const _AvatarImageItem({required this.imageProvider, required this.isUploading});
 
-  final String? imageUrl;
-  final ImageProvider? imageProvider;
-  final bool showLoadingOverlay;
+  final ImageProvider imageProvider;
+  final bool isUploading;
 
   @override
   Widget build(final BuildContext context) {
@@ -181,33 +182,11 @@ class _ImageItem extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    Widget imageWidget;
-    if (imageProvider != null) {
-      imageWidget = Image(
-        image: imageProvider!,
-        fit: BoxFit.cover,
-        gaplessPlayback: true,
-      );
-    } else if (imageUrl != null) {
-      imageWidget = CachedNetworkImage(
-        imageUrl: imageUrl!,
-        fit: BoxFit.cover,
-        fadeInDuration: Duration.zero,
-        fadeOutDuration: Duration.zero,
-        placeholder: (final context, final url) =>
-            const Center(child: CircularProgressIndicator()),
-        errorWidget: (final context, final url, final error) =>
-            const Center(child: Icon(Icons.broken_image_outlined)),
-      );
-    } else {
-      throw Exception('Either imageUrl or imageProvider must be provided');
-    }
-
     return Stack(
       fit: StackFit.expand,
       children: [
-        imageWidget,
-        if (showLoadingOverlay)
+        Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        if (isUploading)
           ColoredBox(
             color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),
             child: Center(
@@ -222,6 +201,29 @@ class _ImageItem extends HookWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// A finished image try-on, fetched and cached from the network.
+class _TryonImageItem extends HookWidget {
+  const _TryonImageItem({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(final BuildContext context) {
+    useAutomaticKeepAlive();
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      placeholder: (final context, final url) =>
+          const Center(child: CircularProgressIndicator()),
+      errorWidget: (final context, final url, final error) =>
+          const Center(child: Icon(Icons.broken_image_outlined)),
     );
   }
 }
@@ -248,8 +250,8 @@ Widget _coverVideoFill(final VideoPlayerController controller) {
   );
 }
 
-class _VideoPlayerItem extends HookWidget {
-  const _VideoPlayerItem({required this.videoUrl});
+class _TryonVideoItem extends HookWidget {
+  const _TryonVideoItem({required this.videoUrl});
   final String videoUrl;
 
   @override
