@@ -89,7 +89,7 @@ class StorePage extends HookConsumerWidget {
             onRefresh: () async {
               await Future.wait([
                 ref.refresh(storeInfoProvider(storeId).future),
-                refreshShopProducts(ref, filter),
+                ref.read(shopProductsProvider(filter).notifier).refresh(),
               ]);
             },
             child: SingleChildScrollView(

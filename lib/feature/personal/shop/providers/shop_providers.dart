@@ -1,4 +1,3 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -107,13 +106,29 @@ IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
 // --- Feature Providers ---
 
 @riverpod
-Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) async {
-  final listShopProductsUseCase = ref.watch(listShopProductsProvider);
-  final result = await listShopProductsUseCase(filter: filter);
-  if (result.isFailure) {
-    throw result.getError()!;
+class ShopProductsNotifier extends _$ShopProductsNotifier {
+  @override
+  Future<List<ShopProduct>> build(final ShopFilter filter) async {
+    final listShopProductsUseCase = ref.watch(listShopProductsProvider);
+    final result = await listShopProductsUseCase(filter: filter);
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
+    return result.get()!;
   }
-  return result.get()!;
+
+  /// Force-refreshes this filter's product list from the server. Swallows
+  /// errors — the provider drops into an error state and the UI shows an
+  /// `ErrorView` or the previous data.
+  Future<void> refresh() async {
+    try {
+      await ref.read(listShopProductsProvider)(filter: filter, forceRefresh: true);
+      ref.invalidateSelf();
+      await future;
+    } catch (e, st) {
+      AppLogger.warning('Failed to refresh shop products', e, st);
+    }
+  }
 }
 
 @riverpod
@@ -144,17 +159,4 @@ Future<ShopStoreInfo> storeInfo(final Ref ref, final String storeId) async {
     throw result.getError()!;
   }
   return result.get()!;
-}
-
-/// 強制刷新商品列表
-Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
-  try {
-    final listShopProductsUseCase = ref.read(listShopProductsProvider);
-    await listShopProductsUseCase(filter: filter, forceRefresh: true);
-    ref.invalidate(shopProductsProvider(filter));
-    await ref.read(shopProductsProvider(filter).future);
-  } catch (e, st) {
-    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
-    AppLogger.warning('Failed to refresh shop products', e, st);
-  }
 }

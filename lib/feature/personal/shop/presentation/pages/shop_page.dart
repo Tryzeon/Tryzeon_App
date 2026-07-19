@@ -202,9 +202,8 @@ class ShopPage extends HookConsumerWidget {
             // 內容區域
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async {
-                  await refreshShopProducts(ref, filter);
-                },
+                onRefresh: () =>
+                    ref.read(shopProductsProvider(filter).notifier).refresh(),
                 child: LayoutBuilder(
                   builder: (final context, final constraints) {
                     return SingleChildScrollView(
