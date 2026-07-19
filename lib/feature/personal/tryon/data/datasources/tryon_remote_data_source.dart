@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import '../../domain/entities/tryon_garment.dart';
 import '../../domain/entities/tryon_image_source.dart';
+import '../../domain/entities/tryon_mode.dart';
 import '../../domain/entities/tryon_params.dart';
 
 Map<String, String> _sourceToJson(final TryOnImageSource source) {
@@ -44,11 +45,16 @@ class TryonRemoteDataSource {
   TryonRemoteDataSource(this._supabase);
   final SupabaseClient _supabase;
 
+  /// Client-side ceilings slightly above the edge function's worst case
+  /// (video polls the provider for up to 300s server-side), so a killed
+  /// function can never leave the caller waiting forever.
+  static const _imageTimeout = Duration(minutes: 2);
+  static const _videoTimeout = Duration(minutes: 7);
+
   Future<Map<String, dynamic>> tryon(final TryOnParams params) async {
-    final response = await _supabase.functions.invoke(
-      AppConstants.functionTryon,
-      body: tryOnParamsToBody(params),
-    );
+    final response = await _supabase.functions
+        .invoke(AppConstants.functionTryon, body: tryOnParamsToBody(params))
+        .timeout(params.mode == TryOnMode.video ? _videoTimeout : _imageTimeout);
     return response.data as Map<String, dynamic>;
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async' show TimeoutException;
 import 'dart:io';
 
 import 'package:equatable/equatable.dart';
@@ -92,6 +93,9 @@ Failure mapExceptionToFailure(final Object e) {
 
     // Network Exceptions
     SocketException() => const NetworkFailure(),
+    // Client-side deadline (e.g. a long-running edge function killed at the
+    // platform's wall-clock limit never responding).
+    TimeoutException() => const NetworkFailure(),
     // http throws ClientException (often wrapping a SocketException) for
     // transport-level failures escaping Supabase.
     ClientException() => const NetworkFailure(),

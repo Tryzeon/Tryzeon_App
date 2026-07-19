@@ -1,3 +1,4 @@
+import 'dart:async' show TimeoutException;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -83,6 +84,13 @@ void main() {
     test('SocketException maps to NetworkFailure', () {
       expect(
         mapExceptionToFailure(const SocketException('no route to host')),
+        isA<NetworkFailure>(),
+      );
+    });
+
+    test('TimeoutException maps to NetworkFailure', () {
+      expect(
+        mapExceptionToFailure(TimeoutException('deadline', const Duration(minutes: 2))),
         isA<NetworkFailure>(),
       );
     });
