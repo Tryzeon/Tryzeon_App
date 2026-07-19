@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
@@ -67,16 +67,30 @@ UpdateStylePreferences updateStylePreferencesUseCase(final Ref ref) {
 }
 
 @riverpod
-Future<UserProfile?> userProfile(final Ref ref) async {
-  final isLoggedIn = ref.watch(isAuthenticatedProvider);
-  if (!isLoggedIn) return null;
+class UserProfileNotifier extends _$UserProfileNotifier {
+  @override
+  Future<UserProfile?> build() async {
+    final isLoggedIn = ref.watch(isAuthenticatedProvider);
+    if (!isLoggedIn) return null;
 
-  final getUserProfileUseCase = ref.watch(getUserProfileUseCaseProvider);
-  final result = await getUserProfileUseCase();
-  if (result.isFailure) {
-    throw result.getError()!;
+    final getUserProfileUseCase = ref.watch(getUserProfileUseCaseProvider);
+    final result = await getUserProfileUseCase();
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
+    return result.get()!;
   }
-  return result.get()!;
+
+  Future<void> refresh() async {
+    await ref.read(getUserProfileUseCaseProvider)(forceRefresh: true);
+    ref.invalidateSelf();
+    try {
+      await future;
+      await ref.read(avatarFileProvider.future);
+    } catch (e, st) {
+      AppLogger.warning('Failed to refresh user profile', e, st);
+    }
+  }
 }
 
 @riverpod
@@ -95,17 +109,39 @@ Future<File?> avatarFile(final Ref ref) async {
   return result.get();
 }
 
-/// 強制刷新用戶資料和頭像
-Future<void> refreshUserProfile(final WidgetRef ref) async {
-  final getUserProfileUseCase = ref.read(getUserProfileUseCaseProvider);
-  await getUserProfileUseCase(forceRefresh: true);
-  try {
-    ref.invalidate(userProfileProvider);
-    await ref.read(userProfileProvider.future);
-    await ref.read(avatarFileProvider.future);
-  } catch (e, st) {
-    // Provider 刷新失敗時（例如網絡錯誤），忽略異常
-    // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料
-    AppLogger.warning('Failed to refresh user profile', e, st);
+
+@riverpod
+class AvatarUploadNotifier extends _$AvatarUploadNotifier {
+  @override
+  AsyncValue<void> build() => const AsyncData(null);
+
+  Future<Result<void, Failure>> upload(final File image) async {
+    state = const AsyncLoading();
+    try {
+      final profile = await ref.read(userProfileProvider.future);
+      if (profile == null) {
+        state = const AsyncData(null);
+        return const Ok(null);
+      }
+
+      final result = await ref.read(updateUserAvatarUseCaseProvider)(
+        avatarFile: image,
+        previousAvatarPath: profile.avatarPath,
+      );
+
+      if (result.isSuccess) {
+        ref.invalidate(userProfileProvider);
+        ref.invalidate(avatarFileProvider);
+        await ref.read(avatarFileProvider.future);
+      }
+      state = result.isFailure
+          ? AsyncError(result.getError()!, StackTrace.current)
+          : const AsyncData(null);
+      return result;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to upload avatar', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
   }
 }

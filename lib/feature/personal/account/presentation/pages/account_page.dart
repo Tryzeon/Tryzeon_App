@@ -38,7 +38,7 @@ class AccountPage extends HookConsumerWidget {
         body: SafeArea(
           bottom: false,
           child: RefreshIndicator(
-            onRefresh: () => refreshUserProfile(ref),
+            onRefresh: () => ref.read(userProfileProvider.notifier).refresh(),
             edgeOffset: MediaQuery.of(context).padding.top,
             child: const SingleChildScrollView(
               physics: AlwaysScrollableScrollPhysics(),
