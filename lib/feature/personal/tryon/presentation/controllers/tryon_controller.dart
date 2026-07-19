@@ -132,7 +132,7 @@ class TryonController extends _$TryonController {
       if (result.isSuccess) {
         final tryonResult = result.get()!;
         usageCache.syncFromSnapshot(tryonResult.usage);
-        galleryNotifier.completeById(id, tryonResult);
+        galleryNotifier.complete(tryonResult);
         _emit(const TryonSucceeded());
       } else {
         final failure = result.getError()!;

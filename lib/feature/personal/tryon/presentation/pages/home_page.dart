@@ -42,22 +42,19 @@ class HomePage extends HookConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final currentIndex = galleryState.currentIndex;
+    final currentPage = galleryState.currentPage;
     final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
 
     useEffect(() {
-      if (pageController.hasClients) {
-        final targetPage = currentIndex + 1;
-        if (pageController.page?.round() != targetPage) {
-          pageController.animateToPage(
-            targetPage,
-            duration: AppDuration.slow,
-            curve: AppCurves.standard,
-          );
-        }
+      if (pageController.hasClients && pageController.page?.round() != currentPage) {
+        pageController.animateToPage(
+          currentPage,
+          duration: AppDuration.slow,
+          curve: AppCurves.standard,
+        );
       }
       return null;
-    }, [currentIndex]);
+    }, [currentPage]);
 
     Future<void> uploadAvatar() async {
       final File? imageFile = await ImagePickerHelper.pickImage(
@@ -162,7 +159,7 @@ class HomePage extends HookConsumerWidget {
         (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0);
 
     final currentResult = galleryState.currentResult;
-    final isAvatarPage = currentIndex == -1;
+    final isAvatarPage = galleryState.isAvatarPage;
     final isCurrentPending = galleryState.isCurrentPending;
 
     return Scaffold(
@@ -191,14 +188,7 @@ class HomePage extends HookConsumerWidget {
                   ),
                   data: (final avatarFile) => TryonGallery(
                     pageController: pageController,
-                    onPageChanged: (final index) {
-                      final entryIndex = index - 1;
-                      final id =
-                          (entryIndex >= 0 && entryIndex < galleryState.entries.length)
-                          ? galleryState.entries[entryIndex].id
-                          : null;
-                      galleryNotifier.setCurrentId(id);
-                    },
+                    onPageChanged: galleryNotifier.setCurrentPage,
                     entries: galleryState.entries,
                     avatarFile: avatarFile,
                     isUploadingAvatar: isUploadingAvatar,
@@ -295,7 +285,7 @@ class HomePage extends HookConsumerWidget {
                 bottom: bottomOffset + AppSpacing.xl,
                 left: AppSpacing.xxl,
                 child: TryonIndicator(
-                  currentTryonIndex: currentIndex,
+                  currentTryonIndex: galleryState.currentIndex,
                   tryonImagesCount: galleryState.entries.length,
                 ),
               ),

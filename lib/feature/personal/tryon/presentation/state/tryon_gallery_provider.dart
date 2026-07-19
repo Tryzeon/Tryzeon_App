@@ -17,30 +17,27 @@ sealed class TryonGalleryState with _$TryonGalleryState {
 
   const TryonGalleryState._();
 
-  TryonGalleryEntry? get currentEntry =>
-      entries.where((final e) => e.id == currentId).firstOrNull;
+  /// Index of the entry in view, or -1 for the avatar page. Entry ids are
+  /// non-null, so a null [currentId] never matches and yields -1.
+  int get currentIndex => entries.indexWhere((final e) => e.id == currentId);
+
+  /// The gallery page in view. Page 0 is the avatar; entry `i` is page `i + 1`.
+  int get currentPage => currentIndex + 1;
+
+  bool get isAvatarPage => currentIndex == -1;
+
+  TryonGalleryEntry? get currentEntry => isAvatarPage ? null : entries[currentIndex];
 
   /// The finished result in view — null on the avatar page or while the current
   /// entry is still pending.
-  TryonResult? get currentResult => switch (currentEntry) {
-    FinishedTryonEntry(:final result) => result,
-    _ => null,
-  };
+  TryonResult? get currentResult => currentEntry?.result;
 
   bool get isCurrentPending => currentEntry is PendingTryonEntry;
 
-  TryonResult? get customAvatarResult {
-    final entry = entries.where((final e) => e.id == customAvatarId).firstOrNull;
-    return switch (entry) {
-      FinishedTryonEntry(:final result) => result,
-      _ => null,
-    };
-  }
+  TryonResult? get customAvatarResult =>
+      entries.where((final e) => e.id == customAvatarId).firstOrNull?.result;
 
-  int get currentIndex =>
-      currentId == null ? -1 : entries.indexWhere((final e) => e.id == currentId);
-
-  bool get isCurrentTheAvatar => customAvatarId != null && customAvatarId == currentId;
+  bool get isCurrentTheAvatar => currentId != null && currentId == customAvatarId;
 }
 
 @Riverpod(keepAlive: true)
@@ -48,7 +45,11 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   @override
   TryonGalleryState build() => const TryonGalleryState();
 
-  void setCurrentId(final String? id) {
+  void setCurrentPage(final int page) {
+    final index = page - 1;
+    final id = index >= 0 && index < state.entries.length
+        ? state.entries[index].id
+        : null;
     if (state.currentId == id) return;
     state = state.copyWith(currentId: id);
   }
@@ -64,12 +65,12 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     );
   }
 
-  /// Swaps the pending entry for its finished [result].
-  void completeById(final String id, final TryonResult result) {
-    final index = state.entries.indexWhere((final e) => e.id == id);
+  void complete(final TryonResult result) {
+    final index = state.entries.indexWhere((final e) => e.id == result.id);
     if (index == -1) return;
-    final next = [...state.entries]..[index] = FinishedTryonEntry(result);
-    state = state.copyWith(entries: next, currentId: result.id);
+    state = state.copyWith(
+      entries: [...state.entries]..[index] = FinishedTryonEntry(result),
+    );
   }
 
   void removeById(final String id) {
@@ -78,15 +79,13 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
 
     final nextEntries = [...state.entries]..removeAt(index);
 
-    String? nextCurrent = state.currentId;
-    if (nextCurrent == id) {
-      if (nextEntries.isEmpty) {
-        nextCurrent = null;
-      } else {
-        final fallbackIndex = index.clamp(0, nextEntries.length - 1);
-        nextCurrent = nextEntries[fallbackIndex].id;
-      }
-    }
+    // Removing the entry in view falls back to its neighbour, or to the avatar
+    // page when nothing is left.
+    final nextCurrent = state.currentId != id
+        ? state.currentId
+        : (nextEntries.isEmpty
+              ? null
+              : nextEntries[index.clamp(0, nextEntries.length - 1)].id);
 
     state = state.copyWith(
       entries: nextEntries,
