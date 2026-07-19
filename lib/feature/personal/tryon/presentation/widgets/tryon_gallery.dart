@@ -6,24 +6,24 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fullscreen_viewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class TryOnGallery extends HookWidget {
-  const TryOnGallery({
+class TryonGallery extends HookWidget {
+  const TryonGallery({
     super.key,
     required this.pageController,
     required this.onPageChanged,
-    required this.tryonResults,
+    required this.entries,
     required this.avatarFile,
     required this.isUploadingAvatar,
   });
 
   final PageController pageController;
   final ValueChanged<int> onPageChanged;
-  final List<TryonResult> tryonResults;
+  final List<TryonGalleryEntry> entries;
   final File? avatarFile;
   final bool isUploadingAvatar;
 
@@ -37,7 +37,7 @@ class TryOnGallery extends HookWidget {
         PageView.builder(
           controller: pageController,
           onPageChanged: onPageChanged,
-          itemCount: tryonResults.length + 1,
+          itemCount: entries.length + 1,
           itemBuilder: (final context, final index) {
             if (index == 0) {
               // Original Avatar
@@ -46,7 +46,7 @@ class TryOnGallery extends HookWidget {
                   : const AssetImage(AppConstants.defaultProfileImage);
               return GestureDetector(
                 onTap: () =>
-                    TryOnFullscreenViewer.open(context, imageProvider: imageProvider),
+                    TryonFullscreenViewer.open(context, imageProvider: imageProvider),
                 child: _ImageItem(
                   imageProvider: imageProvider,
                   showLoadingOverlay: isUploadingAvatar,
@@ -54,35 +54,30 @@ class TryOnGallery extends HookWidget {
               );
             }
 
-            final result = tryonResults[index - 1];
+            switch (entries[index - 1]) {
+              case PendingTryonEntry():
+                return const _LoadingAnimationItem();
+              case FinishedTryonEntry(:final result):
+                if (result.mode == TryonMode.video) {
+                  final videoUrl = result.videoUrl;
+                  if (videoUrl == null || videoUrl.isEmpty) {
+                    return const Center(child: Text('Video unavailable'));
+                  }
+                  return _VideoPlayerItem(videoUrl: videoUrl);
+                }
 
-            if (result.isLoading) {
-              return const _LoadingAnimationItem();
+                final imageUrl = result.imageUrl;
+                if (imageUrl == null || imageUrl.isEmpty) {
+                  return const Center(child: Text('Image unavailable'));
+                }
+                return GestureDetector(
+                  onTap: () => TryonFullscreenViewer.open(
+                    context,
+                    imageProvider: CachedNetworkImageProvider(imageUrl),
+                  ),
+                  child: _ImageItem(imageUrl: imageUrl),
+                );
             }
-
-            if (result.mode == TryOnMode.video) {
-              final videoUrl = result.videoUrl;
-              if (videoUrl == null || videoUrl.isEmpty) {
-                return const Center(child: Text('Video unavailable'));
-              }
-              return _VideoPlayerItem(videoUrl: videoUrl);
-            }
-
-            if (result.mode == TryOnMode.image) {
-              final imageUrl = result.imageUrl;
-              if (imageUrl == null || imageUrl.isEmpty) {
-                return const Center(child: Text('Image unavailable'));
-              }
-              return GestureDetector(
-                onTap: () => TryOnFullscreenViewer.open(
-                  context,
-                  imageProvider: CachedNetworkImageProvider(imageUrl),
-                ),
-                child: _ImageItem(imageUrl: imageUrl),
-              );
-            }
-
-            return const Center(child: Text('Invalid TryOn Result'));
           },
         ),
         // Top Dark Gradient — ensures white logo/icons are legible
@@ -148,7 +143,7 @@ class _LoadingAnimationItem extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final controller = useMemoized(() {
-      final order = _sessionOrder ??= (AppConstants.tryOnLoadingAnimations.toList()
+      final order = _sessionOrder ??= (AppConstants.tryonLoadingAnimations.toList()
         ..shuffle());
       final asset = order[_nextIndex];
       _nextIndex = (_nextIndex + 1) % order.length;

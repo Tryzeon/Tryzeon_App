@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 
 part 'tryon_gallery_provider.freezed.dart';
 part 'tryon_gallery_provider.g.dart';
@@ -8,21 +10,35 @@ part 'tryon_gallery_provider.g.dart';
 @freezed
 sealed class TryonGalleryState with _$TryonGalleryState {
   const factory TryonGalleryState({
-    @Default(<TryonResult>[]) final List<TryonResult> images,
+    @Default(<TryonGalleryEntry>[]) final List<TryonGalleryEntry> entries,
     final String? currentId,
     final String? customAvatarId,
   }) = _TryonGalleryState;
 
   const TryonGalleryState._();
 
-  TryonResult? get currentResult =>
-      images.where((final r) => r.id == currentId).firstOrNull;
+  TryonGalleryEntry? get currentEntry =>
+      entries.where((final e) => e.id == currentId).firstOrNull;
 
-  TryonResult? get customAvatarResult =>
-      images.where((final r) => r.id == customAvatarId).firstOrNull;
+  /// The finished result in view — null on the avatar page or while the current
+  /// entry is still pending.
+  TryonResult? get currentResult => switch (currentEntry) {
+    FinishedTryonEntry(:final result) => result,
+    _ => null,
+  };
+
+  bool get isCurrentPending => currentEntry is PendingTryonEntry;
+
+  TryonResult? get customAvatarResult {
+    final entry = entries.where((final e) => e.id == customAvatarId).firstOrNull;
+    return switch (entry) {
+      FinishedTryonEntry(:final result) => result,
+      _ => null,
+    };
+  }
 
   int get currentIndex =>
-      currentId == null ? -1 : images.indexWhere((final r) => r.id == currentId);
+      currentId == null ? -1 : entries.indexWhere((final e) => e.id == currentId);
 
   bool get isCurrentTheAvatar => customAvatarId != null && customAvatarId == currentId;
 }
@@ -37,38 +53,43 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     state = state.copyWith(currentId: id);
   }
 
-  void addPlaceholder(final TryonResult placeholder) {
+  /// Inserts the pending placeholder for a try-on that just started.
+  void addPending({required final String id, required final TryonMode mode}) {
     state = state.copyWith(
-      images: [...state.images, placeholder],
-      currentId: placeholder.id,
+      entries: [
+        ...state.entries,
+        PendingTryonEntry(id: id, mode: mode),
+      ],
+      currentId: id,
     );
   }
 
-  void replaceById(final String requestId, final TryonResult result) {
-    final index = state.images.indexWhere((final r) => r.id == requestId);
+  /// Swaps the pending entry for its finished [result].
+  void completeById(final String id, final TryonResult result) {
+    final index = state.entries.indexWhere((final e) => e.id == id);
     if (index == -1) return;
-    final next = [...state.images]..[index] = result;
-    state = state.copyWith(images: next, currentId: result.id);
+    final next = [...state.entries]..[index] = FinishedTryonEntry(result);
+    state = state.copyWith(entries: next, currentId: result.id);
   }
 
   void removeById(final String id) {
-    final index = state.images.indexWhere((final r) => r.id == id);
+    final index = state.entries.indexWhere((final e) => e.id == id);
     if (index == -1) return;
 
-    final nextImages = [...state.images]..removeAt(index);
+    final nextEntries = [...state.entries]..removeAt(index);
 
     String? nextCurrent = state.currentId;
     if (nextCurrent == id) {
-      if (nextImages.isEmpty) {
+      if (nextEntries.isEmpty) {
         nextCurrent = null;
       } else {
-        final fallbackIndex = index.clamp(0, nextImages.length - 1);
-        nextCurrent = nextImages[fallbackIndex].id;
+        final fallbackIndex = index.clamp(0, nextEntries.length - 1);
+        nextCurrent = nextEntries[fallbackIndex].id;
       }
     }
 
     state = state.copyWith(
-      images: nextImages,
+      entries: nextEntries,
       currentId: nextCurrent,
       customAvatarId: state.customAvatarId == id ? null : state.customAvatarId,
     );

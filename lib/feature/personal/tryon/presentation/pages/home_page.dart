@@ -15,16 +15,16 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/feature/personal/home/presentation/controllers/home_controller.dart';
-import 'package:tryzeon/feature/personal/home/presentation/state/try_on_outcome.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_avatar_badge.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
-import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.dart';
-import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_indicator.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -36,7 +36,7 @@ class HomePage extends HookConsumerWidget {
     final avatarAsync = ref.watch(avatarFileProvider);
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
-    final isUploadingAvatar = useState(false);
+    final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
     final pageController = usePageController(initialPage: 0);
 
     final theme = Theme.of(context);
@@ -67,10 +67,7 @@ class HomePage extends HookConsumerWidget {
       );
       if (imageFile == null) return;
 
-      isUploadingAvatar.value = true;
-      final result = await ref
-          .read(homeControllerProvider.notifier)
-          .uploadAvatar(imageFile);
+      final result = await ref.read(avatarUploadProvider.notifier).upload(imageFile);
       if (!context.mounted) return;
       if (result.isFailure) {
         TopNotification.show(
@@ -78,19 +75,16 @@ class HomePage extends HookConsumerWidget {
           message: result.getError()!.displayMessage(context),
         );
       }
-      isUploadingAvatar.value = false;
     }
 
-    void handleTryOnOutcome(final TryOnOutcome outcome) {
+    void handleTryonOutcome(final TryonOutcome outcome) {
       if (!context.mounted) return;
       switch (outcome) {
-        case TryOnSucceeded():
+        case TryonSucceeded():
           HapticFeedback.heavyImpact();
-        case TryOnAvatarMissing():
+        case TryonAvatarMissing():
           TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
-        case TryOnAvatarLoadFailed():
-          TopNotification.show(context, message: '無法載入照片，請重新試穿');
-        case TryOnRateLimited(:final isVideo):
+        case TryonRateLimited(:final isVideo):
           UpgradeDialog.show(
             context,
             title: isVideo ? '影片試穿次數已達上限' : '試穿次數已達上限',
@@ -98,12 +92,16 @@ class HomePage extends HookConsumerWidget {
                 ? '您的今日影片試穿次數已達上限\n升級至更高方案以獲得更多影片次數！'
                 : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
           );
-        case TryOnFailed(:final failure):
+        case TryonFailed(:final failure):
           TopNotification.show(context, message: failure.displayMessage(context));
       }
     }
 
-    Future<void> tryOnFromLocal() async {
+    ref.listen(tryonControllerProvider, (final _, final event) {
+      if (event != null) handleTryonOutcome(event.outcome);
+    });
+
+    Future<void> tryonFromLocal() async {
       final File? clothesImage = await ImagePickerHelper.pickImage(
         context,
         title: '選擇服飾來源',
@@ -111,25 +109,7 @@ class HomePage extends HookConsumerWidget {
       );
       if (clothesImage == null) return;
 
-      final outcome = await ref
-          .read(homeControllerProvider.notifier)
-          .tryOnFromLocalImage(clothesImage);
-      handleTryOnOutcome(outcome);
-    }
-
-    Future<void> tryOnFromStorage(
-      final List<String> clothesPaths, {
-      final TryOnMode mode = TryOnMode.image,
-      final String? garmentDetail,
-    }) async {
-      final outcome = await ref
-          .read(homeControllerProvider.notifier)
-          .tryOnFromStoragePaths(
-            clothesPaths,
-            mode: mode,
-            garmentDetail: garmentDetail,
-          );
-      handleTryOnOutcome(outcome);
+      await ref.read(tryonCoordinatorProvider).tryonFromLocalImage(clothesImage);
     }
 
     Future<void> downloadCurrentMedia() async {
@@ -143,7 +123,7 @@ class HomePage extends HookConsumerWidget {
       } else {
         AppSnackBar.show(
           context,
-          message: result.mode == TryOnMode.video ? '影片已儲存到相簿' : '照片已儲存到相簿',
+          message: result.mode == TryonMode.video ? '影片已儲存到相簿' : '照片已儲存到相簿',
         );
       }
     }
@@ -177,25 +157,19 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    final coordinator = ref.read(tryOnCoordinatorProvider);
-    useEffect(() {
-      coordinator.bindTryOnFromStorage(tryOnFromStorage);
-      return () => coordinator.unbindTryOnFromStorage(tryOnFromStorage);
-    });
-
     final bottomOffset =
         MediaQuery.paddingOf(context).bottom +
         (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0);
 
     final currentResult = galleryState.currentResult;
     final isAvatarPage = currentIndex == -1;
-    final isResultLoading = currentResult?.isLoading ?? false;
+    final isCurrentPending = galleryState.isCurrentPending;
 
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
       body: RefreshIndicator(
-        onRefresh: () => refreshUserProfile(ref),
+        onRefresh: () => ref.read(userProfileProvider.notifier).refresh(),
         edgeOffset: MediaQuery.of(context).padding.top,
         child: Stack(
           fit: StackFit.expand,
@@ -215,19 +189,19 @@ class HomePage extends HookConsumerWidget {
                       onRetry: () => ref.invalidate(userProfileProvider),
                     ),
                   ),
-                  data: (final avatarFile) => TryOnGallery(
+                  data: (final avatarFile) => TryonGallery(
                     pageController: pageController,
                     onPageChanged: (final index) {
-                      final resultIndex = index - 1;
+                      final entryIndex = index - 1;
                       final id =
-                          (resultIndex >= 0 && resultIndex < galleryState.images.length)
-                          ? galleryState.images[resultIndex].id
+                          (entryIndex >= 0 && entryIndex < galleryState.entries.length)
+                          ? galleryState.entries[entryIndex].id
                           : null;
                       galleryNotifier.setCurrentId(id);
                     },
-                    tryonResults: galleryState.images,
+                    entries: galleryState.entries,
                     avatarFile: avatarFile,
-                    isUploadingAvatar: isUploadingAvatar.value,
+                    isUploadingAvatar: isUploadingAvatar,
                   ),
                 ),
               ),
@@ -254,7 +228,7 @@ class HomePage extends HookConsumerWidget {
 
             // 3. Top Right — Avatar Badge + More Options (parallel).
             // Hidden only while a try-on is loading.
-            if (!isResultLoading)
+            if (!isCurrentPending)
               Positioned(
                 top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
                 right: AppSpacing.md,
@@ -262,7 +236,7 @@ class HomePage extends HookConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TryOnAvatarBadge(isVisible: isCurrentTheAvatar),
+                    TryonAvatarBadge(isVisible: isCurrentTheAvatar),
                     const SizedBox(width: AppSpacing.sm),
                     IconButton(
                       icon: Icon(Icons.more_vert_rounded, color: colorScheme.onPrimary),
@@ -290,7 +264,7 @@ class HomePage extends HookConsumerWidget {
                                   subtitle: '儲存到相簿',
                                   onTap: downloadCurrentMedia,
                                 ),
-                                if (currentResult?.mode == TryOnMode.image)
+                                if (currentResult?.mode == TryonMode.image)
                                   AppMenuAction(
                                     icon: isCurrentTheAvatar
                                         ? Icons.person_off_outlined
@@ -320,9 +294,9 @@ class HomePage extends HookConsumerWidget {
               Positioned(
                 bottom: bottomOffset + AppSpacing.xl,
                 left: AppSpacing.xxl,
-                child: TryOnIndicator(
+                child: TryonIndicator(
                   currentTryonIndex: currentIndex,
-                  tryonImagesCount: galleryState.images.length,
+                  tryonImagesCount: galleryState.entries.length,
                 ),
               ),
 
@@ -347,8 +321,8 @@ class HomePage extends HookConsumerWidget {
                             size: 20,
                             color: Theme.of(context).colorScheme.primaryContainer,
                           ),
-                    isDisabled: isUploadingAvatar.value,
-                    onTap: hasAvatar ? tryOnFromLocal : uploadAvatar,
+                    isDisabled: isUploadingAvatar,
+                    onTap: hasAvatar ? tryonFromLocal : uploadAvatar,
                   ),
                 );
               },

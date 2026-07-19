@@ -8,10 +8,9 @@ part 'tryon_result.freezed.dart';
 sealed class TryonResult with _$TryonResult {
   const factory TryonResult({
     required final String id,
+    required final TryonMode mode,
     final String? imageUrl,
     final String? videoUrl,
     final DailyUsage? usage,
-    @Default(false) final bool isLoading,
-    @Default(TryOnMode.image) final TryOnMode mode,
   }) = _TryonResult;
 }
