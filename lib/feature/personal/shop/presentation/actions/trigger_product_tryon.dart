@@ -35,7 +35,7 @@ Future<void> _startTryon(
 
   await ref
       .read(tryonCoordinatorProvider)
-      .tryonFromStorage(
+      .tryonFromStoragePaths(
         product.imagePaths,
         mode: mode,
         garmentDetail: product.toTryonPromptDetail(),

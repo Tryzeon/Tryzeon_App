@@ -16,7 +16,8 @@ void triggerWardrobeItemTryon(
   TryonModeSheet.show(
     context: context,
     hasVideoAccess: hasVideoAccess,
-    onModeSelected: (final mode) =>
-        ref.read(tryonCoordinatorProvider).tryonFromStorage([item.imagePath], mode: mode),
+    onModeSelected: (final mode) => ref
+        .read(tryonCoordinatorProvider)
+        .tryonFromStoragePaths([item.imagePath], mode: mode),
   );
 }

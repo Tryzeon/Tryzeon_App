@@ -37,7 +37,7 @@ class TryonCoordinator {
   }
 
   /// Starts a try-on from garment images already stored remotely (by path).
-  Future<void> tryonFromStorage(
+  Future<void> tryonFromStoragePaths(
     final List<String> clothesPaths, {
     final TryonMode mode = TryonMode.image,
     final String? garmentDetail,
