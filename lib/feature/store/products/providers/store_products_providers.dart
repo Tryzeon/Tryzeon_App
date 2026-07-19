@@ -132,7 +132,7 @@ Future<List<Product>> filteredProducts(final Ref ref) async {
     if (summary == null) return 0;
     return switch (metric) {
       AnalyticsMetric.viewCount => summary.viewCount,
-      AnalyticsMetric.tryOnCount => summary.tryonCount,
+      AnalyticsMetric.tryonCount => summary.tryonCount,
       AnalyticsMetric.purchaseClickCount => summary.purchaseClickCount,
     };
   }

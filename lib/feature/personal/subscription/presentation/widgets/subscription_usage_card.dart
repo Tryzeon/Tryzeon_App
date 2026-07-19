@@ -15,16 +15,16 @@ class SubscriptionUsageCard extends StatelessWidget {
   const SubscriptionUsageCard({
     required this.entitlement,
     required this.formattedRenewalLine,
-    required this.dailyTryOnUsed,
-    required this.dailyTryOnLimit,
+    required this.dailyTryonUsed,
+    required this.dailyTryonLimit,
     required this.onTap,
     super.key,
   });
 
   final AppSubscriptionEntitlement entitlement;
   final String? formattedRenewalLine;
-  final int? dailyTryOnUsed;
-  final int? dailyTryOnLimit;
+  final int? dailyTryonUsed;
+  final int? dailyTryonLimit;
   final VoidCallback onTap;
 
   @override
@@ -66,7 +66,7 @@ class SubscriptionUsageCard extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: AppSpacing.md),
-              _UsageStat(label: '今日試穿', used: dailyTryOnUsed, limit: dailyTryOnLimit),
+              _UsageStat(label: '今日試穿', used: dailyTryonUsed, limit: dailyTryonLimit),
               const SizedBox(height: AppSpacing.md),
               const Divider(),
               const SizedBox(height: AppSpacing.smMd),

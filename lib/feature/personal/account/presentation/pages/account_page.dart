@@ -251,8 +251,8 @@ class _SubscriptionSection extends HookConsumerWidget {
     return SubscriptionUsageCard(
       entitlement: entitlement,
       formattedRenewalLine: formatRenewalLine(entitlement),
-      dailyTryOnUsed: usageAsync.value?.tryonCount,
-      dailyTryOnLimit: capabilitiesAsync.value?.dailyTryOnLimit,
+      dailyTryonUsed: usageAsync.value?.tryonCount,
+      dailyTryonLimit: capabilitiesAsync.value?.dailyTryonLimit,
       onTap: openSubscription,
     );
   }

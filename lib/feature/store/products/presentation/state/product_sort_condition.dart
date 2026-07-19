@@ -4,7 +4,7 @@ part 'product_sort_condition.freezed.dart';
 
 enum ProductField { name, price, createdAt, updatedAt }
 
-enum AnalyticsMetric { viewCount, tryOnCount, purchaseClickCount }
+enum AnalyticsMetric { viewCount, tryonCount, purchaseClickCount }
 
 @freezed
 sealed class SortKey with _$SortKey {

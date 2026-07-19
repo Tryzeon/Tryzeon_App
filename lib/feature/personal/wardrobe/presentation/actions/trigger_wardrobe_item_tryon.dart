@@ -5,18 +5,18 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
 /// Shows the try-on mode picker for [item], then starts try-on with the
-/// selected mode via [tryOnCoordinatorProvider].
-void triggerWardrobeItemTryOn(
+/// selected mode via [tryonCoordinatorProvider].
+void triggerWardrobeItemTryon(
   final BuildContext context,
   final WidgetRef ref,
   final WardrobeItem item, {
   required final bool hasVideoAccess,
 }) {
   HapticFeedback.mediumImpact();
-  TryOnModeSheet.show(
+  TryonModeSheet.show(
     context: context,
     hasVideoAccess: hasVideoAccess,
     onModeSelected: (final mode) =>
-        ref.read(tryOnCoordinatorProvider).tryOnFromStorage([item.imagePath], mode: mode),
+        ref.read(tryonCoordinatorProvider).tryonFromStorage([item.imagePath], mode: mode),
   );
 }

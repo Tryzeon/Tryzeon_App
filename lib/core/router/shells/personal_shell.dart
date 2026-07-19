@@ -31,7 +31,7 @@ class PersonalShell extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final coordinator = ref.read(tryOnCoordinatorProvider);
+    final coordinator = ref.read(tryonCoordinatorProvider);
 
     useEffect(() {
       void navigateToHome() => navigationShell.goBranch(0);

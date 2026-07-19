@@ -44,7 +44,7 @@ class AppConstants {
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
-  static const List<String> tryOnLoadingAnimations = [
+  static const List<String> tryonLoadingAnimations = [
     'assets/videos/tryon-loading-animation-1.mp4',
     'assets/videos/tryon-loading-animation-2.mp4',
     'assets/videos/tryon-loading-animation-3.mp4',
@@ -66,7 +66,7 @@ class AppConstants {
   static const String entitlementProId = 'pro';
   static const String entitlementMaxId = 'max';
 
-  // TryOn Params
+  // Tryon Params
   static const String paramMode = 'mode';
   static const String modeImage = 'image';
   static const String modeVideo = 'video';

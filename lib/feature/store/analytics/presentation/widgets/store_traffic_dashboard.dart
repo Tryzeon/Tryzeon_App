@@ -13,14 +13,14 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     int totalView = 0;
-    int totalTryOn = 0;
+    int totalTryon = 0;
     int totalPurchaseClicks = 0;
     bool hasError = false;
 
     if (analyticsAsync.hasValue && analyticsAsync.value != null) {
       for (final s in analyticsAsync.value!) {
         totalView += s.viewCount;
-        totalTryOn += s.tryonCount;
+        totalTryon += s.tryonCount;
         totalPurchaseClicks += s.purchaseClickCount;
       }
     } else if (analyticsAsync.hasError) {
@@ -48,7 +48,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
           ),
           _TrafficStatTile(
             label: '試穿',
-            value: totalTryOn,
+            value: totalTryon,
             isLoading: isLoading,
             hasError: hasError,
           ),

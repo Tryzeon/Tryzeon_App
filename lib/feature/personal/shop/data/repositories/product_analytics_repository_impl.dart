@@ -12,7 +12,7 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   final AnalyticsEventQueueService _analyticsQueueService;
 
   @override
-  Future<Result<void, Failure>> trackTryOn({
+  Future<Result<void, Failure>> trackTryon({
     required final String productId,
     required final String storeId,
   }) async {
@@ -21,7 +21,7 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
         AnalyticsEvent(
           productId: productId,
           storeId: storeId,
-          eventType: AnalyticsEventType.tryOn,
+          eventType: AnalyticsEventType.tryon,
         ),
       );
       return const Ok(null);

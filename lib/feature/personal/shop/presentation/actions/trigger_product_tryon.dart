@@ -8,25 +8,25 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 /// Shows the try-on mode picker for [product], then starts try-on with the
 /// selected mode: increments the product's try-on count and hands off to
-/// [tryOnCoordinatorProvider].
-void triggerProductTryOn(
+/// [tryonCoordinatorProvider].
+void triggerProductTryon(
   final BuildContext context,
   final WidgetRef ref,
   final ShopProduct product, {
   required final bool hasVideoAccess,
 }) {
   HapticFeedback.mediumImpact();
-  TryOnModeSheet.show(
+  TryonModeSheet.show(
     context: context,
     hasVideoAccess: hasVideoAccess,
-    onModeSelected: (final mode) => _startTryOn(ref, product, mode),
+    onModeSelected: (final mode) => _startTryon(ref, product, mode),
   );
 }
 
-Future<void> _startTryOn(
+Future<void> _startTryon(
   final WidgetRef ref,
   final ShopProduct product,
-  final TryOnMode mode,
+  final TryonMode mode,
 ) async {
   ref
       .read(incrementTryonCountProvider)
@@ -34,8 +34,8 @@ Future<void> _startTryOn(
       .ignore();
 
   await ref
-      .read(tryOnCoordinatorProvider)
-      .tryOnFromStorage(
+      .read(tryonCoordinatorProvider)
+      .tryonFromStorage(
         product.imagePaths,
         mode: mode,
         garmentDetail: product.toTryonPromptDetail(),

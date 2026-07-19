@@ -10,6 +10,6 @@ class IncrementTryonCount {
     required final String productId,
     required final String storeId,
   }) {
-    return _repository.trackTryOn(productId: productId, storeId: storeId);
+    return _repository.trackTryon(productId: productId, storeId: storeId);
   }
 }

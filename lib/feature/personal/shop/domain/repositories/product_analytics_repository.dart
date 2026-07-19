@@ -4,7 +4,7 @@ import 'package:typed_result/typed_result.dart';
 /// Repository for tracking product-related analytics events.
 abstract class ProductAnalyticsRepository {
   /// Tracks a try-on event for a product.
-  Future<Result<void, Failure>> trackTryOn({
+  Future<Result<void, Failure>> trackTryon({
     required final String productId,
     required final String storeId,
   });

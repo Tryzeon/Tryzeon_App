@@ -11,7 +11,7 @@ extension SortKeyLabels on SortKey {
     },
     AnalyticsSortKey(:final metric) => switch (metric) {
       AnalyticsMetric.viewCount => '瀏覽次數',
-      AnalyticsMetric.tryOnCount => '試穿次數',
+      AnalyticsMetric.tryonCount => '試穿次數',
       AnalyticsMetric.purchaseClickCount => '購買點擊',
     },
   };
@@ -44,6 +44,6 @@ const List<SortKey> allSortKeys = [
   SortKey.product(ProductField.name),
   SortKey.product(ProductField.price),
   SortKey.analytics(AnalyticsMetric.viewCount),
-  SortKey.analytics(AnalyticsMetric.tryOnCount),
+  SortKey.analytics(AnalyticsMetric.tryonCount),
   SortKey.analytics(AnalyticsMetric.purchaseClickCount),
 ];

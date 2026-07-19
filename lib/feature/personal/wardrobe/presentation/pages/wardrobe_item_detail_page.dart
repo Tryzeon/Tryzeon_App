@@ -224,8 +224,8 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                   Positioned(
                     bottom: AppSpacing.sm,
                     right: AppSpacing.sm,
-                    child: TryOnFab(
-                      onTap: () => triggerWardrobeItemTryOn(
+                    child: TryonFab(
+                      onTap: () => triggerWardrobeItemTryon(
                         context,
                         ref,
                         item,

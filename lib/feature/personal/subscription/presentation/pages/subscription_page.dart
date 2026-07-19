@@ -136,7 +136,7 @@ class _SubscriptionContent extends ConsumerWidget {
             title: '今日試穿',
             trailingValue: formatUsage(
               used: tryonUsed,
-              limit: capabilities?.dailyTryOnLimit,
+              limit: capabilities?.dailyTryonLimit,
             ),
             isFirst: true,
           ),

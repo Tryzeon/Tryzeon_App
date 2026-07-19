@@ -103,10 +103,10 @@ class _ShopInfo extends ConsumerWidget {
               'NT\$${product.price.toStringAsFixed(0)}',
               style: theme.textTheme.bodyMedium,
             ),
-            TryOnFab(
+            TryonFab(
               size: 18,
               label: '試穿',
-              onTap: () => triggerProductTryOn(
+              onTap: () => triggerProductTryon(
                 context,
                 ref,
                 product,
