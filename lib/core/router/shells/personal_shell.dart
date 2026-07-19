@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
+import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 class PersonalTabDestination {
   const PersonalTabDestination({required this.label, required this.icon});

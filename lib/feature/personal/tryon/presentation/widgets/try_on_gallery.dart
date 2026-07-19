@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/home/presentation/pages/tryon_fullscreen_viewer.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fullscreen_viewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 

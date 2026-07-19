@@ -19,7 +19,7 @@ import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_store_info.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
+import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 class ProductDetailBody extends HookConsumerWidget {
   const ProductDetailBody({super.key, required this.productAsync, required this.onRetry});

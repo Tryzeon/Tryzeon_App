@@ -4,7 +4,6 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
 import 'package:tryzeon/feature/personal/account/presentation/pages/account_page.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/pages/chat_page.dart';
-import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/pages/personal_onboarding_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/body_measurements_settings_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/profile_settings_page.dart';
@@ -14,6 +13,7 @@ import 'package:tryzeon/feature/personal/shop/presentation/pages/product_detail_
 import 'package:tryzeon/feature/personal/shop/presentation/pages/shop_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_item_detail_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_page.dart';
 

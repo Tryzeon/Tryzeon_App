@@ -7,7 +7,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_fab.dart';
+import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 /// A recommended shop product as its own chat bubble: image, name, price and a
 /// try-on button. Tap opens the product detail page.
