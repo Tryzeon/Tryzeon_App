@@ -1,17 +1,17 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_params.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
+/// Runs a virtual try-on from a fully-resolved [TryonRequest].
 class Tryon {
-  Tryon({required final TryOnRepository tryOnRepository})
-    : _tryOnRepository = tryOnRepository;
+  Tryon({required final TryonRepository tryonRepository})
+    : _tryonRepository = tryonRepository;
 
-  final TryOnRepository _tryOnRepository;
+  final TryonRepository _tryonRepository;
 
-  /// Performs virtual try-on.
-  Future<Result<TryonResult, Failure>> call(final TryOnParams params) async {
-    return _tryOnRepository.tryon(params);
+  Future<Result<TryonResult, Failure>> call(final TryonRequest request) {
+    return _tryonRepository.tryon(request);
   }
 }
