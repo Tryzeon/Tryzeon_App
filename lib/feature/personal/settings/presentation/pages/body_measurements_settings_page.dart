@@ -60,7 +60,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
       );
     }
 
-    final isLoading = useState(false);
+    final isLoading = ref.watch(profileEditProvider).isLoading;
     var hasChanges = false;
     var filledCount = 0;
 
@@ -85,25 +85,19 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
     Future<void> updateMeasurements() async {
       if (!formKey.currentState!.validate()) return;
 
-      isLoading.value = true;
-
       final measurementsJson = <String, dynamic>{
         for (final entry in measurementControllers.entries)
           entry.key.value: double.tryParse(entry.value.text),
       };
 
-      final Measurements newMeasurements = Measurements.fromJson(measurementsJson);
-
-      final updateUseCase = ref.read(updateUserBodyMeasurementsUseCaseProvider);
-      final result = await updateUseCase(measurements: newMeasurements);
+      final result = await ref
+          .read(profileEditProvider.notifier)
+          .updateBodyMeasurements(Measurements.fromJson(measurementsJson));
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
-
       if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-        if (context.mounted) context.pop();
+        context.pop();
       } else {
         TopNotification.show(
           context,
@@ -160,8 +154,8 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: isLoading.value || !hasChanges ? null : updateMeasurements,
-                child: isLoading.value
+                onPressed: isLoading || !hasChanges ? null : updateMeasurements,
+                child: isLoading
                     ? SizedBox(
                         width: AppSpacing.mdLg,
                         height: AppSpacing.mdLg,

@@ -6,9 +6,13 @@ import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_profile.dart';
@@ -109,6 +113,69 @@ Future<File?> avatarFile(final Ref ref) async {
   return result.get();
 }
 
+@riverpod
+class ProfileEditNotifier extends _$ProfileEditNotifier {
+  @override
+  AsyncValue<void> build() => const AsyncData(null);
+
+  Future<Result<void, Failure>> updateProfile({
+    required final String name,
+    final Gender? gender,
+    final AgeRange? ageRange,
+  }) {
+    return _write(
+      () => ref.read(updateUserProfileUseCaseProvider)(
+        name: name,
+        gender: gender,
+        ageRange: ageRange,
+      ),
+    );
+  }
+
+  Future<Result<void, Failure>> updateBodyMeasurements(final Measurements measurements) {
+    return _write(
+      () =>
+          ref.read(updateUserBodyMeasurementsUseCaseProvider)(measurements: measurements),
+    );
+  }
+
+  Future<Result<void, Failure>> updateStylePreferences(
+    final List<ClothingStyle> stylePreferences,
+  ) {
+    return _write(
+      () => ref.read(updateStylePreferencesUseCaseProvider)(
+        stylePreferences: stylePreferences,
+      ),
+    );
+  }
+
+  /// Mirrors [write]'s outcome into [state] and drops the cached profile on
+  /// success so every screen re-reads the updated values. Kept alive for the
+  /// duration, so a form popped mid-write doesn't dispose this notifier out
+  /// from under the pending `state` write.
+  Future<Result<void, Failure>> _write(
+    final Future<Result<void, Failure>> Function() write,
+  ) async {
+    final link = ref.keepAlive();
+    state = const AsyncLoading();
+    try {
+      final result = await write();
+      if (result.isSuccess) {
+        ref.invalidate(userProfileProvider);
+      }
+      state = result.isFailure
+          ? AsyncError(result.getError()!, StackTrace.current)
+          : const AsyncData(null);
+      return result;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update user profile', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    } finally {
+      link.close();
+    }
+  }
+}
 
 @riverpod
 class AvatarUploadNotifier extends _$AvatarUploadNotifier {
@@ -116,6 +183,7 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
   AsyncValue<void> build() => const AsyncData(null);
 
   Future<Result<void, Failure>> upload(final File image) async {
+    final link = ref.keepAlive();
     state = const AsyncLoading();
     try {
       final profile = await ref.read(userProfileProvider.future);
@@ -142,6 +210,8 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
       AppLogger.error('Failed to upload avatar', e, stackTrace);
       state = AsyncError(e, stackTrace);
       return Err(mapExceptionToFailure(e));
+    } finally {
+      link.close();
     }
   }
 }

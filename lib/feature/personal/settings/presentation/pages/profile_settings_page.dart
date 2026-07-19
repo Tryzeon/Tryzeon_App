@@ -53,7 +53,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
     final nameController = useTextEditingController(text: profile.name);
     final ageRange = useState<AgeRange?>(profile.ageRange);
     final gender = useState<Gender?>(profile.gender);
-    final isLoading = useState(false);
+    final isLoading = ref.watch(profileEditProvider).isLoading;
 
     final userName = useValueListenable(nameController).text;
 
@@ -69,22 +69,18 @@ class _PersonalProfileForm extends HookConsumerWidget {
     Future<void> updateProfile() async {
       if (!formKey.currentState!.validate()) return;
 
-      isLoading.value = true;
-
-      final updateUseCase = ref.read(updateUserProfileUseCaseProvider);
-      final result = await updateUseCase(
-        name: nameController.text.trim(),
-        gender: gender.value,
-        ageRange: ageRange.value,
-      );
+      final result = await ref
+          .read(profileEditProvider.notifier)
+          .updateProfile(
+            name: nameController.text.trim(),
+            gender: gender.value,
+            ageRange: ageRange.value,
+          );
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
-
       if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-        if (context.mounted) context.pop();
+        context.pop();
       } else {
         TopNotification.show(
           context,
@@ -150,8 +146,8 @@ class _PersonalProfileForm extends HookConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: isLoading.value || !hasChanges ? null : updateProfile,
-                child: isLoading.value
+                onPressed: isLoading || !hasChanges ? null : updateProfile,
+                child: isLoading
                     ? SizedBox(
                         width: AppSpacing.mdLg,
                         height: AppSpacing.mdLg,

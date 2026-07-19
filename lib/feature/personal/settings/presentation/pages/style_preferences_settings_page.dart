@@ -53,7 +53,7 @@ class _StylePreferencesForm extends HookConsumerWidget {
       () => (profile.stylePreferences ?? const <ClothingStyle>[]).toSet(),
     );
     final selected = useState<Set<ClothingStyle>>({...original});
-    final isLoading = useState(false);
+    final isLoading = ref.watch(profileEditProvider).isLoading;
 
     final hasChanges = !setEquals(selected.value, original);
 
@@ -70,18 +70,14 @@ class _StylePreferencesForm extends HookConsumerWidget {
     }
 
     Future<void> save() async {
-      isLoading.value = true;
-
-      final updateUseCase = ref.read(updateStylePreferencesUseCaseProvider);
-      final result = await updateUseCase(stylePreferences: selected.value.toList());
+      final result = await ref
+          .read(profileEditProvider.notifier)
+          .updateStylePreferences(selected.value.toList());
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
-
       if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-        if (context.mounted) context.pop();
+        context.pop();
       } else {
         TopNotification.show(
           context,
@@ -108,8 +104,8 @@ class _StylePreferencesForm extends HookConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: isLoading.value || !hasChanges ? null : save,
-              child: isLoading.value
+              onPressed: isLoading || !hasChanges ? null : save,
+              child: isLoading
                   ? SizedBox(
                       width: AppSpacing.mdLg,
                       height: AppSpacing.mdLg,
