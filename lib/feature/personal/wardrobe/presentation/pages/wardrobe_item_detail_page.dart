@@ -88,13 +88,11 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
 
       if (confirmResult != OkCancelResult.ok || !context.mounted) return;
 
-      final deleteWardrobeItemUseCase = ref.read(deleteWardrobeItemUseCaseProvider);
-      final result = await deleteWardrobeItemUseCase(item);
+      final result = await ref.read(wardrobeEditProvider.notifier).delete(item);
 
       if (!context.mounted) return;
 
       if (result.isSuccess) {
-        ref.invalidate(wardrobeItemsProvider);
         context.pop();
       } else {
         TopNotification.show(
@@ -105,19 +103,13 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
     }
 
     Future<String?> handleSaveTags(final List<String> tags) async {
-      final updateWardrobeItemTagsUseCase = ref.read(
-        updateWardrobeItemTagsUseCaseProvider,
-      );
-      final result = await updateWardrobeItemTagsUseCase(item: item, tags: tags);
+      final result = await ref
+          .read(wardrobeEditProvider.notifier)
+          .updateTags(item: item, tags: tags);
 
       if (!context.mounted) return null;
 
-      if (result.isFailure) {
-        return result.getError()!.displayMessage(context);
-      }
-
-      ref.invalidate(wardrobeItemsProvider);
-      return null;
+      return result.isFailure ? result.getError()!.displayMessage(context) : null;
     }
 
     Future<void> handleEditTags() async {

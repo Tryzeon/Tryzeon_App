@@ -1,10 +1,15 @@
 import 'dart:io';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'dart:typed_data';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
@@ -85,26 +90,132 @@ AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
   );
 }
 
+/// The signed-in user's wardrobe, and the owner of wardrobe-list refreshes.
 @riverpod
-Future<List<WardrobeItem>> wardrobeItems(final Ref ref) async {
-  final getWardrobeItemsUseCase = ref.watch(getWardrobeItemsUseCaseProvider);
-  final result = await getWardrobeItemsUseCase();
-  if (result.isFailure) {
-    throw result.getError()!;
+class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
+  @override
+  Future<List<WardrobeItem>> build() async {
+    final getWardrobeItemsUseCase = ref.watch(getWardrobeItemsUseCaseProvider);
+    final result = await getWardrobeItemsUseCase();
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
+    return result.get()!;
   }
-  return result.get()!;
+
+  /// Force-refreshes the wardrobe list from the server. Swallows errors — the
+  /// provider drops into an error state and the UI shows an `ErrorView` or the
+  /// previous data.
+  Future<void> refresh() async {
+    await ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true);
+    ref.invalidateSelf();
+    try {
+      await future;
+    } catch (e, st) {
+      AppLogger.warning('Failed to refresh wardrobe items', e, st);
+    }
+  }
 }
 
-/// 強制刷新衣櫃列表
-Future<void> refreshWardrobeItems(final WidgetRef ref) async {
-  final getWardrobeItemsUseCase = ref.read(getWardrobeItemsUseCaseProvider);
-  await getWardrobeItemsUseCase(forceRefresh: true);
-  try {
-    ref.invalidate(wardrobeItemsProvider);
-    await ref.read(wardrobeItemsProvider.future);
-  } catch (e, st) {
-    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
-    AppLogger.warning('Failed to refresh wardrobe items', e, st);
+/// Owns the wardrobe writes (upload, tag edit, delete): exposes progress via
+/// [state] so a sheet can drive its save button without a hand-rolled flag,
+/// and returns the [Result] so the caller can surface a one-shot failure or
+/// react to the quota [ValidationFailure].
+@riverpod
+class WardrobeEditNotifier extends _$WardrobeEditNotifier {
+  @override
+  AsyncValue<void> build() => const AsyncData(null);
+
+  /// Uploads [image] as a new item, enforcing the subscription's wardrobe
+  /// limit.
+  ///
+  /// [replacementBytes] are uploaded in place of [image] when given — the
+  /// caller has already resolved which one the user wants, so this only
+  /// decides whether a temp file is needed to carry the bytes.
+  Future<Result<void, Failure>> upload({
+    required final File image,
+    required final WardrobeCategory category,
+    required final List<String> tags,
+    final Uint8List? replacementBytes,
+  }) {
+    return _write(() async {
+      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
+      final items = await ref.read(wardrobeItemsProvider.future);
+
+      final tempFile = replacementBytes == null
+          ? null
+          : await _writeTempPng(replacementBytes, basedOn: image);
+
+      try {
+        return await ref.read(uploadWardrobeItemUseCaseProvider)(
+          params: CreateWardrobeItemParams(
+            image: tempFile ?? image,
+            category: category,
+            tags: tags,
+          ),
+          currentItemCount: items.length,
+          wardrobeLimit: capabilities.wardrobeLimit,
+        );
+      } finally {
+        try {
+          await tempFile?.delete();
+        } catch (e, st) {
+          // Best-effort cleanup; a leftover temp file is non-fatal.
+          AppLogger.warning('Failed to delete temp upload file', e, st);
+        }
+      }
+    });
+  }
+
+  Future<Result<void, Failure>> updateTags({
+    required final WardrobeItem item,
+    required final List<String> tags,
+  }) {
+    return _write(
+      () async => ref
+          .read(updateWardrobeItemTagsUseCaseProvider)(item: item, tags: tags)
+          .then((final result) => result.map((final _) {})),
+    );
+  }
+
+  Future<Result<void, Failure>> delete(final WardrobeItem item) {
+    return _write(() => ref.read(deleteWardrobeItemUseCaseProvider)(item));
+  }
+
+  /// Writes [bytes] to a temp PNG named after [basedOn], so the repository has
+  /// a real file to upload.
+  Future<File> _writeTempPng(final Uint8List bytes, {required final File basedOn}) async {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/wardrobe_nobg_${basedOn.uri.pathSegments.last}.png');
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  /// Mirrors [write]'s outcome into [state] and drops the cached item list on
+  /// success so every screen re-reads it. Kept alive for the duration, so a
+  /// sheet popped mid-write doesn't dispose this notifier out from under the
+  /// pending `state` write.
+  Future<Result<void, Failure>> _write(
+    final Future<Result<void, Failure>> Function() write,
+  ) async {
+    final link = ref.keepAlive();
+    state = const AsyncLoading();
+    try {
+      final result = await write();
+      if (result.isSuccess) {
+        ref.invalidate(wardrobeItemsProvider);
+      }
+      state = result.isFailure
+          ? AsyncError(result.getError()!, StackTrace.current)
+          : const AsyncData(null);
+      return result;
+    } catch (e, stackTrace) {
+      AppLogger.error('Wardrobe write failed', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    } finally {
+      link.close();
+    }
   }
 }
 

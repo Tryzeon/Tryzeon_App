@@ -4,17 +4,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -25,7 +22,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final selectedCategory = useState<WardrobeCategory?>(null);
-    final isUploading = useState(false);
+    final isUploading = ref.watch(wardrobeEditProvider).isLoading;
     final tags = useState<List<String>>(const []);
     final tagController = useTextEditingController();
     final removedBgImage = useState<Uint8List?>(null);
@@ -73,53 +70,22 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       tags.value = List<String>.of(tags.value)..removeAt(index);
     }
 
-    Future<File> resolveUploadFile() async {
-      final bytes = removedBgImage.value;
-      if (!useRemovedBg.value || bytes == null) return image;
-      final dir = await getTemporaryDirectory();
-      final path = '${dir.path}/wardrobe_nobg_${image.uri.pathSegments.last}.png';
-      final file = File(path);
-      await file.writeAsBytes(bytes);
-      return file;
-    }
-
     Future<void> handleUpload() async {
       final pendingTag = tagController.text.trim();
       if (pendingTag.isNotEmpty) addTag();
 
-      isUploading.value = true;
-
-      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
-      final items = await ref.read(wardrobeItemsProvider.future);
-      final uploadWardrobeItemUseCase = ref.read(uploadWardrobeItemUseCaseProvider);
-
-      final uploadFile = await resolveUploadFile();
-
-      final result = await uploadWardrobeItemUseCase(
-        params: CreateWardrobeItemParams(
-          image: uploadFile,
-          category: selectedCategory.value!,
-          tags: tags.value,
-        ),
-        currentItemCount: items.length,
-        wardrobeLimit: capabilities.wardrobeLimit,
-      );
-
-      if (uploadFile.path != image.path) {
-        try {
-          await uploadFile.delete();
-        } catch (e, st) {
-          // Best-effort cleanup; a leftover temp file is non-fatal.
-          AppLogger.warning('Failed to delete temp upload file', e, st);
-        }
-      }
+      final result = await ref
+          .read(wardrobeEditProvider.notifier)
+          .upload(
+            image: image,
+            category: selectedCategory.value!,
+            tags: tags.value,
+            replacementBytes: useRemovedBg.value ? removedBgImage.value : null,
+          );
 
       if (!context.mounted) return;
 
-      isUploading.value = false;
-
       if (result.isSuccess) {
-        ref.invalidate(wardrobeItemsProvider);
         Navigator.pop(context, selectedCategory.value);
       } else {
         final failure = result.getError()!;
@@ -344,12 +310,10 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           ),
           child: FilledButton(
             onPressed:
-                selectedCategory.value != null &&
-                    !isUploading.value &&
-                    !isAnalyzingTags.value
+                selectedCategory.value != null && !isUploading && !isAnalyzingTags.value
                 ? handleUpload
                 : null,
-            child: isUploading.value
+            child: isUploading
                 ? SizedBox(
                     width: AppSpacing.mdLg,
                     height: AppSpacing.mdLg,

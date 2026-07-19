@@ -207,7 +207,7 @@ class WardrobePage extends HookConsumerWidget {
             // Grid Content
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => refreshWardrobeItems(ref),
+                onRefresh: () => ref.read(wardrobeItemsProvider.notifier).refresh(),
                 child: wardrobeItemsAsync.when(
                   skipLoadingOnReload: true,
                   skipError: true,
