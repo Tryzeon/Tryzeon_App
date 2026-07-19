@@ -6,7 +6,7 @@ import 'package:typed_result/typed_result.dart';
 
 /// Persists and shares finished try-on media (images/videos) through one
 /// symmetric pipeline, so callers never touch raw bytes or temp files.
-abstract class TryOnMediaRepository {
+abstract class TryonMediaRepository {
   /// Loads image bytes (cached) for [url] — used to build a base64 try-on
   /// source from a remote custom avatar.
   Future<Result<Uint8List, Failure>> loadImageBytes(final String url);

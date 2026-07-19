@@ -8,11 +8,11 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-class TryOnMediaRepositoryImpl implements TryOnMediaRepository {
-  TryOnMediaRepositoryImpl({required final TryOnMediaDataSource dataSource})
+class TryonMediaRepositoryImpl implements TryonMediaRepository {
+  TryonMediaRepositoryImpl({required final TryonMediaDataSource dataSource})
     : _dataSource = dataSource;
 
-  final TryOnMediaDataSource _dataSource;
+  final TryonMediaDataSource _dataSource;
 
   @override
   Future<Result<Uint8List, Failure>> loadImageBytes(final String url) async {
@@ -49,7 +49,7 @@ class TryOnMediaRepositoryImpl implements TryOnMediaRepository {
     final Future<void> Function(String path) sink, {
     required final String onError,
   }) async {
-    final url = result.mode == TryOnMode.video ? result.videoUrl : result.imageUrl;
+    final url = result.mode == TryonMode.video ? result.videoUrl : result.imageUrl;
     if (url == null || url.isEmpty) {
       return Err(ValidationFailure('${result.mode.name} URL is missing'));
     }

@@ -1,1 +1,1 @@
-enum TryOnMode { image, video }
+enum TryonMode { image, video }

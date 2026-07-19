@@ -4,8 +4,8 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 /// Floating badge shown on the photo when the current try-on result is set
 /// as the user's custom try-on avatar. Provides persistent state feedback so
 /// the toggle action in the more-options sheet can stay silent.
-class TryOnAvatarBadge extends StatelessWidget {
-  const TryOnAvatarBadge({super.key, required this.isVisible});
+class TryonAvatarBadge extends StatelessWidget {
+  const TryonAvatarBadge({super.key, required this.isVisible});
 
   final bool isVisible;
 

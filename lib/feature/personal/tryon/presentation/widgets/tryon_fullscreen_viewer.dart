@@ -11,7 +11,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 /// and is cropped at the top/bottom edges instead of being letterboxed). The
 /// close button fades it back out (the page underneath is never torn down, so
 /// there is no flicker).
-abstract final class TryOnFullscreenViewer {
+abstract final class TryonFullscreenViewer {
   /// Inserts the viewer as a layer above everything via the root [Overlay].
   static void open(
     final BuildContext context, {

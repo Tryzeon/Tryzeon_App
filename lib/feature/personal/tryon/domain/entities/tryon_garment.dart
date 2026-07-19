@@ -4,9 +4,9 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_sourc
 part 'tryon_garment.freezed.dart';
 
 @freezed
-sealed class TryOnGarment with _$TryOnGarment {
-  const factory TryOnGarment({
-    required final List<TryOnImageSource> images,
+sealed class TryonGarment with _$TryonGarment {
+  const factory TryonGarment({
+    required final List<TryonImageSource> images,
     final String? detail,
-  }) = _TryOnGarment;
+  }) = _TryonGarment;
 }

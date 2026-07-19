@@ -12,8 +12,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 /// videos are handled through local temp files so save/share/watermark stay
 /// symmetric across media types. Throws on failure — the repository maps
 /// exceptions to [Failure]s and owns temp-file cleanup.
-class TryOnMediaDataSource {
-  TryOnMediaDataSource({final BaseCacheManager? cacheManager, final Dio? dio})
+class TryonMediaDataSource {
+  TryonMediaDataSource({final BaseCacheManager? cacheManager, final Dio? dio})
     : _cacheManager = cacheManager ?? DefaultCacheManager(),
       _dio = dio ?? Dio();
 
@@ -29,7 +29,7 @@ class TryOnMediaDataSource {
 
   /// Downloads [url] into a temp file named for its media [type], returning the
   /// local path. The caller owns cleanup via [deleteTempFile].
-  Future<String> downloadToTempFile(final String url, final TryOnMode type) async {
+  Future<String> downloadToTempFile(final String url, final TryonMode type) async {
     final tempDir = await getTemporaryDirectory();
     final path =
         '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}'
@@ -38,16 +38,16 @@ class TryOnMediaDataSource {
     return path;
   }
 
-  Future<void> saveToGallery(final String path, final TryOnMode type) async {
+  Future<void> saveToGallery(final String path, final TryonMode type) async {
     switch (type) {
-      case TryOnMode.image:
+      case TryonMode.image:
         await Gal.putImage(path);
-      case TryOnMode.video:
+      case TryonMode.video:
         await Gal.putVideo(path);
     }
   }
 
-  Future<void> shareFile(final String path, final TryOnMode type) async {
+  Future<void> shareFile(final String path, final TryonMode type) async {
     await SharePlus.instance.share(
       ShareParams(files: [XFile(path, mimeType: _mimeType(type))]),
     );
@@ -60,8 +60,8 @@ class TryOnMediaDataSource {
     }
   }
 
-  String _extension(final TryOnMode type) => type == TryOnMode.video ? 'mp4' : 'jpg';
+  String _extension(final TryonMode type) => type == TryonMode.video ? 'mp4' : 'jpg';
 
-  String _mimeType(final TryOnMode type) =>
-      type == TryOnMode.video ? 'video/mp4' : 'image/jpeg';
+  String _mimeType(final TryonMode type) =>
+      type == TryonMode.video ? 'video/mp4' : 'image/jpeg';
 }

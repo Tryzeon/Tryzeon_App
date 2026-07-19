@@ -6,8 +6,8 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 
 /// The try-on trigger button: a frosted-glass pill with the brand mark, and
 /// an optional text [label]. Renders as a circle when [label] is omitted.
-class TryOnFab extends StatelessWidget {
-  const TryOnFab({super.key, required this.onTap, this.size = 24, this.label});
+class TryonFab extends StatelessWidget {
+  const TryonFab({super.key, required this.onTap, this.size = 24, this.label});
 
   final VoidCallback onTap;
   final double size;

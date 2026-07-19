@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-class TryOnIndicator extends StatelessWidget {
-  const TryOnIndicator({
+class TryonIndicator extends StatelessWidget {
+  const TryonIndicator({
     super.key,
     required this.currentTryonIndex,
     required this.tryonImagesCount,

@@ -3,10 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'tryon_image_source.freezed.dart';
 
 @freezed
-sealed class TryOnImageSource with _$TryOnImageSource {
+sealed class TryonImageSource with _$TryonImageSource {
   /// Supabase storage path or R2 'stores/' object key.
-  const factory TryOnImageSource.path(final String path) = TryOnImageSourcePath;
+  const factory TryonImageSource.path(final String path) = TryonImageSourcePath;
 
   /// Inline base64-encoded image bytes.
-  const factory TryOnImageSource.base64(final String data) = TryOnImageSourceBase64;
+  const factory TryonImageSource.base64(final String data) = TryonImageSourceBase64;
 }

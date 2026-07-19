@@ -5,28 +5,28 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/video_prompt_customize_sheet.dart';
 
-class TryOnModeSheet extends StatelessWidget {
-  const TryOnModeSheet({
+class TryonModeSheet extends StatelessWidget {
+  const TryonModeSheet({
     super.key,
     required this.hasVideoAccess,
     required this.onModeSelected,
   });
 
   final bool hasVideoAccess;
-  final ValueChanged<TryOnMode> onModeSelected;
+  final ValueChanged<TryonMode> onModeSelected;
 
-  /// Show the bottom sheet. Returns the selected TryOnMode or null if dismissed.
+  /// Show the bottom sheet. Returns the selected TryonMode or null if dismissed.
   static Future<void> show({
     required final BuildContext context,
     required final bool hasVideoAccess,
-    required final ValueChanged<TryOnMode> onModeSelected,
+    required final ValueChanged<TryonMode> onModeSelected,
   }) {
     return showModalBottomSheet(
       context: context,
       useRootNavigator: true,
       showDragHandle: true,
       builder: (final context) =>
-          TryOnModeSheet(hasVideoAccess: hasVideoAccess, onModeSelected: onModeSelected),
+          TryonModeSheet(hasVideoAccess: hasVideoAccess, onModeSelected: onModeSelected),
     );
   }
 
@@ -70,7 +70,7 @@ class TryOnModeSheet extends StatelessWidget {
               isNew: false,
               onTap: () {
                 Navigator.pop(context);
-                onModeSelected(TryOnMode.image);
+                onModeSelected(TryonMode.image);
               },
               colorScheme: colorScheme,
               textTheme: textTheme,
@@ -87,7 +87,7 @@ class TryOnModeSheet extends StatelessWidget {
               isNew: true,
               onTap: () {
                 Navigator.pop(context);
-                onModeSelected(TryOnMode.video);
+                onModeSelected(TryonMode.video);
               },
               onCustomize: () {
                 VideoPromptCustomizeSheet.show(context);

@@ -5,10 +5,10 @@ import 'package:typed_result/typed_result.dart';
 
 /// Shares a finished try-on result.
 class ShareTryonMedia {
-  ShareTryonMedia({required final TryOnMediaRepository mediaRepository})
+  ShareTryonMedia({required final TryonMediaRepository mediaRepository})
     : _mediaRepository = mediaRepository;
 
-  final TryOnMediaRepository _mediaRepository;
+  final TryonMediaRepository _mediaRepository;
 
   Future<Result<void, Failure>> call(final TryonResult result) {
     return _mediaRepository.share(result);
