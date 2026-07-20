@@ -95,9 +95,7 @@ class StoreProductsPage extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async {
-                  await refreshProducts(ref);
-                },
+                onRefresh: () => ref.read(productsProvider.notifier).refresh(),
                 child: const ProductListSection(),
               ),
             ),

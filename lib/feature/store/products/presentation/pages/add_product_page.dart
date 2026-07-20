@@ -12,7 +12,6 @@ import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_si
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_form_layout.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
-import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AddProductPage extends HookConsumerWidget {
@@ -33,7 +32,7 @@ class AddProductPage extends HookConsumerWidget {
       onPermissionDenied: () =>
           messenger.showSnackBar(const SnackBar(content: Text('需要麥克風權限才能語音輸入，請至系統設定開啟'))),
     );
-    final isSaving = useState(false);
+    final isSaving = ref.watch(productEditProvider) == ProductMutation.create;
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
     final isAnalyzing = useState(false);
@@ -65,31 +64,18 @@ class AddProductPage extends HookConsumerWidget {
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
 
-      isSaving.value = true;
-
-      final storeProfile = await ref.read(storeProfileProvider.future);
-      if (!context.mounted) return;
-
-      if (storeProfile == null) {
-        TopNotification.show(context, message: '無法獲取店家資訊，請重新登入');
-        isSaving.value = false;
-        return;
-      }
-
-      final createProductUseCase = ref.read(createProductUseCaseProvider);
-      final result = await createProductUseCase(
-        formData.toCreateProductParams(
-          storeId: storeProfile.id,
-          sizes: sizeManager.toCreateProductSizeParams(),
-        ),
-      );
+      final result = await ref
+          .read(productEditProvider.notifier)
+          .create(
+            (final storeId) => formData.toCreateProductParams(
+              storeId: storeId,
+              sizes: sizeManager.toCreateProductSizeParams(),
+            ),
+          );
 
       if (!context.mounted) return;
-
-      isSaving.value = false;
 
       if (result.isSuccess) {
-        ref.invalidate(productsProvider);
         context.pop(true);
       } else {
         TopNotification.show(
@@ -106,8 +92,8 @@ class AddProductPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),
             child: TextButton(
-              onPressed: isSaving.value ? null : addProduct,
-              child: isSaving.value
+              onPressed: isSaving ? null : addProduct,
+              child: isSaving
                   ? const SizedBox(
                       width: 16,
                       height: 16,

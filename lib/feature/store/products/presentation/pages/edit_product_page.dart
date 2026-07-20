@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -64,8 +63,9 @@ class _EditProductContent extends HookConsumerWidget {
       onPermissionDenied: () =>
           messenger.showSnackBar(const SnackBar(content: Text('需要麥克風權限才能語音輸入，請至系統設定開啟'))),
     );
-    final isSaving = useState(false);
-    final isDeleting = useState(false);
+    final mutation = ref.watch(productEditProvider);
+    final isSaving = mutation == ProductMutation.update;
+    final isDeleting = mutation == ProductMutation.delete;
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
     Future<void> deleteProduct() async {
@@ -80,17 +80,11 @@ class _EditProductContent extends HookConsumerWidget {
 
       if (dialogResult != OkCancelResult.ok) return;
 
-      isDeleting.value = true;
-
-      final deleteProductUseCase = ref.read(deleteProductUseCaseProvider);
-      final result = await deleteProductUseCase(product);
+      final result = await ref.read(productEditProvider.notifier).delete(product);
 
       if (!context.mounted) return;
 
-      isDeleting.value = false;
-
       if (result.isSuccess) {
-        ref.invalidate(productsProvider);
         context.pop(true);
       } else {
         TopNotification.show(
@@ -103,22 +97,17 @@ class _EditProductContent extends HookConsumerWidget {
     Future<void> updateProduct() async {
       if (!formData.validate(context)) return;
 
-      isSaving.value = true;
-
       final deltas = sizeManager.calculateDeltas(product.id, product.sizes);
-
-      final updateProductUseCase = ref.read(updateProductUseCaseProvider);
-      final result = await updateProductUseCase(
-        original: product,
-        params: formData.toUpdateProductParams(productId: product.id, deltas: deltas),
-      );
+      final result = await ref
+          .read(productEditProvider.notifier)
+          .update(
+            original: product,
+            params: formData.toUpdateProductParams(productId: product.id, deltas: deltas),
+          );
 
       if (!context.mounted) return;
 
-      isSaving.value = false;
-
       if (result.isSuccess) {
-        ref.invalidate(productsProvider);
         context.pop(true);
       } else {
         TopNotification.show(
@@ -135,8 +124,8 @@ class _EditProductContent extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),
             child: TextButton(
-              onPressed: (isSaving.value || isDeleting.value) ? null : updateProduct,
-              child: isSaving.value
+              onPressed: (isSaving || isDeleting) ? null : updateProduct,
+              child: isSaving
                   ? const SizedBox(
                       width: 16,
                       height: 16,
@@ -166,8 +155,8 @@ class _EditProductContent extends HookConsumerWidget {
             ),
             ProductDangerZone(
               onDelete: deleteProduct,
-              isSaving: isSaving.value,
-              isDeleting: isDeleting.value,
+              isSaving: isSaving,
+              isDeleting: isDeleting,
             ),
           ],
         ),

@@ -1,4 +1,3 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
@@ -25,7 +24,6 @@ import 'package:tryzeon/feature/store/products/domain/usecases/list_products.dar
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_sort_condition.dart';
-import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -92,22 +90,48 @@ class ProductQuery extends _$ProductQuery {
   void reset() => state = const ProductQueryState();
 }
 
-/// Fetches all products for the store. Sorting is applied entirely client-side
-/// in [filteredProductsProvider].
+/// Fetches all products for the store, and owns product-list refreshes.
+/// Sorting is applied entirely client-side in [filteredProductsProvider].
 @riverpod
-Future<List<Product>> products(final Ref ref) async {
-  final profile = await ref.watch(storeProfileProvider.future);
-  if (profile == null || profile.id.isEmpty) {
-    throw const UnknownFailure('Store profile not found');
+class ProductsNotifier extends _$ProductsNotifier {
+  @override
+  Future<List<Product>> build() async {
+    final profile = await ref.watch(storeProfileProvider.future);
+    if (profile == null || profile.id.isEmpty) {
+      throw const UnknownFailure('Store profile not found');
+    }
+
+    final listProductsUseCase = ref.watch(listProductsUseCaseProvider);
+    final result = await listProductsUseCase(storeId: profile.id);
+
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
+    return result.get()!;
   }
 
-  final listProductsUseCase = ref.watch(listProductsUseCaseProvider);
-  final result = await listProductsUseCase(storeId: profile.id);
+  /// Force-refreshes the product list from the server. A failed store profile
+  /// is re-fetched first, since the list can't be loaded without it. Swallows
+  /// errors — the provider drops into an error state and the UI shows an
+  /// `ErrorView` or the previous data.
+  Future<void> refresh() async {
+    try {
+      if (ref.read(storeProfileProvider).hasError) {
+        ref.invalidate(storeProfileProvider);
+      }
+      final profile = await ref.read(storeProfileProvider.future);
+      if (profile == null) return;
 
-  if (result.isFailure) {
-    throw result.getError()!;
+      await ref.read(listProductsUseCaseProvider)(
+        storeId: profile.id,
+        forceRefresh: true,
+      );
+      ref.invalidateSelf();
+      await future;
+    } catch (e, st) {
+      AppLogger.warning('Failed to refresh products', e, st);
+    }
   }
-  return result.get()!;
 }
 
 /// Applies search and sort (incl. analytics-based sort) entirely in memory.
@@ -167,30 +191,71 @@ SizeVoiceParser sizeVoiceParser(final Ref ref) =>
 @Riverpod(keepAlive: true)
 AudioRecorderService audioRecorderService(final Ref ref) => AudioRecorderServiceImpl();
 
-/// 強制刷新商品列表
-/// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作
-Future<void> refreshProducts(final WidgetRef ref) async {
-  StoreProfile? profile;
-  try {
-    if (ref.read(storeProfileProvider).hasError) {
-      ref.invalidate(storeProfileProvider);
-    }
-    profile = await ref.read(storeProfileProvider.future);
-  } catch (e, st) {
-    AppLogger.warning('Failed to load store profile during products refresh', e, st);
-    return;
+/// Which product write is currently in flight, so a form can show progress on
+/// the control that started it instead of on every control at once.
+enum ProductMutation { create, update, delete }
+
+/// Owns the product create/update/delete writes: exposes which mutation is in
+/// flight via [state] so a form can show progress on the right control, and
+/// returns the [Result] so the caller can surface a one-shot failure message.
+@riverpod
+class ProductEditNotifier extends _$ProductEditNotifier {
+  @override
+  ProductMutation? build() => null;
+
+  /// Creates a product for the signed-in store. Fails with an [AuthFailure]
+  /// when there is no store profile to attach it to.
+  Future<Result<void, Failure>> create(
+    final CreateProductParams Function(String storeId) buildParams,
+  ) {
+    return _write(ProductMutation.create, () async {
+      final storeProfile = await ref.read(storeProfileProvider.future);
+      if (storeProfile == null) {
+        return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
+      }
+      return ref.read(createProductUseCaseProvider)(buildParams(storeProfile.id));
+    });
   }
 
-  if (profile == null) return;
+  Future<Result<void, Failure>> update({
+    required final Product original,
+    required final UpdateProductParams params,
+  }) {
+    return _write(
+      ProductMutation.update,
+      () => ref.read(updateProductUseCaseProvider)(original: original, params: params),
+    );
+  }
 
-  final listProductsUseCase = ref.read(listProductsUseCaseProvider);
+  Future<Result<void, Failure>> delete(final Product product) {
+    return _write(
+      ProductMutation.delete,
+      () => ref.read(deleteProductUseCaseProvider)(product),
+    );
+  }
 
-  try {
-    await listProductsUseCase(storeId: profile.id, forceRefresh: true);
-    ref.invalidate(productsProvider);
-    await ref.read(productsProvider.future);
-  } catch (e, st) {
-    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
-    AppLogger.warning('Failed to refresh products', e, st);
+  /// Runs [write] while flagging [mutation] as in flight, and drops the cached
+  /// product list on success so every screen re-reads it. Kept alive for the
+  /// duration, so a form popped mid-write doesn't dispose this notifier out
+  /// from under the pending `state` write.
+  Future<Result<void, Failure>> _write(
+    final ProductMutation mutation,
+    final Future<Result<void, Failure>> Function() write,
+  ) async {
+    final link = ref.keepAlive();
+    state = mutation;
+    try {
+      final result = await write();
+      if (result.isSuccess) {
+        ref.invalidate(productsProvider);
+      }
+      return result;
+    } catch (e, stackTrace) {
+      AppLogger.error('Product $mutation failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    } finally {
+      state = null;
+      link.close();
+    }
   }
 }
