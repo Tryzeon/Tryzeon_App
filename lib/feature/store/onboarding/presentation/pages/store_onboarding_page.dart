@@ -61,7 +61,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => refreshStoreProfile(ref),
+          onRefresh: () => ref.read(storeProfileProvider.notifier).refresh(),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.zero,

@@ -7,7 +7,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -58,7 +57,7 @@ class _StoreProfileForm extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final newLogoImage = useState<File?>(null);
-    final isLoading = useState(false);
+    final isLoading = ref.watch(storeProfileEditProvider).isLoading;
 
     final storeNameController = useTextEditingController(text: profile.name);
     final storeAddressController = useTextEditingController(text: profile.address);
@@ -120,57 +119,27 @@ class _StoreProfileForm extends HookConsumerWidget {
     Future<void> updateProfile() async {
       if (!formKey.currentState!.validate()) return;
 
-      isLoading.value = true;
-
       final trimmedAddress = storeAddressController.text.trim();
-      final addressChanged = trimmedAddress != (profile.address ?? '');
-
-      double? latitude = profile.latitude;
-      double? longitude = profile.longitude;
-      if (addressChanged) {
-        if (trimmedAddress.isEmpty) {
-          latitude = null;
-          longitude = null;
-        } else {
-          final coords = await ref
-              .read(geocodingServiceProvider)
-              .geocodeAddress(trimmedAddress);
-          latitude = coords?.latitude;
-          longitude = coords?.longitude;
-          if (coords == null && context.mounted) {
-            TopNotification.show(context, message: '地址無法定位，將不會出現在附近排序');
-          }
-        }
-      }
-
-      final targetProfile = profile.copyWith(
-        name: storeNameController.text.trim(),
-        address: trimmedAddress.isEmpty ? null : trimmedAddress,
-        latitude: latitude,
-        longitude: longitude,
-        channels: selectedChannels.value,
-        orderContacts: buildOrderContacts(),
-      );
-
-      final updateUseCase = ref.read(updateStoreProfileUseCaseProvider);
-      final result = await updateUseCase(
-        original: profile,
-        target: targetProfile,
-        logoFile: newLogoImage.value,
-      );
+      final result = await ref
+          .read(storeProfileEditProvider.notifier)
+          .save(
+            name: storeNameController.text.trim(),
+            address: trimmedAddress.isEmpty ? null : trimmedAddress,
+            channels: selectedChannels.value,
+            orderContacts: buildOrderContacts(),
+            logoFile: newLogoImage.value,
+          );
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
-
-      if (result.isSuccess) {
-        ref.invalidate(storeProfileProvider);
-        if (context.mounted) context.pop();
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-        );
+      switch (result) {
+        case Ok(value: (:final addressUnresolved)):
+          if (addressUnresolved) {
+            TopNotification.show(context, message: '地址無法定位，將不會出現在附近排序');
+          }
+          context.pop();
+        case Err(:final error):
+          TopNotification.show(context, message: error.displayMessage(context));
       }
     }
 
@@ -374,8 +343,8 @@ class _StoreProfileForm extends HookConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: isLoading.value || !hasChanges ? null : updateProfile,
-                child: isLoading.value
+                onPressed: isLoading || !hasChanges ? null : updateProfile,
+                child: isLoading
                     ? SizedBox(
                         width: AppSpacing.mdLg,
                         height: AppSpacing.mdLg,
