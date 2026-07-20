@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -21,6 +22,10 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   final StoreProfileRemoteDataSource _remoteDataSource;
   final StoreProfileLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
+
+  /// `channels` is a `Set` in the domain layer, so its list order carries no
+  /// meaning and must not read as a change.
+  static const _unorderedKeys = {'channels'};
 
   @override
   Future<Result<StoreProfile?, Failure>> getStoreProfile({
@@ -102,14 +107,19 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         }
       }
 
-      final hasChanges = original != finalTarget;
+      // Diff against the original so an untouched column keeps whatever value
+      // the server has — `original` may be an old cached copy.
+      final changes = jsonDiff(
+        _mappr.convert<StoreProfile, StoreProfileModel>(original).toJson(),
+        _mappr.convert<StoreProfile, StoreProfileModel>(finalTarget).toJson(),
+        unorderedKeys: _unorderedKeys,
+      );
 
-      if (!hasChanges) {
+      if (changes.isEmpty) {
         return const Ok(null);
       }
 
-      final targetModel = _mappr.convert<StoreProfile, StoreProfileModel>(finalTarget);
-      final updatedProfile = await _remoteDataSource.updateStoreProfile(targetModel);
+      final updatedProfile = await _remoteDataSource.updateStoreProfile(changes);
 
       await _localDataSource.saveStoreProfile(updatedProfile);
 

@@ -29,11 +29,13 @@ class StoreProfileRemoteDataSource {
     return StoreProfileModel.fromJson(_withLogoUrl(response));
   }
 
-  Future<StoreProfileModel> updateStoreProfile(final StoreProfileModel profile) async {
+  /// Writes only [changes] — the columns the store owner actually edited — so
+  /// a column left alone keeps whatever value the server has.
+  Future<StoreProfileModel> updateStoreProfile(final Map<String, dynamic> changes) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final json = profile.toJson()
+    final json = Map<String, dynamic>.from(changes)
       ..remove('id')
       ..remove('owner_id')
       ..remove('created_at')
