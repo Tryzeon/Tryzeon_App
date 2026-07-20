@@ -3,19 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
-
-class ProductSizeDeltas {
-  const ProductSizeDeltas({
-    required this.sizesToAdd,
-    required this.sizesToUpdate,
-    required this.sizeIdsToDelete,
-  });
-
-  final List<CreateProductSizeParams> sizesToAdd;
-  final List<ProductSize> sizesToUpdate;
-  final List<String> sizeIdsToDelete;
-}
 
 class ProductSizeManager {
   ProductSizeManager({
@@ -40,42 +29,12 @@ class ProductSizeManager {
         .toList();
   }
 
-  ProductSizeDeltas calculateDeltas(
-    final String productId,
-    final List<ProductSize>? originalSizes,
-  ) {
-    final originalSizeIds = originalSizes?.map((final s) => s.id).toSet() ?? {};
-    final sizesToAdd = <CreateProductSizeParams>[];
-    final sizesToUpdate = <ProductSize>[];
-    final targetSizeIds = <String>{};
-
-    for (final entry in sizeEntries) {
-      if (entry.id == null) {
-        sizesToAdd.add(entry.toCreateProductSizeParams(unit: selectedUnit));
-      } else {
-        targetSizeIds.add(entry.id!);
-
-        final originalSize = originalSizes
-            ?.where((final s) => s.id == entry.id)
-            .firstOrNull;
-
-        if (originalSize != null) {
-          final updatedSize = entry.toProductSize(productId, unit: selectedUnit);
-
-          if (originalSize != updatedSize) {
-            sizesToUpdate.add(updatedSize);
-          }
-        }
-      }
-    }
-
-    final sizeIdsToDelete = originalSizeIds.difference(targetSizeIds).toList();
-
-    return ProductSizeDeltas(
-      sizesToAdd: sizesToAdd,
-      sizesToUpdate: sizesToUpdate,
-      sizeIdsToDelete: sizeIdsToDelete,
-    );
+  /// The full list of sizes the store owner wants to end up with. Working out
+  /// which are inserts, updates and deletes is the data layer's job.
+  List<SizeItem> toSizeItems() {
+    return sizeEntries
+        .map((final entry) => entry.toSizeItem(unit: selectedUnit))
+        .toList();
   }
 }
 

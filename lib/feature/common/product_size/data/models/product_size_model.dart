@@ -3,7 +3,10 @@ import 'package:tryzeon/feature/common/measurements/data/models/measurements_mod
 
 part 'product_size_model.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+/// [explicitToJson] keeps the nested measurements a plain map rather than a
+/// [MeasurementsModel] instance, so `jsonDiff` can compare it structurally
+/// instead of falling back to identity equality.
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ProductSizeModel {
   const ProductSizeModel({
     required this.id,

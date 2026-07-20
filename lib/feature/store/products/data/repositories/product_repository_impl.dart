@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -12,6 +13,7 @@ import 'package:tryzeon/feature/store/products/data/datasources/product_remote_d
 import 'package:tryzeon/feature/store/products/data/models/create_product_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
+import 'package:tryzeon/feature/store/products/data/repositories/product_size_diff.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
@@ -29,6 +31,17 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
   static const _uuid = Uuid();
+
+  /// Columns backed by a `Set` in the domain layer, whose list order therefore
+  /// carries no meaning and must not read as a change.
+  static const _productUnorderedKeys = {'category_ids', 'styles', 'seasons'};
+
+  static MeasurementsModel? _toMeasurementsModel(final Measurements? measurements) {
+    if (measurements == null) return null;
+    return const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
+      measurements,
+    );
+  }
 
   @override
   Future<Result<List<Product>, Failure>> listProducts({
@@ -118,11 +131,7 @@ class ProductRepositoryImpl implements ProductRepository {
               (final size) => CreateProductSizeRequest(
                 productId: productId,
                 name: size.name,
-                measurements: size.measurements != null
-                    ? const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
-                        size.measurements!,
-                      )
-                    : null,
+                measurements: _toMeasurementsModel(size.measurements),
               ),
             )
             .toList();
@@ -244,23 +253,25 @@ class ProductRepositoryImpl implements ProductRepository {
         imagePaths: finalImagePaths,
       );
 
-      final productChanged = original != targetProduct;
-      final sizesChanged =
-          params.sizesToAdd.isNotEmpty ||
-          params.sizesToUpdate.isNotEmpty ||
-          params.sizeIdsToDelete.isNotEmpty;
+      // 6. Diff against the original so an untouched column keeps whatever
+      // value the server has — `original` may be an old cached copy.
+      final productChanges = jsonDiff(
+        _mappr.convert<Product, ProductModel>(original).toJson(),
+        _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
+        unorderedKeys: _productUnorderedKeys,
+      );
+      final sizeDiff = computeSizeDiff(original.sizes, params.sizes);
 
-      if (!productChanged && !sizesChanged) {
+      if (productChanges.isEmpty && sizeDiff.isEmpty) {
         return const Ok(null);
       }
 
-      // 6. Update product in DB
-      if (productChanged) {
-        final targetModel = _mappr.convert<Product, ProductModel>(targetProduct);
-        await _remoteDataSource.updateProduct(targetModel);
+      // 7. Update product in DB
+      if (productChanges.isNotEmpty) {
+        await _remoteDataSource.updateProduct(original.id, productChanges);
       }
 
-      // 7. Drop removed images locally and on R2.
+      // 8. Drop removed images locally and on R2.
       if (removedPaths.isNotEmpty) {
         _localDataSource.deleteProductImages(removedPaths).ignore();
         _remoteDataSource
@@ -270,35 +281,38 @@ class ProductRepositoryImpl implements ProductRepository {
             });
       }
 
-      // 8. Handle size changes
-      if (sizesChanged) {
-        // Delete removed sizes
-        for (final sizeId in params.sizeIdsToDelete) {
-          await _remoteDataSource.deleteProductSize(sizeId);
-        }
-
-        // Add new sizes
-        for (final sizeParams in params.sizesToAdd) {
-          final sizeRequest = CreateProductSizeRequest(
-            productId: original.id,
-            name: sizeParams.name,
-            measurements: sizeParams.measurements != null
-                ? const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
-                    sizeParams.measurements!,
-                  )
-                : null,
-          );
-          await _remoteDataSource.insertProductSize(sizeRequest);
-        }
-
-        // Update existing sizes
-        for (final size in params.sizesToUpdate) {
-          final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(size);
-          await _remoteDataSource.updateProductSize(sizeModel);
-        }
+      // 9. Handle size changes
+      for (final sizeId in sizeDiff.idsToDelete) {
+        await _remoteDataSource.deleteProductSize(sizeId);
       }
 
-      // 9. Update local cache
+      for (final size in sizeDiff.toAdd) {
+        await _remoteDataSource.insertProductSize(
+          CreateProductSizeRequest(
+            productId: original.id,
+            name: size.name,
+            measurements: _toMeasurementsModel(size.measurements),
+          ),
+        );
+      }
+
+      for (final update in sizeDiff.toUpdate) {
+        final targetSize = ProductSize(
+          id: update.original.id,
+          productId: update.original.productId,
+          name: update.target.name,
+          measurements: update.target.measurements,
+          createdAt: update.original.createdAt,
+          updatedAt: update.original.updatedAt,
+        );
+        final sizeChanges = jsonDiff(
+          _mappr.convert<ProductSize, ProductSizeModel>(update.original).toJson(),
+          _mappr.convert<ProductSize, ProductSizeModel>(targetSize).toJson(),
+        );
+        await _remoteDataSource.updateProductSize(update.original.id, sizeChanges);
+      }
+
+      // 10. Update local cache
       final model = await _remoteDataSource.getProduct(original.id);
       await _localDataSource.saveProduct(model);
 

@@ -3,12 +3,11 @@ import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 
 class ProductSizeEntryController {
   ProductSizeEntryController({
     this.id,
-    this.createdAt,
-    this.updatedAt,
     final String name = '',
     final Measurements? measurements,
   }) : nameController = TextEditingController(text: name) {
@@ -27,8 +26,6 @@ class ProductSizeEntryController {
   factory ProductSizeEntryController.fromProductSize(final ProductSize size) {
     return ProductSizeEntryController(
       id: size.id,
-      createdAt: size.createdAt,
-      updatedAt: size.updatedAt,
       name: size.name,
       measurements: size.measurements,
     );
@@ -56,8 +53,6 @@ class ProductSizeEntryController {
   }
 
   final String? id;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
   final TextEditingController nameController;
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
   final Map<MeasurementType, TextEditingController> offsetControllers = {};
@@ -101,18 +96,19 @@ class ProductSizeEntryController {
     );
   }
 
-  ProductSize toProductSize(
-    final String productId, {
-    required final MeasurementUnit unit,
-  }) {
-    return ProductSize(
-      id: id!,
-      productId: productId,
-      name: nameController.text,
-      measurements: _buildMeasurements(unit: unit),
-      createdAt: createdAt!,
-      updatedAt: updatedAt!,
-    );
+  /// The size as the store owner currently has it in the form: [ExistingSizeItem]
+  /// when it came from the product, [NewSizeItem] when they just added it.
+  SizeItem toSizeItem({required final MeasurementUnit unit}) {
+    final measurements = _buildMeasurements(unit: unit);
+    final sizeId = id;
+
+    return sizeId == null
+        ? SizeItem.newSize(name: nameController.text, measurements: measurements)
+        : SizeItem.existing(
+            id: sizeId,
+            name: nameController.text,
+            measurements: measurements,
+          );
   }
 
   void convertValues({

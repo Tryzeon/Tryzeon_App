@@ -97,12 +97,13 @@ class _EditProductContent extends HookConsumerWidget {
     Future<void> updateProduct() async {
       if (!formData.validate(context)) return;
 
-      final deltas = sizeManager.calculateDeltas(product.id, product.sizes);
       final result = await ref
           .read(productEditProvider.notifier)
           .update(
-            original: product,
-            params: formData.toUpdateProductParams(productId: product.id, deltas: deltas),
+            formData.toUpdateProductParams(
+              productId: product.id,
+              sizes: sizeManager.toSizeItems(),
+            ),
           );
 
       if (!context.mounted) return;

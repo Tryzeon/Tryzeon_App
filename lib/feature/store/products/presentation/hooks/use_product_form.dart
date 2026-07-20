@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
-import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 
 class ProductFormData {
   ProductFormData({
@@ -109,14 +109,12 @@ class ProductFormData {
 
   UpdateProductParams toUpdateProductParams({
     required final String productId,
-    required final ProductSizeDeltas deltas,
+    required final List<SizeItem> sizes,
   }) {
     return UpdateProductParams(
       productId: productId,
       finalImageOrder: images.value,
-      sizesToAdd: deltas.sizesToAdd,
-      sizesToUpdate: deltas.sizesToUpdate,
-      sizeIdsToDelete: deltas.sizeIdsToDelete,
+      sizes: sizes,
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.parse(priceController.text),

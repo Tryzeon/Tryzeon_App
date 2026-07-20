@@ -45,15 +45,20 @@ class ProductRemoteDataSource {
     return ProductModel.fromJson(_withProductImageUrl(response));
   }
 
-  Future<void> updateProduct(final ProductModel product) async {
-    final json = product.toJson()
+  /// Writes only [changes] — the columns the store owner actually edited — so
+  /// a column left alone keeps whatever value the server has.
+  Future<void> updateProduct(
+    final String productId,
+    final Map<String, dynamic> changes,
+  ) async {
+    final json = Map<String, dynamic>.from(changes)
       ..remove('id')
       ..remove('store_id')
       ..remove('created_at')
       ..remove('updated_at')
       ..remove('product_variants');
 
-    await _supabaseClient.from(_productsTable).update(json).eq('id', product.id);
+    await _supabaseClient.from(_productsTable).update(json).eq('id', productId);
   }
 
   Future<void> deleteProduct(final String productId) async {
@@ -72,14 +77,17 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).insert(request.toJson());
   }
 
-  Future<void> updateProductSize(final ProductSizeModel size) async {
-    final json = size.toJson()
+  Future<void> updateProductSize(
+    final String sizeId,
+    final Map<String, dynamic> changes,
+  ) async {
+    final json = Map<String, dynamic>.from(changes)
       ..remove('id')
       ..remove('product_id')
       ..remove('created_at')
       ..remove('updated_at');
 
-    await _supabaseClient.from(_productSizesTable).update(json).eq('id', size.id);
+    await _supabaseClient.from(_productSizesTable).update(json).eq('id', sizeId);
   }
 
   Future<List<String>> uploadProductImages({

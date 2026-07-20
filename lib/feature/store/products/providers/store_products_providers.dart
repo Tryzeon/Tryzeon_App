@@ -223,13 +223,19 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     });
   }
 
-  Future<Result<void, Failure>> update({
-    required final Product original,
-    required final UpdateProductParams params,
-  }) {
+  /// Applies the store owner's edits. The product to diff them against is read
+  /// here rather than taken from the form, so a stale form can't clobber
+  /// server-owned fields.
+  Future<Result<void, Failure>> update(final UpdateProductParams params) {
     return _write(
       ProductMutation.update,
-      () => ref.read(updateProductUseCaseProvider)(original: original, params: params),
+      () async {
+        final original = await ref.read(productByIdProvider(params.productId).future);
+        return ref.read(updateProductUseCaseProvider)(original: original, params: params);
+      },
+      // The cached product is the baseline the next edit diffs against, so a
+      // stale one would silently narrow that edit's changes.
+      refreshedProductId: params.productId,
     );
   }
 
@@ -241,19 +247,24 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   }
 
   /// Runs [write] while flagging [mutation] as in flight, and drops the cached
-  /// product list on success so every screen re-reads it. Kept alive for the
-  /// duration, so a form popped mid-write doesn't dispose this notifier out
-  /// from under the pending `state` write.
+  /// product list on success so every screen re-reads it — plus the single
+  /// product identified by [refreshedProductId], when the write changed one.
+  /// Kept alive for the duration, so a form popped mid-write doesn't dispose
+  /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(
     final ProductMutation mutation,
-    final Future<Result<void, Failure>> Function() write,
-  ) async {
+    final Future<Result<void, Failure>> Function() write, {
+    final String? refreshedProductId,
+  }) async {
     final link = ref.keepAlive();
     state = mutation;
     try {
       final result = await write();
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
+        if (refreshedProductId != null) {
+          ref.invalidate(productByIdProvider(refreshedProductId));
+        }
       }
       return result;
     } catch (e, stackTrace) {
