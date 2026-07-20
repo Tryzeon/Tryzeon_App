@@ -20,6 +20,7 @@ import 'package:tryzeon/feature/store/products/domain/services/product_image_ana
 import 'package:tryzeon/feature/store/products/domain/usecases/analyze_product_image.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.dart';
+import 'package:tryzeon/feature/store/products/domain/usecases/get_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/list_products.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_query_state.dart';
@@ -71,6 +72,11 @@ UpdateProduct updateProductUseCase(final Ref ref) {
 @riverpod
 DeleteProduct deleteProductUseCase(final Ref ref) {
   return DeleteProduct(ref.watch(productRepositoryProvider));
+}
+
+@riverpod
+GetProduct getProductUseCase(final Ref ref) {
+  return GetProduct(ref.watch(productRepositoryProvider));
 }
 
 /// Manages the combined search, filter, and sort state for store products.
@@ -166,8 +172,8 @@ Future<List<Product>> filteredProducts(final Ref ref) async {
 
 @riverpod
 Future<Product> productById(final Ref ref, final String productId) async {
-  final repository = ref.watch(productRepositoryProvider);
-  final result = await repository.getProductById(productId);
+  final getProduct = ref.watch(getProductUseCaseProvider);
+  final result = await getProduct(productId);
 
   if (result.isFailure) {
     throw result.getError()!;
