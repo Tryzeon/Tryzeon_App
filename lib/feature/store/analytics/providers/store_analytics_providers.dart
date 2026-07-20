@@ -1,4 +1,3 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -60,36 +59,38 @@ GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
 }
 
 // --- Feature Provider: per-product summaries ---
+/// Per-product analytics for the selected month, and the owner of analytics
+/// refreshes.
 @riverpod
-Future<List<ProductAnalyticsSummary>> productAnalyticsSummaries(final Ref ref) async {
-  final profile = await ref.watch(storeProfileProvider.future);
-  if (profile == null) return [];
+class ProductAnalyticsSummariesNotifier extends _$ProductAnalyticsSummariesNotifier {
+  @override
+  Future<List<ProductAnalyticsSummary>> build() async {
+    final profile = await ref.watch(storeProfileProvider.future);
+    if (profile == null) return [];
 
-  final filter = ref.watch(storeAnalyticsFilterProvider);
-  final useCase = ref.watch(getProductAnalyticsSummariesProvider);
-  final result = await useCase(
-    storeId: profile.id,
-    year: filter.year,
-    month: filter.month,
-  );
+    final filter = ref.watch(storeAnalyticsFilterProvider);
+    final useCase = ref.watch(getProductAnalyticsSummariesProvider);
+    final result = await useCase(
+      storeId: profile.id,
+      year: filter.year,
+      month: filter.month,
+    );
 
-  if (result.isFailure) {
-    throw result.getError()!;
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
+
+    return result.get()!;
   }
 
-  return result.get()!;
-}
-
-/// Force refresh analytics data
-Future<void> refreshAnalytics(final WidgetRef ref) async {
-  try {
-    final profile = await ref.read(storeProfileProvider.future);
-    if (profile == null) return;
-
-    ref.invalidate(productAnalyticsSummariesProvider);
-    await ref.read(productAnalyticsSummariesProvider.future);
-  } catch (e, st) {
-    // Let UI show ErrorView or stale data
-    AppLogger.warning('Failed to refresh analytics', e, st);
+  /// Re-fetches the analytics summaries. Swallows errors — the provider drops
+  /// into an error state and the UI shows an `ErrorView` or the previous data.
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+    try {
+      await future;
+    } catch (e, st) {
+      AppLogger.warning('Failed to refresh analytics', e, st);
+    }
   }
 }
