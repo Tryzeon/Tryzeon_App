@@ -3,7 +3,10 @@ import 'package:tryzeon/feature/common/store/data/models/store_order_contact_mod
 
 part 'store_profile_model.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+/// [explicitToJson] keeps the nested order contacts plain maps rather than
+/// [StoreOrderContactModel] instances, so `jsonDiff` can compare them
+/// structurally instead of falling back to identity equality.
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class StoreProfileModel {
   const StoreProfileModel({
     required this.id,
