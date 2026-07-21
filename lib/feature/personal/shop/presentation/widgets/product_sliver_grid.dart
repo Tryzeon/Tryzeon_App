@@ -35,7 +35,7 @@ class ProductSliverGrid extends StatelessWidget {
     crossAxisCount: 2,
     mainAxisSpacing: AppSpacing.sm,
     crossAxisSpacing: AppSpacing.sm,
-    childAspectRatio: 0.7,
+    childAspectRatio: 0.55,
   );
 
   /// Skeleton data for the initial loading state.
