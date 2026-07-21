@@ -130,7 +130,6 @@ class ProductFormData {
       seasons: selectedSeasons.value,
     );
   }
-
 }
 
 ProductFormData useProductForm({final Product? initialProduct}) {

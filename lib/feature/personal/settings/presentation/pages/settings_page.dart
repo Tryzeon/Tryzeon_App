@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
+import 'package:tryzeon/core/presentation/widgets/section_label.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
@@ -111,7 +112,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SectionLabel('個人'),
+                const SectionLabel('個人'),
                 NavRow(
                   icon: Icons.person_outline,
                   title: '個人資料',
@@ -124,7 +125,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                   title: '風格偏好',
                   onTap: () => context.push(AppRoutes.personalSettingsStyle),
                 ),
-                const _SectionLabel('支援'),
+                const SectionLabel('支援'),
                 NavRow(
                   icon: Icons.storefront_outlined,
                   title: '切換到店家帳號',
@@ -136,7 +137,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                   title: '聯絡我們',
                   onTap: handleContactUs,
                 ),
-                _SectionLabel('危險區域', color: colorScheme.error),
+                SectionLabel('危險區域', color: colorScheme.error),
                 NavRow(
                   icon: Icons.logout,
                   title: '登出',
@@ -159,27 +160,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text, {this.color});
-
-  final String text;
-  final Color? color;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final resolved = color ?? theme.colorScheme.onSurfaceVariant;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(text, style: theme.textTheme.labelLarge?.copyWith(color: resolved)),
       ),
     );
   }

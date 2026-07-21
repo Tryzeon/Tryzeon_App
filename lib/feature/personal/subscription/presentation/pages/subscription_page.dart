@@ -7,6 +7,7 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscriptio
 import 'package:tryzeon/core/modules/revenue_cat/presentation/utils/revenue_cat_ui_utils.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/section_label.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
@@ -88,7 +89,7 @@ class _SubscriptionContent extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionLabel('方案'),
+          const SectionLabel('方案'),
           Card(
             color: colorScheme.surface,
             child: Padding(
@@ -131,7 +132,7 @@ class _SubscriptionContent extends ConsumerWidget {
               ),
             ),
           ),
-          const _SectionLabel('目前用量'),
+          const SectionLabel('目前用量'),
           _BenefitRow(
             title: '今日試穿',
             trailingValue: formatUsage(
@@ -161,7 +162,7 @@ class _SubscriptionContent extends ConsumerWidget {
               limit: capabilities?.wardrobeLimit,
             ),
           ),
-          const _SectionLabel('方案權益'),
+          const SectionLabel('方案權益'),
           _BenefitRow(
             title: '影片試穿',
             trailingValue: formatBenefit(value: capabilities?.hasVideoAccess),
@@ -222,30 +223,6 @@ class _UpgradeToMaxCta extends StatelessWidget {
       child: OutlinedButton(
         onPressed: () => RevenueCatUiUtils.presentPaywall(context),
         child: const Text('升級至 Max'),
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
       ),
     );
   }

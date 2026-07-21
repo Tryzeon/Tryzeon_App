@@ -7,6 +7,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
+import 'package:tryzeon/core/presentation/widgets/section_label.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -90,9 +91,9 @@ class AccountPage extends HookConsumerWidget {
                         _ProfileHeader(),
                         SizedBox(height: AppSpacing.lg),
                         Divider(),
-                        _SectionLabel('訂閱方案'),
+                        SectionLabel('訂閱方案'),
                         _SubscriptionSection(),
-                        _SectionLabel('身形'),
+                        SectionLabel('身形'),
                         _BodyMeasurementsRow(),
                       ],
                     ),
@@ -351,30 +352,6 @@ class _BodyMeasurementsRow extends HookConsumerWidget {
       trailingValue: trailing,
       isFirst: true,
       onTap: () => context.push(AppRoutes.personalSettingsBodyMeasurements),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ),
     );
   }
 }
