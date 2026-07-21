@@ -89,8 +89,8 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    ref.listen(tryonControllerProvider, (final _, final event) {
-      if (event != null) handleTryonOutcome(event.outcome);
+    ref.listen(tryonControllerProvider, (final _, final outcome) {
+      if (outcome != null) handleTryonOutcome(outcome);
     });
 
     Future<void> tryonFromLocal() async {

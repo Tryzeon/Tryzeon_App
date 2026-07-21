@@ -23,10 +23,15 @@ part 'tryon_controller.g.dart';
 @Riverpod(keepAlive: true)
 class TryonController extends _$TryonController {
   static const _uuid = Uuid();
-  int _seq = 0;
 
   @override
-  TryonOutcomeEvent? build() => null;
+  TryonOutcome? build() => null;
+
+  /// One-shot event lane: two identical outcomes in a row (e.g. two consecutive
+  /// successes, which Dart canonicalizes to the same `const` instance) must both
+  /// reach `ref.listen`, so every assignment notifies.
+  @override
+  bool updateShouldNotify(final TryonOutcome? previous, final TryonOutcome? next) => true;
 
   /// Runs an image try-on from a locally picked garment photo.
   Future<void> tryonFromLocalImage(final File image) async {
@@ -35,7 +40,8 @@ class TryonController extends _$TryonController {
       bytes = await image.readAsBytes();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to read picked garment image', e, stackTrace);
-      return _emit(TryonFailed(mapExceptionToFailure(e)));
+      state = TryonFailed(mapExceptionToFailure(e));
+      return;
     }
 
     await _runTryon(
@@ -66,14 +72,12 @@ class TryonController extends _$TryonController {
     );
   }
 
-  void _emit(final TryonOutcome outcome) => state = TryonOutcomeEvent(_seq++, outcome);
-
   Future<void> _runTryon({
     required final List<TryonGarment> garments,
     required final TryonMode mode,
   }) async {
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
-    String? requestId;
+    final id = _uuid.v4();
     try {
       final customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
       final profile = await ref.read(userProfileProvider.future);
@@ -84,17 +88,15 @@ class TryonController extends _$TryonController {
       final hasAvatar =
           (customAvatarUrl != null && customAvatarUrl.isNotEmpty) ||
           (profileAvatarPath != null && profileAvatarPath.isNotEmpty);
-      if (!hasAvatar) return _emit(const TryonAvatarMissing());
-
-      String? scenePrompt;
-      String? transitionPrompt;
-      if (mode == TryonMode.video) {
-        final promptConfig = await ref.read(videoPromptConfigProvider.future);
-        scenePrompt = promptConfig.scenePrompt;
-        transitionPrompt = promptConfig.transitionPrompt;
+      if (!hasAvatar) {
+        state = const TryonAvatarMissing();
+        return;
       }
 
-      final id = requestId = _uuid.v4();
+      final promptConfig = mode == TryonMode.video
+          ? await ref.read(videoPromptConfigProvider.future)
+          : null;
+
       galleryNotifier.addPending(id: id, mode: mode);
 
       final avatarResult = await ref.read(resolveTryonAvatarUseCaseProvider)(
@@ -103,7 +105,8 @@ class TryonController extends _$TryonController {
       );
       if (avatarResult.isFailure) {
         galleryNotifier.removeById(id);
-        return _emit(TryonFailed(avatarResult.getError()!));
+        state = TryonFailed(avatarResult.getError()!);
+        return;
       }
 
       final result = await ref.read(tryonUseCaseProvider)(
@@ -112,8 +115,8 @@ class TryonController extends _$TryonController {
           garments: garments,
           mode: mode,
           avatar: avatarResult.get()!,
-          scenePrompt: scenePrompt,
-          transitionPrompt: transitionPrompt,
+          scenePrompt: promptConfig?.scenePrompt,
+          transitionPrompt: promptConfig?.transitionPrompt,
         ),
       );
 
@@ -122,22 +125,19 @@ class TryonController extends _$TryonController {
         final tryonResult = result.get()!;
         usageCache.syncFromSnapshot(tryonResult.usage);
         galleryNotifier.complete(tryonResult);
-        _emit(const TryonSucceeded());
+        state = const TryonSucceeded();
       } else {
         final failure = result.getError()!;
         usageCache.syncFromFailure(failure);
         galleryNotifier.removeById(id);
-        _emit(
-          failure is RateLimitFailure
-              ? TryonRateLimited(isVideo: mode == TryonMode.video)
-              : TryonFailed(failure),
-        );
+        state = failure is RateLimitFailure
+            ? TryonRateLimited(isVideo: mode == TryonMode.video)
+            : TryonFailed(failure);
       }
     } catch (e, stackTrace) {
       AppLogger.error('Try-on orchestration failed unexpectedly', e, stackTrace);
-      final id = requestId;
-      if (id != null) galleryNotifier.removeById(id);
-      _emit(TryonFailed(mapExceptionToFailure(e)));
+      galleryNotifier.removeById(id);
+      state = TryonFailed(mapExceptionToFailure(e));
     }
   }
 }

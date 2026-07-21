@@ -6,18 +6,6 @@ sealed class TryonOutcome {
   const TryonOutcome();
 }
 
-/// A try-on [outcome] tagged with a monotonic [seq]. The seq guarantees that two
-/// otherwise-identical outcomes are still delivered as distinct events to
-/// `ref.listen` — Dart canonicalizes a `const TryonSucceeded()` to a single
-/// instance, so consecutive successes would otherwise compare equal and be
-/// swallowed.
-class TryonOutcomeEvent {
-  const TryonOutcomeEvent(this.seq, this.outcome);
-
-  final int seq;
-  final TryonOutcome outcome;
-}
-
 /// Try-on completed and the gallery was updated.
 class TryonSucceeded extends TryonOutcome {
   const TryonSucceeded();
