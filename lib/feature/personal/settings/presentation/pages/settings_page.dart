@@ -152,11 +152,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                   onTap: handleDeleteAccount,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
-                VersionInfo(
-                  versionProvider: (final ref) => ref
-                      .read(personalSettingsControllerProvider.notifier)
-                      .getAppVersion(),
-                ),
+                const VersionInfo(),
                 const SizedBox(height: AppSpacing.lg),
               ],
             ),
