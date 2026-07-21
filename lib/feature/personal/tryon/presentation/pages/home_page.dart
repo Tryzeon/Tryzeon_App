@@ -55,7 +55,7 @@ class HomePage extends HookConsumerWidget {
       final File? imageFile = await ImagePickerHelper.pickImage(
         context,
         title: '選擇模特來源',
-        hint: '建議上傳短袖短褲的正面全身照。',
+        hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
       );
       if (imageFile == null) return;
 
