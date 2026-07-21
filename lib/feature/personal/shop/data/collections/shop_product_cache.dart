@@ -42,6 +42,5 @@ class ShopStoreInfoEmbedded {
   late List<String> channels;
   String? address;
   String? logoUrl;
-  String? logoPath;
   List<StoreOrderContactEmbedded> orderContacts = [];
 }

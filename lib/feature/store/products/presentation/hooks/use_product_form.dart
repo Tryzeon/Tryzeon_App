@@ -131,36 +131,6 @@ class ProductFormData {
     );
   }
 
-  Product toProduct({
-    required final String id,
-    required final String storeId,
-    required final List<String> imagePaths,
-    required final List<String> imageUrls,
-    required final List<ProductSize>? sizes,
-    required final DateTime createdAt,
-    required final DateTime updatedAt,
-  }) {
-    return Product(
-      storeId: storeId,
-      name: nameController.text,
-      categoryIds: selectedCategoryIds.value.toList(),
-      price: double.parse(priceController.text),
-      gender: selectedGender.value!,
-      purchaseLink: purchaseLinkController.text,
-      material: selectedMaterial.value,
-      elasticity: selectedElasticity.value,
-      fit: selectedFit.value,
-      thickness: selectedThickness.value,
-      styles: selectedStyles.value,
-      seasons: selectedSeasons.value,
-      imagePaths: imagePaths,
-      imageUrls: imageUrls,
-      id: id,
-      sizes: sizes,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  }
 }
 
 ProductFormData useProductForm({final Product? initialProduct}) {
