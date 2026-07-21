@@ -13,8 +13,8 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/measurements/utils/measurements_completion.dart';
+import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/settings/providers/personal_settings_controller.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
@@ -59,9 +59,9 @@ class AccountPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final state = ref.watch(personalSettingsControllerProvider);
+    final state = ref.watch(settingsControllerProvider);
 
-    ref.listen(personalSettingsControllerProvider, (final previous, final next) {
+    ref.listen(settingsControllerProvider, (final previous, final next) {
       if (next is AsyncError) {
         TopNotification.show(context, message: next.error.displayMessage(context));
       }

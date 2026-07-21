@@ -11,8 +11,9 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
-import 'package:tryzeon/feature/store/settings/providers/store_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class StoreSettingsPage extends HookConsumerWidget {
@@ -21,11 +22,11 @@ class StoreSettingsPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final controller = ref.watch(storeSettingsControllerProvider.notifier);
-    final state = ref.watch(storeSettingsControllerProvider);
+    final controller = ref.watch(settingsControllerProvider.notifier);
+    final state = ref.watch(settingsControllerProvider);
     final profile = ref.watch(storeProfileProvider).value;
 
-    ref.listen(storeSettingsControllerProvider, (final previous, final next) {
+    ref.listen(settingsControllerProvider, (final previous, final next) {
       if (next is AsyncError) {
         TopNotification.show(context, message: next.error.displayMessage(context));
       }
@@ -41,7 +42,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (result != OkCancelResult.ok) return;
 
-      await controller.switchToPersonal();
+      await controller.switchTo(UserType.personal);
 
       if (!context.mounted) return;
 
