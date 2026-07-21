@@ -10,6 +10,7 @@ import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/measurements/utils/measurements_completion.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -21,6 +22,38 @@ import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.d
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({super.key});
+
+  /// Re-fetches everything this page displays. Nothing here rebuilds on its own:
+  /// the usage cache is `keepAlive`, and the two subscription providers are only
+  /// invalidated by the purchase/restore flows — so pull-to-refresh is the only
+  /// way to pick up a day rollover or an entitlement changed on another device.
+  ///
+  /// All four start together so the indicator spins for the slowest, not the sum.
+  Future<void> _refresh(final WidgetRef ref) {
+    ref
+      ..invalidate(dailyUsageTodayProvider)
+      ..invalidate(appSubscriptionEntitlementProvider)
+      ..invalidate(subscriptionCapabilitiesProvider);
+
+    return Future.wait([
+      // Guards its own failures internally.
+      ref.read(userProfileProvider.notifier).refresh(),
+      _settle(ref.read(dailyUsageTodayProvider.future)),
+      _settle(ref.read(appSubscriptionEntitlementProvider.future)),
+      _settle(ref.read(subscriptionCapabilitiesProvider.future)),
+    ]);
+  }
+
+  /// Awaits [future] without letting it reject: each provider's own `AsyncError`
+  /// already renders in the section that watches it, and an unhandled rejection
+  /// would leave [RefreshIndicator] spinning.
+  Future<void> _settle(final Future<Object?> future) async {
+    try {
+      await future;
+    } catch (e, stackTrace) {
+      AppLogger.warning('Account pull-to-refresh: a source failed', e, stackTrace);
+    }
+  }
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -38,7 +71,7 @@ class AccountPage extends HookConsumerWidget {
         body: SafeArea(
           bottom: false,
           child: RefreshIndicator(
-            onRefresh: () => ref.read(userProfileProvider.notifier).refresh(),
+            onRefresh: () => _refresh(ref),
             edgeOffset: MediaQuery.of(context).padding.top,
             child: const SingleChildScrollView(
               physics: AlwaysScrollableScrollPhysics(),
