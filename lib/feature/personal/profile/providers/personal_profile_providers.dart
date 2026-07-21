@@ -90,7 +90,6 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     ref.invalidateSelf();
     try {
       await future;
-      await ref.read(avatarFileProvider.future);
     } catch (e, st) {
       AppLogger.warning('Failed to refresh user profile', e, st);
     }
