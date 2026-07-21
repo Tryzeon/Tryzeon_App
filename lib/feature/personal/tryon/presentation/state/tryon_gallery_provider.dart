@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
@@ -43,7 +44,10 @@ sealed class TryonGalleryState with _$TryonGalleryState {
 @Riverpod(keepAlive: true)
 class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   @override
-  TryonGalleryState build() => const TryonGalleryState();
+  TryonGalleryState build() {
+    ref.watch(isAuthenticatedProvider);
+    return const TryonGalleryState();
+  }
 
   void setCurrentPage(final int page) {
     final index = page - 1;

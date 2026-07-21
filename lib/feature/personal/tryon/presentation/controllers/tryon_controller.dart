@@ -20,17 +20,6 @@ import 'package:uuid/uuid.dart';
 
 part 'tryon_controller.g.dart';
 
-/// Orchestrates a single try-on and is the sole writer of both UI lanes:
-/// the gallery (state — placeholder in, result/removal out) and its own
-/// [TryonOutcomeEvent] state (one-shot events the home page reacts to via
-/// `ref.listen` — dialogs, notifications, haptics).
-///
-/// Every trigger terminates in exactly one emitted outcome; unexpected
-/// exceptions are caught, the placeholder is cleaned up, and a [TryonFailed]
-/// is emitted — a try-on can never silently no-op.
-///
-/// `keepAlive: true` because it is invoked via `ref.read` (no long-lived
-/// listener); without it autoDispose could tear it down mid-await.
 @Riverpod(keepAlive: true)
 class TryonController extends _$TryonController {
   static const _uuid = Uuid();
