@@ -29,13 +29,15 @@ class AccountPage extends HookConsumerWidget {
   /// way to pick up a day rollover or an entitlement changed on another device.
   ///
   /// All four start together so the indicator spins for the slowest, not the sum.
-  Future<void> _refresh(final WidgetRef ref) {
+  Future<void> _refresh(final WidgetRef ref) async {
+    await ref.read(invalidateEntitlementCacheUseCaseProvider)();
+
     ref
       ..invalidate(dailyUsageTodayProvider)
       ..invalidate(appSubscriptionEntitlementProvider)
       ..invalidate(subscriptionCapabilitiesProvider);
 
-    return Future.wait([
+    await Future.wait([
       // Guards its own failures internally.
       ref.read(userProfileProvider.notifier).refresh(),
       _settle(ref.read(dailyUsageTodayProvider.future)),

@@ -14,4 +14,6 @@ abstract interface class RevenueCatRepository {
 
   /// Restores previous purchases.
   Future<Result<AppSubscriptionEntitlement, Failure>> restorePurchases();
+
+  Future<Result<void, Failure>> invalidateEntitlementCache();
 }

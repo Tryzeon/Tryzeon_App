@@ -52,6 +52,21 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     }
   }
 
+  @override
+  Future<Result<void, Failure>> invalidateEntitlementCache() async {
+    try {
+      await Purchases.invalidateCustomerInfoCache();
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to invalidate RevenueCat customer info cache',
+        e,
+        stackTrace,
+      );
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
   AppSubscriptionEntitlement _mapToEntitlement(final CustomerInfo customerInfo) {
     final activeEntitlements = customerInfo.entitlements.active;
     final tier = _resolveTier(activeEntitlements);

@@ -6,6 +6,7 @@ import 'package:tryzeon/core/modules/revenue_cat/data/repositories/revenue_cat_r
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/invalidate_entitlement_cache.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/restore_purchases.dart';
@@ -41,6 +42,11 @@ LogOutRevenueCat logOutRevenueCatUseCase(final Ref ref) {
 @riverpod
 RestorePurchases restorePurchasesUseCase(final Ref ref) {
   return RestorePurchases(ref.watch(revenueCatRepositoryProvider));
+}
+
+@riverpod
+InvalidateEntitlementCache invalidateEntitlementCacheUseCase(final Ref ref) {
+  return InvalidateEntitlementCache(ref.watch(revenueCatRepositoryProvider));
 }
 
 @riverpod
