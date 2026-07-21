@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/usage/data/daily_usage_payload.dart';
 import 'package:tryzeon/feature/personal/usage/data/datasources/daily_usage_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/usage/data/repositories/daily_usage_repository_impl.dart';
@@ -30,10 +31,12 @@ GetTodayUsage getTodayUsageUseCase(final Ref ref) =>
 /// 2. `syncFromSnapshot(...)` / `syncFromFailure(...)` — push the snapshot that
 ///    quota-consuming mutations (tryon, chat) inline in their responses, so the
 ///    cache updates without an extra round trip.
-@riverpod
+@Riverpod(keepAlive: true)
 class DailyUsageToday extends _$DailyUsageToday {
   @override
   Future<DailyUsage> build() async {
+    ref.watch(isAuthenticatedProvider);
+
     final useCase = ref.watch(getTodayUsageUseCaseProvider);
     final result = await useCase();
     if (result.isFailure) {
