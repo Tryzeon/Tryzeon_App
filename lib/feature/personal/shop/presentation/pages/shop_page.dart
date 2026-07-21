@@ -7,19 +7,21 @@ import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/extensions/user_gender_extension.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 import '../sheets/filter_sheet.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/product_category_filter.dart';
-import '../widgets/product_grid.dart';
+import '../widgets/product_sliver_grid.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/shop_gender_filter.dart';
 
@@ -197,128 +199,130 @@ class ShopPage extends HookConsumerWidget {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            // 內容區域
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () =>
-                    ref.read(shopProductsProvider(filter).notifier).refresh(),
-                child: LayoutBuilder(
-                  builder: (final context, final constraints) {
-                    return SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(top: AppSpacing.sm),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 🔍 搜尋欄
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                              ),
-                              child: ShopSearchBar(
-                                onSearch: (final query) async {
-                                  filterNotifier.setSearch(query);
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.mdLg),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            try {
+              ref.invalidate(shopProductsProvider(filter));
+              await ref.read(shopProductsProvider(filter).future);
+            } catch (e, stackTrace) {
+              AppLogger.warning('Failed to refresh shop products', e, stackTrace);
+            }
+          },
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (final notification) {
+              final metrics = notification.metrics;
+              if (metrics.axis == Axis.vertical &&
+                  metrics.pixels >= metrics.maxScrollExtent - 400) {
+                ref.read(shopProductsProvider(filter).notifier).loadMore();
+              }
+              return false;
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 🔍 搜尋欄
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: ShopSearchBar(
+                            onSearch: (final query) async {
+                              filterNotifier.setSearch(query);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.mdLg),
 
-                            // 📢 廣告輪播
-                            AdBanner(adsAsync: adsAsync),
-                            const SizedBox(height: AppSpacing.lg),
+                        // 📢 廣告輪播
+                        AdBanner(adsAsync: adsAsync),
+                        const SizedBox(height: AppSpacing.lg),
 
-                            // 男女裝篩選
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                              ),
-                              child: ShopGenderFilter(
-                                selected: filterState.gender,
-                                onChanged: filterNotifier.setGender,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.md),
+                        // 男女裝篩選
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: ShopGenderFilter(
+                            selected: filterState.gender,
+                            onChanged: filterNotifier.setGender,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
 
-                            // 商品類型篩選標籤
-                            ProductCategoryFilter(
-                              categoriesAsync: productCategoriesAsync,
-                              selectedCategoryIds: filterState.categories ?? {},
-                              gender: selectedGender,
-                              onCategoryToggle: (final categoryId) {
-                                final current = filterState.categories ?? {};
-                                if (current.contains(categoryId)) {
-                                  filterNotifier.setCategories(
-                                    current.where((final id) => id != categoryId).toSet(),
-                                  );
-                                } else {
-                                  filterNotifier.setCategories({...current, categoryId});
-                                }
-                              },
-                              onRetry: () {
-                                // Invalidate upstream provider to refetch from backend
-                                ref.invalidate(productCategoriesProvider);
-                              },
-                            ),
-                            const SizedBox(height: AppSpacing.lg),
+                        // 商品類型篩選標籤
+                        ProductCategoryFilter(
+                          categoriesAsync: productCategoriesAsync,
+                          selectedCategoryIds: filterState.categories ?? {},
+                          gender: selectedGender,
+                          onCategoryToggle: (final categoryId) {
+                            final current = filterState.categories ?? {};
+                            if (current.contains(categoryId)) {
+                              filterNotifier.setCategories(
+                                current.where((final id) => id != categoryId).toSet(),
+                              );
+                            } else {
+                              filterNotifier.setCategories({...current, categoryId});
+                            }
+                          },
+                          onRetry: () {
+                            ref.invalidate(productCategoriesProvider);
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
 
-                            // 推薦商品標題與排序
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
+                        // 推薦商品標題與排序
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'RECOMMENDED',
+                                style: textTheme.labelLarge?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const SizedBox(height: AppSpacing.smMd),
+                              Row(
                                 children: [
-                                  Text(
-                                    'RECOMMENDED',
-                                    style: textTheme.labelLarge?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.smMd),
-                                  Row(
-                                    children: [
-                                      buildComprehensiveSortButton(),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      buildPriceSortButton(),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      buildProximitySortButton(),
-                                      const Spacer(),
-                                      buildFilterButton(),
-                                    ],
-                                  ),
+                                  buildComprehensiveSortButton(),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  buildPriceSortButton(),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  buildProximitySortButton(),
+                                  const Spacer(),
+                                  buildFilterButton(),
                                 ],
                               ),
-                            ),
-
-                            const SizedBox(height: AppSpacing.md),
-
-                            // 商品 Grid（可滾動）
-                            ProductGrid(
-                              productsAsync: productsAsync,
-                              userProfile: userProfile,
-                              onRetry: () => ref.invalidate(shopProductsProvider(filter)),
-                            ),
-
-                            SizedBox(
-                              height: PlatformInfo.isIOS26OrHigher()
-                                  ? MediaQuery.of(context).padding.bottom +
-                                        AppSpacing.iosTabBarHeight
-                                  : 0,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+
+                // 商品 Grid（懶載）
+                ProductSliverGrid(
+                  productsAsync: productsAsync,
+                  userProfile: userProfile,
+                  onRetry: () => ref.invalidate(shopProductsProvider(filter)),
+                ),
+
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: PlatformInfo.isIOS26OrHigher()
+                        ? MediaQuery.of(context).padding.bottom +
+                              AppSpacing.iosTabBarHeight
+                        : 0,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

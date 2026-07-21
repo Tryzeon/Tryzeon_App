@@ -1,14 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_analytics_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_repository_impl.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/ad_repository.dart';
@@ -104,32 +102,6 @@ IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
 }
 
 // --- Feature Providers ---
-
-@riverpod
-class ShopProductsNotifier extends _$ShopProductsNotifier {
-  @override
-  Future<List<ShopProduct>> build(final ShopFilter filter) async {
-    final listShopProductsUseCase = ref.watch(listShopProductsProvider);
-    final result = await listShopProductsUseCase(filter: filter);
-    if (result.isFailure) {
-      throw result.getError()!;
-    }
-    return result.get()!;
-  }
-
-  /// Force-refreshes this filter's product list from the server. Swallows
-  /// errors — the provider drops into an error state and the UI shows an
-  /// `ErrorView` or the previous data.
-  Future<void> refresh() async {
-    try {
-      await ref.read(listShopProductsProvider)(filter: filter, forceRefresh: true);
-      ref.invalidateSelf();
-      await future;
-    } catch (e, st) {
-      AppLogger.warning('Failed to refresh shop products', e, st);
-    }
-  }
-}
 
 @riverpod
 Future<ShopProduct> shopProductById(final Ref ref, final String productId) async {

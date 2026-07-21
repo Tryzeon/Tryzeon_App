@@ -10,10 +10,12 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_grid.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_sliver_grid.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -87,142 +89,147 @@ class StorePage extends HookConsumerWidget {
           final productsAsync = ref.watch(shopProductsProvider(filter));
           return RefreshIndicator(
             onRefresh: () async {
-              await Future.wait([
-                ref.refresh(storeInfoProvider(storeId).future),
-                ref.read(shopProductsProvider(filter).notifier).refresh(),
-              ]);
+              try {
+                await Future.wait([
+                  ref.refresh(storeInfoProvider(storeId).future),
+                  ref.refresh(shopProductsProvider(filter).future),
+                ]);
+              } catch (e, stackTrace) {
+                AppLogger.warning('Failed to refresh store page', e, stackTrace);
+              }
             },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Store Profile Section
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (final notification) {
+                final metrics = notification.metrics;
+                if (metrics.axis == Axis.vertical &&
+                    metrics.pixels >= metrics.maxScrollExtent - 400) {
+                  ref.read(shopProductsProvider(filter).notifier).loadMore();
+                }
+                return false;
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor: colorScheme.surfaceContainerHighest,
-                          backgroundImage: storeInfo.logoUrl != null
-                              ? CachedNetworkImageProvider(storeInfo.logoUrl!)
-                              : null,
-                          child: storeInfo.logoUrl == null
-                              ? Icon(
-                                  Icons.store,
-                                  size: 28,
-                                  color: colorScheme.onSurfaceVariant,
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
+                        // Store Profile Section
+                        Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                storeInfo.name,
-                                style: textTheme.displaySmall,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (storeInfo.channels.isNotEmpty) ...[
-                                const SizedBox(height: AppSpacing.sm),
-                                Wrap(
-                                  spacing: AppSpacing.sm,
-                                  runSpacing: AppSpacing.sm,
-                                  children: StoreChannel.values
-                                      .where(storeInfo.channels.contains)
-                                      .map(
-                                        (final channel) => Chip(
-                                          label: Text(channel.label),
-                                          labelStyle: textTheme.labelMedium,
-                                          visualDensity: VisualDensity.compact,
-                                          materialTapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
+                              CircleAvatar(
+                                radius: 32,
+                                backgroundColor: colorScheme.surfaceContainerHighest,
+                                backgroundImage: storeInfo.logoUrl != null
+                                    ? CachedNetworkImageProvider(storeInfo.logoUrl!)
+                                    : null,
+                                child: storeInfo.logoUrl == null
+                                    ? Icon(
+                                        Icons.store,
+                                        size: 28,
+                                        color: colorScheme.onSurfaceVariant,
                                       )
-                                      .toList(),
-                                ),
-                              ],
-                              if (storeInfo.address != null &&
-                                  storeInfo.address!.isNotEmpty) ...[
-                                const SizedBox(height: AppSpacing.sm),
-                                InkWell(
-                                  onTap: () => handleOpenMap(storeInfo.address!),
-                                  borderRadius: AppRadius.buttonAll,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: AppSpacing.xs,
-                                      horizontal: AppSpacing.xs,
+                                    : null,
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      storeInfo.name,
+                                      style: textTheme.displaySmall,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          size: 14,
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                        const SizedBox(width: AppSpacing.sm),
-                                        Expanded(
-                                          child: Text(
-                                            storeInfo.address!,
-                                            style: textTheme.bodyMedium?.copyWith(
-                                              color: colorScheme.onSurfaceVariant,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                    if (storeInfo.channels.isNotEmpty) ...[
+                                      const SizedBox(height: AppSpacing.sm),
+                                      Wrap(
+                                        spacing: AppSpacing.sm,
+                                        runSpacing: AppSpacing.sm,
+                                        children: StoreChannel.values
+                                            .where(storeInfo.channels.contains)
+                                            .map(
+                                              (final channel) => Chip(
+                                                label: Text(channel.label),
+                                                labelStyle: textTheme.labelMedium,
+                                                visualDensity: VisualDensity.compact,
+                                                materialTapTargetSize:
+                                                    MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                            )
+                                            .toList(),
+                                      ),
+                                    ],
+                                    if (storeInfo.address != null &&
+                                        storeInfo.address!.isNotEmpty) ...[
+                                      const SizedBox(height: AppSpacing.sm),
+                                      InkWell(
+                                        onTap: () => handleOpenMap(storeInfo.address!),
+                                        borderRadius: AppRadius.buttonAll,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: AppSpacing.xs,
+                                            horizontal: AppSpacing.xs,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_on_outlined,
+                                                size: 14,
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
+                                              const SizedBox(width: AppSpacing.sm),
+                                              Expanded(
+                                                child: Text(
+                                                  storeInfo.address!,
+                                                  style: textTheme.bodyMedium?.copyWith(
+                                                    color: colorScheme.onSurfaceVariant,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const SizedBox(width: AppSpacing.xs),
+                                              Icon(
+                                                Icons.north_east,
+                                                size: 12,
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        const SizedBox(width: AppSpacing.xs),
-                                        Icon(
-                                          Icons.north_east,
-                                          size: 12,
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                              ],
+                              ),
                             ],
                           ),
                         ),
+                        const Divider(),
+                        const SizedBox(height: AppSpacing.md),
                       ],
                     ),
                   ),
-                  const Divider(),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.ideographic,
-                      children: [
-                        Text('所有商品', style: textTheme.titleLarge),
-                        const SizedBox(width: AppSpacing.sm),
-                        if (productsAsync.hasValue)
-                          Text(
-                            '${productsAsync.value!.length} 件商品',
-                            style: textTheme.labelMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+
                   // Products Section
-                  ProductGrid(
+                  ProductSliverGrid(
                     productsAsync: productsAsync,
                     userProfile: userProfile,
                     onRetry: () => ref.invalidate(shopProductsProvider(filter)),
                   ),
-                  SizedBox(
-                    height: PlatformInfo.isIOS26OrHigher()
-                        ? MediaQuery.of(context).padding.bottom +
-                              AppSpacing.iosTabBarHeight
-                        : 0,
+
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: PlatformInfo.isIOS26OrHigher()
+                          ? MediaQuery.of(context).padding.bottom +
+                                AppSpacing.iosTabBarHeight
+                          : 0,
+                    ),
                   ),
                 ],
               ),
