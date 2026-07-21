@@ -6,10 +6,13 @@ usage() {
   cat <<'EOF'
 Usage: scripts/release-beta.sh <version> [--ios | --android]
 
+The version may be given with or without a leading 'v'.
+
 Examples:
   scripts/release-beta.sh v1.2.0
+  scripts/release-beta.sh 1.2.0
   scripts/release-beta.sh v1.2.0 --ios
-  scripts/release-beta.sh v1.2.0 --android
+  scripts/release-beta.sh 1.2.0 --android
 EOF
 }
 
@@ -26,8 +29,8 @@ fi
 version="$1"
 platform="${2:-all}"
 
-if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Version must be a semantic version prefixed with 'v', for example v1.2.0" >&2
+if [[ ! "$version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version must be a semantic version, for example v1.2.0 or 1.2.0" >&2
   exit 1
 fi
 
