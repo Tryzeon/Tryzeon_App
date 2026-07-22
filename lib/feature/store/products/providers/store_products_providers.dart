@@ -23,6 +23,8 @@ import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.da
 import 'package:tryzeon/feature/store/products/domain/usecases/get_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/list_products.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -223,19 +225,29 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     });
   }
 
-  /// Applies the store owner's edits. The product to diff them against is read
-  /// here rather than taken from the form, so a stale form can't clobber
-  /// server-owned fields.
-  Future<Result<void, Failure>> update(final UpdateProductParams params) {
+  /// Applies the store owner's edits. The product they are laid onto is read
+  /// here and handed to [applyEdits] rather than taken from the form, so a
+  /// stale form can't clobber server-owned fields.
+  Future<Result<void, Failure>> update({
+    required final String productId,
+    required final Product Function(Product original) applyEdits,
+    required final List<ImageItem> targetImages,
+    required final List<SizeItem> targetSizes,
+  }) {
     return _write(
       ProductMutation.update,
       () async {
-        final original = await ref.read(productByIdProvider(params.productId).future);
-        return ref.read(updateProductUseCaseProvider)(original: original, params: params);
+        final original = await ref.read(productByIdProvider(productId).future);
+        return ref.read(updateProductUseCaseProvider)(
+          original: original,
+          target: applyEdits(original),
+          targetImages: targetImages,
+          targetSizes: targetSizes,
+        );
       },
       // The cached product is the baseline the next edit diffs against, so a
       // stale one would silently narrow that edit's changes.
-      refreshedProductId: params.productId,
+      refreshedProductId: productId,
     );
   }
 

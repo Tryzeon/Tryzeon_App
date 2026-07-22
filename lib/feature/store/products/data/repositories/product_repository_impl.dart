@@ -17,6 +17,7 @@ import 'package:tryzeon/feature/store/products/data/repositories/product_size_di
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
 import 'package:uuid/uuid.dart';
 
@@ -188,15 +189,17 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
-    required final UpdateProductParams params,
+    required final Product target,
+    required final List<ImageItem> targetImages,
+    required final List<SizeItem> targetSizes,
   }) async {
     try {
       // 1. Separate existing paths and new files from final order
       final existingPaths = <String>[];
       final newFiles = <File>[];
 
-      for (int i = 0; i < params.finalImageOrder.length; i++) {
-        final item = params.finalImageOrder[i];
+      for (int i = 0; i < targetImages.length; i++) {
+        final item = targetImages[i];
         switch (item) {
           case ExistingImageItem(:final path):
             existingPaths.add(path);
@@ -226,7 +229,7 @@ class ProductRepositoryImpl implements ProductRepository {
       int existingIndex = 0;
       int newIndex = 0;
 
-      for (final item in params.finalImageOrder) {
+      for (final item in targetImages) {
         switch (item) {
           case ExistingImageItem():
             finalImagePaths.add(existingPaths[existingIndex++]);
@@ -240,21 +243,7 @@ class ProductRepositoryImpl implements ProductRepository {
           .where((final p) => !finalImagePaths.contains(p))
           .toList();
 
-      // 5. Build target product
-      final targetProduct = original.copyWith(
-        name: params.name,
-        categoryIds: params.categoryIds,
-        price: params.price,
-        gender: params.gender,
-        purchaseLink: params.purchaseLink,
-        material: params.material,
-        elasticity: params.elasticity,
-        fit: params.fit,
-        thickness: params.thickness,
-        styles: params.styles,
-        seasons: params.seasons,
-        imagePaths: finalImagePaths,
-      );
+      final targetProduct = target.copyWith(imagePaths: finalImagePaths);
 
       // 6. Diff against the original so an untouched column keeps whatever
       // value the server has — `original` may be an old cached copy.
@@ -263,7 +252,7 @@ class ProductRepositoryImpl implements ProductRepository {
         _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
         unorderedKeys: _productUnorderedKeys,
       );
-      final sizeDiff = computeSizeDiff(original.sizes, params.sizes);
+      final sizeDiff = computeSizeDiff(original.sizes, targetSizes);
 
       if (productChanges.isEmpty && sizeDiff.isEmpty) {
         return const Ok(null);
@@ -290,13 +279,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       for (final size in sizeDiff.toAdd) {
-        await _remoteDataSource.insertProductSize(
-          CreateProductSizeRequest(
-            productId: original.id,
-            name: size.name,
-            measurements: _toMeasurementsModel(size.measurements),
-          ),
-        );
+        await _remoteDataSource.insertProductSize(_toSizeRequest(original.id, size));
       }
 
       for (final update in sizeDiff.toUpdate) {

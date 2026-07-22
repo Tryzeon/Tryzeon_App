@@ -268,9 +268,7 @@ class _MeasurementRow extends StatelessWidget {
           controller: valueController,
           decoration: const InputDecoration(),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
-          ],
+          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
           validator: AppValidators.validateMeasurement,
         ),
       ],

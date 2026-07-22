@@ -100,10 +100,10 @@ class _EditProductContent extends HookConsumerWidget {
       final result = await ref
           .read(productEditProvider.notifier)
           .update(
-            formData.toUpdateProductParams(
-              productId: product.id,
-              sizes: sizeManager.toSizeItems(),
-            ),
+            productId: product.id,
+            applyEdits: formData.applyEditsTo,
+            targetImages: formData.images.value,
+            targetSizes: sizeManager.toSizeItems(),
           );
 
       if (!context.mounted) return;

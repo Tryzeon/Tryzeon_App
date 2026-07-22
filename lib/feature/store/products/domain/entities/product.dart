@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 
 export 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
@@ -30,29 +28,6 @@ sealed class CreateProductParams with _$CreateProductParams {
     final List<ClothingStyle>? styles,
     final List<ProductSeason>? seasons,
   }) = _CreateProductParams;
-}
-
-@freezed
-sealed class UpdateProductParams with _$UpdateProductParams {
-  const factory UpdateProductParams({
-    required final String productId,
-    required final List<ImageItem> finalImageOrder,
-
-    /// The full list of sizes the product should end up with. The data layer
-    /// diffs it against the product's current sizes.
-    required final List<SizeItem> sizes,
-    required final String name,
-    required final List<String> categoryIds,
-    required final double price,
-    @Default(ProductGender.unisex) final ProductGender gender,
-    final String? purchaseLink,
-    final String? material,
-    final ProductElasticity? elasticity,
-    final String? fit,
-    final ProductThickness? thickness,
-    final List<ClothingStyle>? styles,
-    final List<ProductSeason>? seasons,
-  }) = _UpdateProductParams;
 }
 
 @freezed
