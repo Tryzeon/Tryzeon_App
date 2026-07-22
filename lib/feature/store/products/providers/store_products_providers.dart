@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
@@ -211,17 +213,28 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   @override
   ProductMutation? build() => null;
 
-  /// Creates a product for the signed-in store. Fails with an [AuthFailure]
-  /// when there is no store profile to attach it to.
-  Future<Result<void, Failure>> create(
-    final CreateProductParams Function(String storeId) buildParams,
-  ) {
+  /// Creates a product for the signed-in store from the store owner's editable
+  /// [draft]. The store the product attaches to is resolved here — it is
+  /// execution context, not form input — and fails with an [AuthFailure] when
+  /// there is no store profile.
+  Future<Result<void, Failure>> create({
+    required final ProductDraft draft,
+    required final List<File> images,
+    required final List<NewSizeItem> sizes,
+  }) {
     return _write(ProductMutation.create, () async {
       final storeProfile = await ref.read(storeProfileProvider.future);
       if (storeProfile == null) {
         return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
       }
-      return ref.read(createProductUseCaseProvider)(buildParams(storeProfile.id));
+      return ref.read(createProductUseCaseProvider)(
+        CreateProductParams(
+          storeId: storeProfile.id,
+          draft: draft,
+          images: images,
+          sizes: sizes,
+        ),
+      );
     });
   }
 

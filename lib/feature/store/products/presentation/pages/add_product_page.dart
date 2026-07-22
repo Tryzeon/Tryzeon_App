@@ -67,10 +67,9 @@ class AddProductPage extends HookConsumerWidget {
       final result = await ref
           .read(productEditProvider.notifier)
           .create(
-            (final storeId) => formData.toCreateProductParams(
-              storeId: storeId,
-              sizes: sizeManager.toNewSizeItems(),
-            ),
+            draft: formData.toDraft(),
+            images: formData.newImageFiles,
+            sizes: sizeManager.toNewSizeItems(),
           );
 
       if (!context.mounted) return;

@@ -7,7 +7,6 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 
 class ProductFormData {
   ProductFormData({
@@ -63,18 +62,6 @@ class ProductFormData {
       thickness: selectedThickness.value,
       styles: selectedStyles.value,
       seasons: selectedSeasons.value,
-    );
-  }
-
-  CreateProductParams toCreateProductParams({
-    required final String storeId,
-    required final List<NewSizeItem> sizes,
-  }) {
-    return CreateProductParams(
-      storeId: storeId,
-      draft: toDraft(),
-      images: newImageFiles,
-      sizes: sizes,
     );
   }
 
