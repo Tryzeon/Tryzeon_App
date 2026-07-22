@@ -101,9 +101,9 @@ class _EditProductContent extends HookConsumerWidget {
           .read(productEditProvider.notifier)
           .update(
             productId: product.id,
-            applyEdits: formData.applyEditsTo,
-            targetImages: formData.images.value,
-            targetSizes: sizeManager.toSizeItems(),
+            draft: formData.toDraft(),
+            images: formData.images.value,
+            sizes: sizeManager.toSizeItems(),
           );
 
       if (!context.mounted) return;

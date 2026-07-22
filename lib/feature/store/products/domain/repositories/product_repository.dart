@@ -1,7 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ProductRepository {
@@ -14,12 +12,7 @@ abstract class ProductRepository {
 
   Future<Result<Product, Failure>> getProductById(final String productId);
 
-  Future<Result<void, Failure>> updateProduct({
-    required final Product original,
-    required final Product target,
-    required final List<ImageItem> targetImages,
-    required final List<SizeItem> targetSizes,
-  });
+  Future<Result<void, Failure>> updateProduct(final UpdateProductParams params);
 
   Future<Result<void, Failure>> deleteProduct(final Product product);
 }

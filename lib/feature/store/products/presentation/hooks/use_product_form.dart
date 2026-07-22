@@ -48,16 +48,11 @@ class ProductFormData {
   List<File> get newImageFiles =>
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 
-  CreateProductParams toCreateProductParams({
-    required final String storeId,
-    required final List<NewSizeItem> sizes,
-  }) {
-    return CreateProductParams(
-      storeId: storeId,
+  ProductDraft toDraft() {
+    return ProductDraft(
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.parse(priceController.text),
-      images: newImageFiles,
       gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
@@ -68,6 +63,17 @@ class ProductFormData {
       thickness: selectedThickness.value,
       styles: selectedStyles.value,
       seasons: selectedSeasons.value,
+    );
+  }
+
+  CreateProductParams toCreateProductParams({
+    required final String storeId,
+    required final List<NewSizeItem> sizes,
+  }) {
+    return CreateProductParams(
+      storeId: storeId,
+      draft: toDraft(),
+      images: newImageFiles,
       sizes: sizes,
     );
   }
@@ -103,23 +109,6 @@ class ProductFormData {
     }
   }
 
-  Product applyEditsTo(final Product original) {
-    return original.copyWith(
-      name: nameController.text,
-      categoryIds: selectedCategoryIds.value.toList(),
-      price: double.parse(priceController.text),
-      gender: selectedGender.value!,
-      purchaseLink: purchaseLinkController.text.isNotEmpty
-          ? purchaseLinkController.text
-          : null,
-      material: selectedMaterial.value,
-      elasticity: selectedElasticity.value,
-      fit: selectedFit.value,
-      thickness: selectedThickness.value,
-      styles: selectedStyles.value,
-      seasons: selectedSeasons.value,
-    );
-  }
 }
 
 ProductFormData useProductForm({final Product? initialProduct}) {

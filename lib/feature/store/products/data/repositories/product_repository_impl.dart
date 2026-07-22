@@ -13,9 +13,9 @@ import 'package:tryzeon/feature/store/products/data/datasources/product_remote_d
 import 'package:tryzeon/feature/store/products/data/models/create_product_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
-import 'package:tryzeon/feature/store/products/data/repositories/product_size_diff.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/products/domain/services/product_size_diff.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
@@ -104,6 +104,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<void, Failure>> createProduct(final CreateProductParams params) async {
     try {
       final productId = _uuid.v4();
+      final draft = params.draft;
 
       final imagePaths = await _remoteDataSource.uploadProductImages(
         storeId: params.storeId,
@@ -120,18 +121,18 @@ class ProductRepositoryImpl implements ProductRepository {
       final request = CreateProductRequest(
         id: productId,
         storeId: params.storeId,
-        name: params.name,
-        categoryIds: params.categoryIds,
-        price: params.price,
+        name: draft.name,
+        categoryIds: draft.categoryIds,
+        price: draft.price,
         imagePaths: imagePaths,
-        gender: params.gender.value,
-        purchaseLink: params.purchaseLink,
-        material: params.material,
-        elasticity: params.elasticity?.value,
-        fit: params.fit,
-        thickness: params.thickness?.value,
-        styles: params.styles?.map((final e) => e.value).toList(),
-        seasons: params.seasons?.map((final e) => e.value).toList(),
+        gender: draft.gender.value,
+        purchaseLink: draft.purchaseLink,
+        material: draft.material,
+        elasticity: draft.elasticity?.value,
+        fit: draft.fit,
+        thickness: draft.thickness?.value,
+        styles: draft.styles?.map((final e) => e.value).toList(),
+        seasons: draft.seasons?.map((final e) => e.value).toList(),
       );
 
       await _remoteDataSource.insertProduct(request);
@@ -187,13 +188,13 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateProduct({
-    required final Product original,
-    required final Product target,
-    required final List<ImageItem> targetImages,
-    required final List<SizeItem> targetSizes,
-  }) async {
+  Future<Result<void, Failure>> updateProduct(final UpdateProductParams params) async {
     try {
+      final original = params.original;
+      final target = original.applyDraft(params.draft);
+      final targetImages = params.images;
+      final targetSizes = params.sizes;
+
       // 1. Separate existing paths and new files from final order
       final existingPaths = <String>[];
       final newFiles = <File>[];
@@ -245,8 +246,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final targetProduct = target.copyWith(imagePaths: finalImagePaths);
 
-      // 6. Diff against the original so an untouched column keeps whatever
-      // value the server has — `original` may be an old cached copy.
+      // 5. Diff against the original so an untouched column keeps whatever
+      // value the server has — `original` is the snapshot the user edited.
       final productChanges = jsonDiff(
         _mappr.convert<Product, ProductModel>(original).toJson(),
         _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
@@ -258,12 +259,12 @@ class ProductRepositoryImpl implements ProductRepository {
         return const Ok(null);
       }
 
-      // 7. Update product in DB
+      // 6. Update product in DB
       if (productChanges.isNotEmpty) {
         await _remoteDataSource.updateProduct(original.id, productChanges);
       }
 
-      // 8. Drop removed images locally and on R2.
+      // 7. Drop removed images locally and on R2.
       if (removedPaths.isNotEmpty) {
         _localDataSource.deleteProductImages(removedPaths).ignore();
         _remoteDataSource
@@ -273,7 +274,7 @@ class ProductRepositoryImpl implements ProductRepository {
             });
       }
 
-      // 9. Handle size changes
+      // 8. Handle size changes
       for (final sizeId in sizeDiff.idsToDelete) {
         await _remoteDataSource.deleteProductSize(sizeId);
       }
@@ -298,7 +299,7 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.updateProductSize(update.original.id, sizeChanges);
       }
 
-      // 10. Update local cache
+      // 9. Update local cache
       final model = await _remoteDataSource.getProduct(original.id);
       await _localDataSource.saveProduct(model);
 

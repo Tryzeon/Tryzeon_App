@@ -225,27 +225,29 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     });
   }
 
-  /// Applies the store owner's edits. The product they are laid onto is read
-  /// here and handed to [applyEdits] rather than taken from the form, so a
-  /// stale form can't clobber server-owned fields.
+  /// Applies the store owner's editable [draft]. The original it is diffed
+  /// against is read here rather than taken from the form, so a stale form
+  /// can't clobber server-owned fields.
   Future<Result<void, Failure>> update({
     required final String productId,
-    required final Product Function(Product original) applyEdits,
-    required final List<ImageItem> targetImages,
-    required final List<SizeItem> targetSizes,
+    required final ProductDraft draft,
+    required final List<ImageItem> images,
+    required final List<SizeItem> sizes,
   }) {
     return _write(
       ProductMutation.update,
       () async {
         final original = await ref.read(productByIdProvider(productId).future);
         return ref.read(updateProductUseCaseProvider)(
-          original: original,
-          target: applyEdits(original),
-          targetImages: targetImages,
-          targetSizes: targetSizes,
+          UpdateProductParams(
+            original: original,
+            draft: draft,
+            images: images,
+            sizes: sizes,
+          ),
         );
       },
-      // The cached product is the baseline the next edit diffs against, so a
+      // The cached product is the original the next edit diffs against, so a
       // stale one would silently narrow that edit's changes.
       refreshedProductId: productId,
     );
