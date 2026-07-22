@@ -48,13 +48,9 @@ class ProductFormData {
   List<File> get newImageFiles =>
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 
-  /// Extract kept existing image paths in current order
-  List<String> get keptExistingPaths =>
-      images.value.whereType<ExistingImageItem>().map((final e) => e.path).toList();
-
   CreateProductParams toCreateProductParams({
     required final String storeId,
-    required final List<CreateProductSizeParams>? sizes,
+    required final List<NewSizeItem> sizes,
   }) {
     return CreateProductParams(
       storeId: storeId,
@@ -107,14 +103,8 @@ class ProductFormData {
     }
   }
 
-  UpdateProductParams toUpdateProductParams({
-    required final String productId,
-    required final List<SizeItem> sizes,
-  }) {
-    return UpdateProductParams(
-      productId: productId,
-      finalImageOrder: images.value,
-      sizes: sizes,
+  Product applyEditsTo(final Product original) {
+    return original.copyWith(
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.parse(priceController.text),

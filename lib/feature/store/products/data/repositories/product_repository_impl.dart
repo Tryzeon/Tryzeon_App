@@ -43,6 +43,17 @@ class ProductRepositoryImpl implements ProductRepository {
     );
   }
 
+  static CreateProductSizeRequest _toSizeRequest(
+    final String productId,
+    final NewSizeItem size,
+  ) {
+    return CreateProductSizeRequest(
+      productId: productId,
+      name: size.name,
+      measurements: _toMeasurementsModel(size.measurements),
+    );
+  }
+
   @override
   Future<Result<List<Product>, Failure>> listProducts({
     required final String storeId,
@@ -124,18 +135,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
       await _remoteDataSource.insertProduct(request);
 
-      final sizesList = params.sizes ?? [];
-      if (sizesList.isNotEmpty) {
-        final sizeRequests = sizesList
-            .map(
-              (final size) => CreateProductSizeRequest(
-                productId: productId,
-                name: size.name,
-                measurements: _toMeasurementsModel(size.measurements),
-              ),
-            )
-            .toList();
-        await _remoteDataSource.insertProductSizes(sizeRequests);
+      if (params.sizes.isNotEmpty) {
+        await _remoteDataSource.insertProductSizes(
+          params.sizes.map((final size) => _toSizeRequest(productId, size)).toList(),
+        );
       }
 
       final model = await _remoteDataSource.getProduct(productId);

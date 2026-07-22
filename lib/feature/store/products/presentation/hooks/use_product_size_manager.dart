@@ -23,12 +23,6 @@ class ProductSizeManager {
   final void Function(MeasurementUnit unit) changeUnit;
   final void Function(List<ParsedSize> parsed) appendParsedSizes;
 
-  List<CreateProductSizeParams> toCreateProductSizeParams() {
-    return sizeEntries
-        .map((final entry) => entry.toCreateProductSizeParams(unit: selectedUnit))
-        .toList();
-  }
-
   /// The full list of sizes the store owner wants to end up with. Working out
   /// which are inserts, updates and deletes is the data layer's job.
   List<SizeItem> toSizeItems() {
@@ -36,6 +30,7 @@ class ProductSizeManager {
         .map((final entry) => entry.toSizeItem(unit: selectedUnit))
         .toList();
   }
+  List<NewSizeItem> toNewSizeItems() => toSizeItems().whereType<NewSizeItem>().toList();
 }
 
 ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}) {

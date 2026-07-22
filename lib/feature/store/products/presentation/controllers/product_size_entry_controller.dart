@@ -68,15 +68,6 @@ class ProductSizeEntryController {
     );
   }
 
-  CreateProductSizeParams toCreateProductSizeParams({
-    required final MeasurementUnit unit,
-  }) {
-    return CreateProductSizeParams(
-      name: nameController.text,
-      measurements: _buildMeasurements(unit: unit),
-    );
-  }
-
   /// The size as the store owner currently has it in the form: [ExistingSizeItem]
   /// when it came from the product, [NewSizeItem] when they just added it.
   SizeItem toSizeItem({required final MeasurementUnit unit}) {

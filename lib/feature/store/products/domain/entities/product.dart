@@ -13,14 +13,6 @@ export 'package:tryzeon/feature/common/product_size/domain/entities/product_size
 part 'product.freezed.dart';
 
 @freezed
-sealed class CreateProductSizeParams with _$CreateProductSizeParams {
-  const factory CreateProductSizeParams({
-    required final String name,
-    final Measurements? measurements,
-  }) = _CreateProductSizeParams;
-}
-
-@freezed
 sealed class CreateProductParams with _$CreateProductParams {
   const factory CreateProductParams({
     required final String storeId,
@@ -28,6 +20,7 @@ sealed class CreateProductParams with _$CreateProductParams {
     required final List<String> categoryIds,
     required final double price,
     required final List<File> images,
+    required final List<NewSizeItem> sizes,
     @Default(ProductGender.unisex) final ProductGender gender,
     final String? purchaseLink,
     final String? material,
@@ -36,7 +29,6 @@ sealed class CreateProductParams with _$CreateProductParams {
     final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
     final List<ProductSeason>? seasons,
-    final List<CreateProductSizeParams>? sizes,
   }) = _CreateProductParams;
 }
 
