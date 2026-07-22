@@ -75,7 +75,7 @@ class AddProductPage extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (result.isSuccess) {
-        context.pop(true);
+        context.go(AppRoutes.dashboardProducts);
       } else {
         TopNotification.show(
           context,
