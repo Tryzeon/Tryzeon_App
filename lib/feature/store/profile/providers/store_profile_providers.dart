@@ -124,16 +124,18 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
       final located = await _resolveCoordinates(original: original, address: address);
 
       final result = await ref.read(updateStoreProfileUseCaseProvider)(
-        original: original,
-        target: original.copyWith(
-          name: name,
-          address: address,
-          latitude: located.latitude,
-          longitude: located.longitude,
-          channels: channels,
-          orderContacts: orderContacts,
+        UpdateStoreProfileParams(
+          original: original,
+          draft: StoreProfileDraft(
+            name: name,
+            address: address,
+            latitude: located.latitude,
+            longitude: located.longitude,
+            channels: channels,
+            orderContacts: orderContacts,
+          ),
+          logoFile: logoFile,
         ),
-        logoFile: logoFile,
       );
 
       if (result.isFailure) {

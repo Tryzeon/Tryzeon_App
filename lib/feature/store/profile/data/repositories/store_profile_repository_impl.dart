@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -80,25 +78,24 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateStoreProfile({
-    required final StoreProfile original,
-    required final StoreProfile target,
-    final File? logoFile,
-  }) async {
+  Future<Result<void, Failure>> updateStoreProfile(
+    final UpdateStoreProfileParams params,
+  ) async {
     try {
-      StoreProfile finalTarget = target;
+      final original = params.original;
+      StoreProfile target = original.applyDraft(params.draft);
 
       // Handle Logo Upload
-      if (logoFile != null) {
+      if (params.logoFile != null) {
         final newLogoPath = await _remoteDataSource.uploadLogo(
-          storeId: target.id,
-          image: logoFile,
+          storeId: original.id,
+          image: params.logoFile!,
         );
-        finalTarget = target.copyWith(logoPath: newLogoPath);
+        target = target.copyWith(logoPath: newLogoPath);
 
         final oldLogoPath = original.logoPath;
         if (oldLogoPath != null && oldLogoPath.isNotEmpty && oldLogoPath != newLogoPath) {
-          _remoteDataSource.deleteLogo(storeId: target.id, key: oldLogoPath).onError((
+          _remoteDataSource.deleteLogo(storeId: original.id, key: oldLogoPath).onError((
             final e,
             final s,
           ) {
@@ -108,10 +105,10 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       }
 
       // Diff against the original so an untouched column keeps whatever value
-      // the server has — `original` may be an old cached copy.
+      // the server has — `original` is the snapshot the user edited.
       final changes = jsonDiff(
         _mappr.convert<StoreProfile, StoreProfileModel>(original).toJson(),
-        _mappr.convert<StoreProfile, StoreProfileModel>(finalTarget).toJson(),
+        _mappr.convert<StoreProfile, StoreProfileModel>(target).toJson(),
         unorderedKeys: _unorderedKeys,
       );
 
