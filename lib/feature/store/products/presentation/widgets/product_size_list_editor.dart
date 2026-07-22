@@ -228,7 +228,6 @@ class _SizeCard extends StatelessWidget {
                   type: type,
                   unit: selectedUnit,
                   valueController: entry.measurementControllers[type]!,
-                  offsetController: entry.offsetControllers[type]!,
                 ),
               ),
             ),
@@ -244,13 +243,11 @@ class _MeasurementRow extends StatelessWidget {
     required this.type,
     required this.unit,
     required this.valueController,
-    required this.offsetController,
   });
 
   final MeasurementType type;
   final MeasurementUnit unit;
   final TextEditingController valueController;
-  final TextEditingController offsetController;
 
   @override
   Widget build(final BuildContext context) {
@@ -267,127 +264,16 @@ class _MeasurementRow extends StatelessWidget {
           style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: AppSpacing.xs),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                controller: valueController,
-                decoration: const InputDecoration(),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
-                ],
-                validator: AppValidators.validateMeasurement,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.smMd),
-            Expanded(
-              flex: 2,
-              child: _OffsetStepper(
-                offsetController: offsetController,
-                valueController: valueController,
-              ),
-            ),
+        TextFormField(
+          controller: valueController,
+          decoration: const InputDecoration(),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
           ],
+          validator: AppValidators.validateMeasurement,
         ),
       ],
-    );
-  }
-}
-
-class _OffsetStepper extends StatelessWidget {
-  const _OffsetStepper({required this.offsetController, required this.valueController});
-
-  final TextEditingController offsetController;
-  final TextEditingController valueController;
-
-  void _update(final double delta) {
-    final current = double.tryParse(offsetController.text) ?? 0.0;
-    final next = (current + delta).clamp(0.0, 50.0);
-    offsetController.text = next.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
-  }
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return FormField<String>(
-      initialValue: offsetController.text,
-      validator: (final v) => AppValidators.validateOffset(
-        offsetValue: v,
-        measurementValue: valueController.text,
-      ),
-      builder: (final field) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InputDecorator(
-            decoration: const InputDecoration(contentPadding: EdgeInsets.zero),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove_rounded, size: 16),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    _update(-0.5);
-                    field.didChange(offsetController.text);
-                  },
-                ),
-                Container(
-                  width: AppStroke.thin,
-                  height: AppSpacing.lg,
-                  color: colorScheme.outline,
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: offsetController,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
-                    ],
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                      border: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      errorBorder: InputBorder.none,
-                      disabledBorder: InputBorder.none,
-                      filled: false,
-                      hintText: '±0.0',
-                    ),
-                    onChanged: field.didChange,
-                  ),
-                ),
-                Container(
-                  width: AppStroke.thin,
-                  height: AppSpacing.lg,
-                  color: colorScheme.outline,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_rounded, size: 16),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    _update(0.5);
-                    field.didChange(offsetController.text);
-                  },
-                ),
-              ],
-            ),
-          ),
-          if (field.hasError)
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
-              child: Text(
-                field.errorText!,
-                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.error),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

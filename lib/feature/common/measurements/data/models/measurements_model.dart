@@ -11,12 +11,6 @@ class MeasurementsModel {
     this.hips,
     this.shoulder,
     this.sleeve,
-    this.heightOffset,
-    this.chestOffset,
-    this.waistOffset,
-    this.hipsOffset,
-    this.shoulderOffset,
-    this.sleeveOffset,
   });
 
   factory MeasurementsModel.fromJson(final Map<String, dynamic> json) =>
@@ -28,12 +22,6 @@ class MeasurementsModel {
   final double? hips;
   final double? shoulder;
   final double? sleeve;
-  final double? heightOffset;
-  final double? chestOffset;
-  final double? waistOffset;
-  final double? hipsOffset;
-  final double? shoulderOffset;
-  final double? sleeveOffset;
 
   Map<String, dynamic> toJson() => _$MeasurementsModelToJson(this);
 }

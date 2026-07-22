@@ -4,7 +4,6 @@ import 'package:tryzeon/feature/common/measurements/domain/entities/measurements
 int get totalMeasurementFields => MeasurementType.values.length;
 
 /// Counts how many of the six core measurement fields have a non-null value.
-/// Offset fields are ignored.
 int countFilledMeasurements(final Measurements? measurements) {
   if (measurements == null) return 0;
   var count = 0;

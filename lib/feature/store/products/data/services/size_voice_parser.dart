@@ -47,7 +47,6 @@ List<ParsedSize> parseSizeVoiceResponse(final Map<String, dynamic> data) {
         measurements[type] = ParsedMeasurement(
           value: v,
           unit: _unitFromString(value['unit']),
-          offset: _toDouble(value['offset']),
         );
       });
     }

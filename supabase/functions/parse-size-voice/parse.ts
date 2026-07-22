@@ -17,7 +17,6 @@ const SUPPORTED_MIME = new Set([
   "audio/mp4", "audio/aac", "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-m4a",
 ]);
 const MAX_CM = 300;
-const MAX_OFFSET_CM = 50;
 
 export function buildPrompt(): string {
   return [
@@ -26,11 +25,10 @@ export function buildPrompt(): string {
     "規則：",
     "1. 忽略口頭禪、語助詞、重複與與尺寸無關的閒聊，只保留尺寸資訊（去贅字）。",
     "2. 量測欄位只允許：height(身高)、chest(胸圍)、waist(腰圍)、hips(臀圍)、shoulder(肩寬)、sleeve(袖長)。沒講到的欄位不要輸出。",
-    "3. 每個量測輸出 { value, unit, offset? }。value 為數字。",
+    "3. 每個量測輸出 { value, unit }。value 為數字。",
     "4. unit 依口語判斷：公分=centimeter、台寸/寸=cun、英吋/吋/inch=inch。若完全沒提單位，一律填 centimeter。",
-    "5. 只有當店家明確講到容差（正負N、加減N、±N）時才輸出 offset，否則省略 offset。",
-    "6. name 原樣保留尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。",
-    "7. 若聽不出任何尺寸，sizes 回空陣列。",
+    "5. name 原樣保留尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。",
+    "6. 若聽不出任何尺寸，sizes 回空陣列。",
   ].join("\n");
 }
 
@@ -40,7 +38,6 @@ export function buildSchema(): Record<string, unknown> {
     properties: {
       value: { type: "NUMBER" },
       unit: { type: "STRING", enum: [...UNIT_VALUES] },
-      offset: { type: "NUMBER" },
     },
     required: ["value", "unit"],
   };
@@ -88,15 +85,15 @@ function toNumber(v: unknown): number | null {
 
 export function normalizeParsedSizes(
   raw: unknown,
-): Array<{ name: string; measurements: Record<string, { value: number; unit: string; offset?: number }> }> {
+): Array<{ name: string; measurements: Record<string, { value: number; unit: string }> }> {
   const sizes = (raw as { sizes?: unknown })?.sizes;
   if (!Array.isArray(sizes)) return [];
-  const out: Array<{ name: string; measurements: Record<string, { value: number; unit: string; offset?: number }> }> = [];
+  const out: Array<{ name: string; measurements: Record<string, { value: number; unit: string }> }> = [];
   for (const s of sizes) {
     if (s === null || typeof s !== "object") continue;
     const nameRaw = (s as Record<string, unknown>).name;
     const name = typeof nameRaw === "string" ? nameRaw.slice(0, 20) : "";
-    const measurements: Record<string, { value: number; unit: string; offset?: number }> = {};
+    const measurements: Record<string, { value: number; unit: string }> = {};
     const mRaw = (s as Record<string, unknown>).measurements;
     if (mRaw && typeof mRaw === "object") {
       for (const key of MEASUREMENT_KEYS) {
@@ -110,13 +107,7 @@ export function normalizeParsedSizes(
         if (value === null) continue;
         const cm = value * TO_CM_FACTOR[unit];
         if (cm <= 0 || cm > MAX_CM) continue;
-        const entry: { value: number; unit: string; offset?: number } = { value, unit };
-        const offset = toNumber((m as Record<string, unknown>).offset);
-        if (offset !== null) {
-          const offCm = offset * TO_CM_FACTOR[unit];
-          if (offCm > 0 && offCm <= MAX_OFFSET_CM) entry.offset = offset;
-        }
-        measurements[key] = entry;
+        measurements[key] = { value, unit };
       }
     }
     out.push({ name, measurements });

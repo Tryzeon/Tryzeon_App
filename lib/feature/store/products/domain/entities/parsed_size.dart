@@ -2,11 +2,10 @@ import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
 
 class ParsedMeasurement {
-  const ParsedMeasurement({required this.value, required this.unit, this.offset});
+  const ParsedMeasurement({required this.value, required this.unit});
 
   final double value;
   final MeasurementUnit unit;
-  final double? offset;
 }
 
 class ParsedSize {

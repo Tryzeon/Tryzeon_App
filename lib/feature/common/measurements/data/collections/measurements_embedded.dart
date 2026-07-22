@@ -10,11 +10,4 @@ class MeasurementsEmbedded {
   double? hips;
   double? shoulder;
   double? sleeve;
-
-  double? heightOffset;
-  double? chestOffset;
-  double? waistOffset;
-  double? hipsOffset;
-  double? shoulderOffset;
-  double? sleeveOffset;
 }

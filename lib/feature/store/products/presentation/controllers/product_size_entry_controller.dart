@@ -15,11 +15,6 @@ class ProductSizeEntryController {
       measurementControllers[type] = TextEditingController(
         text: measurements?.getValue(type)?.toString() ?? '',
       );
-
-      final offsetValue = measurements?.getOffset(type);
-      offsetControllers[type] = TextEditingController(
-        text: offsetValue?.toString() ?? '',
-      );
     }
   }
 
@@ -43,10 +38,6 @@ class ProductSizeEntryController {
       final m = entry.value;
       final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
       controller.measurementControllers[entry.key]?.text = format(m.value * factor);
-      final offset = m.offset;
-      if (offset != null) {
-        controller.offsetControllers[entry.key]?.text = format(offset * factor);
-      }
     }
 
     return controller;
@@ -55,7 +46,6 @@ class ProductSizeEntryController {
   final String? id;
   final TextEditingController nameController;
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
-  final Map<MeasurementType, TextEditingController> offsetControllers = {};
 
   double? _parseAndConvert(final String? text, final MeasurementUnit unit) {
     if (text == null || text.isEmpty) return null;
@@ -68,9 +58,6 @@ class ProductSizeEntryController {
     double? getValue(final MeasurementType type) =>
         _parseAndConvert(measurementControllers[type]?.text, unit);
 
-    double? getOffset(final MeasurementType type) =>
-        _parseAndConvert(offsetControllers[type]?.text.trim(), unit);
-
     return Measurements(
       height: getValue(MeasurementType.height),
       shoulder: getValue(MeasurementType.shoulder),
@@ -78,12 +65,6 @@ class ProductSizeEntryController {
       sleeve: getValue(MeasurementType.sleeve),
       waist: getValue(MeasurementType.waist),
       hips: getValue(MeasurementType.hips),
-      heightOffset: getOffset(MeasurementType.height),
-      shoulderOffset: getOffset(MeasurementType.shoulder),
-      chestOffset: getOffset(MeasurementType.chest),
-      sleeveOffset: getOffset(MeasurementType.sleeve),
-      waistOffset: getOffset(MeasurementType.waist),
-      hipsOffset: getOffset(MeasurementType.hips),
     );
   }
 
@@ -128,15 +109,11 @@ class ProductSizeEntryController {
     }
 
     measurementControllers.values.forEach(convert);
-    offsetControllers.values.forEach(convert);
   }
 
   void dispose() {
     nameController.dispose();
     for (final controller in measurementControllers.values) {
-      controller.dispose();
-    }
-    for (final controller in offsetControllers.values) {
       controller.dispose();
     }
   }

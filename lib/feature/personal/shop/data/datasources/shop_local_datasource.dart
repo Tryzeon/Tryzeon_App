@@ -55,13 +55,7 @@ class ShopLocalDataSource {
               ..waist = size.measurements!.waist
               ..hips = size.measurements!.hips
               ..shoulder = size.measurements!.shoulder
-              ..sleeve = size.measurements!.sleeve
-              ..heightOffset = size.measurements!.heightOffset
-              ..chestOffset = size.measurements!.chestOffset
-              ..waistOffset = size.measurements!.waistOffset
-              ..hipsOffset = size.measurements!.hipsOffset
-              ..shoulderOffset = size.measurements!.shoulderOffset
-              ..sleeveOffset = size.measurements!.sleeveOffset;
+              ..sleeve = size.measurements!.sleeve;
           }
 
           return sizeEmbedded;
@@ -137,12 +131,6 @@ class ShopLocalDataSource {
             hips: m.hips,
             shoulder: m.shoulder,
             sleeve: m.sleeve,
-            heightOffset: m.heightOffset,
-            chestOffset: m.chestOffset,
-            waistOffset: m.waistOffset,
-            hipsOffset: m.hipsOffset,
-            shoulderOffset: m.shoulderOffset,
-            sleeveOffset: m.sleeveOffset,
           );
         }
 

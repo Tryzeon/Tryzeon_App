@@ -112,31 +112,6 @@ class AppValidators {
     return null;
   }
 
-  static String? validateOffset({
-    required final String? offsetValue,
-    required final String? measurementValue,
-  }) {
-    if (offsetValue == null || offsetValue.trim().isEmpty) {
-      return null;
-    }
-
-    if (measurementValue == null || measurementValue.trim().isEmpty) {
-      return '請先輸入測量值';
-    }
-
-    final number = double.tryParse(offsetValue);
-    if (number == null) {
-      return '請輸入有效數字';
-    }
-    if (number < 0) {
-      return '誤差不能小於 0';
-    }
-    if (number > 50) {
-      return '誤差不能大於 50';
-    }
-    return null;
-  }
-
   /// Validates one LINE field that holds either kind of ID: an Official Account
   /// (`@id`) or a personal ID (no `@`). The '@' prefix picks which format the
   /// value must satisfy.
