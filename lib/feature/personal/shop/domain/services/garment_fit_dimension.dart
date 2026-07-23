@@ -15,10 +15,10 @@ import 'package:tryzeon/feature/common/product_size/domain/entities/garment_meas
 extension GarmentFitDimension on GarmentMeasurementType {
   BodyMeasurementType? get comparableBodyType => switch (this) {
     GarmentMeasurementType.shoulderWidth => BodyMeasurementType.shoulder,
-    GarmentMeasurementType.chestWidth => BodyMeasurementType.chest,
+    GarmentMeasurementType.chestCircumference => BodyMeasurementType.chest,
     GarmentMeasurementType.sleeveLength => BodyMeasurementType.sleeve,
-    GarmentMeasurementType.waistWidth => BodyMeasurementType.waist,
-    GarmentMeasurementType.hipWidth => BodyMeasurementType.hips,
+    GarmentMeasurementType.waistCircumference => BodyMeasurementType.waist,
+    GarmentMeasurementType.hipCircumference => BodyMeasurementType.hips,
     GarmentMeasurementType.length => null,
   };
 

@@ -1,12 +1,17 @@
 /// The dimensions of a *garment* a store owner can publish on a size chart.
 ///
-/// These are flat measurements taken on the laid-out garment, not body
-/// circumferences — `chestWidth` is the width across the chest, roughly half of
-/// the corresponding body circumference. The vocabulary is deliberately
-/// separate from `BodyMeasurementType`: the two sets evolve independently (a
-/// garment has a hem length, a body does not; a body has a height, a garment
-/// does not) and translating between them is fit-domain knowledge, not a
-/// property of either type.
+/// [chestCircumference], [waistCircumference] and [hipCircumference] are the
+/// garment's own circumference at that point — the way a size chart is normally
+/// printed and the way a store owner measures — not the flat width across the
+/// laid-out garment, and not the wearer's body circumference. [shoulderWidth]
+/// and [sleeveLength] stay linear because a garment has no circumference there.
+///
+/// The vocabulary is deliberately separate from `BodyMeasurementType` even
+/// where the names now line up: the two sets evolve independently (a garment
+/// has a hem length, a body does not; a body has a height, a garment does not),
+/// and a garment circumference is not interchangeable with the body
+/// circumference it must accommodate — the gap between them is ease. Bridging
+/// them is fit-domain knowledge, not a property of either type.
 ///
 /// [length] is the garment's own top-to-bottom length, whatever the garment is
 /// — a top's body length, a pair of trousers' inseam-to-hem length, a skirt's
@@ -17,10 +22,10 @@
 /// `GarmentFitDimension` in the shop feature.
 enum GarmentMeasurementType {
   shoulderWidth('shoulder_width'),
-  chestWidth('chest_width'),
+  chestCircumference('chest_circumference'),
   sleeveLength('sleeve_length'),
-  waistWidth('waist_width'),
-  hipWidth('hip_width'),
+  waistCircumference('waist_circumference'),
+  hipCircumference('hip_circumference'),
   length('length');
 
   const GarmentMeasurementType(this.value);

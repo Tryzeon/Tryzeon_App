@@ -7,10 +7,10 @@ extension GarmentMeasurementTypeUiMapper on GarmentMeasurementType {
   /// The localized label for UI rendering.
   String get label => switch (this) {
     GarmentMeasurementType.shoulderWidth => '肩寬',
-    GarmentMeasurementType.chestWidth => '胸寬',
+    GarmentMeasurementType.chestCircumference => '胸圍',
     GarmentMeasurementType.sleeveLength => '袖長',
-    GarmentMeasurementType.waistWidth => '腰寬',
-    GarmentMeasurementType.hipWidth => '臀寬',
+    GarmentMeasurementType.waistCircumference => '腰圍',
+    GarmentMeasurementType.hipCircumference => '臀圍',
     GarmentMeasurementType.length => '長度',
   };
 }

@@ -5,9 +5,9 @@ part 'garment_measurements_embedded.g.dart';
 @embedded
 class GarmentMeasurementsEmbedded {
   double? shoulderWidth;
-  double? chestWidth;
+  double? chestCircumference;
   double? sleeveLength;
-  double? waistWidth;
-  double? hipWidth;
+  double? waistCircumference;
+  double? hipCircumference;
   double? length;
 }

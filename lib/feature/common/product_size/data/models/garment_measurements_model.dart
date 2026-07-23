@@ -6,10 +6,10 @@ part 'garment_measurements_model.g.dart';
 class GarmentMeasurementsModel {
   const GarmentMeasurementsModel({
     this.shoulderWidth,
-    this.chestWidth,
+    this.chestCircumference,
     this.sleeveLength,
-    this.waistWidth,
-    this.hipWidth,
+    this.waistCircumference,
+    this.hipCircumference,
     this.length,
   });
 
@@ -17,10 +17,10 @@ class GarmentMeasurementsModel {
       _$GarmentMeasurementsModelFromJson(json);
 
   final double? shoulderWidth;
-  final double? chestWidth;
+  final double? chestCircumference;
   final double? sleeveLength;
-  final double? waistWidth;
-  final double? hipWidth;
+  final double? waistCircumference;
+  final double? hipCircumference;
   final double? length;
 
   Map<String, dynamic> toJson() => _$GarmentMeasurementsModelToJson(this);
