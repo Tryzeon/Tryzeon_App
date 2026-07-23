@@ -9,7 +9,5 @@ class GarmentMeasurementsEmbedded {
   double? sleeveLength;
   double? waistWidth;
   double? hipWidth;
-  double? garmentLength;
-  double? pantsLength;
-  double? skirtLength;
+  double? length;
 }

@@ -9,8 +9,8 @@ import 'package:tryzeon/feature/common/product_size/domain/entities/garment_meas
 /// measurement type: `common/product_size` must not know that shoppers have
 /// bodies, and `common/body_measurements` must not know that garments exist.
 ///
-/// A `null` counterpart means the dimension is display-only — a hem length
-/// tells a shopper how long the garment is but says nothing about whether it
+/// A `null` counterpart means the dimension is display-only — the garment's
+/// length tells a shopper how long it is but says nothing about whether it
 /// fits, exactly like body height says nothing about which size to pick.
 extension GarmentFitDimension on GarmentMeasurementType {
   BodyMeasurementType? get comparableBodyType => switch (this) {
@@ -19,9 +19,7 @@ extension GarmentFitDimension on GarmentMeasurementType {
     GarmentMeasurementType.sleeveLength => BodyMeasurementType.sleeve,
     GarmentMeasurementType.waistWidth => BodyMeasurementType.waist,
     GarmentMeasurementType.hipWidth => BodyMeasurementType.hips,
-    GarmentMeasurementType.garmentLength => null,
-    GarmentMeasurementType.pantsLength => null,
-    GarmentMeasurementType.skirtLength => null,
+    GarmentMeasurementType.length => null,
   };
 
   /// Whether the fit calculation may read this dimension at all.

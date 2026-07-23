@@ -8,7 +8,7 @@ part 'garment_measurements.freezed.dart';
 /// One size's flat measurements, in centimeters.
 ///
 /// Every field is optional: a size chart is inherently sparse — a skirt has no
-/// sleeve length, a top has no pants length, and store owners publish only the
+/// sleeve length, a top has no hip width, and store owners publish only the
 /// dimensions they actually measured.
 @freezed
 sealed class GarmentMeasurements with _$GarmentMeasurements {
@@ -18,9 +18,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     final double? sleeveLength,
     final double? waistWidth,
     final double? hipWidth,
-    final double? garmentLength,
-    final double? pantsLength,
-    final double? skirtLength,
+    final double? length,
   }) = _GarmentMeasurements;
   const GarmentMeasurements._();
 
@@ -33,9 +31,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     sleeveLength: values[GarmentMeasurementType.sleeveLength],
     waistWidth: values[GarmentMeasurementType.waistWidth],
     hipWidth: values[GarmentMeasurementType.hipWidth],
-    garmentLength: values[GarmentMeasurementType.garmentLength],
-    pantsLength: values[GarmentMeasurementType.pantsLength],
-    skirtLength: values[GarmentMeasurementType.skirtLength],
+    length: values[GarmentMeasurementType.length],
   );
 
   double? getValue(final GarmentMeasurementType type) => switch (type) {
@@ -44,9 +40,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     GarmentMeasurementType.sleeveLength => sleeveLength,
     GarmentMeasurementType.waistWidth => waistWidth,
     GarmentMeasurementType.hipWidth => hipWidth,
-    GarmentMeasurementType.garmentLength => garmentLength,
-    GarmentMeasurementType.pantsLength => pantsLength,
-    GarmentMeasurementType.skirtLength => skirtLength,
+    GarmentMeasurementType.length => length,
   };
 
   double? operator [](final GarmentMeasurementType type) => getValue(type);

@@ -11,8 +11,6 @@ extension GarmentMeasurementTypeUiMapper on GarmentMeasurementType {
     GarmentMeasurementType.sleeveLength => '袖長',
     GarmentMeasurementType.waistWidth => '腰寬',
     GarmentMeasurementType.hipWidth => '臀寬',
-    GarmentMeasurementType.garmentLength => '衣長',
-    GarmentMeasurementType.pantsLength => '褲長',
-    GarmentMeasurementType.skirtLength => '裙長',
+    GarmentMeasurementType.length => '長度',
   };
 }

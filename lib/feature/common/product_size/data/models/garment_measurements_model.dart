@@ -10,9 +10,7 @@ class GarmentMeasurementsModel {
     this.sleeveLength,
     this.waistWidth,
     this.hipWidth,
-    this.garmentLength,
-    this.pantsLength,
-    this.skirtLength,
+    this.length,
   });
 
   factory GarmentMeasurementsModel.fromJson(final Map<String, dynamic> json) =>
@@ -23,9 +21,7 @@ class GarmentMeasurementsModel {
   final double? sleeveLength;
   final double? waistWidth;
   final double? hipWidth;
-  final double? garmentLength;
-  final double? pantsLength;
-  final double? skirtLength;
+  final double? length;
 
   Map<String, dynamic> toJson() => _$GarmentMeasurementsModelToJson(this);
 }

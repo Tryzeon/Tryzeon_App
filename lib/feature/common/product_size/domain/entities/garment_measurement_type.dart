@@ -8,18 +8,20 @@
 /// does not) and translating between them is fit-domain knowledge, not a
 /// property of either type.
 ///
-/// Length dimensions ([garmentLength], [pantsLength], [skirtLength]) are
-/// displayed to shoppers but carry no fit signal on their own, so they have no
-/// body counterpart. See `GarmentFitDimension` in the shop feature.
+/// [length] is the garment's own top-to-bottom length, whatever the garment is
+/// — a top's body length, a pair of trousers' inseam-to-hem length, a skirt's
+/// hem length. One dimension covers all three because the garment category
+/// already says which one is meant, and `WardrobeCategory` itself does not
+/// separate trousers from skirts. It is displayed to shoppers but carries no
+/// fit signal on its own, so it has no body counterpart. See
+/// `GarmentFitDimension` in the shop feature.
 enum GarmentMeasurementType {
   shoulderWidth('shoulder_width'),
   chestWidth('chest_width'),
   sleeveLength('sleeve_length'),
   waistWidth('waist_width'),
   hipWidth('hip_width'),
-  garmentLength('garment_length'),
-  pantsLength('pants_length'),
-  skirtLength('skirt_length');
+  length('length');
 
   const GarmentMeasurementType(this.value);
 
