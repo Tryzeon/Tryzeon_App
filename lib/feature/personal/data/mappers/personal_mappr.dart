@@ -1,9 +1,10 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 
+import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
-import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
 import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
+import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../../../feature/common/product_size/domain/entities/product_size.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../common/store/data/models/store_order_contact_model.dart';
@@ -28,7 +29,8 @@ import 'personal_mappr.auto_mappr.dart';
 /// AutoMappr configuration for Personal feature
 /// Handles UserProfile, WardrobeItem, SubscriptionPlan, ShopProduct, ShopStoreInfo mappings
 /// Note: ProductSize mappings are defined here directly for ShopProduct.sizes dependency
-/// Note: Measurements mappings are included via MeasurementsMappr (for ProductSize.measurements)
+/// Note: measurement mappings come from the two dedicated mapprs — body
+/// measurements for UserProfile, garment measurements for ProductSize.sizes
 @AutoMappr(
   [
     // UserProfile mappings
@@ -95,7 +97,8 @@ import 'personal_mappr.auto_mappr.dart';
     ),
   ],
   includes: [
-    MeasurementsMappr(), // ProductSize.measurements depends on Measurements mapping
+    BodyMeasurementsMappr(), // UserProfile.measurements
+    GarmentMeasurementsMappr(), // ProductSize.measurements
   ],
 )
 class PersonalMappr extends $PersonalMappr {

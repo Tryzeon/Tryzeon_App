@@ -1,7 +1,10 @@
 import { jsonError } from "../_shared/http.ts";
 
+/// Garment flat measurements — must stay in sync with GarmentMeasurementType
+/// in lib/feature/common/product_size/domain/entities/.
 export const MEASUREMENT_KEYS = [
-  "height", "chest", "waist", "hips", "shoulder", "sleeve",
+  "shoulder_width", "chest_width", "sleeve_length", "waist_width", "hip_width",
+  "garment_length", "pants_length", "skirt_length",
 ] as const;
 
 export const UNIT_VALUES = ["centimeter", "cun", "inch"] as const;
@@ -24,7 +27,8 @@ export function buildPrompt(): string {
     "請從語音中萃取每一個尺寸與其量測值，輸出 JSON。",
     "規則：",
     "1. 忽略口頭禪、語助詞、重複與與尺寸無關的閒聊，只保留尺寸資訊（去贅字）。",
-    "2. 量測欄位只允許：height(身高)、chest(胸圍)、waist(腰圍)、hips(臀圍)、shoulder(肩寬)、sleeve(袖長)。沒講到的欄位不要輸出。",
+    "2. 量測欄位只允許：shoulder_width(肩寬)、chest_width(胸寬)、sleeve_length(袖長)、waist_width(腰寬)、hip_width(臀寬)、garment_length(衣長)、pants_length(褲長)、skirt_length(裙長)。沒講到的欄位不要輸出。",
+    "2-1. 這是「平放衣服」的量測值，不是人體圍度。店家若說「胸圍」「腰圍」「臀圍」，指的是該部位的衣寬，分別對應 chest_width、waist_width、hip_width。身高不是衣服的尺寸，絕對不要輸出。",
     "3. 每個量測輸出 { value, unit }。value 為數字。",
     "4. unit 依口語判斷：公分=centimeter、台寸/寸=cun、英吋/吋/inch=inch。若完全沒提單位，一律填 centimeter。",
     "5. name 原樣保留尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。",

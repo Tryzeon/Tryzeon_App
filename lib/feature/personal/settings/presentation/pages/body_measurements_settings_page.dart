@@ -8,9 +8,8 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
-import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
-import 'package:tryzeon/feature/common/measurements/utils/measurements_completion.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
+import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -53,8 +52,8 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
 
-    final measurementControllers = <MeasurementType, TextEditingController>{};
-    for (final type in MeasurementType.values) {
+    final measurementControllers = <BodyMeasurementType, TextEditingController>{};
+    for (final type in BodyMeasurementType.values) {
       measurementControllers[type] = useTextEditingController(
         text: profile.measurements?[type]?.toString() ?? '',
       );
@@ -64,7 +63,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
     var hasChanges = false;
     var filledCount = 0;
 
-    for (final type in MeasurementType.values) {
+    for (final type in BodyMeasurementType.values) {
       final currentValue = useValueListenable(measurementControllers[type]!).text;
       final originalValue = profile.measurements?[type]?.toString() ?? '';
       final currentDouble = double.tryParse(currentValue);
@@ -85,14 +84,14 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
     Future<void> updateMeasurements() async {
       if (!formKey.currentState!.validate()) return;
 
-      final measurementsJson = <String, dynamic>{
+      final measurements = BodyMeasurements.fromValues({
         for (final entry in measurementControllers.entries)
-          entry.key.value: double.tryParse(entry.value.text),
-      };
+          entry.key: double.tryParse(entry.value.text),
+      });
 
       final result = await ref
           .read(profileEditProvider.notifier)
-          .updateBodyMeasurements(Measurements.fromJson(measurementsJson));
+          .updateBodyMeasurements(measurements);
 
       if (!context.mounted) return;
 
@@ -137,7 +136,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
                     borderRadius: AppRadius.pillAll,
                   ),
                   child: Text(
-                    '$filledCount / $totalMeasurementFields',
+                    '$filledCount / ${BodyMeasurements.fieldCount}',
                     style: textTheme.labelSmall?.copyWith(
                       color: colorScheme.onPrimaryContainer,
                     ),
@@ -147,7 +146,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             _MeasurementGrid(
-              types: MeasurementType.values,
+              types: BodyMeasurementType.values,
               controllers: measurementControllers,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -178,8 +177,8 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
 class _MeasurementGrid extends StatelessWidget {
   const _MeasurementGrid({required this.types, required this.controllers});
 
-  final List<MeasurementType> types;
-  final Map<MeasurementType, TextEditingController> controllers;
+  final List<BodyMeasurementType> types;
+  final Map<BodyMeasurementType, TextEditingController> controllers;
 
   @override
   Widget build(final BuildContext context) {
@@ -216,7 +215,7 @@ class _MeasurementGrid extends StatelessWidget {
 class _MeasurementField extends StatelessWidget {
   const _MeasurementField({required this.type, required this.controller});
 
-  final MeasurementType type;
+  final BodyMeasurementType type;
   final TextEditingController controller;
 
   @override

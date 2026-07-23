@@ -4,9 +4,8 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/measurements/data/mappers/measurements_mappr.dart';
-import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
+import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
@@ -37,11 +36,12 @@ class ProductRepositoryImpl implements ProductRepository {
   /// carries no meaning and must not read as a change.
   static const _productUnorderedKeys = {'category_ids', 'styles', 'seasons'};
 
-  static MeasurementsModel? _toMeasurementsModel(final Measurements? measurements) {
+  static GarmentMeasurementsModel? _toMeasurementsModel(
+    final GarmentMeasurements? measurements,
+  ) {
     if (measurements == null) return null;
-    return const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
-      measurements,
-    );
+    return const GarmentMeasurementsMappr()
+        .convert<GarmentMeasurements, GarmentMeasurementsModel>(measurements);
   }
 
   static CreateProductSizeRequest _toSizeRequest(

@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileRemoteDataSource {
@@ -31,7 +31,7 @@ class UserProfileRemoteDataSource {
   }
 
   Future<UserProfileModel> updateUserBodyMeasurements(
-    final MeasurementsModel measurements,
+    final BodyMeasurementsModel measurements,
   ) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();

@@ -6,8 +6,8 @@ import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
@@ -131,7 +131,9 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     );
   }
 
-  Future<Result<void, Failure>> updateBodyMeasurements(final Measurements measurements) {
+  Future<Result<void, Failure>> updateBodyMeasurements(
+    final BodyMeasurements measurements,
+  ) {
     return _write(
       () =>
           ref.read(updateUserBodyMeasurementsUseCaseProvider)(measurements: measurements),

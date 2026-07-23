@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/collections/body_measurements_embedded.dart';
 
 part 'user_profile_cache.g.dart';
 
@@ -16,7 +16,7 @@ class UserProfileCache {
   String? email;
   String? avatarPath;
 
-  MeasurementsEmbedded? measurements;
+  BodyMeasurementsEmbedded? measurements;
 
   String? gender;
   String? ageRange;

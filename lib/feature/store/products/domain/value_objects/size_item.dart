@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurements.dart';
 
 part 'size_item.freezed.dart';
 
@@ -12,12 +12,12 @@ sealed class SizeItem with _$SizeItem {
   const factory SizeItem.existing({
     required final String id,
     required final String name,
-    final Measurements? measurements,
+    final GarmentMeasurements? measurements,
   }) = ExistingSizeItem;
 
   /// A size the store owner just added in the form, not yet persisted.
   const factory SizeItem.newSize({
     required final String name,
-    final Measurements? measurements,
+    final GarmentMeasurements? measurements,
   }) = NewSizeItem;
 }

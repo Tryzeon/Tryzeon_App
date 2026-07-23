@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_type.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurement_type.dart';
 
 part 'fit_result.freezed.dart';
 
@@ -10,7 +10,7 @@ enum FitDirection { tight, loose }
 @freezed
 sealed class MeasurementCaveat with _$MeasurementCaveat {
   const factory MeasurementCaveat({
-    required final MeasurementType type,
+    required final BodyMeasurementType type,
     required final double deviation,
     required final FitDirection direction,
   }) = _MeasurementCaveat;
@@ -25,7 +25,7 @@ sealed class FitResult with _$FitResult {
     /// Measurements present on both sides that fell inside the size range.
     /// Only includes types compared on both sides — un-compared types are not
     /// added here, so subtitles like "{type} fits" stay accurate.
-    @Default(<MeasurementType>[]) final List<MeasurementType> matchedTypes,
+    @Default(<BodyMeasurementType>[]) final List<BodyMeasurementType> matchedTypes,
     final String? alternativeSize,
     @Default(false) final bool outOfRange,
     @Default(false) final bool noUserData,

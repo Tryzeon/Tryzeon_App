@@ -30,6 +30,7 @@ class ProductSizeManager {
         .map((final entry) => entry.toSizeItem(unit: selectedUnit))
         .toList();
   }
+
   List<NewSizeItem> toNewSizeItems() => toSizeItems().whereType<NewSizeItem>().toList();
 }
 

@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 
 part 'create_product_size_request.g.dart';
 
@@ -15,7 +15,7 @@ class CreateProductSizeRequest {
 
   final String productId;
   final String name;
-  final MeasurementsModel? measurements;
+  final GarmentMeasurementsModel? measurements;
 
   Map<String, dynamic> toJson() => _$CreateProductSizeRequestToJson(this);
 }

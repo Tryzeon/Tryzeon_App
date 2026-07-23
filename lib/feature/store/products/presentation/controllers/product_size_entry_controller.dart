@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
@@ -9,9 +8,9 @@ class ProductSizeEntryController {
   ProductSizeEntryController({
     this.id,
     final String name = '',
-    final Measurements? measurements,
+    final GarmentMeasurements? measurements,
   }) : nameController = TextEditingController(text: name) {
-    for (final type in MeasurementType.values) {
+    for (final type in GarmentMeasurementType.values) {
       measurementControllers[type] = TextEditingController(
         text: measurements?.getValue(type)?.toString() ?? '',
       );
@@ -45,7 +44,7 @@ class ProductSizeEntryController {
 
   final String? id;
   final TextEditingController nameController;
-  final Map<MeasurementType, TextEditingController> measurementControllers = {};
+  final Map<GarmentMeasurementType, TextEditingController> measurementControllers = {};
 
   double? _parseAndConvert(final String? text, final MeasurementUnit unit) {
     if (text == null || text.isEmpty) return null;
@@ -54,18 +53,11 @@ class ProductSizeEntryController {
     return double.parse((value * unit.toCmFactor).toStringAsFixed(1));
   }
 
-  Measurements _buildMeasurements({required final MeasurementUnit unit}) {
-    double? getValue(final MeasurementType type) =>
-        _parseAndConvert(measurementControllers[type]?.text, unit);
-
-    return Measurements(
-      height: getValue(MeasurementType.height),
-      shoulder: getValue(MeasurementType.shoulder),
-      chest: getValue(MeasurementType.chest),
-      sleeve: getValue(MeasurementType.sleeve),
-      waist: getValue(MeasurementType.waist),
-      hips: getValue(MeasurementType.hips),
-    );
+  GarmentMeasurements _buildMeasurements({required final MeasurementUnit unit}) {
+    return GarmentMeasurements.fromValues({
+      for (final type in GarmentMeasurementType.values)
+        type: _parseAndConvert(measurementControllers[type]?.text, unit),
+    });
   }
 
   /// The size as the store owner currently has it in the form: [ExistingSizeItem]

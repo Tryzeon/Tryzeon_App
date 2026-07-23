@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
 
 part 'user_profile_model.g.dart';
 
@@ -27,7 +27,7 @@ class UserProfileModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? email;
-  final MeasurementsModel? measurements;
+  final BodyMeasurementsModel? measurements;
   final String? avatarPath;
   final String? gender;
   final String? ageRange;

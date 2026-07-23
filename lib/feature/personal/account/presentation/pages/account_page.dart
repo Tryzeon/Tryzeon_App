@@ -13,7 +13,7 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/common/measurements/utils/measurements_completion.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
@@ -336,13 +336,14 @@ class _BodyMeasurementsRow extends HookConsumerWidget {
     if (profileAsync.isLoading && !profileAsync.hasValue) {
       trailing = null;
     } else {
-      final filled = countFilledMeasurements(profileAsync.value?.measurements);
+      final filled = profileAsync.value?.measurements?.filledCount ?? 0;
+      final total = BodyMeasurements.fieldCount;
       if (filled == 0) {
         trailing = '未填寫';
-      } else if (filled == totalMeasurementFields) {
+      } else if (filled == total) {
         trailing = '已完成';
       } else {
-        trailing = '$filled / $totalMeasurementFields 已填寫';
+        trailing = '$filled / $total 已填寫';
       }
     }
 

@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
+import 'package:tryzeon/feature/common/product_size/data/collections/garment_measurements_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/collections/product_size_embedded.dart';
 
 part 'product_cache.g.dart';

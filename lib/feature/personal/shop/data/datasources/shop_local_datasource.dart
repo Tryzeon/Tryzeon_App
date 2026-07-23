@@ -2,9 +2,10 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/common/measurements/data/collections/measurements_embedded.dart';
-import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/feature/common/product_size/data/collections/garment_measurements_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/collections/product_size_embedded.dart';
+import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
@@ -17,6 +18,7 @@ class ShopLocalDataSource {
 
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
+  static const _measurementsMappr = GarmentMeasurementsMappr();
 
   static String productCacheKey(final String productId) => 'shop_product:$productId';
 
@@ -48,15 +50,10 @@ class ShopLocalDataSource {
             ..createdAt = size.createdAt
             ..updatedAt = size.updatedAt;
 
-          if (size.measurements != null) {
-            sizeEmbedded.measurements = MeasurementsEmbedded()
-              ..height = size.measurements!.height
-              ..chest = size.measurements!.chest
-              ..waist = size.measurements!.waist
-              ..hips = size.measurements!.hips
-              ..shoulder = size.measurements!.shoulder
-              ..sleeve = size.measurements!.sleeve;
-          }
+          sizeEmbedded.measurements = _measurementsMappr
+              .tryConvert<GarmentMeasurementsModel, GarmentMeasurementsEmbedded>(
+                size.measurements,
+              );
 
           return sizeEmbedded;
         }).toList();
@@ -121,18 +118,10 @@ class ShopLocalDataSource {
     List<ProductSizeModel>? sizes;
     if (collection.sizes != null) {
       sizes = collection.sizes!.map((final sizeEmbedded) {
-        MeasurementsModel? measurements;
-        if (sizeEmbedded.measurements != null) {
-          final m = sizeEmbedded.measurements!;
-          measurements = MeasurementsModel(
-            height: m.height,
-            chest: m.chest,
-            waist: m.waist,
-            hips: m.hips,
-            shoulder: m.shoulder,
-            sleeve: m.sleeve,
-          );
-        }
+        final measurements = _measurementsMappr
+            .tryConvert<GarmentMeasurementsEmbedded, GarmentMeasurementsModel>(
+              sizeEmbedded.measurements,
+            );
 
         return ProductSizeModel(
           id: sizeEmbedded.id,

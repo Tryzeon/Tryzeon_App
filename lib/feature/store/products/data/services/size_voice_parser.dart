@@ -3,12 +3,12 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_type.dart';
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 
-MeasurementType? _typeFromKey(final String key) {
-  for (final t in MeasurementType.values) {
+GarmentMeasurementType? _typeFromKey(final String key) {
+  for (final t in GarmentMeasurementType.values) {
     if (t.value == key) return t;
   }
   return null;
@@ -36,7 +36,7 @@ List<ParsedSize> parseSizeVoiceResponse(final Map<String, dynamic> data) {
   for (final rawSize in rawSizes) {
     if (rawSize is! Map) continue;
     final name = rawSize['name'] is String ? rawSize['name'] as String : '';
-    final measurements = <MeasurementType, ParsedMeasurement>{};
+    final measurements = <GarmentMeasurementType, ParsedMeasurement>{};
     final rawMeasurements = rawSize['measurements'];
     if (rawMeasurements is Map) {
       rawMeasurements.forEach((final key, final value) {

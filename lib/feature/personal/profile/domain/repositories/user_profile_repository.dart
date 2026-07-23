@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -24,7 +24,7 @@ abstract class UserProfileRepository {
   });
 
   Future<Result<void, Failure>> updateUserBodyMeasurements({
-    required final Measurements measurements,
+    required final BodyMeasurements measurements,
   });
 
   Future<Result<void, Failure>> updateUserAvatar({

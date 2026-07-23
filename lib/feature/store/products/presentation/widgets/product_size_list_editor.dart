@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
-import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
+import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_size_voice_input.dart';
 
@@ -69,7 +69,7 @@ class ProductSizeListEditor extends StatelessWidget {
               child: Text(
                 voiceStatus == SizeVoiceStatus.recording
                     ? '錄音中…再按一下停止'
-                    : '可語音輸入：例「M 號，胸圍九十公分，腰圍七十二」',
+                    : '可語音輸入：例「M 號，胸寬五十公分，衣長七十二」',
                 style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
@@ -221,7 +221,7 @@ class _SizeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            ...MeasurementType.values.map(
+            ...GarmentMeasurementType.values.map(
               (final type) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.smMd),
                 child: _MeasurementRow(
@@ -245,7 +245,7 @@ class _MeasurementRow extends StatelessWidget {
     required this.valueController,
   });
 
-  final MeasurementType type;
+  final GarmentMeasurementType type;
   final MeasurementUnit unit;
   final TextEditingController valueController;
 

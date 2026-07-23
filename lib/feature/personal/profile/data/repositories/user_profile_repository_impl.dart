@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/measurements/data/mappers/measurements_mappr.dart';
-import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
@@ -27,7 +27,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   final UserProfileRemoteDataSource _remoteDataSource;
   final UserProfileLocalDataSource _localDataSource;
   static const _mappr = PersonalMappr();
-  static const _measurementsMappr = MeasurementsMappr();
+  static const _measurementsMappr = BodyMeasurementsMappr();
 
   @override
   Future<Result<UserProfile, Failure>> getUserProfile({
@@ -113,11 +113,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
   @override
   Future<Result<void, Failure>> updateUserBodyMeasurements({
-    required final Measurements measurements,
+    required final BodyMeasurements measurements,
   }) async {
     try {
       final measurementsModel = _measurementsMappr
-          .convert<Measurements, MeasurementsModel>(measurements);
+          .convert<BodyMeasurements, BodyMeasurementsModel>(measurements);
       final updatedProfile = await _remoteDataSource.updateUserBodyMeasurements(
         measurementsModel,
       );

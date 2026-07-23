@@ -95,7 +95,6 @@ class ProductFormData {
       selectedFit.value = r.fit;
     }
   }
-
 }
 
 ProductFormData useProductForm({final Product? initialProduct}) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
+import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/size_advisor_banner.dart';
 
@@ -38,7 +38,7 @@ class ProductSizeTable extends StatelessWidget {
             columnSpacing: AppSpacing.lg,
             columns: [
               const DataColumn(label: Text('尺寸')),
-              ...MeasurementType.values.map(
+              ...GarmentMeasurementType.values.map(
                 (final type) => DataColumn(label: Text(type.label)),
               ),
             ],
@@ -67,7 +67,7 @@ class ProductSizeTable extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ...MeasurementType.values.map((final type) {
+                  ...GarmentMeasurementType.values.map((final type) {
                     final measurements = size.measurements;
                     final value = measurements?.getValue(type);
                     return DataCell(

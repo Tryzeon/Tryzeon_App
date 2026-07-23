@@ -1,13 +1,13 @@
 import 'package:isar_community/isar.dart';
 
-part 'measurements_embedded.g.dart';
+part 'body_measurements_embedded.g.dart';
 
 @embedded
-class MeasurementsEmbedded {
+class BodyMeasurementsEmbedded {
   double? height;
+  double? shoulder;
   double? chest;
+  double? sleeve;
   double? waist;
   double? hips;
-  double? shoulder;
-  double? sleeve;
 }

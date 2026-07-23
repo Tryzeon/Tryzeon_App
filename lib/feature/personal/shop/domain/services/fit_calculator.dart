@@ -10,8 +10,14 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 /// not a valid fit signal (a garment that fits is larger than the body by an
 /// intended amount of ease that depends on cut and stretch).
 ///
-/// A proper ease-based model — deriving tolerance from the product's `fit`
-/// silhouette, `elasticity`, and garment category — is intentionally deferred.
+/// The vocabulary half of the problem is now solved: `GarmentFitDimension`
+/// (`garment_fit_dimension.dart`) states which garment dimensions map onto a
+/// body dimension and which are display-only, so lengths and body height can
+/// no longer leak into a fit score. What remains is the ease model itself —
+/// deriving tolerance from the product's `fit` silhouette, `elasticity`, and
+/// garment category — which is intentionally deferred because it needs real
+/// calibration data rather than invented constants.
+///
 /// Until then this returns an empty [FitResult] (`FitDisplayState.unknown`),
 /// which hides the size-advisor banner and the recommended-size highlight.
 class FitCalculator {

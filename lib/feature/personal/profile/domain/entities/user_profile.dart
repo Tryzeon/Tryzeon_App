@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
@@ -13,7 +13,7 @@ sealed class UserProfile with _$UserProfile {
     required final String name,
     required final DateTime createdAt,
     required final DateTime updatedAt,
-    final Measurements? measurements,
+    final BodyMeasurements? measurements,
     final String? avatarPath,
     final String? email,
     final Gender? gender,
