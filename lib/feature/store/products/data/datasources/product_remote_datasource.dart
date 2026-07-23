@@ -13,12 +13,12 @@ class ProductRemoteDataSource {
   final SupabaseClient _supabaseClient;
   final StoreImagesApi _storeImagesApi;
   static const _productsTable = AppConstants.tableProducts;
-  static const _productSizesTable = AppConstants.tableProductVariants;
+  static const _productSizesTable = AppConstants.tableProductSizes;
 
   Future<List<ProductModel>> listProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, product_variants(*)')
+        .select('*, product_sizes(*)')
         .eq('store_id', storeId);
 
     return (response as List<dynamic>).map((final e) {
@@ -38,7 +38,7 @@ class ProductRemoteDataSource {
   Future<ProductModel> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, product_variants(*)')
+        .select('*, product_sizes(*)')
         .eq('id', productId)
         .single();
 
@@ -56,7 +56,7 @@ class ProductRemoteDataSource {
       ..remove('store_id')
       ..remove('created_at')
       ..remove('updated_at')
-      ..remove('product_variants');
+      ..remove('product_sizes');
 
     await _supabaseClient.from(_productsTable).update(json).eq('id', productId);
   }

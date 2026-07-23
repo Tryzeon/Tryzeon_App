@@ -144,7 +144,7 @@ class ShopRemoteDataSource {
         .from(_productsTable)
         .select('''
           *,
-          product_variants(*),
+          product_sizes(*),
           store_profiles!products_store_id_fkey(id, name, slug, address, logo_path, channels)
         ''')
         .eq('id', productId)

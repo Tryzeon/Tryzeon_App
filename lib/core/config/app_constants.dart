@@ -13,7 +13,7 @@ class AppConstants {
   static const String tableUserProfiles = 'user_profiles';
   static const String tableStoreProfiles = 'store_profiles';
   static const String tableProducts = 'products';
-  static const String tableProductVariants = 'product_variants';
+  static const String tableProductSizes = 'product_sizes';
   static const String tableProductCategories = 'product_categories';
   static const String tableSubscriptionPlans = 'subscription_plans';
   static const String tableWardrobeItems = 'wardrobe_items';

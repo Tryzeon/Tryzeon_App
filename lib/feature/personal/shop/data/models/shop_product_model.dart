@@ -45,7 +45,7 @@ class ShopProductModel {
   final String? thickness;
   final List<String>? styles;
   final List<String>? seasons;
-  @JsonKey(name: 'product_variants', includeToJson: false)
+  @JsonKey(name: 'product_sizes', includeToJson: false)
   final List<ProductSizeModel>? sizes;
   final DateTime createdAt;
   final DateTime updatedAt;
