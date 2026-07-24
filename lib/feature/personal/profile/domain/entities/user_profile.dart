@@ -13,7 +13,7 @@ sealed class UserProfile with _$UserProfile {
     required final String name,
     required final DateTime createdAt,
     required final DateTime updatedAt,
-    final BodyMeasurements? measurements,
+    @Default(BodyMeasurements()) final BodyMeasurements measurements,
     final String? avatarPath,
     final String? email,
     final Gender? gender,

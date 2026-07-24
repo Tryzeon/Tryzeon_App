@@ -336,7 +336,7 @@ class _BodyMeasurementsRow extends HookConsumerWidget {
     if (profileAsync.isLoading && !profileAsync.hasValue) {
       trailing = null;
     } else {
-      final filled = profileAsync.value?.measurements?.filledCount ?? 0;
+      final filled = profileAsync.value?.measurements.filledCount ?? 0;
       final total = BodyMeasurements.fieldCount;
       if (filled == 0) {
         trailing = '未填寫';

@@ -55,7 +55,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
     final measurementControllers = <BodyMeasurementType, TextEditingController>{};
     for (final type in BodyMeasurementType.values) {
       measurementControllers[type] = useTextEditingController(
-        text: profile.measurements?[type]?.toString() ?? '',
+        text: profile.measurements[type]?.toString() ?? '',
       );
     }
 
@@ -65,7 +65,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
 
     for (final type in BodyMeasurementType.values) {
       final currentValue = useValueListenable(measurementControllers[type]!).text;
-      final originalValue = profile.measurements?[type]?.toString() ?? '';
+      final originalValue = profile.measurements[type]?.toString() ?? '';
       final currentDouble = double.tryParse(currentValue);
       final originalDouble = double.tryParse(originalValue);
 
