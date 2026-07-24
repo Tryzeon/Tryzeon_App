@@ -18,6 +18,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     final double? sleeveLength,
     final double? waistCircumference,
     final double? hipCircumference,
+    final double? thighCircumference,
     final double? length,
   }) = _GarmentMeasurements;
   const GarmentMeasurements._();
@@ -31,6 +32,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     sleeveLength: values[GarmentMeasurementType.sleeveLength],
     waistCircumference: values[GarmentMeasurementType.waistCircumference],
     hipCircumference: values[GarmentMeasurementType.hipCircumference],
+    thighCircumference: values[GarmentMeasurementType.thighCircumference],
     length: values[GarmentMeasurementType.length],
   );
 
@@ -40,6 +42,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     GarmentMeasurementType.sleeveLength => sleeveLength,
     GarmentMeasurementType.waistCircumference => waistCircumference,
     GarmentMeasurementType.hipCircumference => hipCircumference,
+    GarmentMeasurementType.thighCircumference => thighCircumference,
     GarmentMeasurementType.length => length,
   };
 

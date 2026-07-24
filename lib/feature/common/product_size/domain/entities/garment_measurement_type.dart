@@ -20,15 +20,21 @@
 /// separate trousers from skirts. It is displayed to shoppers but carries no
 /// fit signal on its own, so it has no body counterpart. See
 /// `GarmentFitDimension` in the shop feature.
+///
+/// [thighCircumference] is the garment's own thigh circumference, mirroring
+/// the other circumferences.
 enum GarmentMeasurementType {
-  shoulderWidth('shoulder_width'),
-  chestCircumference('chest_circumference'),
-  sleeveLength('sleeve_length'),
-  waistCircumference('waist_circumference'),
-  hipCircumference('hip_circumference'),
-  length('length');
+  shoulderWidth('shoulder_width', minCm: 20, maxCm: 70),
+  chestCircumference('chest_circumference', minCm: 40, maxCm: 200),
+  sleeveLength('sleeve_length', minCm: 20, maxCm: 100),
+  waistCircumference('waist_circumference', minCm: 30, maxCm: 200),
+  hipCircumference('hip_circumference', minCm: 40, maxCm: 200),
+  thighCircumference('thigh_circumference', minCm: 25, maxCm: 120),
+  length('length', minCm: 20, maxCm: 160);
 
-  const GarmentMeasurementType(this.value);
+  const GarmentMeasurementType(this.value, {required this.minCm, required this.maxCm});
 
   final String value;
+  final double minCm;
+  final double maxCm;
 }

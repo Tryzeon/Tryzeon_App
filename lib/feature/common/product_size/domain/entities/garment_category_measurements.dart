@@ -21,6 +21,7 @@ extension GarmentCategoryMeasurements on WardrobeCategory {
     WardrobeCategory.bottoms => const [
       GarmentMeasurementType.waistCircumference,
       GarmentMeasurementType.hipCircumference,
+      GarmentMeasurementType.thighCircumference,
       GarmentMeasurementType.length,
     ],
     // A set spans top and bottom; "others" gives no signal. Both keep the

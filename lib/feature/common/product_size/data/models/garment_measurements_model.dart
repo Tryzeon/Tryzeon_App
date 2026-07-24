@@ -10,6 +10,7 @@ class GarmentMeasurementsModel {
     this.sleeveLength,
     this.waistCircumference,
     this.hipCircumference,
+    this.thighCircumference,
     this.length,
   });
 
@@ -21,6 +22,7 @@ class GarmentMeasurementsModel {
   final double? sleeveLength;
   final double? waistCircumference;
   final double? hipCircumference;
+  final double? thighCircumference;
   final double? length;
 
   Map<String, dynamic> toJson() => _$GarmentMeasurementsModelToJson(this);

@@ -9,5 +9,6 @@ class GarmentMeasurementsEmbedded {
   double? sleeveLength;
   double? waistCircumference;
   double? hipCircumference;
+  double? thighCircumference;
   double? length;
 }
