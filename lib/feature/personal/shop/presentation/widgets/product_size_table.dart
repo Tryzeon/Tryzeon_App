@@ -38,52 +38,59 @@ class ProductSizeTable extends StatelessWidget {
           SizeAdvisorBanner(fitResult: fitResult),
         ],
         const SizedBox(height: AppSpacing.smMd),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: AppSpacing.lg,
-            columns: [
-              const DataColumn(label: Text('尺寸')),
-              ...columnTypes.map((final type) => DataColumn(label: Text(type.label))),
-            ],
-            rows: sizes.map((final size) {
-              final isRecommended =
-                  recommendedSizeName != null && size.name == recommendedSizeName;
-              return DataRow(
-                color: isRecommended && rowHighlight != null
-                    ? WidgetStateProperty.all(rowHighlight.withValues(alpha: 0.5))
-                    : null,
-                cells: [
-                  DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          size.name,
-                          style: textTheme.titleSmall?.copyWith(
-                            fontWeight: isRecommended ? FontWeight.w700 : FontWeight.w500,
-                          ),
-                        ),
-                        if (isRecommended && checkColor != null) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          Icon(Icons.check_rounded, size: 14, color: checkColor),
-                        ],
-                      ],
-                    ),
-                  ),
-                  ...columnTypes.map((final type) {
-                    final measurements = size.measurements;
-                    final value = measurements?.getValue(type);
-                    return DataCell(
-                      Text(
-                        value != null ? value.toStringAsFixed(1) : '-',
-                        style: textTheme.bodyMedium,
-                      ),
-                    );
-                  }),
+        LayoutBuilder(
+          builder: (final context, final constraints) => SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: DataTable(
+                columnSpacing: AppSpacing.lg,
+                columns: [
+                  const DataColumn(label: Text('尺寸')),
+                  ...columnTypes.map((final type) => DataColumn(label: Text(type.label))),
                 ],
-              );
-            }).toList(),
+                rows: sizes.map((final size) {
+                  final isRecommended =
+                      recommendedSizeName != null && size.name == recommendedSizeName;
+                  return DataRow(
+                    color: isRecommended && rowHighlight != null
+                        ? WidgetStateProperty.all(rowHighlight.withValues(alpha: 0.5))
+                        : null,
+                    cells: [
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              size.name,
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: isRecommended
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                            if (isRecommended && checkColor != null) ...[
+                              const SizedBox(width: AppSpacing.xs),
+                              Icon(Icons.check_rounded, size: 14, color: checkColor),
+                            ],
+                          ],
+                        ),
+                      ),
+                      ...columnTypes.map((final type) {
+                        final measurements = size.measurements;
+                        final value = measurements?.getValue(type);
+                        return DataCell(
+                          Text(
+                            value != null ? value.toStringAsFixed(1) : '-',
+                            style: textTheme.bodyMedium,
+                          ),
+                        );
+                      }),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
