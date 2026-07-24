@@ -34,6 +34,7 @@ import 'store_mappr.auto_mappr.dart';
         Field('gender', custom: StoreMapprHelper.stringToGender),
         Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
         Field('thickness', custom: StoreMapprHelper.stringToThickness),
+        Field('categoryIds', custom: StoreMapprHelper.categoryIdsToSet),
         Field('styles', custom: StoreMapprHelper.stringsToStyles),
         Field('seasons', custom: StoreMapprHelper.stringsToSeasons),
       ],
@@ -43,6 +44,7 @@ import 'store_mappr.auto_mappr.dart';
         Field('gender', custom: StoreMapprHelper.genderToString),
         Field('elasticity', custom: StoreMapprHelper.elasticityToString),
         Field('thickness', custom: StoreMapprHelper.thicknessToString),
+        Field('categoryIds', custom: StoreMapprHelper.categoryIdsToList),
         Field('styles', custom: StoreMapprHelper.stylesToStrings),
         Field('seasons', custom: StoreMapprHelper.seasonsToStrings),
       ],
@@ -94,11 +96,14 @@ class StoreMapprHelper {
   static ProductThickness? stringToThickness(final ProductModel source) =>
       ProductThickness.tryFromString(source.thickness);
 
-  static List<ClothingStyle>? stringsToStyles(final ProductModel source) =>
-      ClothingStyle.listFromStrings(source.styles);
+  static Set<String> categoryIdsToSet(final ProductModel source) =>
+      source.categoryIds.toSet();
 
-  static List<ProductSeason>? stringsToSeasons(final ProductModel source) =>
-      ProductSeason.listFromStrings(source.seasons);
+  static Set<ClothingStyle>? stringsToStyles(final ProductModel source) =>
+      ClothingStyle.listFromStrings(source.styles)?.toSet();
+
+  static Set<ProductSeason>? stringsToSeasons(final ProductModel source) =>
+      ProductSeason.listFromStrings(source.seasons)?.toSet();
 
   // Enum to String conversions
   static String genderToString(final Product source) => source.gender.value;
@@ -106,6 +111,9 @@ class StoreMapprHelper {
   static String? elasticityToString(final Product source) => source.elasticity?.value;
 
   static String? thicknessToString(final Product source) => source.thickness?.value;
+
+  static List<String> categoryIdsToList(final Product source) =>
+      source.categoryIds.toList();
 
   static List<String>? stylesToStrings(final Product source) =>
       source.styles?.map((final e) => e.value).toList();

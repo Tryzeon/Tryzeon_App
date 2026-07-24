@@ -25,8 +25,8 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
   final ValueNotifier<String?> selectedFit;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductThickness?> selectedThickness;
-  final ValueNotifier<List<ClothingStyle>?> selectedStyles;
-  final ValueNotifier<List<ProductSeason>?> selectedSeasons;
+  final ValueNotifier<Set<ClothingStyle>?> selectedStyles;
+  final ValueNotifier<Set<ProductSeason>?> selectedSeasons;
 
   final ExpansibleController? controller;
 

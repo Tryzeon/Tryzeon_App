@@ -31,6 +31,8 @@ class ProductModel {
   factory ProductModel.fromJson(final Map<String, dynamic> json) =>
       _$ProductModelFromJson(json);
 
+  static const unorderedJsonKeys = {'category_ids', 'styles', 'seasons'};
+
   final String storeId;
   final String name;
   final List<String> categoryIds;
@@ -49,7 +51,9 @@ class ProductModel {
   final List<String>? seasons;
   @JsonKey(name: 'product_sizes', includeToJson: false)
   final List<ProductSizeModel>? sizes;
+  @JsonKey(includeToJson: false)
   final DateTime createdAt;
+  @JsonKey(includeToJson: false)
   final DateTime updatedAt;
 
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);

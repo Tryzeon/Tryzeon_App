@@ -7,7 +7,5 @@ abstract class StoreProfileRepository {
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, Failure>> updateStoreProfile(
-    final UpdateStoreProfileParams params,
-  );
+  Future<Result<void, Failure>> updateStoreProfile(final UpdateStoreProfileParams params);
 }

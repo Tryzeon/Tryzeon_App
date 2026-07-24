@@ -36,8 +36,8 @@ class ProductFormData {
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductThickness?> selectedThickness;
-  final ValueNotifier<List<ClothingStyle>?> selectedStyles;
-  final ValueNotifier<List<ProductSeason>?> selectedSeasons;
+  final ValueNotifier<Set<ClothingStyle>?> selectedStyles;
+  final ValueNotifier<Set<ProductSeason>?> selectedSeasons;
 
   bool validate(final BuildContext context) {
     return formKey.currentState?.validate() ?? false;
@@ -50,7 +50,7 @@ class ProductFormData {
   ProductDraft toDraft() {
     return ProductDraft(
       name: nameController.text,
-      categoryIds: selectedCategoryIds.value.toList(),
+      categoryIds: selectedCategoryIds.value,
       price: double.parse(priceController.text),
       gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
@@ -83,10 +83,10 @@ class ProductFormData {
       selectedElasticity.value = r.elasticity;
     }
     if ((selectedStyles.value?.isEmpty ?? true) && r.styles.isNotEmpty) {
-      selectedStyles.value = r.styles;
+      selectedStyles.value = r.styles.toSet();
     }
     if ((selectedSeasons.value?.isEmpty ?? true) && r.seasons.isNotEmpty) {
-      selectedSeasons.value = r.seasons;
+      selectedSeasons.value = r.seasons.toSet();
     }
     if ((selectedMaterial.value?.isEmpty ?? true) && (r.material?.isNotEmpty ?? false)) {
       selectedMaterial.value = r.material;
@@ -133,8 +133,8 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final selectedThickness = useValueNotifier<ProductThickness?>(
     initialProduct?.thickness,
   );
-  final selectedStyles = useValueNotifier<List<ClothingStyle>?>(initialProduct?.styles);
-  final selectedSeasons = useValueNotifier<List<ProductSeason>?>(initialProduct?.seasons);
+  final selectedStyles = useValueNotifier<Set<ClothingStyle>?>(initialProduct?.styles);
+  final selectedSeasons = useValueNotifier<Set<ProductSeason>?>(initialProduct?.seasons);
 
   return ProductFormData(
     formKey: formKey,

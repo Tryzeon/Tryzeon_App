@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/store/products/presentation/sheets/product_style
 class ProductStyleSelector extends HookWidget {
   const ProductStyleSelector({super.key, required this.selectedStyles});
 
-  final ValueNotifier<List<ClothingStyle>?> selectedStyles;
+  final ValueNotifier<Set<ClothingStyle>?> selectedStyles;
 
   @override
   Widget build(final BuildContext context) {
@@ -16,15 +16,15 @@ class ProductStyleSelector extends HookWidget {
     final textTheme = theme.textTheme;
 
     final current = useListenable(selectedStyles);
-    final styles = current.value ?? const [];
+    final styles = current.value ?? const <ClothingStyle>{};
 
     Future<void> openSheet() async {
       final result = await ProductStyleSheet.show(
         context: context,
-        initialSelection: styles,
+        initialSelection: styles.toList(),
       );
       if (result == null) return;
-      selectedStyles.value = result.isEmpty ? null : result;
+      selectedStyles.value = result.isEmpty ? null : result.toSet();
     }
 
     return InkWell(

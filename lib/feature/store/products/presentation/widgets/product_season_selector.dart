@@ -7,21 +7,17 @@ import 'package:tryzeon/feature/common/product_attributes/presentation/product_a
 class ProductSeasonSelector extends HookWidget {
   const ProductSeasonSelector({super.key, required this.selectedSeasons});
 
-  final ValueNotifier<List<ProductSeason>?> selectedSeasons;
+  final ValueNotifier<Set<ProductSeason>?> selectedSeasons;
 
   @override
   Widget build(final BuildContext context) {
     final current = useListenable(selectedSeasons);
-    final selected = current.value ?? const [];
+    final selected = current.value ?? const <ProductSeason>{};
 
     void toggle(final ProductSeason season) {
-      final list = [...selected];
-      if (list.contains(season)) {
-        list.remove(season);
-      } else {
-        list.add(season);
-      }
-      selectedSeasons.value = list.isEmpty ? null : list;
+      final next = {...selected};
+      if (!next.remove(season)) next.add(season);
+      selectedSeasons.value = next.isEmpty ? null : next;
     }
 
     return Wrap(

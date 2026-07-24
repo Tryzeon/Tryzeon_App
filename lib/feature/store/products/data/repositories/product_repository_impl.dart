@@ -32,10 +32,6 @@ class ProductRepositoryImpl implements ProductRepository {
   static const _mappr = StoreMappr();
   static const _uuid = Uuid();
 
-  /// Columns backed by a `Set` in the domain layer, whose list order therefore
-  /// carries no meaning and must not read as a change.
-  static const _productUnorderedKeys = {'category_ids', 'styles', 'seasons'};
-
   static GarmentMeasurementsModel? _toMeasurementsModel(
     final GarmentMeasurements? measurements,
   ) {
@@ -122,7 +118,7 @@ class ProductRepositoryImpl implements ProductRepository {
         id: productId,
         storeId: params.storeId,
         name: draft.name,
-        categoryIds: draft.categoryIds,
+        categoryIds: draft.categoryIds.toList(),
         price: draft.price,
         imagePaths: imagePaths,
         gender: draft.gender.value,
@@ -251,7 +247,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final productChanges = jsonDiff(
         _mappr.convert<Product, ProductModel>(original).toJson(),
         _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
-        unorderedKeys: _productUnorderedKeys,
+        unorderedKeys: ProductModel.unorderedJsonKeys,
       );
       final sizeDiff = computeSizeDiff(original.sizes, targetSizes);
 
