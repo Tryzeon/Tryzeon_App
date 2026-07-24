@@ -230,7 +230,6 @@ class _MeasurementField extends StatelessWidget {
         max: type.max,
         unitSuffix: type.unit.suffix,
       ),
-      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(labelText: type.label, suffixText: type.unit.suffix),
     );
   }
