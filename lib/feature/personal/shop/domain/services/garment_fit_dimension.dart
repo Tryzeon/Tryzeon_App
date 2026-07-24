@@ -16,9 +16,9 @@ extension GarmentFitDimension on GarmentMeasurementType {
   BodyMeasurementType? get comparableBodyType => switch (this) {
     GarmentMeasurementType.shoulderWidth => BodyMeasurementType.shoulder,
     GarmentMeasurementType.chestCircumference => BodyMeasurementType.chest,
-    GarmentMeasurementType.sleeveLength => BodyMeasurementType.sleeve,
     GarmentMeasurementType.waistCircumference => BodyMeasurementType.waist,
     GarmentMeasurementType.hipCircumference => BodyMeasurementType.hips,
+    GarmentMeasurementType.sleeveLength => null,
     GarmentMeasurementType.length => null,
   };
 

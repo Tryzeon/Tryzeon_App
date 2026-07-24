@@ -41,10 +41,9 @@ class EaseTable {
   /// fully positive.
   static const ProductElasticity _defaultElasticity = ProductElasticity.none;
 
-  /// The dimensions on which fabric stretch changes the fit. Length-like and
-  /// seam dimensions (sleeve length, shoulder width) do not accommodate stretch
-  /// the way a circumference wrapping the body does, so elasticity is not
-  /// applied to them.
+  /// The dimensions on which fabric stretch changes the fit. Seam dimensions
+  /// like shoulder width do not accommodate stretch the way a circumference
+  /// wrapping the body does, so elasticity is not applied to them.
   static const Set<BodyMeasurementType> _circumferences = {
     BodyMeasurementType.chest,
     BodyMeasurementType.waist,
@@ -53,33 +52,29 @@ class EaseTable {
 
   /// Base ease bands, before any elasticity adjustment, keyed by silhouette and
   /// body dimension. Circumference ease widens from slim to oversize; shoulder
-  /// width and sleeve length stay near the body with a small tolerance.
+  /// width stays near the body with a small tolerance.
   static const Map<ProductFit, Map<BodyMeasurementType, EaseBand>> _bands = {
     ProductFit.slim: {
       BodyMeasurementType.shoulder: EaseBand(-1, 2),
       BodyMeasurementType.chest: EaseBand(4, 11),
-      BodyMeasurementType.sleeve: EaseBand(-2.5, 2.5),
       BodyMeasurementType.waist: EaseBand(2, 9),
       BodyMeasurementType.hips: EaseBand(3, 10),
     },
     ProductFit.regular: {
       BodyMeasurementType.shoulder: EaseBand(0, 3),
       BodyMeasurementType.chest: EaseBand(8, 15),
-      BodyMeasurementType.sleeve: EaseBand(-2.5, 3.5),
       BodyMeasurementType.waist: EaseBand(5, 13),
       BodyMeasurementType.hips: EaseBand(6, 14),
     },
     ProductFit.loose: {
       BodyMeasurementType.shoulder: EaseBand(1, 5),
       BodyMeasurementType.chest: EaseBand(13, 24),
-      BodyMeasurementType.sleeve: EaseBand(-2, 5),
       BodyMeasurementType.waist: EaseBand(10, 22),
       BodyMeasurementType.hips: EaseBand(11, 23),
     },
     ProductFit.oversize: {
       BodyMeasurementType.shoulder: EaseBand(2, 8),
       BodyMeasurementType.chest: EaseBand(20, 40),
-      BodyMeasurementType.sleeve: EaseBand(-2, 7),
       BodyMeasurementType.waist: EaseBand(16, 36),
       BodyMeasurementType.hips: EaseBand(18, 38),
     },
@@ -97,14 +92,13 @@ class EaseTable {
   };
 
   /// Relative importance of each dimension when ranking sizes and choosing which
-  /// mismatch to report. Circumferences drive fit; sleeve length is the least
-  /// decisive because it is easily forgiven (cuffs, pushed-up sleeves).
+  /// mismatch to report. Circumferences drive fit; shoulder width is the least
+  /// decisive of the comparable dimensions.
   static const Map<BodyMeasurementType, double> _weights = {
     BodyMeasurementType.chest: 1,
     BodyMeasurementType.waist: 1,
     BodyMeasurementType.hips: 1,
     BodyMeasurementType.shoulder: 0.8,
-    BodyMeasurementType.sleeve: 0.5,
   };
 
   /// The largest single-dimension miss (cm) still worth recommending with a
