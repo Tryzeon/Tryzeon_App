@@ -278,7 +278,13 @@ class _MeasurementRow extends StatelessWidget {
           decoration: const InputDecoration(),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
-          validator: AppValidators.validateMeasurement,
+          validator: (final value) => AppValidators.validateRange(
+            value,
+            min: type.minCm,
+            max: type.maxCm,
+            unitSuffix: 'cm',
+            scale: unit.toCmFactor,
+          ),
         ),
       ],
     );

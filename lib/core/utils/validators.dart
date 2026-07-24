@@ -56,23 +56,6 @@ class AppValidators {
     return null;
   }
 
-  static String? validateMeasurement(final String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return null; // Optional field
-    }
-    final number = double.tryParse(value);
-    if (number == null) {
-      return '請輸入有效數字';
-    }
-    if (number <= 0) {
-      return '數值必須大於 0';
-    }
-    if (number > 300) {
-      return '數值不能大於 300';
-    }
-    return null;
-  }
-
   /// Validates an optional numeric measurement against a `[min, max]` range.
   /// Empty is allowed (optional field). The domain supplies the bounds and unit
   /// so this stays free of any feature-specific measurement type. [scale]
