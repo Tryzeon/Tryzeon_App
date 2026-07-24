@@ -29,17 +29,10 @@ extension GarmentCategoryMeasurements on WardrobeCategory {
   };
 }
 
-/// The union of relevant dimensions across [categories], in enum order.
-///
-/// Falls back to every dimension when the selection gives no signal: nothing
-/// selected yet, or any selected category without a wardrobe classification —
-/// an unknown garment type must not hide fields the store owner may need.
+/// The relevant dimensions for [category], falling back to every dimension
+/// when the selection gives no signal: nothing selected yet, the category
+/// list not loaded, or a category without a wardrobe classification — an
+/// unknown garment type must not hide fields the store owner may need.
 List<GarmentMeasurementType> relevantMeasurementTypesFor(
-  final Iterable<WardrobeCategory?> categories,
-) {
-  final list = categories.toList();
-  if (list.isEmpty || list.contains(null)) return GarmentMeasurementType.values;
-
-  final union = list.nonNulls.expand((final c) => c.relevantMeasurementTypes).toSet();
-  return GarmentMeasurementType.values.where(union.contains).toList();
-}
+  final WardrobeCategory? category,
+) => category?.relevantMeasurementTypes ?? GarmentMeasurementType.values;
