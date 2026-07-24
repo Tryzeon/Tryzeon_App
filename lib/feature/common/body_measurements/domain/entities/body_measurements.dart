@@ -5,16 +5,18 @@ export 'package:tryzeon/feature/common/body_measurements/domain/entities/body_me
 
 part 'body_measurements.freezed.dart';
 
-/// A shopper's own body dimensions, in centimeters.
+/// A shopper's own body dimensions. Lengths and circumferences are in
+/// centimeters; [weight] is in kilograms.
 @freezed
 sealed class BodyMeasurements with _$BodyMeasurements {
   const factory BodyMeasurements({
     final double? height,
+    final double? weight,
     final double? shoulder,
     final double? chest,
-    final double? sleeve,
     final double? waist,
     final double? hips,
+    final double? thigh,
   }) = _BodyMeasurements;
   const BodyMeasurements._();
 
@@ -22,26 +24,28 @@ sealed class BodyMeasurements with _$BodyMeasurements {
   factory BodyMeasurements.fromValues(final Map<BodyMeasurementType, double?> values) =>
       BodyMeasurements(
         height: values[BodyMeasurementType.height],
+        weight: values[BodyMeasurementType.weight],
         shoulder: values[BodyMeasurementType.shoulder],
         chest: values[BodyMeasurementType.chest],
-        sleeve: values[BodyMeasurementType.sleeve],
         waist: values[BodyMeasurementType.waist],
         hips: values[BodyMeasurementType.hips],
+        thigh: values[BodyMeasurementType.thigh],
       );
 
   double? getValue(final BodyMeasurementType type) => switch (type) {
     BodyMeasurementType.height => height,
+    BodyMeasurementType.weight => weight,
     BodyMeasurementType.shoulder => shoulder,
     BodyMeasurementType.chest => chest,
-    BodyMeasurementType.sleeve => sleeve,
     BodyMeasurementType.waist => waist,
     BodyMeasurementType.hips => hips,
+    BodyMeasurementType.thigh => thigh,
   };
 
   double? operator [](final BodyMeasurementType type) => getValue(type);
 
   /// How many of the [BodyMeasurementType] fields carry a value, for the
-  /// "3 / 6 filled" progress indicators.
+  /// "3 / 7 filled" progress indicators.
   int get filledCount =>
       BodyMeasurementType.values.where((final t) => getValue(t) != null).length;
 

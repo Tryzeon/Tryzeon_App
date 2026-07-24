@@ -5,9 +5,10 @@ part 'body_measurements_embedded.g.dart';
 @embedded
 class BodyMeasurementsEmbedded {
   double? height;
+  double? weight;
   double? shoulder;
   double? chest;
-  double? sleeve;
   double? waist;
   double? hips;
+  double? thigh;
 }

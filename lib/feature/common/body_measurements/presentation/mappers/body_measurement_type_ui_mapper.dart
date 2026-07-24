@@ -7,10 +7,11 @@ extension BodyMeasurementTypeUiMapper on BodyMeasurementType {
   /// The localized label for UI rendering.
   String get label => switch (this) {
     BodyMeasurementType.height => '身高',
+    BodyMeasurementType.weight => '體重',
     BodyMeasurementType.shoulder => '肩寬',
     BodyMeasurementType.chest => '胸圍',
-    BodyMeasurementType.sleeve => '袖長',
     BodyMeasurementType.waist => '腰圍',
     BodyMeasurementType.hips => '臀圍',
+    BodyMeasurementType.thigh => '大腿圍',
   };
 }
