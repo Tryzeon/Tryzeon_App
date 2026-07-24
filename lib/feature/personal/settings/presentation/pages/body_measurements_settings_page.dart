@@ -228,9 +228,12 @@ class _MeasurementField extends StatelessWidget {
         value,
         min: type.min,
         max: type.max,
-        unitSuffix: type.unit.suffix,
+        unitSuffix: type.quantity.unitSuffix,
       ),
-      decoration: InputDecoration(labelText: type.label, suffixText: type.unit.suffix),
+      decoration: InputDecoration(
+        labelText: type.label,
+        suffixText: type.quantity.unitSuffix,
+      ),
     );
   }
 }
