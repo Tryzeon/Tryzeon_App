@@ -44,9 +44,4 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
   };
 
   double? operator [](final GarmentMeasurementType type) => getValue(type);
-
-  /// The dimensions this size actually carries a value for. Drives the size
-  /// chart's columns so empty dimensions never render as a column of dashes.
-  Iterable<GarmentMeasurementType> get filledTypes =>
-      GarmentMeasurementType.values.where((final t) => getValue(t) != null);
 }

@@ -142,14 +142,20 @@ class ProductFormLayout extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: ProductSizeListEditor(
-              entries: sizeManager.sizeEntries,
-              selectedUnit: sizeManager.selectedUnit,
-              onUnitChanged: sizeManager.changeUnit,
-              onAdd: sizeManager.addSize,
-              onRemove: sizeManager.removeSize,
-              voiceStatus: voiceStatus,
-              onVoicePressed: onVoicePressed,
+            child: ValueListenableBuilder<Set<String>>(
+              valueListenable: formData.selectedCategoryIds,
+              builder: (final context, final _, final _) => ProductSizeListEditor(
+                entries: sizeManager.sizeEntries,
+                visibleTypes: formData.visibleMeasurementTypes(
+                  productCategoriesAsync.value ?? const [],
+                ),
+                selectedUnit: sizeManager.selectedUnit,
+                onUnitChanged: sizeManager.changeUnit,
+                onAdd: sizeManager.addSize,
+                onRemove: sizeManager.removeSize,
+                voiceStatus: voiceStatus,
+                onVoicePressed: onVoicePressed,
+              ),
             ),
           ),
         ],

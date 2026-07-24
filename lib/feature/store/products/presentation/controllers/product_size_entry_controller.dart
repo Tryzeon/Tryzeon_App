@@ -53,17 +53,23 @@ class ProductSizeEntryController {
     return double.parse((value * unit.toCmFactor).toStringAsFixed(1));
   }
 
-  GarmentMeasurements _buildMeasurements({required final MeasurementUnit unit}) {
+  GarmentMeasurements _buildMeasurements({
+    required final MeasurementUnit unit,
+    required final List<GarmentMeasurementType> visibleTypes,
+  }) {
     return GarmentMeasurements.fromValues({
-      for (final type in GarmentMeasurementType.values)
+      for (final type in visibleTypes)
         type: _parseAndConvert(measurementControllers[type]?.text, unit),
     });
   }
 
   /// The size as the store owner currently has it in the form: [ExistingSizeItem]
   /// when it came from the product, [NewSizeItem] when they just added it.
-  SizeItem toSizeItem({required final MeasurementUnit unit}) {
-    final measurements = _buildMeasurements(unit: unit);
+  SizeItem toSizeItem({
+    required final MeasurementUnit unit,
+    required final List<GarmentMeasurementType> visibleTypes,
+  }) {
+    final measurements = _buildMeasurements(unit: unit, visibleTypes: visibleTypes);
     final sizeId = id;
 
     return sizeId == null

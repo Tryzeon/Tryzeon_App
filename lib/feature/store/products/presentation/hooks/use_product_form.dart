@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/garment_category_measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
@@ -46,6 +48,20 @@ class ProductFormData {
   /// Extract only new images (files pending upload)
   List<File> get newImageFiles =>
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
+
+  /// The garment dimensions the size editor should show (and the submit flow
+  /// should collect) for the currently selected categories.
+  ///
+  /// Falls back to every dimension when the selection gives no signal — no
+  /// category picked yet, or [allCategories] not loaded.
+  List<GarmentMeasurementType> visibleMeasurementTypes(
+    final List<ProductCategory> allCategories,
+  ) {
+    final selected = allCategories.where(
+      (final c) => selectedCategoryIds.value.contains(c.id),
+    );
+    return relevantMeasurementTypesFor(selected.map((final c) => c.wardrobeCategory));
+  }
 
   ProductDraft toDraft() {
     return ProductDraft(

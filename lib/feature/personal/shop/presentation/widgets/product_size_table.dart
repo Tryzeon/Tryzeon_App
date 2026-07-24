@@ -6,9 +6,15 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/size_advisor_banner.dart';
 
 class ProductSizeTable extends StatelessWidget {
-  const ProductSizeTable({required this.sizes, required this.fitResult, super.key});
+  const ProductSizeTable({
+    required this.sizes,
+    required this.columnTypes,
+    required this.fitResult,
+    super.key,
+  });
 
   final List<ProductSize> sizes;
+  final List<GarmentMeasurementType> columnTypes;
   final FitResult fitResult;
 
   @override
@@ -38,9 +44,7 @@ class ProductSizeTable extends StatelessWidget {
             columnSpacing: AppSpacing.lg,
             columns: [
               const DataColumn(label: Text('尺寸')),
-              ...GarmentMeasurementType.values.map(
-                (final type) => DataColumn(label: Text(type.label)),
-              ),
+              ...columnTypes.map((final type) => DataColumn(label: Text(type.label))),
             ],
             rows: sizes.map((final size) {
               final isRecommended =
@@ -67,7 +71,7 @@ class ProductSizeTable extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ...GarmentMeasurementType.values.map((final type) {
+                  ...columnTypes.map((final type) {
                     final measurements = size.measurements;
                     final value = measurements?.getValue(type);
                     return DataCell(

@@ -70,7 +70,11 @@ class AddProductPage extends HookConsumerWidget {
           .create(
             draft: formData.toDraft(),
             images: formData.newImageFiles,
-            sizes: sizeManager.toNewSizeItems(),
+            sizes: sizeManager.toNewSizeItems(
+              visibleTypes: formData.visibleMeasurementTypes(
+                productCategoriesAsync.value ?? const [],
+              ),
+            ),
           );
 
       if (!context.mounted) return;

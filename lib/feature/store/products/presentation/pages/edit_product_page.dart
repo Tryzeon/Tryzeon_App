@@ -103,7 +103,11 @@ class _EditProductContent extends HookConsumerWidget {
             productId: product.id,
             draft: formData.toDraft(),
             images: formData.images.value,
-            sizes: sizeManager.toSizeItems(),
+            sizes: sizeManager.toSizeItems(
+              visibleTypes: formData.visibleMeasurementTypes(
+                productCategoriesAsync.value ?? const [],
+              ),
+            ),
           );
 
       if (!context.mounted) return;

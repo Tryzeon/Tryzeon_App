@@ -25,13 +25,21 @@ class ProductSizeManager {
 
   /// The full list of sizes the store owner wants to end up with. Working out
   /// which are inserts, updates and deletes is the data layer's job.
-  List<SizeItem> toSizeItems() {
+  ///
+  /// [visibleTypes] mirrors what the size editor showed — hidden dimensions
+  /// are dropped, see [ProductSizeEntryController.toSizeItem].
+  List<SizeItem> toSizeItems({required final List<GarmentMeasurementType> visibleTypes}) {
     return sizeEntries
-        .map((final entry) => entry.toSizeItem(unit: selectedUnit))
+        .map(
+          (final entry) =>
+              entry.toSizeItem(unit: selectedUnit, visibleTypes: visibleTypes),
+        )
         .toList();
   }
 
-  List<NewSizeItem> toNewSizeItems() => toSizeItems().whereType<NewSizeItem>().toList();
+  List<NewSizeItem> toNewSizeItems({
+    required final List<GarmentMeasurementType> visibleTypes,
+  }) => toSizeItems(visibleTypes: visibleTypes).whereType<NewSizeItem>().toList();
 }
 
 ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}) {

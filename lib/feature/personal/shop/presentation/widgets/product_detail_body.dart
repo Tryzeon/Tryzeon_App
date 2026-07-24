@@ -7,6 +7,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/garment_category_measurements.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -86,6 +87,17 @@ class _ProductDetailContent extends HookConsumerWidget {
     final categoryIdToName = categoriesAsync.maybeWhen(
       data: (final categories) => {for (final cat in categories) cat.id: cat.name},
       orElse: () => <String, String>{},
+    );
+
+    // The size chart shows the full column set for the product's garment
+    // type; falls back to every dimension while categories are loading.
+    final sizeColumnTypes = categoriesAsync.maybeWhen(
+      data: (final categories) => relevantMeasurementTypesFor(
+        categories
+            .where((final c) => product.categoryIds.contains(c.id))
+            .map((final c) => c.wardrobeCategory),
+      ),
+      orElse: () => GarmentMeasurementType.values,
     );
 
     final userProfile = ref
@@ -202,7 +214,11 @@ class _ProductDetailContent extends HookConsumerWidget {
 
                 // Size Info Section
                 if (product.sizes != null && product.sizes!.isNotEmpty) ...[
-                  ProductSizeTable(sizes: product.sizes!, fitResult: fitResult),
+                  ProductSizeTable(
+                    sizes: product.sizes!,
+                    columnTypes: sizeColumnTypes,
+                    fitResult: fitResult,
+                  ),
                   const SizedBox(height: AppSpacing.xl),
                 ],
               ],

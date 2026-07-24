@@ -11,6 +11,7 @@ class ProductSizeListEditor extends StatelessWidget {
   const ProductSizeListEditor({
     super.key,
     required this.entries,
+    required this.visibleTypes,
     required this.selectedUnit,
     required this.onUnitChanged,
     required this.onAdd,
@@ -20,6 +21,11 @@ class ProductSizeListEditor extends StatelessWidget {
   });
 
   final List<ProductSizeEntryController> entries;
+
+  /// The dimensions relevant to the selected categories — the only
+  /// measurement fields rendered per size card.
+  final List<GarmentMeasurementType> visibleTypes;
+
   final MeasurementUnit selectedUnit;
   final ValueChanged<MeasurementUnit> onUnitChanged;
   final VoidCallback onAdd;
@@ -119,6 +125,7 @@ class ProductSizeListEditor extends StatelessWidget {
             _SizeCard(
               index: i,
               entry: entries[i],
+              visibleTypes: visibleTypes,
               selectedUnit: selectedUnit,
               standardSizes: _standardSizes,
               onRemove: () => onRemove(i),
@@ -146,6 +153,7 @@ class _SizeCard extends StatelessWidget {
   const _SizeCard({
     required this.index,
     required this.entry,
+    required this.visibleTypes,
     required this.selectedUnit,
     required this.standardSizes,
     required this.onRemove,
@@ -153,6 +161,7 @@ class _SizeCard extends StatelessWidget {
 
   final int index;
   final ProductSizeEntryController entry;
+  final List<GarmentMeasurementType> visibleTypes;
   final MeasurementUnit selectedUnit;
   final List<String> standardSizes;
   final VoidCallback onRemove;
@@ -221,7 +230,7 @@ class _SizeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            ...GarmentMeasurementType.values.map(
+            ...visibleTypes.map(
               (final type) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.smMd),
                 child: _MeasurementRow(
