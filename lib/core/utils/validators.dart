@@ -73,6 +73,28 @@ class AppValidators {
     return null;
   }
 
+  /// Validates an optional numeric measurement against a `[min, max]` range.
+  /// Empty is allowed (optional field). The domain supplies the bounds and unit
+  /// so this stays free of any feature-specific measurement type.
+  static String? validateRange(
+    final String? value, {
+    required final double min,
+    required final double max,
+    required final String unitSuffix,
+  }) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final number = double.tryParse(value);
+    if (number == null) {
+      return '請輸入有效數字';
+    }
+    if (number < min || number > max) {
+      return '請輸入 ${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)} $unitSuffix';
+    }
+    return null;
+  }
+
   static String? validateUrl(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return null; // Optional

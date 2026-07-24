@@ -224,9 +224,14 @@ class _MeasurementField extends StatelessWidget {
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
-      validator: AppValidators.validateMeasurement,
+      validator: (final value) => AppValidators.validateRange(
+        value,
+        min: type.min,
+        max: type.max,
+        unitSuffix: type.unit.suffix,
+      ),
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      decoration: InputDecoration(labelText: type.label, suffixText: 'cm'),
+      decoration: InputDecoration(labelText: type.label, suffixText: type.unit.suffix),
     );
   }
 }
