@@ -8,10 +8,11 @@ type AdminClient = ReturnType<typeof getAdminClient>;
 async function runSearchProducts(
   adminClient: AdminClient,
   args: Record<string, any>,
-  categoryIdsByName: Map<string, string[]>,
+  categoryIdByName: Map<string, string>,
 ): Promise<Record<string, any>[]> {
   const name = nonEmptyStr(args.category_name);
-  const categoryIds = name ? (categoryIdsByName.get(name) ?? []) : null;
+  const id = name ? categoryIdByName.get(name) : null;
+  const categoryIds = id ? [id] : null;
   const params = mapSearchProductsArgs(args, { categoryIds, limit: 10 });
   const { data, error } = await adminClient.rpc("list_shop_products", params);
   if (error) throw error;
@@ -54,9 +55,9 @@ export const answerSchema = z.object({
 export function buildTools(deps: {
   adminClient: AdminClient;
   userId: string;
-  categoryIdsByName: Map<string, string[]>;
+  categoryIdByName: Map<string, string>;
 }) {
-  const { adminClient, userId, categoryIdsByName } = deps;
+  const { adminClient, userId, categoryIdByName } = deps;
   return {
     search_products: tool({
       description:
@@ -94,7 +95,7 @@ export function buildTools(deps: {
         max_price: z.number().optional().describe("選填。價格上限。"),
       }),
       execute: async (args) => ({
-        items: await runSearchProducts(adminClient, args, categoryIdsByName),
+        items: await runSearchProducts(adminClient, args, categoryIdByName),
       }),
     }),
     search_wardrobe: tool({

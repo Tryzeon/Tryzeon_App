@@ -109,11 +109,9 @@ Deno.serve(async (req) => {
       ? (profile.style_preferences as string[])
       : [];
 
-    const categoryIdsByName = new Map<string, string[]>();
+    const categoryIdByName = new Map<string, string>();
     for (const c of categories ?? []) {
-      const ids = categoryIdsByName.get(c.name) ?? [];
-      ids.push(c.id);
-      categoryIdsByName.set(c.name, ids);
+      if (!categoryIdByName.has(c.name)) categoryIdByName.set(c.name, c.id);
     }
 
     const categoryLines = (categories ?? []).map((c) => `- ${c.name}`).join("\n");
@@ -152,7 +150,7 @@ ${categoryLines}`;
     // The AI SDK runs the agent loop: search_* tools have `execute` so it calls
     // them and re-prompts automatically (capped by stopWhen). The final answer is
     // produced as structured `output` (answerSchema), not a tool call.
-    const tools = buildTools({ adminClient, userId: user!.id, categoryIdsByName });
+    const tools = buildTools({ adminClient, userId: user!.id, categoryIdByName });
 
     const stream = new ReadableStream({
       async start(controller) {
