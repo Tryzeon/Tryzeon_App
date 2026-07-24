@@ -1,32 +1,168 @@
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
+import 'package:tryzeon/feature/personal/shop/domain/services/ease_table.dart';
+import 'package:tryzeon/feature/personal/shop/domain/services/garment_fit_dimension.dart';
 
 /// Size-fit recommendation.
 ///
-/// PLACEHOLDER: the previous range-based implementation was removed together
-/// with the per-size measurement offset. It compared the shopper's *body*
-/// measurements directly against the garment's *flat* measurements, which is
-/// not a valid fit signal (a garment that fits is larger than the body by an
-/// intended amount of ease that depends on cut and stretch).
+/// The model has two halves, each isolated on purpose:
+///  - which garment dimension speaks to which body dimension, and which are
+///    display-only — `GarmentFitDimension`;
+///  - how much larger than the body each dimension should be for the product's
+///    silhouette and fabric — [EaseTable].
 ///
-/// The vocabulary half of the problem is now solved: `GarmentFitDimension`
-/// (`garment_fit_dimension.dart`) states which garment dimensions map onto a
-/// body dimension and which are display-only, so lengths and body height can
-/// no longer leak into a fit score. What remains is the ease model itself —
-/// deriving tolerance from the product's `fit` silhouette, `elasticity`, and
-/// garment category — which is intentionally deferred because it needs real
-/// calibration data rather than invented constants.
+/// This class only orchestrates them: for every published size it measures each
+/// comparable dimension's *ease* (garment minus body) against the expected band
+/// and decides whether the size fits, runs tight, or runs loose. A garment's
+/// length and the shopper's height carry no fit signal and are never read here.
 ///
-/// Until then this returns an empty [FitResult] (`FitDisplayState.unknown`),
-/// which hides the size-advisor banner and the recommended-size highlight.
+/// The result is intentionally honest about missing data: dimensions absent on
+/// either side are skipped rather than guessed, so a size judged on chest alone
+/// says so ("chest fits") instead of implying a full-body match.
 class FitCalculator {
   FitCalculator._();
 
   static FitResult calculate({
-    required final UserProfile? userProfile,
+    required final BodyMeasurements? body,
     required final List<ProductSize>? productSizes,
+    required final ProductFit? fit,
+    required final ProductElasticity? elasticity,
   }) {
-    return const FitResult();
+    // Which body dimensions the shopper has recorded that also carry a fit
+    // signal. Height is excluded because no garment dimension compares to it.
+    final userDimensions = fitComparableGarmentTypes
+        .map((final g) => g.comparableBodyType!)
+        .where((final b) => body?.getValue(b) != null)
+        .toList();
+    if (userDimensions.isEmpty) return const FitResult(noUserData: true);
+
+    final sizes = productSizes ?? const <ProductSize>[];
+    final evaluated = sizes
+        .map((final size) => _evaluate(size, body!, userDimensions, fit, elasticity))
+        .where((final e) => e.dimensions.isNotEmpty)
+        .toList();
+
+    // The shopper has data, but no published size overlaps it — nothing to
+    // advise on, so the banner stays hidden.
+    if (evaluated.isEmpty) return const FitResult();
+
+    final cleanMatches = evaluated.where((final e) => e.fitsCleanly).toList();
+    if (cleanMatches.isNotEmpty) {
+      cleanMatches.sort((final a, final b) => a.centerScore.compareTo(b.centerScore));
+      final best = cleanMatches.first;
+      final alternative = cleanMatches.length > 1 ? cleanMatches[1] : null;
+      return FitResult(
+        recommendedSize: best.size.name,
+        matchedTypes: best.matchedTypes,
+        alternativeSize: alternative?.size.name,
+      );
+    }
+
+    // No size fits cleanly: recommend the closest one, but only if it is close
+    // enough to be worth suggesting. Otherwise the product does not stock this
+    // shopper's size at all.
+    evaluated.sort((final a, final b) => a.deviationScore.compareTo(b.deviationScore));
+    final best = evaluated.first;
+    if (best.maxDeviation > EaseTable.maxRecommendableDeviation) {
+      return const FitResult(outOfRange: true);
+    }
+    return FitResult(
+      recommendedSize: best.size.name,
+      caveats: best.caveats,
+      matchedTypes: best.matchedTypes,
+    );
   }
+
+  static _SizeFit _evaluate(
+    final ProductSize size,
+    final BodyMeasurements body,
+    final List<BodyMeasurementType> userDimensions,
+    final ProductFit? fit,
+    final ProductElasticity? elasticity,
+  ) {
+    final dimensions = <_DimensionFit>[];
+    for (final garmentType in fitComparableGarmentTypes) {
+      final bodyType = garmentType.comparableBodyType!;
+      if (!userDimensions.contains(bodyType)) continue;
+
+      final garmentValue = size.measurements?.getValue(garmentType);
+      final bodyValue = body.getValue(bodyType);
+      if (garmentValue == null || bodyValue == null) continue;
+
+      final band = EaseTable.bandFor(bodyType, fit, elasticity);
+      if (band == null) continue;
+
+      dimensions.add(_DimensionFit(
+        type: bodyType,
+        ease: garmentValue - bodyValue,
+        band: band,
+      ));
+    }
+    return _SizeFit(size: size, dimensions: dimensions);
+  }
+}
+
+/// One dimension's fit for one size: how the garment's ease compares to the
+/// expected band.
+class _DimensionFit {
+  _DimensionFit({required this.type, required this.ease, required this.band});
+
+  final BodyMeasurementType type;
+
+  /// Garment measurement minus body measurement, in centimeters.
+  final double ease;
+  final EaseBand band;
+
+  bool get isTight => ease < band.min;
+  bool get isLoose => ease > band.max;
+  bool get inRange => !isTight && !isLoose;
+
+  /// Distance past the nearest band edge (0 when in range), in centimeters.
+  double get deviation {
+    if (isTight) return band.min - ease;
+    if (isLoose) return ease - band.max;
+    return 0;
+  }
+
+  double get weight => EaseTable.weightFor(type);
+
+  MeasurementCaveat get caveat => MeasurementCaveat(
+    type: type,
+    deviation: deviation,
+    direction: isTight ? FitDirection.tight : FitDirection.loose,
+  );
+}
+
+/// One size evaluated against the shopper across every overlapping dimension.
+class _SizeFit {
+  _SizeFit({required this.size, required this.dimensions}) {
+    centerScore = dimensions.fold(
+      0,
+      (final sum, final d) => sum + (d.ease - d.band.center).abs() * d.weight,
+    );
+  }
+
+  final ProductSize size;
+  final List<_DimensionFit> dimensions;
+
+  bool get fitsCleanly => dimensions.every((final d) => d.inRange);
+
+  /// Weighted sum of how far each dimension lands from the ideal ease. Ranks
+  /// sizes that all fit so the most flattering ease wins.
+  double centerScore = 0;
+
+  /// Weighted sum of out-of-range distances. Ranks sizes when none fit cleanly.
+  double get deviationScore =>
+      dimensions.fold(0, (final sum, final d) => sum + d.deviation * d.weight);
+
+  double get maxDeviation =>
+      dimensions.fold(0, (final max, final d) => d.deviation > max ? d.deviation : max);
+
+  List<BodyMeasurementType> get matchedTypes =>
+      dimensions.where((final d) => d.inRange).map((final d) => d.type).toList();
+
+  List<MeasurementCaveat> get caveats =>
+      dimensions.where((final d) => !d.inRange).map((final d) => d.caveat).toList();
 }

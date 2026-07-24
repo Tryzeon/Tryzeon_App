@@ -104,9 +104,13 @@ class _ProductDetailContent extends HookConsumerWidget {
         .watch(userProfileProvider)
         .maybeWhen(data: (final p) => p, orElse: () => null);
     final fitResult = useMemoized(
-      () =>
-          FitCalculator.calculate(userProfile: userProfile, productSizes: product.sizes),
-      [userProfile, product.sizes],
+      () => FitCalculator.calculate(
+        body: userProfile?.measurements,
+        productSizes: product.sizes,
+        fit: product.fit,
+        elasticity: product.elasticity,
+      ),
+      [userProfile?.measurements, product.sizes, product.fit, product.elasticity],
     );
 
     final canPurchase = productHasPurchaseOptions(product);

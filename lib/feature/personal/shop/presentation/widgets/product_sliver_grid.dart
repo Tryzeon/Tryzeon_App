@@ -106,8 +106,10 @@ class ProductSliverGrid extends StatelessWidget {
               itemBuilder: (final context, final index) {
                 final product = products[index];
                 final fitResult = FitCalculator.calculate(
-                  userProfile: userProfile,
+                  body: userProfile?.measurements,
                   productSizes: product.sizes,
+                  fit: product.fit,
+                  elasticity: product.elasticity,
                 );
                 return ProductCard(product: product, fitResult: fitResult);
               },
