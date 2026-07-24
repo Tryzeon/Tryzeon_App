@@ -19,15 +19,10 @@ class StoreProductCard extends HookConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     final categoriesAsync = ref.watch(productCategoriesProvider);
-    final categoryNames = categoriesAsync.maybeWhen(
-      data: (final categories) {
-        final Map<String, String> idToName = {
-          for (final cat in categories) cat.id: cat.name,
-        };
-        final names = product.categoryIds.map((final id) => idToName[id] ?? id).toList();
-        return names.join(' · ');
-      },
-      orElse: () => '',
+    final categoryName = categoriesAsync.maybeWhen(
+      data: (final categories) =>
+          categories.where((final c) => c.id == product.categoryId).firstOrNull?.name,
+      orElse: () => null,
     );
 
     return GestureDetector(
@@ -64,9 +59,9 @@ class StoreProductCard extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (categoryNames.isNotEmpty) ...[
+                  if (categoryName != null) ...[
                     Text(
-                      categoryNames,
+                      categoryName,
                       style: textTheme.labelSmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

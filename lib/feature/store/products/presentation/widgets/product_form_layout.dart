@@ -115,7 +115,7 @@ class ProductFormLayout extends StatelessWidget {
                   priceController: formData.priceController,
                   purchaseLinkController: formData.purchaseLinkController,
                   selectedGender: formData.selectedGender,
-                  selectedCategoryIds: formData.selectedCategoryIds,
+                  selectedCategoryId: formData.selectedCategoryId,
                   productCategoriesAsync: productCategoriesAsync,
                   onRetryCategories: onRetryCategories,
                 ),
@@ -142,8 +142,8 @@ class ProductFormLayout extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: ValueListenableBuilder<Set<String>>(
-              valueListenable: formData.selectedCategoryIds,
+            child: ValueListenableBuilder<String?>(
+              valueListenable: formData.selectedCategoryId,
               builder: (final context, final _, final _) => ProductSizeListEditor(
                 entries: sizeManager.sizeEntries,
                 visibleTypes: formData.visibleMeasurementTypes(

@@ -8,14 +8,14 @@ class ProductCategorySelector extends HookWidget {
   const ProductCategorySelector({
     super.key,
     required this.categories,
-    required this.selectedCategoryIds,
+    required this.selectedCategoryId,
     this.onChanged,
     this.hasError = false,
   });
 
   final List<ProductCategory> categories;
-  final ValueNotifier<Set<String>> selectedCategoryIds;
-  final ValueChanged<Set<String>>? onChanged;
+  final ValueNotifier<String?> selectedCategoryId;
+  final ValueChanged<String>? onChanged;
   final bool hasError;
 
   @override
@@ -25,26 +25,25 @@ class ProductCategorySelector extends HookWidget {
     final textTheme = theme.textTheme;
 
     final inputTheme = theme.inputDecorationTheme;
-    final selectedNotifier = useListenable(selectedCategoryIds);
-    final selectedIds = selectedNotifier.value;
+    final selectedNotifier = useListenable(selectedCategoryId);
+    final selectedId = selectedNotifier.value;
 
-    final categoryMap = useMemoized(() => {for (final c in categories) c.id: c.name}, [
-      categories,
-    ]);
-
-    String displayName(final String id) => categoryMap[id] ?? id;
+    final selectedName = categories
+        .where((final c) => c.id == selectedId)
+        .firstOrNull
+        ?.name;
 
     Future<void> openSheet() async {
       final result = await ProductCategorySheet.show(
         context: context,
         categories: categories,
-        initialIds: selectedIds,
+        initialId: selectedId,
       );
       if (result == null) return;
       if (onChanged != null) {
         onChanged!(result);
       } else {
-        selectedCategoryIds.value = result;
+        selectedCategoryId.value = result;
       }
     }
 
@@ -62,26 +61,12 @@ class ProductCategorySelector extends HookWidget {
         child: Row(
           children: [
             Expanded(
-              child: selectedIds.isEmpty
-                  ? Text(
-                      '選擇商品分類',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    )
-                  : Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xs,
-                      children: selectedIds
-                          .map(
-                            (final id) => Chip(
-                              label: Text(displayName(id)),
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          )
-                          .toList(),
-                    ),
+              child: Text(
+                selectedName ?? '選擇商品分類',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: selectedName == null ? colorScheme.onSurfaceVariant : null,
+                ),
+              ),
             ),
             const SizedBox(width: AppSpacing.sm),
             Icon(Icons.keyboard_arrow_down_rounded, color: colorScheme.onSurfaceVariant),

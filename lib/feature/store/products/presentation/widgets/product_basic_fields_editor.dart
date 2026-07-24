@@ -19,7 +19,7 @@ class ProductBasicFieldsEditor extends HookWidget {
     required this.priceController,
     required this.purchaseLinkController,
     required this.selectedGender,
-    required this.selectedCategoryIds,
+    required this.selectedCategoryId,
     required this.productCategoriesAsync,
     required this.onRetryCategories,
   });
@@ -28,7 +28,7 @@ class ProductBasicFieldsEditor extends HookWidget {
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
   final ValueNotifier<ProductGender?> selectedGender;
-  final ValueNotifier<Set<String>> selectedCategoryIds;
+  final ValueNotifier<String?> selectedCategoryId;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
 
@@ -78,34 +78,32 @@ class ProductBasicFieldsEditor extends HookWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
-        productCategoriesAsync.when(
-          data: (final categories) {
-            return SelectionFormField<Set<String>>(
-              controller: selectedCategoryIds,
-              validator: (final value) =>
-                  AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
-              builder: (final state) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ProductCategorySelector(
-                    categories: categories,
-                    selectedCategoryIds: selectedCategoryIds,
-                    hasError: state.hasError,
-                    onChanged: (final newIds) => selectedCategoryIds.value = newIds,
-                  ),
-                  if (state.hasError) _ErrorText(state.errorText!),
-                ],
+        SelectionFormField<String?>(
+          controller: selectedCategoryId,
+          validator: (final value) =>
+              AppValidators.validateNonEmpty(value, message: '請選擇商品分類'),
+          builder: (final state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              productCategoriesAsync.when(
+                data: (final categories) => ProductCategorySelector(
+                  categories: categories,
+                  selectedCategoryId: selectedCategoryId,
+                  hasError: state.hasError,
+                  onChanged: (final newId) => selectedCategoryId.value = newId,
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (final error, final stack) => ErrorView(
+                  message: error.displayMessage(context),
+                  onRetry: onRetryCategories,
+                  isCompact: true,
+                ),
               ),
-            );
-          },
-          loading: () => const Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (final error, final stack) => ErrorView(
-            message: error.displayMessage(context),
-            onRetry: onRetryCategories,
-            isCompact: true,
+              if (state.hasError) _ErrorText(state.errorText!),
+            ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),

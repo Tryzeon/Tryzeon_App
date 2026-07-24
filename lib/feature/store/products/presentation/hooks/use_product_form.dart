@@ -20,7 +20,7 @@ class ProductFormData {
     required this.selectedMaterial,
     required this.selectedFit,
     required this.images,
-    required this.selectedCategoryIds,
+    required this.selectedCategoryId,
     required this.selectedElasticity,
     required this.selectedThickness,
     required this.selectedStyles,
@@ -35,7 +35,7 @@ class ProductFormData {
   final ValueNotifier<String?> selectedMaterial;
   final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<List<ImageItem>> images;
-  final ValueNotifier<Set<String>> selectedCategoryIds;
+  final ValueNotifier<String?> selectedCategoryId;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<Set<ClothingStyle>?> selectedStyles;
@@ -50,23 +50,23 @@ class ProductFormData {
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 
   /// The garment dimensions the size editor should show (and the submit flow
-  /// should collect) for the currently selected categories.
+  /// should collect) for the currently selected category.
   ///
   /// Falls back to every dimension when the selection gives no signal — no
   /// category picked yet, or [allCategories] not loaded.
   List<GarmentMeasurementType> visibleMeasurementTypes(
     final List<ProductCategory> allCategories,
   ) {
-    final selected = allCategories.where(
-      (final c) => selectedCategoryIds.value.contains(c.id),
-    );
-    return relevantMeasurementTypesFor(selected.map((final c) => c.wardrobeCategory));
+    final selected = allCategories
+        .where((final c) => c.id == selectedCategoryId.value)
+        .firstOrNull;
+    return relevantMeasurementTypesFor(selected?.wardrobeCategory);
   }
 
   ProductDraft toDraft() {
     return ProductDraft(
       name: nameController.text,
-      categoryIds: selectedCategoryIds.value,
+      categoryId: selectedCategoryId.value!,
       price: double.parse(priceController.text),
       gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
@@ -86,8 +86,8 @@ class ProductFormData {
     if (nameController.text.trim().isEmpty && (r.name?.isNotEmpty ?? false)) {
       nameController.text = r.name!;
     }
-    if (selectedCategoryIds.value.isEmpty && r.categoryIds.isNotEmpty) {
-      selectedCategoryIds.value = r.categoryIds.toSet();
+    if (selectedCategoryId.value == null && r.categoryId != null) {
+      selectedCategoryId.value = r.categoryId;
     }
     if (selectedGender.value == null && r.gender != null) {
       selectedGender.value = r.gender;
@@ -140,9 +140,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
 
   final images = useState<List<ImageItem>>(initialImages);
 
-  final selectedCategoryIds = useValueNotifier<Set<String>>(
-    initialProduct?.categoryIds.toSet() ?? {},
-  );
+  final selectedCategoryId = useValueNotifier<String?>(initialProduct?.categoryId);
   final selectedElasticity = useValueNotifier<ProductElasticity?>(
     initialProduct?.elasticity,
   );
@@ -161,7 +159,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedMaterial: selectedMaterial,
     selectedFit: selectedFit,
     images: images,
-    selectedCategoryIds: selectedCategoryIds,
+    selectedCategoryId: selectedCategoryId,
     selectedElasticity: selectedElasticity,
     selectedThickness: selectedThickness,
     selectedStyles: selectedStyles,

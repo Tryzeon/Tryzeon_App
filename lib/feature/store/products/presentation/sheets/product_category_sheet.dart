@@ -6,27 +6,23 @@ import 'package:tryzeon/feature/common/product_attributes/presentation/product_a
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 
 class ProductCategorySheet extends HookWidget {
-  const ProductCategorySheet({
-    super.key,
-    required this.categories,
-    required this.initialIds,
-  });
+  const ProductCategorySheet({super.key, required this.categories, this.initialId});
 
   final List<ProductCategory> categories;
-  final Set<String> initialIds;
+  final String? initialId;
 
-  static Future<Set<String>?> show({
+  static Future<String?> show({
     required final BuildContext context,
     required final List<ProductCategory> categories,
-    required final Set<String> initialIds,
+    final String? initialId,
   }) {
-    return showModalBottomSheet<Set<String>>(
+    return showModalBottomSheet<String>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (final _) =>
-          ProductCategorySheet(categories: categories, initialIds: initialIds),
+          ProductCategorySheet(categories: categories, initialId: initialId),
     );
   }
 
@@ -34,8 +30,7 @@ class ProductCategorySheet extends HookWidget {
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
-
-    final selection = useState<Set<String>>(initialIds);
+    final colorScheme = theme.colorScheme;
 
     final groups = useMemoized(() {
       final byCategory = <WardrobeCategory, List<ProductCategory>>{};
@@ -51,25 +46,13 @@ class ProductCategorySheet extends HookWidget {
     final activeGroup = useState<WardrobeCategory?>(
       groups
           .firstWhere(
-            (final g) => g.value.any((final c) => initialIds.contains(c.id)),
+            (final g) => g.value.any((final c) => c.id == initialId),
             orElse: () => groups.isEmpty
                 ? const MapEntry(WardrobeCategory.others, [])
                 : groups.first,
           )
           .key,
     );
-
-    void toggleSelection(final String id) {
-      final next = {...selection.value};
-      if (next.contains(id)) {
-        next.remove(id);
-      } else {
-        next.add(id);
-      }
-      selection.value = next;
-    }
-
-    void done() => Navigator.of(context).pop(selection.value);
 
     final active = activeGroup.value;
     final activeCategories = groups
@@ -87,16 +70,10 @@ class ProductCategorySheet extends HookWidget {
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.md,
-              AppSpacing.sm,
+              AppSpacing.lg,
               AppSpacing.md,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('選擇分類', style: textTheme.titleMedium),
-                TextButton(onPressed: done, child: const Text('完成')),
-              ],
-            ),
+            child: Row(children: [Text('選擇分類', style: textTheme.titleMedium)]),
           ),
           SizedBox(
             height: 44,
@@ -122,12 +99,12 @@ class ProductCategorySheet extends HookWidget {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               children: [
                 for (final category in activeCategories)
-                  CheckboxListTile(
+                  ListTile(
                     title: Text(category.name, style: theme.textTheme.bodyLarge),
-                    value: selection.value.contains(category.id),
-                    onChanged: (final _) => toggleSelection(category.id),
-                    controlAffinity: ListTileControlAffinity.trailing,
-                    dense: true,
+                    trailing: category.id == initialId
+                        ? Icon(Icons.check_rounded, color: colorScheme.primary)
+                        : null,
+                    onTap: () => Navigator.of(context).pop(category.id),
                   ),
               ],
             ),
