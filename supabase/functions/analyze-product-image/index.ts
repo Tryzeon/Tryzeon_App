@@ -82,13 +82,11 @@ Deno.serve(async (req) => {
     if (categoriesError) {
       console.warn("analyze-product-image: failed to load product_categories", categoriesError);
     }
-    const idsByName = new Map<string, string[]>();
+    const idByName = new Map<string, string>();
     for (const c of categories ?? []) {
-      const ids = idsByName.get(c.name) ?? [];
-      ids.push(c.id);
-      idsByName.set(c.name, ids);
+      if (!idByName.has(c.name)) idByName.set(c.name, c.id);
     }
-    const categoryNames = [...idsByName.keys()];
+    const categoryNames = [...idByName.keys()];
 
     const parsed = await analyzeImage({
       base64,
@@ -97,12 +95,12 @@ Deno.serve(async (req) => {
     });
 
     const categoryName = str(parsed.category);
-    const categoryIds = categoryName ? (idsByName.get(categoryName) ?? []) : [];
+    const categoryId = categoryName ? (idByName.get(categoryName) ?? null) : null;
     const name = str(parsed.name);
 
     return json({
       name: name ? name.slice(0, 20) : null,
-      categoryIds,
+      categoryId,
       gender: inList(parsed.gender, GENDER_VALUES),
       styles: filterList(parsed.styles, STYLE_VALUES, 3),
       seasons: filterList(parsed.seasons, SEASON_VALUES, 4),
