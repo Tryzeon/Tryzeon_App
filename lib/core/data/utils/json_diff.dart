@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 
 const _ordered = DeepCollectionEquality();
-const _unordered = DeepCollectionEquality.unordered();
 
 /// Returns only the [target] entries whose value differs from [original].
 ///
@@ -15,19 +14,14 @@ const _unordered = DeepCollectionEquality.unordered();
 /// A field cleared to null is reported as an explicit null, which relies on the
 /// model keeping json_serializable's default `includeIfNull: true`. A model
 /// that opts out would drop the key instead and the clear would be lost.
-///
-/// [unorderedKeys] names columns whose list order carries no meaning (they back
-/// a `Set` in the domain layer); without it a re-ordered set reads as a change.
 Map<String, dynamic> jsonDiff(
   final Map<String, dynamic> original,
-  final Map<String, dynamic> target, {
-  final Set<String> unorderedKeys = const {},
-}) {
+  final Map<String, dynamic> target,
+) {
   final changes = <String, dynamic>{};
 
   for (final entry in target.entries) {
-    final equality = unorderedKeys.contains(entry.key) ? _unordered : _ordered;
-    if (!equality.equals(original[entry.key], entry.value)) {
+    if (!_ordered.equals(original[entry.key], entry.value)) {
       changes[entry.key] = entry.value;
     }
   }

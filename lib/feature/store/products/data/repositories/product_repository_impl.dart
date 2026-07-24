@@ -247,7 +247,6 @@ class ProductRepositoryImpl implements ProductRepository {
       final productChanges = jsonDiff(
         _mappr.convert<Product, ProductModel>(original).toJson(),
         _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
-        unorderedKeys: ProductModel.unorderedJsonKeys,
       );
       final sizeDiff = computeSizeDiff(original.sizes, targetSizes);
 

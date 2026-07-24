@@ -71,4 +71,7 @@ enum ClothingStyle {
 
   static List<ClothingStyle>? listFromStrings(final Iterable<String>? values) =>
       values?.map(tryFromString).whereType<ClothingStyle>().toList();
+
+  static List<String> stringsFromSet(final Set<ClothingStyle> styles) =>
+      ClothingStyle.values.where(styles.contains).map((final e) => e.value).toList();
 }

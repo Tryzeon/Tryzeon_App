@@ -31,8 +31,6 @@ class ProductModel {
   factory ProductModel.fromJson(final Map<String, dynamic> json) =>
       _$ProductModelFromJson(json);
 
-  static const unorderedJsonKeys = {'category_ids', 'styles', 'seasons'};
-
   final String storeId;
   final String name;
   final List<String> categoryIds;

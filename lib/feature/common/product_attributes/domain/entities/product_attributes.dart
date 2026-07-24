@@ -49,4 +49,7 @@ enum ProductSeason {
 
   static List<ProductSeason>? listFromStrings(final Iterable<String>? values) =>
       values?.map(tryFromString).whereType<ProductSeason>().toList();
+
+  static List<String> stringsFromSet(final Set<ProductSeason> seasons) =>
+      ProductSeason.values.where(seasons.contains).map((final e) => e.value).toList();
 }

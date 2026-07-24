@@ -54,30 +54,6 @@ void main() {
       });
     });
 
-    test('ignores list order for keys listed in unorderedKeys', () {
-      final original = {
-        'category_ids': ['top', 'outer'],
-      };
-      final target = {
-        'category_ids': ['outer', 'top'],
-      };
-
-      expect(jsonDiff(original, target, unorderedKeys: {'category_ids'}), isEmpty);
-    });
-
-    test('still reports an unordered key when its members changed', () {
-      final original = {
-        'channels': ['line', 'shopee'],
-      };
-      final target = {
-        'channels': ['shopee', 'instagram'],
-      };
-
-      expect(jsonDiff(original, target, unorderedKeys: {'channels'}), {
-        'channels': ['shopee', 'instagram'],
-      });
-    });
-
     test('reports a nested map when an inner value differs', () {
       final original = {
         'measurements': {'chest': 50.0, 'waist': 40.0},

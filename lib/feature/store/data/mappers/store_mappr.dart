@@ -113,13 +113,17 @@ class StoreMapprHelper {
   static String? thicknessToString(final Product source) => source.thickness?.value;
 
   static List<String> categoryIdsToList(final Product source) =>
-      source.categoryIds.toList();
+      source.categoryIds.toList()..sort();
 
-  static List<String>? stylesToStrings(final Product source) =>
-      source.styles?.map((final e) => e.value).toList();
+  static List<String>? stylesToStrings(final Product source) {
+    final styles = source.styles;
+    return styles == null ? null : ClothingStyle.stringsFromSet(styles);
+  }
 
-  static List<String>? seasonsToStrings(final Product source) =>
-      source.seasons?.map((final e) => e.value).toList();
+  static List<String>? seasonsToStrings(final Product source) {
+    final seasons = source.seasons;
+    return seasons == null ? null : ProductSeason.stringsFromSet(seasons);
+  }
 
   static Set<StoreChannel> codesToChannelSet(final StoreProfileModel source) =>
       StoreChannel.setFromCodes(source.channels);

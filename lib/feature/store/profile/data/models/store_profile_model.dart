@@ -27,8 +27,6 @@ class StoreProfileModel {
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) =>
       _$StoreProfileModelFromJson(json);
 
-  static const unorderedJsonKeys = {'channels'};
-
   final String id;
   final String ownerId;
   final String name;

@@ -105,7 +105,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       final changes = jsonDiff(
         _mappr.convert<StoreProfile, StoreProfileModel>(original).toJson(),
         _mappr.convert<StoreProfile, StoreProfileModel>(target).toJson(),
-        unorderedKeys: StoreProfileModel.unorderedJsonKeys,
       );
 
       if (changes.isEmpty) {
