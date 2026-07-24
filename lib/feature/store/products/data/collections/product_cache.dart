@@ -14,7 +14,7 @@ class ProductCache {
   @Index()
   late String storeId;
   late String name;
-  late List<String> categoryIds;
+  late String categoryId;
   late double price;
   late List<String> imagePaths;
   late List<String> imageUrls;

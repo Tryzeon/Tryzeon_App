@@ -10,7 +10,7 @@ part 'product_analysis_result.freezed.dart';
 sealed class ProductAnalysisResult with _$ProductAnalysisResult {
   const factory ProductAnalysisResult({
     final String? name,
-    @Default(<String>[]) final List<String> categoryIds,
+    final String? categoryId,
     final ProductGender? gender,
     @Default(<ClothingStyle>[]) final List<ClothingStyle> styles,
     @Default(<ProductSeason>[]) final List<ProductSeason> seasons,

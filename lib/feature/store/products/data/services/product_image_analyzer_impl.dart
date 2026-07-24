@@ -16,7 +16,7 @@ List<String> _strList(final dynamic v) => v is List
 ProductAnalysisResult parseProductAnalysisResponse(final Map<String, dynamic> data) {
   return ProductAnalysisResult(
     name: _str(data['name']),
-    categoryIds: _strList(data['categoryIds']),
+    categoryId: _str(data['categoryId']),
     gender: ProductGender.tryFromString(_str(data['gender'])),
     styles: ClothingStyle.listFromStrings(_strList(data['styles'])) ?? const [],
     seasons: ProductSeason.listFromStrings(_strList(data['seasons'])) ?? const [],

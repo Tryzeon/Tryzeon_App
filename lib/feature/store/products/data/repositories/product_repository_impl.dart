@@ -118,7 +118,7 @@ class ProductRepositoryImpl implements ProductRepository {
         id: productId,
         storeId: params.storeId,
         name: draft.name,
-        categoryIds: draft.categoryIds.toList(),
+        categoryId: draft.categoryId,
         price: draft.price,
         imagePaths: imagePaths,
         gender: draft.gender.value,

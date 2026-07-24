@@ -15,7 +15,7 @@ part 'product.freezed.dart';
 sealed class ProductDraft with _$ProductDraft {
   const factory ProductDraft({
     required final String name,
-    required final Set<String> categoryIds,
+    required final String categoryId,
     required final double price,
     @Default(ProductGender.unisex) final ProductGender gender,
     final String? purchaseLink,
@@ -53,7 +53,7 @@ sealed class Product with _$Product {
   const factory Product({
     required final String storeId,
     required final String name,
-    required final Set<String> categoryIds,
+    required final String categoryId,
     required final double price,
     required final List<String> imagePaths,
     required final List<String> imageUrls,
@@ -75,7 +75,7 @@ sealed class Product with _$Product {
 extension ProductApplyDraft on Product {
   Product applyDraft(final ProductDraft draft) => copyWith(
     name: draft.name,
-    categoryIds: draft.categoryIds,
+    categoryId: draft.categoryId,
     price: draft.price,
     gender: draft.gender,
     purchaseLink: draft.purchaseLink,
