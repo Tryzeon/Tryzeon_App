@@ -41,8 +41,7 @@ class ProductInfoSection extends StatelessWidget {
 
         if (product.thickness != null) buildInfoRow('厚薄度', product.thickness!.label),
 
-        if (product.fit != null && product.fit!.isNotEmpty)
-          buildInfoRow('版型', product.fit!),
+        if (product.fit != null) buildInfoRow('版型', product.fit!.label),
 
         if (product.seasons != null && product.seasons!.isNotEmpty)
           buildInfoRow('季節', product.seasons!.map((final s) => s.label).join('、')),

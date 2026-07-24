@@ -14,8 +14,8 @@ extension ShopProductTryonDetail on ShopProduct {
       parts.add('Material: $materialText');
     }
 
-    final fitText = fit?.trim();
-    if (fitText != null && fitText.isNotEmpty) parts.add('Fit: $fitText');
+    final fitValue = fit?.value;
+    if (fitValue != null) parts.add('Fit: $fitValue');
 
     final elasticityValue = elasticity?.value;
     if (elasticityValue != null) parts.add('Elasticity: $elasticityValue');

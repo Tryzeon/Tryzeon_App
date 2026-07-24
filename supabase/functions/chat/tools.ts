@@ -79,7 +79,7 @@ export function buildTools(deps: {
           "選填。季節，只能用：spring, summer, autumn, winter。",
         ),
         fits: z.array(z.string()).optional().describe(
-          "選填。版型，只能用：合身, 常規, 大尺碼, oversize。",
+          "選填。版型，只能用這些固定英文值：slim（合身）, regular（常規）, loose（寬鬆）, oversize（超大寬版）。",
         ),
         elasticities: z.array(z.string()).optional().describe(
           "選填。彈性，只能用：none, low, medium, high。",

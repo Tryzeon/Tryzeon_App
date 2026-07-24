@@ -70,6 +70,7 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<ShopProductModel, ShopProduct>(
       fields: [
         Field('elasticity', custom: ShopProductMapprHelper.elasticityFromString),
+        Field('fit', custom: ShopProductMapprHelper.fitFromString),
         Field('thickness', custom: ShopProductMapprHelper.thicknessFromString),
         Field('seasons', custom: ShopProductMapprHelper.seasonsFromStrings),
         Field('styles', custom: ShopProductMapprHelper.stylesFromProductModelStrings),
@@ -115,6 +116,9 @@ class WardrobeItemMapprHelper {
 class ShopProductMapprHelper {
   static ProductElasticity? elasticityFromString(final ShopProductModel source) =>
       ProductElasticity.tryFromString(source.elasticity);
+
+  static ProductFit? fitFromString(final ShopProductModel source) =>
+      ProductFit.tryFromString(source.fit);
 
   static ProductThickness? thicknessFromString(final ShopProductModel source) =>
       ProductThickness.tryFromString(source.thickness);

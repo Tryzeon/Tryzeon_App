@@ -1,54 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/store/products/presentation/sheets/product_fit_sheet.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 
 class ProductFitSelector extends StatelessWidget {
   const ProductFitSelector({super.key, required this.selectedFit});
 
-  final ValueNotifier<String?> selectedFit;
-
-  Future<void> _openSheet(final BuildContext context) async {
-    final result = await ProductFitSheet.show(
-      context: context,
-      initialValue: selectedFit.value,
-    );
-    if (result == null) return;
-    selectedFit.value = result.value;
-  }
+  final ValueNotifier<ProductFit?> selectedFit;
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    return ValueListenableBuilder<String?>(
+    return ValueListenableBuilder<ProductFit?>(
       valueListenable: selectedFit,
-      builder: (final context, final value, final _) {
-        final isEmpty = value == null || value.isEmpty;
-        return InkWell(
-          onTap: () => _openSheet(context),
-          borderRadius: AppRadius.inputAll,
-          child: InputDecorator(
-            decoration: const InputDecoration(),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    isEmpty ? '選擇或輸入版型' : value,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isEmpty ? theme.colorScheme.onSurfaceVariant : null,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      builder: (final context, final value, final _) => SegmentedButton<ProductFit>(
+        segments: ProductFit.values
+            .map((final f) => ButtonSegment<ProductFit>(value: f, label: Text(f.label)))
+            .toList(),
+        selected: value == null ? <ProductFit>{} : <ProductFit>{value},
+        multiSelectionEnabled: true,
+        emptySelectionAllowed: true,
+        showSelectedIcon: false,
+        expandedInsets: EdgeInsets.zero,
+        onSelectionChanged: (final newSet) {
+          if (newSet.isEmpty) {
+            selectedFit.value = null;
+          } else if (newSet.length > 1 && value != null) {
+            // user added a new segment while one was already selected;
+            // keep only the newly added one
+            selectedFit.value = newSet.firstWhere((final v) => v != value);
+          } else {
+            selectedFit.value = newSet.first;
+          }
+        },
+      ),
     );
   }
 }

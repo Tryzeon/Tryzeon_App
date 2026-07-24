@@ -43,7 +43,7 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
     );
   }
 
-  void setFits(final Set<String>? fits) {
+  void setFits(final Set<ProductFit>? fits) {
     state = state.copyWith(fits: (fits == null || fits.isEmpty) ? null : fits);
   }
 

@@ -19,7 +19,7 @@ sealed class ShopProduct with _$ShopProduct {
     final String? purchaseLink,
     final String? material,
     final ProductElasticity? elasticity,
-    final String? fit,
+    final ProductFit? fit,
     final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
     final List<ProductSeason>? seasons,

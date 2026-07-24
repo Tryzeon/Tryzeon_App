@@ -10,6 +10,19 @@ enum ProductGender {
       ProductGender.values.where((final e) => e.value == value).firstOrNull;
 }
 
+enum ProductFit {
+  slim('slim'),
+  regular('regular'),
+  loose('loose'),
+  oversize('oversize');
+
+  const ProductFit(this.value);
+  final String value;
+
+  static ProductFit? tryFromString(final String? value) =>
+      ProductFit.values.where((final e) => e.value == value).firstOrNull;
+}
+
 enum ProductElasticity {
   none('none'),
   low('low'),

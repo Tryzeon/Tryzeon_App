@@ -21,7 +21,7 @@ abstract class ProductRepository {
     final ProductGender? gender,
     final Set<String>? materials,
     final Set<ProductElasticity>? elasticities,
-    final Set<String>? fits,
+    final Set<ProductFit>? fits,
     final Set<ProductThickness>? thicknesses,
     final Set<ClothingStyle>? styles,
     final Set<ProductSeason>? seasons,

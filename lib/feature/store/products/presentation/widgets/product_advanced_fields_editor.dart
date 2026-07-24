@@ -22,7 +22,7 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
   });
 
   final ValueNotifier<String?> selectedMaterial;
-  final ValueNotifier<String?> selectedFit;
+  final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<Set<ClothingStyle>?> selectedStyles;

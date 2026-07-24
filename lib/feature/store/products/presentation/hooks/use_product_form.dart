@@ -33,7 +33,7 @@ class ProductFormData {
   final TextEditingController purchaseLinkController;
   final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<String?> selectedMaterial;
-  final ValueNotifier<String?> selectedFit;
+  final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<List<ImageItem>> images;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
@@ -107,7 +107,7 @@ class ProductFormData {
     if ((selectedMaterial.value?.isEmpty ?? true) && (r.material?.isNotEmpty ?? false)) {
       selectedMaterial.value = r.material;
     }
-    if ((selectedFit.value?.isEmpty ?? true) && (r.fit?.isNotEmpty ?? false)) {
+    if (selectedFit.value == null && r.fit != null) {
       selectedFit.value = r.fit;
     }
   }
@@ -126,7 +126,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   // flow seeds the existing product's gender, which is always set.
   final selectedGender = useValueNotifier<ProductGender?>(initialProduct?.gender);
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
-  final selectedFit = useValueNotifier<String?>(initialProduct?.fit);
+  final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
 
   final initialImages = useMemoized(() {
     if (initialProduct == null) return <ImageItem>[];

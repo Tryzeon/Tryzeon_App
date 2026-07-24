@@ -125,7 +125,7 @@ class ProductRepositoryImpl implements ProductRepository {
         purchaseLink: draft.purchaseLink,
         material: draft.material,
         elasticity: draft.elasticity?.value,
-        fit: draft.fit,
+        fit: draft.fit?.value,
         thickness: draft.thickness?.value,
         styles: draft.styles?.map((final e) => e.value).toList(),
         seasons: draft.seasons?.map((final e) => e.value).toList(),

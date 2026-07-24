@@ -18,6 +18,7 @@ const GENDER_VALUES = ["male", "female", "unisex"];
 const SEASON_VALUES = ["spring", "summer", "autumn", "winter"];
 const THICKNESS_VALUES = ["low", "medium", "high"];
 const ELASTICITY_VALUES = ["none", "low", "medium", "high"];
+const FIT_VALUES = ["slim", "regular", "loose", "oversize"];
 
 const str = (v: unknown): string | null =>
   typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
@@ -36,7 +37,7 @@ function buildPrompt(categoryNames: string[]): string {
 - styles：最多 3 個，輸出英文值：japanese 日系, korean 韓系, western 歐美, british 英式, chinese 中式, minimalist 簡約, casual 休閒, sporty 運動, lazy 慵懶, streetwear 街頭, business 商務, preppy 學院, functional 機能, vintage 復古, artsy 文青, literary 文藝, elegant 優雅, mature 輕熟, neutral 中性, spicy 辣妹, sweet 甜美。
 - seasons：適合季節，可多選：spring 春, summer 夏, autumn 秋, winter 冬。
 - material：從以下繁中擇一，無則 null：棉, 麻, 羊毛, 蠶絲, 聚酯纖維, 尼龍, 嫘縈, 天絲, 萊卡, 混紡。
-- fit：從以下繁中擇一，無則 null：合身, 常規, 大尺碼, oversize。
+- fit：版型，輸出英文值，無法判斷用 unknown：slim（合身）/ regular（常規）/ loose（寬鬆）/ oversize（超大寬版）。
 - thickness：low（薄）/ medium（適中）/ high（厚），無法判斷用 unknown。
 - elasticity：布料彈性，none（無彈性）/ low（低彈性）/ medium（中彈性）/ high（高彈性），無法判斷用 unknown。
 只回 JSON，不要多餘文字。`;
@@ -52,7 +53,7 @@ function buildSchema(categoryNames: string[]): Record<string, unknown> {
       styles: { type: "ARRAY", items: { type: "STRING", enum: STYLE_VALUES } },
       seasons: { type: "ARRAY", items: { type: "STRING", enum: SEASON_VALUES } },
       material: { type: "STRING" },
-      fit: { type: "STRING" },
+      fit: { type: "STRING", enum: [...FIT_VALUES, "unknown"] },
       thickness: { type: "STRING", enum: [...THICKNESS_VALUES, "unknown"] },
       elasticity: { type: "STRING", enum: [...ELASTICITY_VALUES, "unknown"] },
     },
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
       styles: filterList(parsed.styles, STYLE_VALUES, 3),
       seasons: filterList(parsed.seasons, SEASON_VALUES, 4),
       material: str(parsed.material),
-      fit: str(parsed.fit),
+      fit: inList(parsed.fit, FIT_VALUES),
       thickness: inList(parsed.thickness, THICKNESS_VALUES),
       elasticity: inList(parsed.elasticity, ELASTICITY_VALUES),
     });

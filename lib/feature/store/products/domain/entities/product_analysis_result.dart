@@ -15,7 +15,7 @@ sealed class ProductAnalysisResult with _$ProductAnalysisResult {
     @Default(<ClothingStyle>[]) final List<ClothingStyle> styles,
     @Default(<ProductSeason>[]) final List<ProductSeason> seasons,
     final String? material,
-    final String? fit,
+    final ProductFit? fit,
     final ProductThickness? thickness,
     final ProductElasticity? elasticity,
   }) = _ProductAnalysisResult;

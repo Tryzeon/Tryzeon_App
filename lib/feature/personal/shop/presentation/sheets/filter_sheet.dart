@@ -38,7 +38,7 @@ class FilterSheet extends HookConsumerWidget {
     final currentMinPrice = useState(initial.minPrice);
     final currentMaxPrice = useState(initial.maxPrice);
     final selectedChannels = useState<Set<StoreChannel>>({...?initial.channels});
-    final selectedFits = useState<Set<String>>({...?initial.fits});
+    final selectedFits = useState<Set<ProductFit>>({...?initial.fits});
     final selectedElasticities = useState<Set<ProductElasticity>>({
       ...?initial.elasticities,
     });
@@ -133,11 +133,11 @@ class FilterSheet extends HookConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.lg),
 
-                      FilterChipGroup<String>(
+                      FilterChipGroup<ProductFit>(
                         title: '版型',
-                        options: kFitPresets,
+                        options: ProductFit.values,
                         selected: selectedFits.value,
-                        labelOf: (final f) => f,
+                        labelOf: (final f) => f.label,
                         onChanged: (final next) => selectedFits.value = next,
                       ),
                       const SizedBox(height: AppSpacing.lg),

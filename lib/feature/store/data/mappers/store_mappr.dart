@@ -33,6 +33,7 @@ import 'store_mappr.auto_mappr.dart';
       fields: [
         Field('gender', custom: StoreMapprHelper.stringToGender),
         Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
+        Field('fit', custom: StoreMapprHelper.stringToFit),
         Field('thickness', custom: StoreMapprHelper.stringToThickness),
         Field('categoryIds', custom: StoreMapprHelper.categoryIdsToSet),
         Field('styles', custom: StoreMapprHelper.stringsToStyles),
@@ -43,6 +44,7 @@ import 'store_mappr.auto_mappr.dart';
       fields: [
         Field('gender', custom: StoreMapprHelper.genderToString),
         Field('elasticity', custom: StoreMapprHelper.elasticityToString),
+        Field('fit', custom: StoreMapprHelper.fitToString),
         Field('thickness', custom: StoreMapprHelper.thicknessToString),
         Field('categoryIds', custom: StoreMapprHelper.categoryIdsToList),
         Field('styles', custom: StoreMapprHelper.stylesToStrings),
@@ -93,6 +95,9 @@ class StoreMapprHelper {
   static ProductElasticity? stringToElasticity(final ProductModel source) =>
       ProductElasticity.tryFromString(source.elasticity);
 
+  static ProductFit? stringToFit(final ProductModel source) =>
+      ProductFit.tryFromString(source.fit);
+
   static ProductThickness? stringToThickness(final ProductModel source) =>
       ProductThickness.tryFromString(source.thickness);
 
@@ -109,6 +114,8 @@ class StoreMapprHelper {
   static String genderToString(final Product source) => source.gender.value;
 
   static String? elasticityToString(final Product source) => source.elasticity?.value;
+
+  static String? fitToString(final Product source) => source.fit?.value;
 
   static String? thicknessToString(final Product source) => source.thickness?.value;
 

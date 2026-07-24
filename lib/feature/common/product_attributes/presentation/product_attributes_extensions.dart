@@ -1,8 +1,6 @@
 import '../domain/entities/product_attributes.dart';
 import '../domain/entities/wardrobe_category.dart';
 
-const List<String> kFitPresets = ['合身', '常規', '大尺碼', 'oversize'];
-
 const List<String> kMaterialPresets = [
   '棉',
   '麻',
@@ -41,6 +39,16 @@ extension ProductGenderX on ProductGender {
     ProductGender.male => '男裝',
     ProductGender.female => '女裝',
     ProductGender.unisex => '中性',
+  };
+}
+
+/// UI display label extension for [ProductFit] in Presentation Layer.
+extension ProductFitX on ProductFit {
+  String get label => switch (this) {
+    ProductFit.slim => '合身',
+    ProductFit.regular => '常規',
+    ProductFit.loose => '寬鬆',
+    ProductFit.oversize => 'Oversize',
   };
 }
 
