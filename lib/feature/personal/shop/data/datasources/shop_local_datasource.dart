@@ -63,7 +63,7 @@ class ShopLocalDataSource {
         ..productId = model.id
         ..name = model.name
         ..price = model.price
-        ..categoryIds = model.categoryIds
+        ..categoryId = model.categoryId
         ..imagePaths = model.imagePaths
         ..imageUrls = model.imageUrls
         ..purchaseLink = model.purchaseLink
@@ -138,7 +138,7 @@ class ShopLocalDataSource {
       ShopProductModel(
         storeInfo: storeInfoModel,
         name: collection.name,
-        categoryIds: collection.categoryIds,
+        categoryId: collection.categoryId,
         price: collection.price,
         imagePaths: collection.imagePaths,
         imageUrls: collection.imageUrls,

@@ -9,7 +9,7 @@ class ShopProductModel {
   const ShopProductModel({
     required this.storeInfo,
     required this.name,
-    required this.categoryIds,
+    required this.categoryId,
     required this.price,
     required this.imagePaths,
     required this.imageUrls,
@@ -32,7 +32,7 @@ class ShopProductModel {
   @JsonKey(name: 'store_profiles', includeToJson: false)
   final ShopStoreInfoModel storeInfo;
   final String name;
-  final List<String> categoryIds;
+  final String categoryId;
   final double price;
   final List<String> imagePaths;
   @JsonKey(includeToJson: false)

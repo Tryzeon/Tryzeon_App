@@ -38,7 +38,7 @@ class ProductDetailBody extends HookConsumerWidget {
       address: 'Loading Store Address',
     ),
     name: 'Loading Product Name here that is long',
-    categoryIds: ['Category 1'],
+    categoryId: 'category',
     price: 8888.0,
     imagePaths: ['skeleton_path'],
     imageUrls: [],
@@ -94,8 +94,9 @@ class _ProductDetailContent extends HookConsumerWidget {
     final sizeColumnTypes = categoriesAsync.maybeWhen(
       data: (final categories) => relevantMeasurementTypesFor(
         categories
-            .where((final c) => product.categoryIds.contains(c.id))
-            .map((final c) => c.wardrobeCategory),
+            .where((final c) => c.id == product.categoryId)
+            .firstOrNull
+            ?.wardrobeCategory,
       ),
       orElse: () => GarmentMeasurementType.values,
     );
@@ -156,12 +157,10 @@ class _ProductDetailContent extends HookConsumerWidget {
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: [
-                    ...product.categoryIds.map(
-                      (final categoryId) => Chip(
-                        label: Text(
-                          categoryIdToName[categoryId] ?? categoryId,
-                          style: textTheme.labelMedium,
-                        ),
+                    Chip(
+                      label: Text(
+                        categoryIdToName[product.categoryId] ?? product.categoryId,
+                        style: textTheme.labelMedium,
                       ),
                     ),
                     if (product.styles != null && product.styles!.isNotEmpty)

@@ -11,7 +11,7 @@ sealed class ShopProduct with _$ShopProduct {
   const factory ShopProduct({
     required final ShopStoreInfo storeInfo,
     required final String name,
-    required final List<String> categoryIds,
+    required final String categoryId,
     required final double price,
     required final List<String> imagePaths,
     required final List<String> imageUrls,

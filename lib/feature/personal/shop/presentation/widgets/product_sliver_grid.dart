@@ -49,7 +49,7 @@ class ProductSliverGrid extends StatelessWidget {
         channels: StoreChannel.all,
       ),
       name: 'Loading Product Name',
-      categoryIds: const ['Category'],
+      categoryId: 'category',
       price: 8888,
       imagePaths: const ['skeleton_path'],
       imageUrls: const [],
