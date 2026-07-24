@@ -94,11 +94,9 @@ class FitCalculator {
       final band = EaseTable.bandFor(bodyType, fit, elasticity);
       if (band == null) continue;
 
-      dimensions.add(_DimensionFit(
-        type: bodyType,
-        ease: garmentValue - bodyValue,
-        band: band,
-      ));
+      dimensions.add(
+        _DimensionFit(type: bodyType, ease: garmentValue - bodyValue, band: band),
+      );
     }
     return _SizeFit(size: size, dimensions: dimensions);
   }
