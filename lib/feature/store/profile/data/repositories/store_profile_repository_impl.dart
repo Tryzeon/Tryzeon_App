@@ -21,10 +21,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   final StoreProfileLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
 
-  /// `channels` is a `Set` in the domain layer, so its list order carries no
-  /// meaning and must not read as a change.
-  static const _unorderedKeys = {'channels'};
-
   @override
   Future<Result<StoreProfile?, Failure>> getStoreProfile({
     final bool forceRefresh = false,
@@ -109,7 +105,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       final changes = jsonDiff(
         _mappr.convert<StoreProfile, StoreProfileModel>(original).toJson(),
         _mappr.convert<StoreProfile, StoreProfileModel>(target).toJson(),
-        unorderedKeys: _unorderedKeys,
+        unorderedKeys: StoreProfileModel.unorderedJsonKeys,
       );
 
       if (changes.isEmpty) {

@@ -27,10 +27,14 @@ class StoreProfileModel {
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) =>
       _$StoreProfileModelFromJson(json);
 
+  static const unorderedJsonKeys = {'channels'};
+
   final String id;
   final String ownerId;
   final String name;
+  @JsonKey(includeToJson: false)
   final DateTime createdAt;
+  @JsonKey(includeToJson: false)
   final DateTime updatedAt;
   final List<String> channels;
   final String? slug;
@@ -38,6 +42,7 @@ class StoreProfileModel {
   final double? latitude;
   final double? longitude;
   final String? logoPath;
+  @JsonKey(includeToJson: false)
   final String? logoUrl;
   final List<StoreOrderContactModel> orderContacts;
 
