@@ -1,4 +1,5 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { USER_PROFILES_TABLE } from "../user-profile.ts";
 import { nonEmptyStr } from "./logic.ts";
 
 // Maps the stored age_range bucket codes to human labels for the AI prompt.
@@ -30,7 +31,7 @@ export async function buildChatContext(
 ): Promise<ChatContext> {
   const [{ data: profile }, { data: categories, error: catErr }] = await Promise.all([
     admin
-      .from("user_profiles")
+      .from(USER_PROFILES_TABLE)
       .select("name, gender, age_range, style_preferences")
       .eq("user_id", userId)
       .maybeSingle(),
