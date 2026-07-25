@@ -101,8 +101,8 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
     for (const b of blocks) {
       const t = b?.type === "text" ? nonEmptyStr(b.text) : null;
       if (t) lines.push(t);
-      else if (b?.type === "shop_product") lines.push(`（推薦商品 id:${b.id ?? b.item?.id ?? ""}）`);
-      else if (b?.type === "wardrobe_product") lines.push(`（推薦衣櫃單品 id:${b.id ?? b.item?.id ?? ""}）`);
+      else if (b?.type === "product") lines.push(`（推薦商品 id:${b.id ?? b.item?.id ?? ""}）`);
+      else if (b?.type === "wardrobe") lines.push(`（推薦衣櫃單品 id:${b.id ?? b.item?.id ?? ""}）`);
     }
     const text = lines.join("\n").trim();
 
@@ -164,10 +164,10 @@ export function assembleAnswerBlocks(
       blocks.push({ type: "text", text: ref.text });
     } else if (ref.type === "product") {
       const item = products.get(ref.id);
-      if (item) blocks.push({ type: "shop_product", item });
+      if (item) blocks.push({ type: "product", item });
     } else {
       const item = wardrobe.get(ref.id);
-      if (item) blocks.push({ type: "wardrobe_product", item });
+      if (item) blocks.push({ type: "wardrobe", item });
     }
   }
   return blocks;

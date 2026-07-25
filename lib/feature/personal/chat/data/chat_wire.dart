@@ -31,8 +31,8 @@ Map<String, dynamic> _blockToWire(final ContentBlock block) => switch (block) {
     'tool_use_id': toolUseId,
     'content': content,
   },
-  ShopProductBlock(:final product) => {'type': 'shop_product', 'id': product.id},
-  WardrobeProductBlock(:final item) => {'type': 'wardrobe_product', 'id': item.id},
+  ShopProductBlock(:final product) => {'type': 'product', 'id': product.id},
+  WardrobeProductBlock(:final item) => {'type': 'wardrobe', 'id': item.id},
 };
 
 // ── wire → domain ──
@@ -68,11 +68,11 @@ List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
             content: (raw['content'] as Map?)?.cast<String, dynamic>() ?? const {},
           ),
         );
-      case 'shop_product':
+      case 'product':
         final item = raw['item'];
         if (item is! Map<String, dynamic>) continue;
         result.add(ContentBlock.shopProduct(decodeShopProductRow(item)));
-      case 'wardrobe_product':
+      case 'wardrobe':
         final item = raw['item'];
         if (item is! Map<String, dynamic>) continue;
         result.add(ContentBlock.wardrobeProduct(decodeWardrobeItemRow(item)));

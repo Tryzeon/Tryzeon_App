@@ -65,7 +65,7 @@ Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to Mo
       role: "user",
       content: [{ type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "p1" }] } }],
     },
-    { role: "assistant", content: [{ type: "text", text: "找到這件" }, { type: "shop_product", id: "p1" }] },
+    { role: "assistant", content: [{ type: "text", text: "找到這件" }, { type: "product", id: "p1" }] },
   ]);
   assertEquals(out, [
     { role: "user", content: "找裙子" },

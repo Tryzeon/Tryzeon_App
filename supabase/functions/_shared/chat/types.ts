@@ -27,7 +27,7 @@ export interface RunChatAgentParams {
 }
 
 export interface ChatResult {
-  /** Ordered answer blocks (text / shop_product / wardrobe_product) to render. */
+  /** Ordered answer blocks (text / product / wardrobe) to render. */
   blocks: ContentBlock[];
   /** Post-increment quota row, echoed so callers can sync usage UI. */
   usage: DailyUsageRow | null;
