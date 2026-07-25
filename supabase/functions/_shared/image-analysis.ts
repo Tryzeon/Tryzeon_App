@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "npm:@google/genai";
 import { getAIClient, VERTEX_CONFIG } from "./vertex-ai.ts";
 import { detectMimeType } from "./image-utils.ts";
-import { jsonError, rateLimitedResponse } from "./http.ts";
+import { jsonError, jsonRateLimited } from "./http.ts";
 import { checkRateLimit } from "./rate-limit.ts";
 
 export const MAX_BASE64_LENGTH = 8 * 1024 * 1024;
@@ -26,9 +26,9 @@ export async function checkImageAnalysisRateLimit(
   bucketPrefix: string,
 ): Promise<Response | null> {
   const okMinute = await checkRateLimit(userId, `${bucketPrefix}:minute`, 15, 60);
-  if (!okMinute) return rateLimitedResponse();
+  if (!okMinute) return jsonRateLimited();
   const okDay = await checkRateLimit(userId, `${bucketPrefix}:day`, 200, 86400);
-  if (!okDay) return rateLimitedResponse();
+  if (!okDay) return jsonRateLimited();
   return null;
 }
 

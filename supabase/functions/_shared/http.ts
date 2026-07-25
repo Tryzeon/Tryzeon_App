@@ -12,8 +12,12 @@ export function jsonError(message: string, code: string, status: number): Respon
   return json({ error: message, code }, status);
 }
 
-/** Standard 429 rate-limit response. Pass `usage` to include quota details. */
-export function rateLimitedResponse(usage?: unknown): Response {
+/**
+ * The standard 429 rate-limit response — a `jsonError` with its message, code
+ * and status fixed, so every rate-limited endpoint answers identically. Pass
+ * `usage` to include quota details.
+ */
+export function jsonRateLimited(usage?: unknown): Response {
   return json(
     usage === undefined
       ? { error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }
