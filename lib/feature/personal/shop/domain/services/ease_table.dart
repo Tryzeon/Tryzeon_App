@@ -48,35 +48,42 @@ class EaseTable {
     BodyMeasurementType.chest,
     BodyMeasurementType.waist,
     BodyMeasurementType.hips,
+    BodyMeasurementType.thigh,
   };
 
   /// Base ease bands, before any elasticity adjustment, keyed by silhouette and
   /// body dimension. Circumference ease widens from slim to oversize; shoulder
-  /// width stays near the body with a small tolerance.
+  /// width stays near the body with a small tolerance. Waist, hips, and thigh
+  /// are calibrated to trouser (bottoms) ease, distinct from the looser chest
+  /// allowance used for tops.
   static const Map<ProductFit, Map<BodyMeasurementType, EaseBand>> _bands = {
     ProductFit.slim: {
       BodyMeasurementType.shoulder: EaseBand(-1, 2),
       BodyMeasurementType.chest: EaseBand(4, 11),
-      BodyMeasurementType.waist: EaseBand(2, 9),
-      BodyMeasurementType.hips: EaseBand(3, 10),
+      BodyMeasurementType.waist: EaseBand(0, 3),
+      BodyMeasurementType.hips: EaseBand(2, 6),
+      BodyMeasurementType.thigh: EaseBand(1, 4),
     },
     ProductFit.regular: {
       BodyMeasurementType.shoulder: EaseBand(0, 3),
       BodyMeasurementType.chest: EaseBand(8, 15),
-      BodyMeasurementType.waist: EaseBand(5, 13),
-      BodyMeasurementType.hips: EaseBand(6, 14),
+      BodyMeasurementType.waist: EaseBand(1, 4),
+      BodyMeasurementType.hips: EaseBand(4, 9),
+      BodyMeasurementType.thigh: EaseBand(3, 7),
     },
     ProductFit.loose: {
       BodyMeasurementType.shoulder: EaseBand(1, 5),
       BodyMeasurementType.chest: EaseBand(13, 24),
-      BodyMeasurementType.waist: EaseBand(10, 22),
-      BodyMeasurementType.hips: EaseBand(11, 23),
+      BodyMeasurementType.waist: EaseBand(3, 8),
+      BodyMeasurementType.hips: EaseBand(7, 14),
+      BodyMeasurementType.thigh: EaseBand(6, 12),
     },
     ProductFit.oversize: {
       BodyMeasurementType.shoulder: EaseBand(2, 8),
       BodyMeasurementType.chest: EaseBand(20, 40),
-      BodyMeasurementType.waist: EaseBand(16, 36),
-      BodyMeasurementType.hips: EaseBand(18, 38),
+      BodyMeasurementType.waist: EaseBand(6, 14),
+      BodyMeasurementType.hips: EaseBand(12, 24),
+      BodyMeasurementType.thigh: EaseBand(10, 20),
     },
   };
 
@@ -99,6 +106,7 @@ class EaseTable {
     BodyMeasurementType.waist: 1,
     BodyMeasurementType.hips: 1,
     BodyMeasurementType.shoulder: 0.8,
+    BodyMeasurementType.thigh: 0.8,
   };
 
   /// The largest single-dimension miss (cm) still worth recommending with a

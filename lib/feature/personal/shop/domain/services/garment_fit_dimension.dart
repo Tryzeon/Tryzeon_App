@@ -18,7 +18,7 @@ extension GarmentFitDimension on GarmentMeasurementType {
     GarmentMeasurementType.chestCircumference => BodyMeasurementType.chest,
     GarmentMeasurementType.waistCircumference => BodyMeasurementType.waist,
     GarmentMeasurementType.hipCircumference => BodyMeasurementType.hips,
-    GarmentMeasurementType.thighCircumference => null,
+    GarmentMeasurementType.thighCircumference => BodyMeasurementType.thigh,
     GarmentMeasurementType.sleeveLength => null,
     GarmentMeasurementType.length => null,
   };

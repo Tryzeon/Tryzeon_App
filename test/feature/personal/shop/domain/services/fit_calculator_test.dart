@@ -124,19 +124,30 @@ void main() {
     });
 
     test('judges each dimension independently and reports every miss', () {
-      // Chest 100 fits regular band [92, 99]? 100 > 99 → loose by 1.
-      // Waist 70 → band [75, 83]; garment 72 → tight by 3.
+      // Chest 84 → regular band [92, 99]; garment 100 → loose by 1.
+      // Waist 70 → recalibrated trouser band [71, 74]; garment 76 → loose by 2.
       final result = _calc(const BodyMeasurements(chest: 84, waist: 70), [
         _size(
           'M',
-          const GarmentMeasurements(chestCircumference: 100, waistCircumference: 72),
+          const GarmentMeasurements(chestCircumference: 100, waistCircumference: 76),
         ),
       ]);
 
       expect(result.displayState, FitDisplayState.caveats);
       final byType = {for (final c in result.caveats) c.type: c};
       expect(byType[BodyMeasurementType.chest]?.direction, FitDirection.loose);
-      expect(byType[BodyMeasurementType.waist]?.direction, FitDirection.tight);
+      expect(byType[BodyMeasurementType.waist]?.direction, FitDirection.loose);
+    });
+
+    test('compares thigh and matches within the recalibrated band', () {
+      // Thigh 55 → regular band [58, 62]; garment 58 → 3cm ease, a clean fit.
+      final result = _calc(const BodyMeasurements(thigh: 55), [
+        _size('M', const GarmentMeasurements(thighCircumference: 58)),
+      ]);
+
+      expect(result.displayState, FitDisplayState.match);
+      expect(result.recommendedSize, 'M');
+      expect(result.matchedTypes, [BodyMeasurementType.thigh]);
     });
   });
 }
