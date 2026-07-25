@@ -1,6 +1,5 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { USER_PROFILES_TABLE } from "../user-profile.ts";
-import { nonEmptyStr } from "./logic.ts";
+import { getUserProfile } from "../user-profile.ts";
 
 // Maps the stored age_range bucket codes to human labels for the AI prompt.
 const AGE_RANGE_LABELS: Record<string, string> = {
@@ -29,25 +28,22 @@ export async function buildChatContext(
   admin: SupabaseClient,
   userId: string,
 ): Promise<ChatContext> {
-  const [{ data: profile }, { data: categories, error: catErr }] = await Promise.all([
-    admin
-      .from(USER_PROFILES_TABLE)
-      .select("name, gender, age_range, style_preferences")
-      .eq("user_id", userId)
-      .maybeSingle(),
-    admin.from("product_categories").select("id, name"),
-  ]);
+  const profile = await getUserProfile(admin, userId).catch((err) => {
+    console.error("chat: user profile lookup failed:", err);
+    return null;
+  });
 
+  const userName = profile?.name ?? null;
+  const userGender = profile?.gender ?? null;
+  const userAge = AGE_RANGE_LABELS[profile?.ageRange ?? ""] ?? null;
+  const userStyles = profile?.stylePreferences ?? [];
+
+  const { data: categories, error: catErr } = await admin
+    .from("product_categories")
+    .select("id, name");
   if (catErr) {
     throw new Error(`Failed to fetch product_categories: ${catErr.message}`);
   }
-
-  const userName = nonEmptyStr(profile?.name);
-  const userGender = nonEmptyStr(profile?.gender);
-  const userAge = AGE_RANGE_LABELS[nonEmptyStr(profile?.age_range) ?? ""] ?? null;
-  const userStyles = Array.isArray(profile?.style_preferences)
-    ? (profile.style_preferences as string[])
-    : [];
 
   const categoryIdByName = new Map<string, string>();
   for (const c of categories ?? []) {

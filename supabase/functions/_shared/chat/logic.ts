@@ -1,5 +1,6 @@
-// Pure helpers for the chat agent loop. No external imports so they unit-test
-// offline (no Gemini SDK, no network).
+// Pure helpers for the chat agent loop. No SDK or network imports so they
+// unit-test offline (no Gemini SDK, no network).
+import { nonEmptyStr } from "../text.ts";
 
 // Columns a wardrobe item needs to render a card. Shared by the search tool and
 // the by-id answer fetch so the two queries can't drift.
@@ -12,10 +13,6 @@ export const PRODUCT_SELECT =
 
 const nonEmptyArray = (v: unknown): unknown[] | null =>
   Array.isArray(v) && v.length > 0 ? v : null;
-
-// Trimmed string, or null when missing/blank.
-export const nonEmptyStr = (v: unknown): string | null =>
-  typeof v === "string" && v.trim() !== "" ? v.trim() : null;
 
 // Assemble list_shop_products RPC params from model tool args + resolved context.
 // gender is an optional model-chosen filter (args.gender), not a forced one —

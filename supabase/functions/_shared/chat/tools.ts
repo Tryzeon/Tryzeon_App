@@ -1,7 +1,8 @@
 import { tool } from "npm:ai@^6.0.208";
 import { z } from "npm:zod@^4.4.3";
 import { getAdminClient } from "../supabase.ts";
-import { mapSearchProductsArgs, nonEmptyStr, WARDROBE_SELECT } from "./logic.ts";
+import { mapSearchProductsArgs, WARDROBE_SELECT } from "./logic.ts";
+import { nonEmptyStr } from "../text.ts";
 
 type AdminClient = ReturnType<typeof getAdminClient>;
 
