@@ -21,6 +21,7 @@ void main() {
       expect(relevantMeasurementTypesFor(WardrobeCategory.bottoms), const [
         GarmentMeasurementType.waistCircumference,
         GarmentMeasurementType.hipCircumference,
+        GarmentMeasurementType.thighCircumference,
         GarmentMeasurementType.length,
       ]);
     });
