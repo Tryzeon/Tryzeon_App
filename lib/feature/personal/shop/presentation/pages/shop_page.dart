@@ -308,7 +308,6 @@ class ShopPage extends HookConsumerWidget {
                 // 商品 Grid（懶載）
                 ProductSliverGrid(
                   productsAsync: productsAsync,
-                  userProfile: userProfile,
                   onRetry: () => ref.invalidate(shopProductsProvider(filter)),
                 ),
 

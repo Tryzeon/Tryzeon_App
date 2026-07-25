@@ -12,7 +12,6 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_sliver_grid.dart';
@@ -27,12 +26,6 @@ class StorePage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final storeInfoAsync = ref.watch(storeInfoProvider(storeId));
-
-    final userProfileAsync = ref.watch(userProfileProvider);
-    final userProfile = userProfileAsync.maybeWhen(
-      data: (final profile) => profile,
-      orElse: () => null,
-    );
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -219,7 +212,6 @@ class StorePage extends HookConsumerWidget {
                   // Products Section
                   ProductSliverGrid(
                     productsAsync: productsAsync,
-                    userProfile: userProfile,
                     onRetry: () => ref.invalidate(shopProductsProvider(filter)),
                   ),
 

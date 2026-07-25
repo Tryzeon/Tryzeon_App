@@ -1,6 +1,5 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -9,16 +8,15 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_category_measurements.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/launch_product_purchase.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_image_viewer.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_section.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_store_info.dart';
+import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
@@ -101,18 +99,7 @@ class _ProductDetailContent extends HookConsumerWidget {
       orElse: () => GarmentMeasurementType.values,
     );
 
-    final userProfile = ref
-        .watch(userProfileProvider)
-        .maybeWhen(data: (final p) => p, orElse: () => null);
-    final fitResult = useMemoized(
-      () => FitCalculator.calculate(
-        body: userProfile?.measurements,
-        productSizes: product.sizes,
-        fit: product.fit,
-        elasticity: product.elasticity,
-      ),
-      [userProfile?.measurements, product.sizes, product.fit, product.elasticity],
-    );
+    final fitResult = ref.watch(productFitResolverProvider).resolve(product);
 
     final canPurchase = productHasPurchaseOptions(product);
 

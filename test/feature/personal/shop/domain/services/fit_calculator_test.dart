@@ -139,6 +139,39 @@ void main() {
       expect(byType[BodyMeasurementType.waist]?.direction, FitDirection.loose);
     });
 
+    test('recommends a size the per-dimension cap allows over a lower total miss', () {
+      // Ranking by summed deviation alone would crown A, which the
+      // per-dimension cap then rejects — burying B, which the cap allows.
+      // Waist 70 -> band [71, 74]; hips 95 -> band [99, 104].
+      //   A: waist 71 in range, hips 112 loose by 8 -> total 8, worst 8 (capped)
+      //   B: waist 66 tight by 5, hips 95 tight by 4 -> total 9, worst 5 (ok)
+      final result = _calc(const BodyMeasurements(waist: 70, hips: 95), [
+        _size(
+          'A',
+          const GarmentMeasurements(waistCircumference: 71, hipCircumference: 112),
+        ),
+        _size(
+          'B',
+          const GarmentMeasurements(waistCircumference: 66, hipCircumference: 95),
+        ),
+      ]);
+
+      expect(result.displayState, FitDisplayState.caveats);
+      expect(result.recommendedSize, 'B');
+    });
+
+    test('flags out of range when every size exceeds the per-dimension cap', () {
+      // Chest 88 -> band [96, 103]. Both sizes miss by more than 6cm, so the
+      // filter empties and there is nothing left to recommend.
+      final result = _calc(const BodyMeasurements(chest: 88), [
+        _size('S', const GarmentMeasurements(chestCircumference: 88)),
+        _size('L', const GarmentMeasurements(chestCircumference: 112)),
+      ]);
+
+      expect(result.displayState, FitDisplayState.outOfRange);
+      expect(result.recommendedSize, isNull);
+    });
+
     test('compares thigh and matches within the recalibrated band', () {
       // Thigh 55 → regular band [58, 62]; garment 58 → 3cm ease, a clean fit.
       final result = _calc(const BodyMeasurements(thigh: 55), [

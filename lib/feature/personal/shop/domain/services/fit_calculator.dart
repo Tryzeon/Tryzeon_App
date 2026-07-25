@@ -60,14 +60,21 @@ class FitCalculator {
       );
     }
 
-    // No size fits cleanly: recommend the closest one, but only if it is close
-    // enough to be worth suggesting. Otherwise the product does not stock this
-    // shopper's size at all.
-    evaluated.sort((final a, final b) => a.deviationScore.compareTo(b.deviationScore));
-    final best = evaluated.first;
-    if (best.maxDeviation > EaseTable.maxRecommendableDeviation) {
-      return const FitResult(outOfRange: true);
-    }
+    // No size fits cleanly: recommend the closest one, but only among sizes
+    // close enough to be worth suggesting. The cap is applied before ranking,
+    // not after: the lowest total miss can still be one nobody would wear
+    // (a single huge miss beats several small ones on a sum), and rejecting it
+    // afterwards would discard the sizes that were actually wearable.
+    final recommendable = evaluated
+        .where((final e) => e.maxDeviation <= EaseTable.maxRecommendableDeviation)
+        .toList();
+    // Nothing close enough — the product does not stock this shopper's size.
+    if (recommendable.isEmpty) return const FitResult(outOfRange: true);
+
+    recommendable.sort(
+      (final a, final b) => a.deviationScore.compareTo(b.deviationScore),
+    );
+    final best = recommendable.first;
     return FitResult(
       recommendedSize: best.size.name,
       caveats: best.caveats,

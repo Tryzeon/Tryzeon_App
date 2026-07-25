@@ -5,12 +5,11 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
+import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dart';
 
 import 'product_card.dart';
 
@@ -19,16 +18,14 @@ import 'product_card.dart';
 ///
 /// Renders four states from [productsAsync]: data (grid + load-more footer),
 /// empty, loading (skeleton), and error.
-class ProductSliverGrid extends StatelessWidget {
+class ProductSliverGrid extends ConsumerWidget {
   const ProductSliverGrid({
     super.key,
     required this.productsAsync,
-    required this.userProfile,
     required this.onRetry,
   });
 
   final AsyncValue<ShopProductsState> productsAsync;
-  final UserProfile? userProfile;
   final VoidCallback onRetry;
 
   static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
@@ -59,9 +56,10 @@ class ProductSliverGrid extends StatelessWidget {
   );
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final fitResolver = ref.watch(productFitResolverProvider);
 
     // Priority 1: show data if available (even during loading or error).
     if (productsAsync.hasValue) {
@@ -105,13 +103,10 @@ class ProductSliverGrid extends StatelessWidget {
               itemCount: products.length,
               itemBuilder: (final context, final index) {
                 final product = products[index];
-                final fitResult = FitCalculator.calculate(
-                  body: userProfile?.measurements,
-                  productSizes: product.sizes,
-                  fit: product.fit,
-                  elasticity: product.elasticity,
+                return ProductCard(
+                  product: product,
+                  fitResult: fitResolver.resolve(product),
                 );
-                return ProductCard(product: product, fitResult: fitResult);
               },
             ),
           ),
