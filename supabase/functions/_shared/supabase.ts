@@ -1,10 +1,19 @@
 import { createClient, SupabaseClient, User } from "jsr:@supabase/supabase-js@2";
 import { jsonError } from "./http.ts";
 
-export const CONFIG = {
-    SUPABASE_URL: Deno.env.get("SUPABASE_URL")!,
-    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+function requireEnv(name: string): string {
+    const value = Deno.env.get(name);
+    if (!value) {
+        throw new Error(`Missing required environment variable: ${name}`);
+    }
+    return value;
 }
+
+export const CONFIG = {
+    SUPABASE_URL: requireEnv("SUPABASE_URL"),
+    SUPABASE_ANON_KEY: requireEnv("SUPABASE_ANON_KEY"),
+    SUPABASE_SERVICE_ROLE_KEY: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+} as const;
 
 /**
  * Validates the Authorization header and returns an authenticated `SupabaseClient` instance and the user.
@@ -24,7 +33,7 @@ export const getAuthenticatedUserClient = async (
 
     const userClient = createClient(
         CONFIG.SUPABASE_URL,
-        CONFIG.SUPABASE_SERVICE_ROLE_KEY,
+        CONFIG.SUPABASE_ANON_KEY,
         { global: { headers: { Authorization: authHeader } } }
     );
 
