@@ -21,11 +21,14 @@ export const USER_AVATARS_BUCKET = "user-avatars";
 /** Supabase Storage bucket for user wardrobe item images. */
 export const WARDROBE_IMAGES_BUCKET = "wardrobe-images";
 
-/** Allowlist of Supabase Storage buckets images may be fetched from. */
-export const SUPABASE_IMAGE_BUCKETS: readonly string[] = [
-  USER_AVATARS_BUCKET,
-  WARDROBE_IMAGES_BUCKET,
-];
+/**
+ * The buckets images may be fetched from. Expressed as a type rather than a
+ * runtime allowlist: a call site cannot name a bucket outside this set, so
+ * there is nothing left to check at runtime.
+ */
+export type SupabaseImageBucket =
+  | typeof USER_AVATARS_BUCKET
+  | typeof WARDROBE_IMAGES_BUCKET;
 
 /** Whether a bare storage key belongs to the R2 public images bucket. */
 export function isR2PublicKey(path: string): boolean {

@@ -1,6 +1,6 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { downloadPublicImageFromR2 } from "./r2.ts";
-import { isR2PublicKey, SUPABASE_IMAGE_BUCKETS } from "./storage.ts";
+import { isR2PublicKey, type SupabaseImageBucket } from "./storage.ts";
 
 export function uint8ToBase64(bytes: Uint8Array): string {
   return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
@@ -16,17 +16,11 @@ export function uint8ToBase64(bytes: Uint8Array): string {
 export async function fetchImageAsBase64(
   supabase: SupabaseClient,
   path: string,
-  bucket: string,
+  bucket: SupabaseImageBucket,
 ): Promise<string> {
   if (isR2PublicKey(path)) {
     const bytes = await downloadPublicImageFromR2(path);
     return uint8ToBase64(bytes);
-  }
-
-  if (!SUPABASE_IMAGE_BUCKETS.includes(bucket)) {
-    throw new Error(
-      `Refusing to fetch from unknown bucket "${bucket}". Expected one of: ${SUPABASE_IMAGE_BUCKETS.join(", ")}`,
-    );
   }
 
   const { data, error } = await supabase.storage.from(bucket).download(path);
