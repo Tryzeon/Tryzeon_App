@@ -5,15 +5,9 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/product_row_mapper.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/shop.dart';
 import 'package:tryzeon/feature/personal/usage/usage.dart';
-import 'package:tryzeon/feature/personal/wardrobe/data/models/wardrobe_item_model.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
-
-const _mappr = PersonalMappr();
+import 'package:tryzeon/feature/personal/wardrobe/wardrobe.dart';
 
 // ── domain → wire ──
 
@@ -77,23 +71,11 @@ List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
       case 'shop_product':
         final item = raw['item'];
         if (item is! Map<String, dynamic>) continue;
-        result.add(
-          ContentBlock.shopProduct(
-            _mappr.convert<ShopProductModel, ShopProduct>(
-              ShopProductModel.fromJson(productRowWithImageUrls(item)),
-            ),
-          ),
-        );
+        result.add(ContentBlock.shopProduct(decodeShopProductRow(item)));
       case 'wardrobe_product':
         final item = raw['item'];
         if (item is! Map<String, dynamic>) continue;
-        result.add(
-          ContentBlock.wardrobeProduct(
-            _mappr.convert<WardrobeItemModel, WardrobeItem>(
-              WardrobeItemModel.fromJson(item),
-            ),
-          ),
-        );
+        result.add(ContentBlock.wardrobeProduct(decodeWardrobeItemRow(item)));
     }
   }
   return result;
