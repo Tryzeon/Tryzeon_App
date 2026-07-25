@@ -141,6 +141,11 @@ ChatStreamEvent? parseStreamLine(final String line) {
         usage: usageJson == null ? null : parseDailyUsagePayload(usageJson),
       );
     case 'error':
+      if (decoded['code'] == 'RATE_LIMIT_EXCEEDED') {
+        return ChatStreamEvent.failed(
+          RateLimitFailure(usagePayload: decoded['usage'] as Map<String, dynamic>?),
+        );
+      }
       return const ChatStreamEvent.failed(ServerFailure());
     default:
       return null;
