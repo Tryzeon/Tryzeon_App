@@ -1,3 +1,5 @@
+import { publicImageUrl } from "../_shared/storage.ts";
+
 export interface CatalogItem {
   productId: string;
   name: string;
@@ -15,13 +17,12 @@ export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem | n
   const key = (r.image_paths as string[] | null)?.[0];
   if (!key) return null;
 
-  const base = baseUrl.replace(/\/+$/, "");
   const store = (r.store_profiles ?? null) as Record<string, unknown> | null;
   return {
     productId: String(r.id),
     name: typeof r.name === "string" ? r.name : "",
     price: typeof r.price === "number" ? r.price : null,
     storeName: store && typeof store.name === "string" ? store.name : null,
-    imageUrl: `${base}/${key}`,
+    imageUrl: publicImageUrl(baseUrl, key),
   };
 }

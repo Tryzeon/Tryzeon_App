@@ -34,3 +34,7 @@ export type SupabaseImageBucket =
 export function isR2PublicKey(path: string): boolean {
   return path.startsWith(R2_PUBLIC_PREFIX);
 }
+
+export function publicImageUrl(baseUrl: string, key: string): string {
+  return `${baseUrl.replace(/\/+$/, "")}/${key}`;
+}
