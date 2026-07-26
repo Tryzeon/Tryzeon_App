@@ -6,11 +6,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { jsonError } from "../_shared/http.ts";
-import {
-  type ChatMessage,
-  QuotaExceededError,
-  runChatAgent,
-} from "../_shared/chat/index.ts";
+import { type ChatMessage, runChatAgent } from "../_shared/chat/index.ts";
+import { QuotaExceededError } from "../_shared/quota.ts";
 import { encodeEvent } from "./stream.ts";
 
 Deno.serve(async (req) => {

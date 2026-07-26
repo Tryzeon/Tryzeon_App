@@ -5,7 +5,7 @@
 // default model: gemini-2.5-flash
 import { streamText, stepCountIs, Output } from "npm:ai@^6.0.208";
 import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
-import { QuotaManager } from "../quota.ts";
+import { QuotaExceededError, QuotaManager } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { answerSchema, buildTools } from "./tools.ts";
 import {
@@ -16,11 +16,10 @@ import {
   toModelMessages,
   WARDROBE_SELECT,
 } from "./logic.ts";
-import {
-  QuotaExceededError,
-  type ChatResult,
-  type RunChatAgentDeps,
-  type RunChatAgentParams,
+import type {
+  ChatResult,
+  RunChatAgentDeps,
+  RunChatAgentParams,
 } from "./types.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";

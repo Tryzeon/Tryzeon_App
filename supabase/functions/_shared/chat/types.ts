@@ -33,13 +33,3 @@ export interface ChatResult {
   usage: DailyUsageRow | null;
 }
 
-/**
- * Thrown by {@link runChatAgent} when the caller has no remaining chat quota.
- * Carries the current usage row so the caller can report limits. Chat-local
- * (mirrors the tryon module's error) to keep the modules decoupled.
- */
-export class QuotaExceededError extends Error {
-  constructor(public usage: unknown) {
-    super("chat quota exceeded");
-  }
-}

@@ -1,5 +1,4 @@
 export { runChatAgent } from "./run.ts";
-export { QuotaExceededError } from "./types.ts";
 export type {
   ChatEvent,
   ChatResult,

@@ -17,6 +17,20 @@ export interface IncrementResult {
 }
 
 /**
+ * Thrown when a charge is rejected because the caller's daily quota is spent.
+ * Carries the current usage row so the caller can report the limit it hit.
+ *
+ * Lives here rather than in each feature because the condition is this
+ * module's: every feature charges through the same counter and fails the same
+ * way, so two classes could only ever differ by accident.
+ */
+export class QuotaExceededError extends Error {
+  constructor(public readonly usage: DailyUsageRow | null) {
+    super("quota exceeded");
+  }
+}
+
+/**
  * Atomically increments the feature usage count and returns the post-mutation
  * row. The row is also returned when `success` is false (rate-limit case),
  * so callers can sync UI even on rejection.
