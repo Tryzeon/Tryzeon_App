@@ -46,28 +46,33 @@ class TryonController extends _$TryonController {
 
     await _runTryon(
       garments: [
-        TryonGarment(images: [TryonImageSource.base64(base64Encode(bytes))]),
+        TryonGarment.images(images: [TryonImageSource.base64(base64Encode(bytes))]),
       ],
       mode: TryonMode.image,
     );
   }
 
   /// Runs a try-on from garment images already stored remotely (by path).
-  ///
-  /// [garmentDetail] is an optional model-facing description of the garment's
-  /// physical properties (e.g. from a shop product) threaded into the prompt.
   Future<void> tryonFromStoragePaths(
     final List<String> clothesPaths, {
     final TryonMode mode = TryonMode.image,
-    final String? garmentDetail,
   }) {
     return _runTryon(
       garments: [
-        TryonGarment(
-          images: clothesPaths.map(TryonImageSource.path).toList(),
-          detail: garmentDetail,
-        ),
+        TryonGarment.images(images: clothesPaths.map(TryonImageSource.path).toList()),
       ],
+      mode: mode,
+    );
+  }
+
+  /// Runs a try-on for a catalog product; the backend resolves its garment
+  /// image and prompt detail from the product id.
+  Future<void> tryonFromProduct(
+    final String productId, {
+    final TryonMode mode = TryonMode.image,
+  }) {
+    return _runTryon(
+      garments: [TryonGarment.product(productId: productId)],
       mode: mode,
     );
   }

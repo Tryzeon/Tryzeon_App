@@ -64,13 +64,13 @@ class TryonRequestModel {
   }
 
   static Map<String, Object> _garmentToJson(final TryonGarment garment) {
-    final json = <String, Object>{
-      AppConstants.paramGarmentImages: garment.images.map(_sourceToJson).toList(),
+    return switch (garment) {
+      TryonGarmentProduct(:final productId) => {
+        AppConstants.paramProductId: productId,
+      },
+      TryonGarmentImages(:final images) => {
+        AppConstants.paramGarmentImages: images.map(_sourceToJson).toList(),
+      },
     };
-    final detail = garment.detail;
-    if (detail != null && detail.isNotEmpty) {
-      json[AppConstants.paramGarmentDetail] = detail;
-    }
-    return json;
   }
 }

@@ -40,11 +40,21 @@ class TryonCoordinator {
   Future<void> tryonFromStoragePaths(
     final List<String> clothesPaths, {
     final TryonMode mode = TryonMode.image,
-    final String? garmentDetail,
   }) async {
     _navigateToHome?.call();
     await _ref
         .read(tryonControllerProvider.notifier)
-        .tryonFromStoragePaths(clothesPaths, mode: mode, garmentDetail: garmentDetail);
+        .tryonFromStoragePaths(clothesPaths, mode: mode);
+  }
+
+  /// Starts a try-on for a catalog product by id (backend resolves the garment).
+  Future<void> tryonFromProduct(
+    final String productId, {
+    final TryonMode mode = TryonMode.image,
+  }) async {
+    _navigateToHome?.call();
+    await _ref
+        .read(tryonControllerProvider.notifier)
+        .tryonFromProduct(productId, mode: mode);
   }
 }

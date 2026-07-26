@@ -3,10 +3,14 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_sourc
 
 part 'tryon_garment.freezed.dart';
 
+/// A garment to try on: either the user's own image sources, or a catalog
+/// product by id (the backend resolves its image and prompt detail).
 @freezed
 sealed class TryonGarment with _$TryonGarment {
-  const factory TryonGarment({
+  const factory TryonGarment.images({
     required final List<TryonImageSource> images,
-    final String? detail,
-  }) = _TryonGarment;
+  }) = TryonGarmentImages;
+
+  const factory TryonGarment.product({required final String productId}) =
+      TryonGarmentProduct;
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product_tryon_detail.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
@@ -33,11 +32,5 @@ Future<void> _startTryon(
       .call(productId: product.id, storeId: product.storeInfo.id)
       .ignore();
 
-  await ref
-      .read(tryonCoordinatorProvider)
-      .tryonFromStoragePaths(
-        product.imagePaths,
-        mode: mode,
-        garmentDetail: product.toTryonPromptDetail(),
-      );
+  await ref.read(tryonCoordinatorProvider).tryonFromProduct(product.id, mode: mode);
 }
