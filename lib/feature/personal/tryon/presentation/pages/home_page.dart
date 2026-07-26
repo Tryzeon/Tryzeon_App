@@ -94,14 +94,14 @@ class HomePage extends HookConsumerWidget {
     });
 
     Future<void> tryonFromLocal() async {
-      final File? clothesImage = await ImagePickerHelper.pickImage(
+      final File? garmentImage = await ImagePickerHelper.pickImage(
         context,
         title: '選擇服飾來源',
         hint: '建議上傳乾淨背景、單件服飾的清晰照片。',
       );
-      if (clothesImage == null) return;
+      if (garmentImage == null) return;
 
-      await ref.read(tryonCoordinatorProvider).tryonFromLocalImage(clothesImage);
+      await ref.read(tryonCoordinatorProvider).tryonFromLocalImage(garmentImage);
     }
 
     final bottomOffset =

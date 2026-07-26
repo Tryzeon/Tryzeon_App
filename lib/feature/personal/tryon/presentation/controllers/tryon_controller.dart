@@ -54,12 +54,14 @@ class TryonController extends _$TryonController {
 
   /// Runs a try-on from garment images already stored remotely (by path).
   Future<void> tryonFromStoragePaths(
-    final List<String> clothesPaths, {
+    final List<String> garmentImagePaths, {
     final TryonMode mode = TryonMode.image,
   }) {
     return _runTryon(
       garments: [
-        TryonGarment.images(images: clothesPaths.map(TryonImageSource.path).toList()),
+        TryonGarment.images(
+          images: garmentImagePaths.map(TryonImageSource.path).toList(),
+        ),
       ],
       mode: mode,
     );
