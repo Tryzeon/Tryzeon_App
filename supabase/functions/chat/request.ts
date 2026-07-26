@@ -19,6 +19,7 @@
 import {
   type ChatMessage,
   type ChatParams,
+  parseJsonObject,
   ValidationError,
 } from "../_shared/chat/index.ts";
 
@@ -27,21 +28,12 @@ import {
  * caller-supplied (authenticated) userId.
  *
  * Takes the raw text rather than pre-parsed JSON: "the body is JSON" is part of
- * the wire format, so owning `JSON.parse` here means malformed input raises the
- * same ValidationError as a malformed field, and the entry point needs no
- * special case to turn one of them into a 400.
+ * the wire format, and `parseJsonObject` is where every adapter agrees on what
+ * that means, so malformed input raises the same ValidationError as a malformed
+ * field and the entry point needs no special case to turn one into a 400.
  */
 export function parseChatParams(rawBody: string, userId: string): ChatParams {
-  let body: unknown;
-  try {
-    body = JSON.parse(rawBody);
-  } catch {
-    throw new ValidationError("body must be valid JSON");
-  }
-  if (typeof body !== "object" || body === null) {
-    throw new ValidationError("body must be an object");
-  }
-  const b = body as Record<string, unknown>;
+  const b = parseJsonObject(rawBody);
 
   if (!Array.isArray(b.messages)) {
     throw new ValidationError("messages must be an array");

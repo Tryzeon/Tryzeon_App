@@ -19,7 +19,11 @@
  * and `Array.isArray` tests that remain are not guards — decoding cannot
  * traverse the body without them.
  */
-import { normalizeText, ValidationError } from "../_shared/tryon/index.ts";
+import {
+  normalizeText,
+  parseJsonObject,
+  ValidationError,
+} from "../_shared/tryon/index.ts";
 import type {
   GarmentInput,
   ImageSource,
@@ -42,21 +46,12 @@ function decodeGarment(raw: unknown): GarmentInput {
  * caller-supplied (authenticated) userId.
  *
  * Takes the raw text rather than pre-parsed JSON: "the body is JSON" is part of
- * the wire format, so owning `JSON.parse` here means malformed input raises the
- * same ValidationError as a malformed field, and the entry point needs no
- * special case to turn one of them into a 400.
+ * the wire format, and `parseJsonObject` is where every adapter agrees on what
+ * that means, so malformed input raises the same ValidationError as a malformed
+ * field and the entry point needs no special case to turn one into a 400.
  */
 export function parseTryonParams(rawBody: string, userId: string): TryonParams {
-  let body: unknown;
-  try {
-    body = JSON.parse(rawBody);
-  } catch {
-    throw new ValidationError("body must be valid JSON");
-  }
-  if (typeof body !== "object" || body === null) {
-    throw new ValidationError("body must be an object");
-  }
-  const b = body as Record<string, unknown>;
+  const b = parseJsonObject(rawBody);
 
   if (!Array.isArray(b.garments)) {
     throw new ValidationError("garments must be an array");

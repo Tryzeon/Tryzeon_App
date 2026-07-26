@@ -62,4 +62,4 @@ export {
 // adapter parsing a try-on body should not have to know which of its primitives
 // happen to be try-on's.
 export { requireImageSource } from "./validate.ts";
-export { normalizeText, requireString } from "../validation.ts";
+export { normalizeText, parseJsonObject, requireString } from "../validation.ts";

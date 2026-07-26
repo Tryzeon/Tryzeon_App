@@ -33,3 +33,17 @@ export function requireString(value: unknown, label: string): string {
 export function normalizeText(value: unknown): string | undefined {
   return nonEmptyStr(value) ?? undefined;
 }
+
+/** Parse raw body as JSON object, with conventional errors. */
+export function parseJsonObject(rawBody: string): Record<string, unknown> {
+  let body: unknown;
+  try {
+    body = JSON.parse(rawBody);
+  } catch {
+    throw new ValidationError("body must be valid JSON");
+  }
+  if (typeof body !== "object" || body === null) {
+    throw new ValidationError("body must be an object");
+  }
+  return body as Record<string, unknown>;
+}

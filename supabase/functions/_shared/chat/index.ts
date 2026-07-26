@@ -53,4 +53,4 @@ export type {
 // adapter request parsers raise it so a malformed body and a rejected message
 // reach the caller as one kind of error.
 export { classifyCoreError, type CoreErrorInfo } from "../errors.ts";
-export { ValidationError } from "../validation.ts";
+export { parseJsonObject, ValidationError } from "../validation.ts";

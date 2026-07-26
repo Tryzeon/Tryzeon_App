@@ -1,7 +1,7 @@
 // The LIFF web app's wire format. Decoding uses the core's `requireString` and
 // `ValidationError`, so a body-parse failure and a core resolution failure are
 // the same class, both reach `tryonErrorResponse`, and both map to one 400.
-import { requireString, ValidationError } from "../_shared/tryon/index.ts";
+import { parseJsonObject, requireString } from "../_shared/tryon/index.ts";
 
 export interface LiffTryonBody {
   idToken: string;
@@ -16,16 +16,7 @@ export interface LiffTryonBody {
  * body — previously it escaped as a SyntaxError and became a 500.
  */
 export function parseLiffTryonBody(rawBody: string): LiffTryonBody {
-  let body: unknown;
-  try {
-    body = JSON.parse(rawBody);
-  } catch {
-    throw new ValidationError("body must be valid JSON");
-  }
-  if (typeof body !== "object" || body === null) {
-    throw new ValidationError("body must be an object");
-  }
-  const b = body as Record<string, unknown>;
+  const b = parseJsonObject(rawBody);
   return {
     idToken: requireString(b.idToken, "idToken"),
     avatarBase64: requireString(b.avatarBase64, "avatarBase64"),
