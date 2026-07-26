@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "npm:@google/genai";
-import { getAIClient, VERTEX_CONFIG } from "./vertex-ai.ts";
+import { getAIClient } from "./vertex/genai.ts";
+import { chatModel } from "./vertex/config.ts";
 
 export async function analyzeAudio<T extends Record<string, unknown> = Record<string, unknown>>(
   { audioBase64, mimeType, prompt, schema }: {
@@ -11,7 +12,7 @@ export async function analyzeAudio<T extends Record<string, unknown> = Record<st
 ): Promise<T> {
   const ai: GoogleGenAI = getAIClient();
   const result = await ai.models.generateContent({
-    model: VERTEX_CONFIG.CHAT_MODEL!,
+    model: chatModel(),
     contents: [
       {
         role: "user",

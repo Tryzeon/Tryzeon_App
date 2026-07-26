@@ -6,61 +6,41 @@
  * where results are stored, so both modes share one persistence path.
  */
 import { base64ToUint8Array, detectMimeType } from "../image-utils.ts";
+import {
+  tryonImageModel,
+  tryonVideoModel,
+  VERTEX_LOCATION,
+  vertexApiKey,
+  vertexProject,
+} from "../vertex/config.ts";
 import { buildTaskPrompt, buildVideoPrompt, SYSTEM_INSTRUCTION } from "./prompt.ts";
 
-interface VertexConfig {
-  project: string;
-  location: string;
-  model: string;
-  apiKey: string;
-}
-
 /**
- * Reads Vertex config from the environment, failing loudly and in one place
- * rather than at three separate call sites deep in a request.
+ * Credentials, read on first use and kept for the isolate.
+ *
+ * Deliberately not read at import: `run.ts` names these generators as its
+ * defaults, so anything that touches the try-on core pulls this module in —
+ * including callers that only ever pass their own generator, and tests that
+ * never reach the network. Reading at import would make Vertex configuration a
+ * requirement for all of them.
  */
-function vertexConfig(modelVar: "TRYON_MODEL" | "VIDEO_MODEL"): VertexConfig {
-  const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
-  const apiKey = Deno.env.get("VERTEX_API_KEY");
-  const model = modelVar === "TRYON_MODEL"
-    ? Deno.env.get("TRYON_MODEL")
-    : Deno.env.get("VIDEO_MODEL");
+let credentials: { project: string; apiKey: string } | null = null;
+const vertexCredentials = () =>
+  credentials ??= { project: vertexProject(), apiKey: vertexApiKey() };
 
-  const missing = [
-    !project && "GOOGLE_CLOUD_PROJECT",
-    !apiKey && "VERTEX_API_KEY",
-    !model && modelVar,
-  ].filter(Boolean);
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variable(s): ${missing.join(", ")}`,
-    );
-  }
-
-  return {
-    project: project!,
-    location: Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1",
-    model: model!,
-    apiKey: apiKey!,
-  };
+function modelEndpoint(model: string, method: string): string {
+  const { project } = vertexCredentials();
+  return `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/` +
+    `${project}/locations/${VERTEX_LOCATION}/publishers/google/models/` +
+    `${model}:${method}`;
 }
 
-function modelEndpoint(config: VertexConfig, method: string): string {
-  return `https://${config.location}-aiplatform.googleapis.com/v1/projects/` +
-    `${config.project}/locations/${config.location}/publishers/google/models/` +
-    `${config.model}:${method}`;
-}
-
-function postJson(
-  endpoint: string,
-  apiKey: string,
-  body: unknown,
-): Promise<Response> {
+function postJson(endpoint: string, body: unknown): Promise<Response> {
   return fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
+      "x-goog-api-key": vertexCredentials().apiKey,
     },
     body: JSON.stringify(body),
   });
@@ -93,7 +73,6 @@ export async function generateTryonImage(
   scenePrompt?: string,
   garmentDetails?: (string | undefined)[],
 ): Promise<string | null> {
-  const config = vertexConfig("TRYON_MODEL");
   const taskPrompt = buildTaskPrompt(garmentGroups, scenePrompt, garmentDetails);
 
   const parts: ContentPart[] = [
@@ -116,10 +95,10 @@ export async function generateTryonImage(
     },
   };
 
-  const endpoint = modelEndpoint(config, "generateContent");
+  const endpoint = modelEndpoint(tryonImageModel(), "generateContent");
 
   for (let attempt = 1; attempt <= MAX_IMAGE_ATTEMPTS; attempt++) {
-    const response = await postJson(endpoint, config.apiKey, requestBody);
+    const response = await postJson(endpoint, requestBody);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -172,15 +151,13 @@ const MAX_POLL_ATTEMPTS = 60;
 const POLL_INTERVAL_MS = 5000;
 
 async function startVideoGeneration(
-  config: VertexConfig,
   tryonImageBase64: string,
   transitionPrompt?: string,
 ): Promise<string> {
   const clean = stripDataUri(tryonImageBase64);
 
   const response = await postJson(
-    modelEndpoint(config, "predictLongRunning"),
-    config.apiKey,
+    modelEndpoint(tryonVideoModel(), "predictLongRunning"),
     {
       instances: [{
         prompt: buildVideoPrompt(transitionPrompt),
@@ -211,16 +188,13 @@ async function startVideoGeneration(
   return data.name as string;
 }
 
-async function pollForVideoBytes(
-  config: VertexConfig,
-  operationName: string,
-): Promise<Uint8Array> {
-  const endpoint = modelEndpoint(config, "fetchPredictOperation");
+async function pollForVideoBytes(operationName: string): Promise<Uint8Array> {
+  const endpoint = modelEndpoint(tryonVideoModel(), "fetchPredictOperation");
 
   for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
 
-    const pollResponse = await postJson(endpoint, config.apiKey, {
+    const pollResponse = await postJson(endpoint, {
       operationName,
     });
     if (!pollResponse.ok) continue;
@@ -269,11 +243,9 @@ export async function generateTryonVideo(
   tryonImageBase64: string,
   transitionPrompt?: string,
 ): Promise<Uint8Array> {
-  const config = vertexConfig("VIDEO_MODEL");
   const operationName = await startVideoGeneration(
-    config,
     tryonImageBase64,
     transitionPrompt,
   );
-  return pollForVideoBytes(config, operationName);
+  return pollForVideoBytes(operationName);
 }

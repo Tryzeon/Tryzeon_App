@@ -2,9 +2,9 @@
 // the tool-using agent loop and returns ordered answer blocks. Quota (with
 // rollback) is owned here — mirrors _shared/tryon/run.ts — so every caller
 // (the chat edge, a LINE adapter, …) gets the same accounting for free.
-// default model: gemini-2.5-flash
 import { streamText, stepCountIs, Output } from "npm:ai@^6.0.208";
 import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
+import { chatModel, vertexApiKey } from "../vertex/config.ts";
 import { QuotaExceededError, QuotaManager } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { answerSchema, buildTools } from "./tools.ts";
@@ -23,21 +23,13 @@ import type {
 } from "./types.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
-const CHAT_MODEL = Deno.env.get("CHAT_MODEL") ?? "gemini-2.5-flash";
-
-// Vertex provider, authenticated with the service account. The edge variant signs
-// the SA JWT via Web Crypto. We pass credentials explicitly so we can un-escape
-// the private key: the provider strips whitespace but not literal "\n", and keys
-// copied from the JSON key file carry escaped newlines that otherwise break atob.
-const vertex = createVertex({
-  project: Deno.env.get("GOOGLE_VERTEX_PROJECT"),
-  location: Deno.env.get("GOOGLE_VERTEX_LOCATION") ?? "us-central1",
-  googleCredentials: {
-    clientEmail: Deno.env.get("GOOGLE_CLIENT_EMAIL") ?? "",
-    privateKey: (Deno.env.get("GOOGLE_PRIVATE_KEY") ?? "").replace(/\\n/g, "\n"),
-    privateKeyId: Deno.env.get("GOOGLE_PRIVATE_KEY_ID"),
-  },
-});
+// Vertex provider in express mode: the API key alone authenticates, and it is
+// the same key try-on and the analysis helpers use. This replaces a service
+// account — three secrets, plus un-escaping the literal "\n" in a private key
+// copied from the JSON key file, plus its own names for the project and
+// location that a deploy had to keep in step with GOOGLE_CLOUD_* by hand.
+// Express mode needs none of it, and neither project nor location is required.
+const vertex = createVertex({ apiKey: vertexApiKey() });
 
 // Fetch the rows the model referenced in its answer output, keyed by id, by running the
 // caller's prepared query with an `.in("id", ids)` filter. Empty ids → empty map
@@ -84,7 +76,7 @@ export async function runChatAgent(
     const tools = buildTools({ adminClient: admin, userId, categoryIdByName });
 
     const result = streamText({
-      model: vertex(CHAT_MODEL),
+      model: vertex(chatModel()),
       system: systemInstruction,
       messages: toModelMessages(messages),
       tools,
