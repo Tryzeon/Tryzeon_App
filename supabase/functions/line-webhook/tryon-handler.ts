@@ -4,10 +4,10 @@ import { classifyTryonError, runTryonJob } from "../_shared/tryon/index.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
 import {
-  errorMessage,
   onboardingMessage,
   processingMessage,
   resultMessage,
+  tryonErrorMessage,
 } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 
@@ -17,7 +17,7 @@ export interface ImageEvent {
   messageId: string;
 }
 
-export interface HandlerDeps {
+export interface TryonHandlerDeps {
   admin: SupabaseClient;
   line: LineApi;
   liffOnboardUrl: string;
@@ -32,7 +32,7 @@ export interface HandlerDeps {
  * download the garment, run try-on with the stored avatar, and push the result.
  */
 export async function handleImageMessage(
-  deps: HandlerDeps,
+  deps: TryonHandlerDeps,
   event: ImageEvent,
 ): Promise<void> {
   const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
@@ -55,7 +55,7 @@ export async function handleImageMessage(
   try {
     bytes = await deps.line.getContent(event.messageId);
   } catch {
-    await deps.line.push(event.sourceUserId, [errorMessage("download")]);
+    await deps.line.push(event.sourceUserId, [tryonErrorMessage("download")]);
     return;
   }
 
@@ -78,7 +78,7 @@ export async function handleImageMessage(
     if (kind === "unknown") {
       console.error("line-webhook try-on failed:", err);
     }
-    await deps.line.push(event.sourceUserId, [errorMessage(kind)]);
+    await deps.line.push(event.sourceUserId, [tryonErrorMessage(kind)]);
   }
 }
 
