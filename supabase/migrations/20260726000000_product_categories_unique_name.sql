@@ -1,0 +1,33 @@
+-- product_categories.name is already a key in practice; make it one.
+--
+-- Two edge functions resolve a category by its NAME rather than its id, both
+-- because a model does the picking: `chat` lists the names in its system prompt
+-- and translates back whichever the model names, and `analyze-product-image`
+-- offers the same list to the tagger and maps its answer to an id. Neither can
+-- express "the second 上衣", so a duplicate name makes the resolution arbitrary
+-- — and both build their map from an unordered SELECT, so not even arbitrary in
+-- a stable way across requests.
+--
+-- Names were genuinely duplicated under Design A (20260614000000), which gave
+-- every category a `male` and a `female` row. Design B (20260615000000) merged
+-- those into one row per garment type carrying gender applicability, and step 5
+-- deleted the male duplicates — so the taxonomy has been one-row-per-name since
+-- then, with nothing but that history keeping it so.
+--
+-- Uniqueness is on `name` alone and not on (name, gender): gender is
+-- applicability (male / female / unisex), not part of a category's identity.
+-- Two rows named 外套 differing only in who may browse them is exactly the
+-- Design A shape this schema moved away from.
+--
+-- BEFORE PUSHING, confirm prod has no duplicates — this ALTER fails loudly
+-- rather than silently picking a winner, which is the intended behaviour:
+--
+--   SELECT name, count(*), array_agg(id)
+--   FROM public.product_categories
+--   GROUP BY name HAVING count(*) > 1;
+--
+-- A non-empty result needs a human: merging categories means repointing
+-- products.category_id, which is not something a migration should guess at.
+
+ALTER TABLE "public"."product_categories"
+  ADD CONSTRAINT "product_categories_name_key" UNIQUE ("name");

@@ -82,10 +82,9 @@ Deno.serve(async (req) => {
     if (categoriesError) {
       console.warn("analyze-product-image: failed to load product_categories", categoriesError);
     }
-    const idByName = new Map<string, string>();
-    for (const c of categories ?? []) {
-      if (!idByName.has(c.name)) idByName.set(c.name, c.id);
-    }
+    const idByName = new Map<string, string>(
+      (categories ?? []).map((c) => [c.name, c.id]),
+    );
     const categoryNames = [...idByName.keys()];
 
     const parsed = await analyzeImage({

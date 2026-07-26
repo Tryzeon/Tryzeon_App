@@ -38,10 +38,9 @@ export const buildChatContext: ContextLoader = async (admin, userId) => {
     throw new Error(`Failed to fetch product_categories: ${catErr.message}`);
   }
 
-  const categoryIdByName = new Map<string, string>();
-  for (const c of categories ?? []) {
-    if (!categoryIdByName.has(c.name)) categoryIdByName.set(c.name, c.id);
-  }
+  const categoryIdByName = new Map<string, string>(
+    (categories ?? []).map((c) => [c.name, c.id]),
+  );
 
   const categoryLines = (categories ?? []).map((c) => `- ${c.name}`).join("\n");
 
