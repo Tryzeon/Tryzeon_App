@@ -1,0 +1,51 @@
+/**
+ * Which handler a forwarded message event belongs to, if any.
+ *
+ * An image is a garment to try on; text is a request for the chat agent. Both
+ * take far longer than the webhook may, so both are returned as a task the
+ * caller finishes in the background and delivers with a push. Anything else — a
+ * sticker, a blank line — has no handler, and `null` says so.
+ *
+ * This lives beside the handlers rather than in `index.ts` because what counts
+ * as a usable message is a rule about them, not about the transport: the text
+ * normalization here and the length check in `chat-handler.ts` are two halves of
+ * one answer, and `index.ts` is the one module in the feature with no test.
+ */
+import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { getAvatarPath } from "../_shared/user-profile.ts";
+import { handleImageMessage } from "./tryon-handler.ts";
+import { handleTextMessage } from "./chat-handler.ts";
+import { LineApi } from "./line-api.ts";
+
+export interface RouterDeps {
+  admin: SupabaseClient;
+  line: LineApi;
+  liffOnboardUrl: string;
+  imagesBaseUrl: string;
+}
+
+export function routeMessageEvent(
+  deps: RouterDeps,
+  // deno-lint-ignore no-explicit-any
+  ev: Record<string, any>,
+): Promise<void> | null {
+  const { admin, line } = deps;
+  const sourceUserId = ev.source?.userId;
+
+  if (ev.message?.type === "image") {
+    return handleImageMessage(
+      { admin, line, liffOnboardUrl: deps.liffOnboardUrl, getAvatarPath },
+      { replyToken: ev.replyToken, sourceUserId, messageId: ev.message.id },
+    );
+  }
+
+  if (ev.message?.type === "text") {
+    const text = String(ev.message.text ?? "").trim();
+    return handleTextMessage(
+      { admin, line, imagesBaseUrl: deps.imagesBaseUrl },
+      { sourceUserId, text },
+    );
+  }
+
+  return null;
+}
