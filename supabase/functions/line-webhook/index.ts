@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient } from "../_shared/supabase.ts";
 import { verifyLineSignature } from "./signature.ts";
 import { makeLineApi } from "./line-api.ts";
-import { getAvatarPath } from "./profile.ts";
+import { getAvatarPath } from "../_shared/user-profile.ts";
 import { hintMessage } from "./messages.ts";
 import { handleImageMessage } from "./handler.ts";
 

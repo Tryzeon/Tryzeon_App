@@ -1,12 +1,8 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { resolveSupabaseUser } from "../_shared/line-user.ts";
-import {
-  GenerationFailedError,
-  QuotaExceededError,
-  runTryonJob,
-} from "../_shared/tryon/index.ts";
+import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-user.ts";
+import { classifyTryonError, runTryonJob } from "../_shared/tryon/index.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
-import { getAvatarPath as defaultGetAvatarPath } from "./profile.ts";
+import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
 import {
   errorMessage,
   onboardingMessage,
@@ -26,7 +22,7 @@ export interface HandlerDeps {
   line: LineApi;
   liffOnboardUrl: string;
   getAvatarPath?: typeof defaultGetAvatarPath;
-  resolveUser?: typeof resolveSupabaseUser;
+  getOrCreateUserId?: typeof defaultGetOrCreateUserId;
   runJob?: typeof runTryonJob;
 }
 
@@ -40,10 +36,12 @@ export async function handleImageMessage(
   event: ImageEvent,
 ): Promise<void> {
   const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
-  const resolveUser = deps.resolveUser ?? resolveSupabaseUser;
+  const getOrCreateUserId = deps.getOrCreateUserId ?? defaultGetOrCreateUserId;
   const runJob = deps.runJob ?? runTryonJob;
 
-  const userId = await resolveUser(deps.admin, { sub: event.sourceUserId });
+  const userId = await getOrCreateUserId(deps.admin, {
+    sub: event.sourceUserId,
+  });
   const avatarPath = await getAvatarPath(deps.admin, userId);
 
   if (!avatarPath) {
@@ -63,22 +61,42 @@ export async function handleImageMessage(
 
   try {
     const garmentBase64 = uint8ToBase64(bytes);
-    const result = await runJob({ admin: deps.admin }, {
+    // `materials: admin` is safe here and stated explicitly: the avatar path is
+    // server-derived (read from the user's own profile) and the garment arrives
+    // as base64 — this adapter never forwards a client-supplied path.
+    const result = await runJob({ admin: deps.admin, materials: deps.admin }, {
       userId,
       avatar: { path: avatarPath },
       garments: [{ images: [{ base64: garmentBase64 }] }],
       mode: "image",
     });
-    if (result.kind !== "image") {
-      throw new Error("expected image result for line-webhook");
-    }
     await deps.line.push(event.sourceUserId, [resultMessage(result.imageUrl)]);
   } catch (err) {
-    const kind = err instanceof QuotaExceededError
-      ? "quota"
-      : err instanceof GenerationFailedError
-      ? "generation"
-      : "unknown";
+    const kind = tryonFailureKind(err);
+    // "unknown" means a server-side fault (bad params, RLS, storage) rather
+    // than a user error — log it so it leaves a trace beyond the pushed message.
+    if (kind === "unknown") {
+      console.error("line-webhook try-on failed:", err);
+    }
     await deps.line.push(event.sourceUserId, [errorMessage(kind)]);
+  }
+}
+
+/**
+ * Renders a core error as one of this channel's message kinds, from the same
+ * `classifyTryonError` result the HTTP adapters use. A validation error is not
+ * user-actionable here — this adapter builds its own params, so it means we
+ * sent something wrong — and is reported as an unknown fault.
+ */
+function tryonFailureKind(err: unknown): "quota" | "generation" | "unknown" {
+  const info = classifyTryonError(err);
+  if (info === null) return "unknown";
+  switch (info.kind) {
+    case "quota":
+      return "quota";
+    case "generation":
+      return "generation";
+    case "validation":
+      return "unknown";
   }
 }
