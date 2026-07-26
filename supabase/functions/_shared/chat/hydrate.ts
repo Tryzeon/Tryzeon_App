@@ -16,25 +16,37 @@ import type { AnswerHydrator, AnswerRef, ContentBlock } from "./types.ts";
 
 /**
  * Run the caller's prepared query with an `.in("id", ids)` filter and key the
- * result. Empty ids → empty map (no query); an id whose row is gone is simply
- * absent, and the assembler drops its block.
+ * result by row id. Empty ids → empty map (no query); an id whose row is gone
+ * is simply absent, and the assembler drops its block.
+ *
+ * `toBlock` is how a hydrator says what a row is worth rendering as. It may
+ * return null to drop a row the caller cannot render — the same outcome, by the
+ * same missing-row rule, as a row that was deleted between search and answer.
+ * Exported so a substituted hydrator inherits this contract rather than
+ * restating it: which of these rules holds is what `assembleAnswerBlocks`
+ * depends on, not incidental query code.
  */
-async function fetchRowsByIds(
+export async function fetchRowsByIds(
   // deno-lint-ignore no-explicit-any
   query: any,
   ids: string[],
+  // deno-lint-ignore no-explicit-any
+  toBlock: (row: Record<string, any>) => ContentBlock | null = (row) => row,
 ): Promise<Map<string, ContentBlock>> {
   const map = new Map<string, ContentBlock>();
   if (ids.length === 0) return map;
   const { data, error } = await query.in("id", ids);
   if (error) throw error;
-  for (const row of data ?? []) map.set(String(row.id), row);
+  for (const row of data ?? []) {
+    const block = toBlock(row);
+    if (block) map.set(String(row.id), block);
+  }
   return map;
 }
 
 type ItemRef = Extract<AnswerRef, { id: string }>;
 
-const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] =>
+export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] =>
   refs.filter((r): r is ItemRef => r.type === type).map((r) => r.id);
 
 export const supabaseAnswerRows: AnswerHydrator = async (
