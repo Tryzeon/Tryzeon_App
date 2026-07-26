@@ -29,7 +29,7 @@ export type {
   ImageUploader,
   ProductResolver,
   QuotaFactory,
-  QuotaPort,
+  UsageCounter,
   VideoGenerator,
   VideoUploader,
 } from "./types.ts";

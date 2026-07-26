@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import type { DailyUsage, QuotaPort } from "../quota.ts";
+import type { DailyUsage, UsageCounter } from "../quota.ts";
 
-export type { QuotaPort };
+export type { UsageCounter };
 
 /**
  * The conversation schema, shared by client storage, the wire (both
@@ -108,7 +108,7 @@ export const LIMITS = {
 export type ChatQuotaFactory = (
   admin: SupabaseClient,
   userId: string,
-) => QuotaPort;
+) => UsageCounter;
 
 /** The per-request grounding a turn runs against. */
 export interface ChatContext {

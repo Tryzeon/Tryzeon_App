@@ -1,7 +1,7 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import type { DailyUsage, QuotaPort } from "../quota.ts";
+import type { DailyUsage, UsageCounter } from "../quota.ts";
 
-export type { QuotaPort };
+export type { UsageCounter };
 
 /**
  * An image is addressed EITHER by storage key OR by inline bytes. A union
@@ -133,7 +133,7 @@ export type QuotaFactory = (
   admin: SupabaseClient,
   userId: string,
   mode: TryonMode,
-) => QuotaPort;
+) => UsageCounter;
 
 /**
  * Generates a try-on image; resolves to clean base64 image data (no data-URI

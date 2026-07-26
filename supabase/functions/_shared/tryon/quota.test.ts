@@ -1,4 +1,4 @@
-// The charge/refund semantics belong to `supabaseQuotaPort` and are tested in
+// The charge/refund semantics belong to `supabaseUsageCounter` and are tested in
 // `_shared/quota.test.ts`. What is try-on's — and all that is asserted here —
 // is which counter each mode is charged against.
 import { assertEquals } from "jsr:@std/assert";

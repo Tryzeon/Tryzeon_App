@@ -32,7 +32,7 @@ export type {
   AnswerRows,
   ChatQuotaFactory,
   ContextLoader,
-  QuotaPort,
+  UsageCounter,
 } from "./types.ts";
 
 // Describing a turn and reading its result.

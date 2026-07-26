@@ -16,12 +16,6 @@ export interface DailyUsage {
   video_count: number;
 }
 
-export interface IncrementResult {
-  success: boolean;
-  usage: DailyUsage | null;
-  error?: any;
-}
-
 /**
  * Thrown when a charge is rejected because the caller's daily quota is spent.
  * Carries the current usage row so the caller can report the limit it hit.
@@ -43,144 +37,31 @@ export class QuotaExceededError extends Error {
  *
  * A port so a feature core can say what it needs — an atomic charge with a
  * compensating refund — without naming the RPC pair that implements it or
- * depending on its payload. It lives here rather than in either feature for the
- * same reason {@link QuotaExceededError} does: the contract is the counter's,
- * and try-on and chat charging through two structurally identical interfaces
- * could only ever differ by accident. {@link supabaseQuotaPort} satisfies it;
- * each feature still declares its own factory, because what identifies a
- * counter differs (try-on has a mode, chat does not).
+ * depending on its payload. Named for the role it plays rather than with a
+ * `Port` suffix, like every other port here (`AnswerHydrator`,
+ * `ProductResolver`, …): what a core depends on is a counter, and that it is
+ * also a seam is the reader's inference, not part of the name.
+ *
+ * It lives here rather than in either feature for the same reason
+ * {@link QuotaExceededError} does: the contract is the counter's, and try-on
+ * and chat charging through two structurally identical interfaces could only
+ * ever differ by accident. {@link supabaseUsageCounter} satisfies it; each
+ * feature still declares its own factory, because what identifies a counter
+ * differs (try-on has a mode, chat does not).
  */
-export interface QuotaPort {
+export interface UsageCounter {
   charge(): Promise<{ allowed: boolean; usage: DailyUsage | null }>;
   refund(): Promise<void>;
 }
 
 /**
- * Atomically increments the feature usage count and returns the post-mutation
- * row. The row is also returned when `success` is false (rate-limit case),
- * so callers can sync UI even on rejection.
- */
-export async function incrementFeatureUsage(
-  adminClient: SupabaseClient,
-  userId: string,
-  featureName: FeatureName
-): Promise<IncrementResult> {
-  const { data, error } = await adminClient.rpc(
-    "increment_feature_usage",
-    { p_user_id: userId, p_feature_name: featureName }
-  );
-
-  if (error) {
-    return { success: false, usage: null, error };
-  }
-
-  // RPC returns: { allowed: boolean, usage: DailyUsage | null }
-  const allowed = Boolean(data?.allowed);
-  const usage = (data?.usage ?? null) as DailyUsage | null;
-  return { success: allowed, usage };
-}
-
-/**
- * Decrements the feature usage count for a user (rollback operation).
- * Used to compensate for failed operations after quota was already incremented.
- */
-export async function rollbackFeatureUsage(
-  adminClient: SupabaseClient,
-  userId: string,
-  featureName: FeatureName
-): Promise<{ success: boolean; error?: any }> {
-  const { data: wasRolledBack, error } = await adminClient.rpc(
-    "decrement_feature_usage",
-    { p_user_id: userId, p_feature_name: featureName }
-  );
-
-  if (error) {
-    return { success: false, error };
-  }
-
-  return { success: wasRolledBack };
-}
-
-/**
- * Quota manager class that tracks quota state and provides automatic rollback.
+ * The default {@link UsageCounter}: one user's counter for one feature, backed
+ * by the `increment_feature_usage` / `decrement_feature_usage` RPC pair.
  *
- * Usage:
- * ```
- * const qm = new QuotaManager(adminClient, userId, featureName);
- * const { allowed, usage } = await qm.incrementQuota();
- * if (!allowed) return rateLimitResponse(usage);
- *
- * try {
- *   // ... do work that might fail
- * } catch (err) {
- *   await qm.rollbackQuota();
- *   throw err;
- * }
- * ```
- */
-export class QuotaManager {
-  private quotaIncremented = false;
-
-  constructor(
-    private adminClient: SupabaseClient,
-    private userId: string,
-    private featureName: FeatureName
-  ) {}
-
-  /**
-   * Increments quota and returns both the allow/reject flag and the
-   * post-mutation row (or current row when rejected).
-   */
-  async incrementQuota(): Promise<{ allowed: boolean; usage: DailyUsage | null }> {
-    const { success, usage, error } = await incrementFeatureUsage(
-      this.adminClient,
-      this.userId,
-      this.featureName
-    );
-
-    if (error) {
-      throw new Error(`Failed to increment quota: ${error.message}`);
-    }
-
-    if (success) {
-      this.quotaIncremented = true;
-    }
-
-    return { allowed: success, usage };
-  }
-
-  /**
-   * Rolls back quota if it was previously incremented.
-   * Safe to call multiple times — only rollbacks once.
-   */
-  async rollbackQuota(): Promise<void> {
-    if (!this.quotaIncremented) return;
-
-    const { error } = await rollbackFeatureUsage(
-      this.adminClient,
-      this.userId,
-      this.featureName
-    );
-
-    if (error) {
-      console.error("Quota rollback failed:", {
-        userId: this.userId,
-        featureName: this.featureName,
-        error
-      });
-    }
-
-    this.quotaIncremented = false;
-  }
-
-  get isQuotaIncremented(): boolean {
-    return this.quotaIncremented;
-  }
-}
-
-/**
- * The default {@link QuotaPort}: one user's counter for one feature, backed by
- * the `increment_feature_usage` / `decrement_feature_usage` RPC pair.
+ * Named for what it yields, the way every other adapter here is
+ * (`supabaseAnswerRows`, `uploadTryonImageToR2`, …). It is the adapter, not the
+ * port — the port is {@link UsageCounter} above — so it does not borrow that
+ * type's name.
  *
  * This is the only place a core's charge/refund vocabulary meets those RPC
  * names, so no orchestrator depends on their payload shape and a test can
@@ -189,15 +70,43 @@ export class QuotaManager {
  * counter's and not any one caller's — a feature contributes only which counter
  * to charge, which is why each still declares its own factory (try-on derives
  * the feature from a mode, chat has exactly one).
+ *
+ * "Did the charge land?" is a closure variable rather than a field on an object
+ * a caller could reach: nothing outside `refund` may read or set it, and making
+ * that structural is what keeps a double refund impossible rather than merely
+ * discouraged.
  */
-export function supabaseQuotaPort(
+export function supabaseUsageCounter(
   adminClient: SupabaseClient,
   userId: string,
   featureName: FeatureName,
-): QuotaPort {
-  const manager = new QuotaManager(adminClient, userId, featureName);
+): UsageCounter {
+  let charged = false;
+  const args = { p_user_id: userId, p_feature_name: featureName };
+
   return {
-    charge: () => manager.incrementQuota(),
-    refund: () => manager.rollbackQuota(),
+    async charge() {
+      const { data, error } = await adminClient.rpc(
+        "increment_feature_usage",
+        args,
+      );
+      if (error) {
+        throw new Error(`Failed to increment quota: ${error.message}`);
+      }
+      // RPC returns: { allowed: boolean, usage: DailyUsage | null }
+      charged = Boolean(data?.allowed);
+      return { allowed: charged, usage: (data?.usage ?? null) as DailyUsage | null };
+    },
+
+    async refund() {
+      if (!charged) return;
+      // Cleared before the call, not after: a refund that throws must not leave
+      // the port willing to issue a second one.
+      charged = false;
+      const { error } = await adminClient.rpc("decrement_feature_usage", args);
+      if (error) {
+        console.error("Quota rollback failed:", { userId, featureName, error });
+      }
+    },
   };
 }

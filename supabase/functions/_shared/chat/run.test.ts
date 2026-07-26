@@ -32,7 +32,7 @@ const params: ChatParams = {
   messages: [{ role: "user", content: [{ type: "text", text: "找白襯衫" }] }],
 };
 
-/** Fake `QuotaPort` recording the charge/refund sequence, with a scripted allow. */
+/** Fake `UsageCounter` recording the charge/refund sequence, with a scripted allow. */
 function fakeQuota(allowed = true) {
   const calls: string[] = [];
   const factory: ChatQuotaFactory = () => ({

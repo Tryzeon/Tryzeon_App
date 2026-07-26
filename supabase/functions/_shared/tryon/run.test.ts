@@ -25,7 +25,7 @@ const clients = {
 } as unknown as TryonClients;
 
 /**
- * Fake `QuotaPort` recording the charge/refund sequence and the mode it was
+ * Fake `UsageCounter` recording the charge/refund sequence and the mode it was
  * opened with, with a scripted allow/reject.
  */
 function fakeQuota(allowed = true) {

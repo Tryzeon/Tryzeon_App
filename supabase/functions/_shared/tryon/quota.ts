@@ -6,7 +6,7 @@
  * is only the mapping below, which is the whole reason the factory is a
  * per-feature module at all.
  */
-import { type FeatureName, supabaseQuotaPort } from "../quota.ts";
+import { type FeatureName, supabaseUsageCounter } from "../quota.ts";
 import type { QuotaFactory, TryonMode } from "./types.ts";
 
 /**
@@ -20,4 +20,4 @@ const FEATURE_BY_MODE: Record<TryonMode, FeatureName> = {
 };
 
 export const supabaseQuota: QuotaFactory = (admin, userId, mode) =>
-  supabaseQuotaPort(admin, userId, FEATURE_BY_MODE[mode]);
+  supabaseUsageCounter(admin, userId, FEATURE_BY_MODE[mode]);
