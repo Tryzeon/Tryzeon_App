@@ -30,17 +30,6 @@ import type {
   TryonParams,
 } from "../_shared/tryon/index.ts";
 
-/** Decode one raw garment into the typed shape. */
-function decodeGarment(raw: unknown): GarmentInput {
-  if (typeof raw !== "object" || raw === null) {
-    throw new ValidationError("each garment must be an object");
-  }
-  const r = raw as Record<string, unknown>;
-  return "productId" in r
-    ? { productId: r.productId as string }
-    : { images: r.images as ImageSource[] };
-}
-
 /**
  * Decode the raw request body into typed TryonParams, attaching the
  * caller-supplied (authenticated) userId.
@@ -60,7 +49,7 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
   return {
     userId,
     avatar: b.avatar as ImageSource,
-    garments: b.garments.map(decodeGarment),
+    garments: b.garments as GarmentInput[],
     // Omitting `mode` means the default; naming an unknown one is an error, and
     // the core raises it. Mapping every unrecognised value onto "image" would
     // charge the image quota for a request that asked for something else, and
