@@ -1,5 +1,5 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getUserProfile } from "../user-profile.ts";
+import type { ContextLoader } from "./types.ts";
 
 // Maps the stored age_range bucket codes to human labels for the AI prompt.
 const AGE_RANGE_LABELS: Record<string, string> = {
@@ -11,36 +11,29 @@ const AGE_RANGE_LABELS: Record<string, string> = {
   "55_plus": "55 歲以上",
 };
 
-export interface ChatContext {
-  /** The fully-assembled system prompt (persona + user context + categories). */
-  systemInstruction: string;
-  /** Category name → its id, for resolving the model's category_name filter. */
-  categoryIdByName: Map<string, string>;
-}
-
 /**
- * Loads the per-request grounding for a chat turn: the caller's profile (for
- * personalised recommendations) and the live product-category list (the only
- * category_name values the search tool accepts), then bakes both into the
- * system prompt. Throws if the category fetch fails (the run can't be grounded).
+ * Default `ContextLoader`. Loads the per-request grounding for a chat turn: the
+ * caller's profile (for personalised recommendations) and the live
+ * product-category list (the only category_name values the search tool
+ * accepts), then bakes both into the system prompt. Throws if the category
+ * fetch fails (the run can't be grounded).
  */
-export async function buildChatContext(
-  admin: SupabaseClient,
-  userId: string,
-): Promise<ChatContext> {
-  const profile = await getUserProfile(admin, userId).catch((err) => {
-    console.error("chat: user profile lookup failed:", err);
-    return null;
-  });
+export const buildChatContext: ContextLoader = async (admin, userId) => {
+  // Two independent lookups, so they are issued together: grounding sits on the
+  // critical path before the model call, and neither reads the other's result.
+  const [profile, { data: categories, error: catErr }] = await Promise.all([
+    getUserProfile(admin, userId).catch((err) => {
+      console.error("chat: user profile lookup failed:", err);
+      return null;
+    }),
+    admin.from("product_categories").select("id, name"),
+  ]);
 
   const userName = profile?.name ?? null;
   const userGender = profile?.gender ?? null;
   const userAge = AGE_RANGE_LABELS[profile?.ageRange ?? ""] ?? null;
   const userStyles = profile?.stylePreferences ?? [];
 
-  const { data: categories, error: catErr } = await admin
-    .from("product_categories")
-    .select("id, name");
   if (catErr) {
     throw new Error(`Failed to fetch product_categories: ${catErr.message}`);
   }
@@ -90,4 +83,4 @@ export async function buildChatContext(
 ${categoryLines}`;
 
   return { systemInstruction, categoryIdByName };
-}
+};

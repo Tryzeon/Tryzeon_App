@@ -1,6 +1,17 @@
 // Pure helpers for the chat agent loop. No SDK or network imports so they
 // unit-test offline (no Gemini SDK, no network).
 import { nonEmptyStr } from "../text.ts";
+import type {
+  AnswerRef,
+  AnswerRows,
+  ChatMessage,
+  ContentBlock,
+} from "./types.ts";
+
+// Rows one search tool returns. A page size, not a caller-facing limit — it is
+// what keeps a tool result small enough to re-prompt with, so it belongs to the
+// searches rather than to `LIMITS`, which is the contract on what a caller sends.
+export const SEARCH_LIMIT = 10;
 
 // Columns a wardrobe item needs to render a card. Shared by the search tool and
 // the by-id answer fetch so the two queries can't drift.
@@ -14,12 +25,38 @@ export const PRODUCT_SELECT =
 const nonEmptyArray = (v: unknown): unknown[] | null =>
   Array.isArray(v) && v.length > 0 ? v : null;
 
+// Resolve the model's category_name into the id filter the RPC takes. An absent
+// name means "no category filter"; an unrecognised one is rejected rather than
+// silently dropped — dropping it would run an unfiltered search and hand the
+// model cross-category products it believes are filtered.
+export type CategoryFilter =
+  | { ok: true; categoryIds: string[] | null }
+  | { ok: false; error: string };
+
+export function resolveCategoryFilter(
+  rawName: unknown,
+  categoryIdByName: Map<string, string>,
+): CategoryFilter {
+  const name = nonEmptyStr(rawName);
+  if (name === null) return { ok: true, categoryIds: null };
+
+  const id = categoryIdByName.get(name);
+  if (id === undefined) {
+    return {
+      ok: false,
+      error:
+        `未知的分類名稱「${name}」。請改用【可用商品分類清單】中的名稱，或省略 category_name 後重試。`,
+    };
+  }
+  return { ok: true, categoryIds: [id] };
+}
+
 // Assemble list_shop_products RPC params from model tool args + resolved context.
 // gender is an optional model-chosen filter (args.gender), not a forced one —
 // the model decides whether to apply it, informed by the user context in the prompt.
 export function mapSearchProductsArgs(
   args: Record<string, unknown>,
-  opts: { categoryIds: string[] | null; limit?: number },
+  opts: { categoryIds: string[] | null },
 ) {
   return {
     p_store_id: null,
@@ -37,17 +74,10 @@ export function mapSearchProductsArgs(
     p_seasons: nonEmptyArray(args.seasons),
     p_sort_column: "created_at",
     p_sort_ascending: false,
-    p_limit: opts.limit ?? 10,
+    p_limit: SEARCH_LIMIT,
     p_offset: 0,
   };
 }
-
-// The conversation schema, shared by client storage, the wire (both directions),
-// and rendering. Standard chat-API shape: only user/assistant roles, each a list
-// of content blocks. A tool round spans messages — a `tool_use` block in an
-// assistant message paired (by id) with a `tool_result` block in a user message.
-export type ContentBlock = Record<string, any>;
-export type ChatMessage = { role: string; content: ContentBlock[] };
 
 // Map the standard conversation to AI SDK `ModelMessage[]`. The whole history is
 // replayed verbatim and uncompressed: assistant tool_use → a `tool-call` part,
@@ -122,13 +152,6 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
   return out;
 }
 
-// One ordered piece of the structured answer output: a line of text, or a
-// reference to a shop product / wardrobe item by its real id (the model labels which).
-export type AnswerRef =
-  | { type: "text"; text: string }
-  | { type: "product"; id: string }
-  | { type: "wardrobe"; id: string };
-
 // Parse the structured answer output into ordered refs. The model picks the block
 // type (product = shop, wardrobe = wardrobe) and gives the id; the edge fetches each
 // id from the matching table. Empty text and id-less product/wardrobe blocks drop.
@@ -149,21 +172,22 @@ export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
 
 // Assemble the ordered answer blocks from parsed refs + the rows fetched by id.
 // Text passes through; product/wardrobe refs become card blocks, dropping any id
-// whose row is missing (e.g. a since-deleted item).
+// whose row is missing (e.g. a since-deleted item). Ordering and that drop rule
+// stay here rather than in the hydrator, so a platform that fetches slimmer rows
+// still renders the answer in the sequence the model composed it.
 export function assembleAnswerBlocks(
   refs: AnswerRef[],
-  products: Map<string, Record<string, any>>,
-  wardrobe: Map<string, Record<string, any>>,
+  rows: AnswerRows,
 ): ContentBlock[] {
   const blocks: ContentBlock[] = [];
   for (const ref of refs) {
     if (ref.type === "text") {
       blocks.push({ type: "text", text: ref.text });
     } else if (ref.type === "product") {
-      const item = products.get(ref.id);
+      const item = rows.products.get(ref.id);
       if (item) blocks.push({ type: "product", item });
     } else {
-      const item = wardrobe.get(ref.id);
+      const item = rows.wardrobe.get(ref.id);
       if (item) blocks.push({ type: "wardrobe", item });
     }
   }

@@ -1,123 +1,97 @@
-// Chat agent core. Platform-agnostic: given a userId + prior messages it runs
-// the tool-using agent loop and returns ordered answer blocks. Quota (with
-// rollback) is owned here — mirrors _shared/tryon/run.ts — so every caller
-// (the chat edge, a LINE adapter, …) gets the same accounting for free.
-import { streamText, stepCountIs, Output } from "npm:ai@^6.0.208";
-import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
-import { chatModel, vertexApiKey } from "../vertex/config.ts";
-import { QuotaExceededError, QuotaManager } from "../quota.ts";
+import { QuotaExceededError } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
-import { answerSchema, buildTools } from "./tools.ts";
-import {
-  assembleAnswerBlocks,
-  type ContentBlock,
-  parseAnswerRefs,
-  PRODUCT_SELECT,
-  toModelMessages,
-  WARDROBE_SELECT,
-} from "./logic.ts";
+import { supabaseAnswerRows } from "./hydrate.ts";
+import { assembleAnswerBlocks, parseAnswerRefs } from "./logic.ts";
+import { supabaseChatQuota } from "./quota.ts";
+import { validateChatParams } from "./validate.ts";
+import { runVertexAgent } from "./vertex.ts";
 import type {
+  AgentRunner,
+  AnswerHydrator,
+  ChatClients,
+  ChatMessage,
+  ChatParams,
+  ChatQuotaFactory,
   ChatResult,
-  RunChatAgentDeps,
-  RunChatAgentParams,
+  ContentBlock,
+  ContextLoader,
 } from "./types.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
-// Vertex provider in express mode: the API key alone authenticates, and it is
-// the same key try-on and the analysis helpers use. This replaces a service
-// account — three secrets, plus un-escaping the literal "\n" in a private key
-// copied from the JSON key file, plus its own names for the project and
-// location that a deploy had to keep in step with GOOGLE_CLOUD_* by hand.
-// Express mode needs none of it, and neither project nor location is required.
-const vertex = createVertex({ apiKey: vertexApiKey() });
 
-// Fetch the rows the model referenced in its answer output, keyed by id, by running the
-// caller's prepared query with an `.in("id", ids)` filter. Empty ids → empty map
-// (no query); missing ids (e.g. a since-deleted item) are simply absent.
-async function fetchRowsByIds(
-  // deno-lint-ignore no-explicit-any
-  query: any,
-  ids: string[],
-): Promise<Map<string, Record<string, any>>> {
-  const map = new Map<string, Record<string, any>>();
-  if (ids.length === 0) return map;
-  const { data, error } = await query.in("id", ids);
-  if (error) throw error;
-  for (const row of data ?? []) map.set(String(row.id), row);
-  return map;
+export interface RunChatAgentDeps {
+  loadContext?: ContextLoader;
+  runAgent?: AgentRunner;
+  hydrate?: AnswerHydrator;
+  quota?: ChatQuotaFactory;
 }
 
 /**
- * Single chat-agent entry point: quota -> ground -> agent loop -> assemble.
+ * Single chat entry point: validate -> quota -> ground -> agent loop ->
+ * hydrate -> assemble.
  *
- * The AI SDK runs the loop: search_* tools have `execute` so it calls them and
- * re-prompts automatically (capped by stopWhen). The final answer is produced as
- * structured `output` (answerSchema), not a tool call. tool_use/tool_result
- * events are surfaced live via `params.onEvent`; the ordered answer blocks are
- * returned. Quota is charged up front and rolled back if the agent loop throws;
- * an unusable structured output degrades to a fallback text block (quota stays
- * spent — the model did run). Throws {@link QuotaExceededError} when over quota.
+ * Platform-agnostic: given a userId and the prior conversation it returns the
+ * ordered answer blocks plus the turns to append, so every caller (the chat
+ * edge, a LINE adapter, …) gets the same accounting, the same grounding and the
+ * same transcript rules for free.
+ *
+ * Quota is charged up front and refunded if anything after it throws. An
+ * unusable structured output is not a throw — the model ran, so quota stays
+ * spent and the answer degrades to a single fallback text block. A failure to
+ * read the referenced rows is a throw: that is a server fault, and reporting it
+ * as "I couldn't find anything" would charge the caller for a lie.
  */
 export async function runChatAgent(
-  deps: RunChatAgentDeps,
-  params: RunChatAgentParams,
+  clients: ChatClients,
+  params: ChatParams,
+  deps: RunChatAgentDeps = {},
 ): Promise<ChatResult> {
-  const { admin } = deps;
-  const { userId, messages, onEvent } = params;
+  // Everything below runs on `turn`, never on the raw `params`: the guard is
+  // also the normalizer, so the run cannot read a message the guard did not see.
+  const turn = validateChatParams(params);
 
-  const quota = new QuotaManager(admin, userId, "chat");
-  const { allowed, usage } = await quota.incrementQuota();
+  const loadContext = deps.loadContext ?? buildChatContext;
+  const runAgent = deps.runAgent ?? runVertexAgent;
+  const hydrate = deps.hydrate ?? supabaseAnswerRows;
+  const openQuota = deps.quota ?? supabaseChatQuota;
+
+  const { admin } = clients;
+  const quota = openQuota(admin, turn.userId);
+  const { allowed, usage } = await quota.charge();
   if (!allowed) {
     throw new QuotaExceededError(usage);
   }
 
   try {
-    const { systemInstruction, categoryIdByName } = await buildChatContext(admin, userId);
-    const tools = buildTools({ adminClient: admin, userId, categoryIdByName });
+    const context = await loadContext(admin, turn.userId);
 
-    const result = streamText({
-      model: vertex(chatModel()),
-      system: systemInstruction,
-      messages: toModelMessages(messages),
-      tools,
-      output: Output.object({ schema: answerSchema }),
-      stopWhen: stepCountIs(10),
+    const { output, rounds } = await runAgent({
+      admin,
+      userId: turn.userId,
+      context,
+      messages: turn.messages,
+      onEvent: turn.onEvent,
     });
 
-    for await (const part of result.fullStream) {
-      if (part.type === "tool-call") {
-        onEvent?.({ type: "tool_use", id: part.toolCallId, name: part.toolName, input: part.input });
-      } else if (part.type === "tool-result") {
-        onEvent?.({ type: "tool_result", tool_use_id: part.toolCallId, content: part.output });
-      }
-    }
-
-    let blocks: ContentBlock[];
-    try {
-      const output = (await result.output) as Record<string, any>;
+    let blocks: ContentBlock[] = [];
+    if (output) {
       const refs = parseAnswerRefs(output);
-      const [products, wardrobe] = await Promise.all([
-        fetchRowsByIds(
-          admin.from("products").select(PRODUCT_SELECT),
-          refs.filter((r) => r.type === "product").map((r) => r.id),
-        ),
-        fetchRowsByIds(
-          admin.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", userId),
-          refs.filter((r) => r.type === "wardrobe").map((r) => r.id),
-        ),
-      ]);
-      blocks = assembleAnswerBlocks(refs, products, wardrobe);
-    } catch (outErr) {
-      console.error("Structured output unavailable:", outErr);
-      blocks = [];
+      blocks = assembleAnswerBlocks(refs, await hydrate(admin, turn.userId, refs));
     }
     if (blocks.length === 0) {
       blocks = [{ type: "text", text: FALLBACK_TEXT }];
     }
 
-    return { blocks, usage };
+    const answer: ChatMessage = { role: "assistant", content: blocks };
+    return { blocks, messages: [...rounds, answer], usage };
   } catch (err) {
-    await quota.rollbackQuota();
+    // Refund is best-effort: a failure here must not replace the error that
+    // actually caused the turn to fail, or callers would report the wrong thing.
+    try {
+      await quota.refund();
+    } catch (refundErr) {
+      console.error("chat quota refund failed:", refundErr);
+    }
     throw err;
   }
 }
