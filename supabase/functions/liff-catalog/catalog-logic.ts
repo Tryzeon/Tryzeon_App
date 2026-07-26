@@ -8,14 +8,11 @@ export interface CatalogItem {
 
 /**
  * Maps a list_shop_products jsonb row to a catalog item, or null when the
- * product has no R2-hosted (stores/) image to use as a garment reference.
+ * product has no image to use as a garment reference.
  */
 export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem | null {
   const r = (row ?? {}) as Record<string, unknown>;
-  const imagePaths = Array.isArray(r.image_paths) ? r.image_paths : [];
-  const key = imagePaths.find(
-    (p): p is string => typeof p === "string" && p.startsWith("stores/"),
-  );
+  const key = (r.image_paths as string[] | null)?.[0];
   if (!key) return null;
 
   const base = baseUrl.replace(/\/+$/, "");
