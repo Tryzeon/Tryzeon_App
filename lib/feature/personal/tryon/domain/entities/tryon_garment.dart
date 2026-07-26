@@ -7,9 +7,8 @@ part 'tryon_garment.freezed.dart';
 /// product by id (the backend resolves its image and prompt detail).
 @freezed
 sealed class TryonGarment with _$TryonGarment {
-  const factory TryonGarment.images({
-    required final List<TryonImageSource> images,
-  }) = TryonGarmentImages;
+  const factory TryonGarment.images({required final List<TryonImageSource> images}) =
+      TryonGarmentImages;
 
   const factory TryonGarment.product({required final String productId}) =
       TryonGarmentProduct;
