@@ -63,17 +63,17 @@ Deno.test("validateTryonParams rejects a source with both path and base64", () =
   );
 });
 
-Deno.test("validateTryonParams rejects a non-string garment detail", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        garments: [
-          { images: [{ base64: "B" }], detail: 42 as unknown as string },
-        ],
-      }),
-    ValidationError,
-  );
+Deno.test("validateTryonParams strips a garment detail a caller tried to set", () => {
+  // Only resolveProductGarment may attach one, and it runs after this guard.
+  const job = validateTryonParams({
+    ...validParams,
+    garments: [
+      { images: [{ base64: "B" }], detail: "smuggled" } as TryonParams[
+        "garments"
+      ][number],
+    ],
+  });
+  assertEquals(job.garments, [{ images: [{ base64: "B" }] }]);
 });
 
 Deno.test("validateTryonParams accepts a product-ref garment", () => {
@@ -114,31 +114,6 @@ Deno.test("validateTryonParams rejects an invalid mode", () => {
   );
 });
 
-Deno.test("validateTryonParams rejects an overlong garment detail", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        garments: [{
-          images: [{ base64: "B" }],
-          detail: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 1),
-        }],
-      }),
-    ValidationError,
-    "detail",
-  );
-});
-
-Deno.test("validateTryonParams accepts a garment detail exactly at the limit", () => {
-  validateTryonParams({
-    ...validParams,
-    garments: [{
-      images: [{ base64: "B" }],
-      detail: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH),
-    }],
-  }); // does not throw
-});
-
 Deno.test("validateTryonParams rejects an overlong scenePrompt", () => {
   assertThrows(
     () =>
@@ -170,15 +145,11 @@ Deno.test("validateTryonParams returns params with sources narrowed", () => {
     avatar: { base64: "AAAA", path: "" } as unknown as TryonParams["avatar"],
     garments: [{
       images: [{ base64: "BBBB", path: "" } as unknown as TryonParams["avatar"]],
-      detail: "cotton tee",
     }],
     scenePrompt: "beach",
   });
   assertEquals(job.avatar, { base64: "AAAA" });
-  assertEquals(job.garments, [{
-    images: [{ base64: "BBBB" }],
-    detail: "cotton tee",
-  }]);
+  assertEquals(job.garments, [{ images: [{ base64: "BBBB" }] }]);
   assertEquals(job.userId, "u1");
   assertEquals(job.mode, "image");
   assertEquals(job.scenePrompt, "beach");

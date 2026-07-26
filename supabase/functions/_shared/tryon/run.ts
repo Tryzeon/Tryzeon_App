@@ -18,6 +18,7 @@ import {
   type ImageUploader,
   type ProductResolver,
   type QuotaFactory,
+  type ResolvedGarment,
   type TryonClients,
   type TryonMode,
   type TryonParams,
@@ -73,9 +74,11 @@ export async function runTryonJob<M extends TryonMode>(
   try {
     // Stage 1: resolve product refs to concrete garment material. Uses the
     // privileged admin client — resolveProductGarment is the gatekeeper, so a
-    // client can only reach a real product's stores/ image, never an arbitrary
-    // object. User-supplied material passes through untouched.
-    const materialGarments = await Promise.all(
+    // client can only reach a real product's image, never an arbitrary object.
+    // User-supplied material passes through untouched, which is also why this
+    // is the only stage that can attach a `detail`: the description reaching
+    // the model is built here or not at all.
+    const materialGarments: ResolvedGarment[] = await Promise.all(
       job.garments.map((g) =>
         isGarmentRef(g) ? resolveProduct(clients.admin, g.productId) : g
       ),

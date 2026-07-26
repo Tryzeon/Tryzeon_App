@@ -41,6 +41,7 @@ export type {
   GarmentMaterial,
   GarmentRef,
   ImageSource,
+  ResolvedGarment,
   TryonClients,
   TryonMode,
   TryonParams,

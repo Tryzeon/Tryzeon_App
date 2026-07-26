@@ -32,12 +32,9 @@ function decodeGarment(raw: unknown): GarmentInput {
     throw new ValidationError("each garment must be an object");
   }
   const r = raw as Record<string, unknown>;
-  if ("productId" in r) {
-    return { productId: r.productId as string };
-  }
-  const images = r.images as ImageSource[];
-  const detail = normalizeText(r.detail);
-  return detail === undefined ? { images } : { images, detail };
+  return "productId" in r
+    ? { productId: r.productId as string }
+    : { images: r.images as ImageSource[] };
 }
 
 /**

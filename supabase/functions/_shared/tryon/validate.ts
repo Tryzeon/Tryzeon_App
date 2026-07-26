@@ -82,17 +82,12 @@ function validateGarment(garment: GarmentInput): GarmentInput {
       `too many images for a garment (max ${LIMITS.MAX_IMAGES_PER_GARMENT})`,
     );
   }
-  assertOptionalText(
-    garment.detail,
-    "garment detail",
-    LIMITS.MAX_GARMENT_DETAIL_LENGTH,
-  );
-  const images = garment.images.map((img) =>
-    requireImageSource(img, "garment image")
-  );
-  return garment.detail === undefined
-    ? { images }
-    : { images, detail: garment.detail };
+  // No `detail` to check: a caller cannot supply one. The only description a
+  // job carries is the product text `resolveProductGarment` attaches after this
+  // guard has run, which is capped where it is built.
+  return {
+    images: garment.images.map((img) => requireImageSource(img, "garment image")),
+  };
 }
 
 /**

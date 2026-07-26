@@ -1,7 +1,7 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { fetchImageAsBase64 } from "../image-utils.ts";
 import type { SupabaseImageBucket } from "../storage.ts";
-import type { GarmentMaterial, ImageSource } from "./types.ts";
+import type { ImageSource, ResolvedGarment } from "./types.ts";
 
 /**
  * Loads one image source into the base64 bytes the model consumes. "Resolve"
@@ -31,7 +31,7 @@ export function makeSourceLoader(
  * order. All sources load concurrently (one wave, not per-garment).
  */
 export function loadGarments(
-  garments: GarmentMaterial[],
+  garments: ResolvedGarment[],
   load: SourceLoader,
 ): Promise<string[][]> {
   return Promise.all(

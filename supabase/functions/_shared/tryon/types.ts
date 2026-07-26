@@ -19,6 +19,19 @@ export interface GarmentRef {
 /** A garment described directly by the user's own image sources. */
 export interface GarmentMaterial {
   images: ImageSource[];
+}
+
+/**
+ * Garment material as the model will finally see it: the sources, plus the
+ * description built for a catalog product.
+ *
+ * `detail` lives here and not on `GarmentMaterial` because nothing outside the
+ * server produces one. Leaving the field on the input type would advertise a
+ * way to write arbitrary text into the prompt that no caller uses and no client
+ * should have; here, the only thing that can set it is `resolveProductGarment`,
+ * which runs after validation.
+ */
+export interface ResolvedGarment extends GarmentMaterial {
   detail?: string;
 }
 
@@ -165,4 +178,4 @@ export type VideoUploader = (
 export type ProductResolver = (
   admin: SupabaseClient,
   productId: string,
-) => Promise<GarmentMaterial>;
+) => Promise<ResolvedGarment>;
