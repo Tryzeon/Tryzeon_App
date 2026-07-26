@@ -52,9 +52,9 @@ export function buildTaskPrompt(
   scenePrompt?: string,
   garmentDetails?: (string | undefined)[],
 ): string {
-  const totalClothes = garmentGroups.reduce((a, g) => a + g.length, 0);
+  const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt =
-    `You will receive ${totalClothes + 1} images after this message:
+    `You will receive ${totalGarmentImages + 1} images after this message:
 1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
 ${buildGarmentManifest(garmentGroups)}
