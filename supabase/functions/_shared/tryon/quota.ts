@@ -1,12 +1,12 @@
 /**
- * Default `QuotaPort`: the Supabase daily-usage RPC pair.
+ * Try-on's `QuotaFactory`: pick the counter this mode is charged against, and
+ * open it through the shared Supabase port.
  *
- * This module is the only place the core's charge/refund vocabulary meets
- * `increment_feature_usage` / `decrement_feature_usage`, so the orchestrator no
- * longer depends on that RPC's payload shape and a test can substitute the
- * counter the same way it substitutes the generator or the uploader.
+ * The RPC pair behind that port belongs to `_shared/quota.ts`; what is try-on's
+ * is only the mapping below, which is the whole reason the factory is a
+ * per-feature module at all.
  */
-import { type FeatureName, QuotaManager } from "../quota.ts";
+import { type FeatureName, supabaseQuotaPort } from "../quota.ts";
 import type { QuotaFactory, TryonMode } from "./types.ts";
 
 /**
@@ -19,10 +19,5 @@ const FEATURE_BY_MODE: Record<TryonMode, FeatureName> = {
   video: "tryon_video",
 };
 
-export const supabaseQuota: QuotaFactory = (admin, userId, mode) => {
-  const manager = new QuotaManager(admin, userId, FEATURE_BY_MODE[mode]);
-  return {
-    charge: () => manager.incrementQuota(),
-    refund: () => manager.rollbackQuota(),
-  };
-};
+export const supabaseQuota: QuotaFactory = (admin, userId, mode) =>
+  supabaseQuotaPort(admin, userId, FEATURE_BY_MODE[mode]);

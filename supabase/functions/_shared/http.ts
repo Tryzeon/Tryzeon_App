@@ -1,4 +1,5 @@
 // Shared JSON HTTP response helpers for Edge Functions.
+import type { CoreErrorInfo } from "./errors.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" } as const;
 
@@ -24,4 +25,21 @@ export function jsonRateLimited(usage?: unknown): Response {
       : { error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED", usage },
     429,
   );
+}
+
+/**
+ * The canonical HTTP rendering of the shared core failure kinds, so one error
+ * class can never grow two status codes across features. It takes the
+ * classified info rather than the raw error: a feature with arms of its own
+ * renders those and delegates the rest here, and doing that through the same
+ * exhaustive switch is what makes a new shared kind a compile error everywhere
+ * instead of a silent 500.
+ */
+export function coreErrorResponse(info: CoreErrorInfo): Response {
+  switch (info.kind) {
+    case "validation":
+      return jsonError(info.message, "VALIDATION_ERROR", 400);
+    case "quota":
+      return jsonRateLimited(info.usage);
+  }
 }

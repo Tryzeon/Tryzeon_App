@@ -1,5 +1,5 @@
 /**
- * Try-on error taxonomy and its single classification point.
+ * Try-on's error taxonomy: the shared kinds, plus the one try-on adds.
  *
  * The core is transport-agnostic: it raises these classes and never decides
  * what a caller should show. `classifyTryonError` is the one place that maps an
@@ -7,40 +7,31 @@
  * (HTTP responses, LINE push messages, anything later) renders from the same
  * classification instead of growing its own `instanceof` chain.
  *
- * Running out of quota is not a try-on failure mode — it is the shared
- * counter's, raised identically for chat — so that class is owned by
- * `_shared/quota.ts` and merely classified here. A rejected input is shared for
- * the same reason and comes from `_shared/validation.ts`; it is re-exported so
- * this module still reads as the one list of what a try-on job can raise.
+ * Only `generation` is try-on's. A rejected input and a spent quota are raised
+ * identically by every feature, so both the classes and the arms narrowing them
+ * belong to `_shared/validation.ts`, `_shared/quota.ts` and
+ * `_shared/errors.ts`; this module layers its own arm over them and delegates
+ * the rest, and re-exports `ValidationError` so it still reads as the one list
+ * of what a try-on job can raise.
  */
 
-import { type DailyUsage, QuotaExceededError } from "../quota.ts";
+import { classifyCoreError, type CoreErrorInfo } from "../errors.ts";
 
 export { ValidationError } from "../validation.ts";
-import { ValidationError } from "../validation.ts";
 
 export class GenerationFailedError extends Error {}
 
 /**
  * A core error narrowed to its kind, carrying exactly the payload a caller
- * needs to render it. Adding a case here forces every consumer's exhaustive
- * switch to handle it.
+ * needs to render it. Adding a case here — or to {@link CoreErrorInfo} —
+ * forces every consumer's exhaustive switch to handle it.
  */
-export type TryonErrorInfo =
-  | { kind: "validation"; message: string }
-  | { kind: "quota"; usage: DailyUsage | null }
-  | { kind: "generation" };
+export type TryonErrorInfo = CoreErrorInfo | { kind: "generation" };
 
 /** Classifies a core error, or returns null when it did not come from the core. */
 export function classifyTryonError(err: unknown): TryonErrorInfo | null {
-  if (err instanceof ValidationError) {
-    return { kind: "validation", message: err.message };
-  }
-  if (err instanceof QuotaExceededError) {
-    return { kind: "quota", usage: err.usage };
-  }
   if (err instanceof GenerationFailedError) {
     return { kind: "generation" };
   }
-  return null;
+  return classifyCoreError(err);
 }

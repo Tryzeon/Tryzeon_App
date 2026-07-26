@@ -7,14 +7,15 @@
  * for this reaches past the core's public surface deliberately — that deep
  * import is the signal it is taking on a transport concern.
  *
- * Every HTTP entry point (app, LIFF) shares it, so one error class can never
- * grow two different status codes or bodies. Non-HTTP adapters (line-webhook)
- * render the same `classifyTryonError` result their own way instead of
- * re-deriving the taxonomy. Callers keep their own handling for non-core errors
- * and for transport concerns such as CORS.
+ * It renders only try-on's own kind; the shared ones go to `coreErrorResponse`
+ * so a validation error cannot answer 400 here and something else elsewhere.
+ * Every HTTP entry point (app, LIFF) shares this, and non-HTTP adapters
+ * (line-webhook) render the same `classifyTryonError` result their own way
+ * instead of re-deriving the taxonomy. Callers keep their own handling for
+ * non-core errors and for transport concerns such as CORS.
  */
-import { jsonError, jsonRateLimited } from "../http.ts";
-import { classifyTryonError } from "./index.ts";
+import { coreErrorResponse, jsonError } from "../http.ts";
+import { classifyTryonError } from "./errors.ts";
 
 /** Maps a core error to its canonical response, or null if it isn't a core error. */
 export function tryonErrorResponse(err: unknown): Response | null {
@@ -22,11 +23,10 @@ export function tryonErrorResponse(err: unknown): Response | null {
   if (info === null) return null;
 
   switch (info.kind) {
-    case "validation":
-      return jsonError(info.message, "VALIDATION_ERROR", 400);
-    case "quota":
-      return jsonRateLimited(info.usage);
     case "generation":
       return jsonError("Image generation failed", "AI_GENERATION_FAILED", 422);
+    case "validation":
+    case "quota":
+      return coreErrorResponse(info);
   }
 }

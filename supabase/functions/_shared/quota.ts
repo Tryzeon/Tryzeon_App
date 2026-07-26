@@ -46,9 +46,9 @@ export class QuotaExceededError extends Error {
  * depending on its payload. It lives here rather than in either feature for the
  * same reason {@link QuotaExceededError} does: the contract is the counter's,
  * and try-on and chat charging through two structurally identical interfaces
- * could only ever differ by accident. Each feature still declares its own
- * factory, because what identifies a counter differs (try-on has a mode, chat
- * does not).
+ * could only ever differ by accident. {@link supabaseQuotaPort} satisfies it;
+ * each feature still declares its own factory, because what identifies a
+ * counter differs (try-on has a mode, chat does not).
  */
 export interface QuotaPort {
   charge(): Promise<{ allowed: boolean; usage: DailyUsage | null }>;
@@ -176,4 +176,28 @@ export class QuotaManager {
   get isQuotaIncremented(): boolean {
     return this.quotaIncremented;
   }
+}
+
+/**
+ * The default {@link QuotaPort}: one user's counter for one feature, backed by
+ * the `increment_feature_usage` / `decrement_feature_usage` RPC pair.
+ *
+ * This is the only place a core's charge/refund vocabulary meets those RPC
+ * names, so no orchestrator depends on their payload shape and a test can
+ * substitute the counter the way it substitutes any other port. It lives beside
+ * the port it satisfies rather than in a feature, because the adaptation is the
+ * counter's and not any one caller's — a feature contributes only which counter
+ * to charge, which is why each still declares its own factory (try-on derives
+ * the feature from a mode, chat has exactly one).
+ */
+export function supabaseQuotaPort(
+  adminClient: SupabaseClient,
+  userId: string,
+  featureName: FeatureName,
+): QuotaPort {
+  const manager = new QuotaManager(adminClient, userId, featureName);
+  return {
+    charge: () => manager.incrementQuota(),
+    refund: () => manager.rollbackQuota(),
+  };
 }
