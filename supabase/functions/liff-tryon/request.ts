@@ -1,4 +1,7 @@
-export class ValidationError extends Error {}
+// The LIFF web app's wire format. Decoding uses the core's `requireString` and
+// `ValidationError`, so a body-parse failure and a core resolution failure are
+// the same class, both reach `tryonErrorResponse`, and both map to one 400.
+import { requireString, ValidationError } from "../_shared/tryon/index.ts";
 
 export interface LiffTryonBody {
   idToken: string;
@@ -6,14 +9,19 @@ export interface LiffTryonBody {
   productId: string;
 }
 
-function requireString(value: unknown, label: string): string {
-  if (typeof value !== "string" || value.length === 0) {
-    throw new ValidationError(`${label} is required`);
+/**
+ * Decode the raw request body. Owns `JSON.parse` for the same reason the app's
+ * parser does: malformed JSON is a malformed request, not an unclassified
+ * fault, so it raises a ValidationError and lands on 400 like every other bad
+ * body — previously it escaped as a SyntaxError and became a 500.
+ */
+export function parseLiffTryonBody(rawBody: string): LiffTryonBody {
+  let body: unknown;
+  try {
+    body = JSON.parse(rawBody);
+  } catch {
+    throw new ValidationError("body must be valid JSON");
   }
-  return value;
-}
-
-export function parseLiffTryonBody(body: unknown): LiffTryonBody {
   if (typeof body !== "object" || body === null) {
     throw new ValidationError("body must be an object");
   }
@@ -25,11 +33,3 @@ export function parseLiffTryonBody(body: unknown): LiffTryonBody {
   };
 }
 
-export function corsHeaders(): Record<string, string> {
-  const origin = Deno.env.get("LIFF_WEB_ORIGIN") ?? "*";
-  return {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  };
-}
