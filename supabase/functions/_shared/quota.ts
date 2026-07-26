@@ -156,7 +156,7 @@ export class QuotaManager {
   async rollbackQuota(): Promise<void> {
     if (!this.quotaIncremented) return;
 
-    const { success, error } = await rollbackFeatureUsage(
+    const { error } = await rollbackFeatureUsage(
       this.adminClient,
       this.userId,
       this.featureName
