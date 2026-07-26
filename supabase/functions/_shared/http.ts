@@ -1,5 +1,5 @@
 // Shared JSON HTTP response helpers for Edge Functions.
-import type { CoreErrorInfo } from "./errors.ts";
+import { CORE_ERROR_CODE, type CoreErrorInfo } from "./errors.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" } as const;
 
@@ -19,10 +19,11 @@ export function jsonError(message: string, code: string, status: number): Respon
  * `usage` to include quota details.
  */
 export function jsonRateLimited(usage?: unknown): Response {
+  const code = CORE_ERROR_CODE.quota;
   return json(
     usage === undefined
-      ? { error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }
-      : { error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED", usage },
+      ? { error: "Rate limit exceeded", code }
+      : { error: "Rate limit exceeded", code, usage },
     429,
   );
 }
@@ -38,7 +39,7 @@ export function jsonRateLimited(usage?: unknown): Response {
 export function coreErrorResponse(info: CoreErrorInfo): Response {
   switch (info.kind) {
     case "validation":
-      return jsonError(info.message, "VALIDATION_ERROR", 400);
+      return jsonError(info.message, CORE_ERROR_CODE.validation, 400);
     case "quota":
       return jsonRateLimited(info.usage);
   }

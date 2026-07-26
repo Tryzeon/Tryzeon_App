@@ -1,15 +1,8 @@
 import { assertEquals } from "jsr:@std/assert";
 import { classifyCoreError } from "./errors.ts";
 import { ValidationError } from "./validation.ts";
-import { type DailyUsage, QuotaExceededError } from "./quota.ts";
-
-const USAGE: DailyUsage = {
-  user_id: "u1",
-  usage_date: "2026-07-26",
-  tryon_count: 0,
-  chat_count: 5,
-  video_count: 0,
-};
+import { QuotaExceededError } from "./quota.ts";
+import { SAMPLE_USAGE } from "./quota.testing.ts";
 
 Deno.test("classifyCoreError carries the message for validation errors", () => {
   assertEquals(classifyCoreError(new ValidationError("messages must be an array")), {
@@ -19,9 +12,9 @@ Deno.test("classifyCoreError carries the message for validation errors", () => {
 });
 
 Deno.test("classifyCoreError carries usage for quota errors", () => {
-  assertEquals(classifyCoreError(new QuotaExceededError(USAGE)), {
+  assertEquals(classifyCoreError(new QuotaExceededError(SAMPLE_USAGE)), {
     kind: "quota",
-    usage: USAGE,
+    usage: SAMPLE_USAGE,
   });
 });
 

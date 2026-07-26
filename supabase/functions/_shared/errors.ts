@@ -30,6 +30,11 @@ export type CoreErrorInfo =
   | { kind: "validation"; message: string }
   | { kind: "quota"; usage: DailyUsage | null };
 
+export const CORE_ERROR_CODE: Record<CoreErrorInfo["kind"], string> = {
+  validation: "VALIDATION_ERROR",
+  quota: "RATE_LIMIT_EXCEEDED",
+};
+
 /** Classifies a shared error, or returns null when it is neither. */
 export function classifyCoreError(err: unknown): CoreErrorInfo | null {
   if (err instanceof ValidationError) {
