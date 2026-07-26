@@ -2,7 +2,13 @@ import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 export type FeatureName = "chat" | "tryon" | "tryon_video";
 
-export interface DailyUsageRow {
+/**
+ * One user's counters for one day — every feature's, not the charging one's.
+ * Any charge returns the whole set and clients sync a single usage cache from
+ * it, so this travels to them verbatim: it is the shape this module publishes,
+ * which is why it is no longer named after the table it happens to be stored in.
+ */
+export interface DailyUsage {
   user_id: string;
   usage_date: string;
   tryon_count: number;
@@ -12,7 +18,7 @@ export interface DailyUsageRow {
 
 export interface IncrementResult {
   success: boolean;
-  usage: DailyUsageRow | null;
+  usage: DailyUsage | null;
   error?: any;
 }
 
@@ -25,7 +31,7 @@ export interface IncrementResult {
  * way, so two classes could only ever differ by accident.
  */
 export class QuotaExceededError extends Error {
-  constructor(public readonly usage: DailyUsageRow | null) {
+  constructor(public readonly usage: DailyUsage | null) {
     super("quota exceeded");
   }
 }
@@ -49,9 +55,9 @@ export async function incrementFeatureUsage(
     return { success: false, usage: null, error };
   }
 
-  // RPC returns: { allowed: boolean, usage: DailyUsageRow | null }
+  // RPC returns: { allowed: boolean, usage: DailyUsage | null }
   const allowed = Boolean(data?.allowed);
-  const usage = (data?.usage ?? null) as DailyUsageRow | null;
+  const usage = (data?.usage ?? null) as DailyUsage | null;
   return { success: allowed, usage };
 }
 
@@ -106,7 +112,7 @@ export class QuotaManager {
    * Increments quota and returns both the allow/reject flag and the
    * post-mutation row (or current row when rejected).
    */
-  async incrementQuota(): Promise<{ allowed: boolean; usage: DailyUsageRow | null }> {
+  async incrementQuota(): Promise<{ allowed: boolean; usage: DailyUsage | null }> {
     const { success, usage, error } = await incrementFeatureUsage(
       this.adminClient,
       this.userId,

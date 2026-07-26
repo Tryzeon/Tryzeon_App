@@ -1,5 +1,5 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { DailyUsageRow } from "../quota.ts";
+import { DailyUsage } from "../quota.ts";
 import type { ChatMessage, ContentBlock } from "./logic.ts";
 
 /**
@@ -30,6 +30,6 @@ export interface ChatResult {
   /** Ordered answer blocks (text / product / wardrobe) to render. */
   blocks: ContentBlock[];
   /** Post-increment quota row, echoed so callers can sync usage UI. */
-  usage: DailyUsageRow | null;
+  usage: DailyUsage | null;
 }
 
