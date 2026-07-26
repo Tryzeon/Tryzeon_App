@@ -1,30 +1,50 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { runTryonJob } from "./run.ts";
-import {
-  GenerationFailedError,
-  QuotaExceededError,
-  type TryonClients,
-  type TryonParams,
+import { GenerationFailedError } from "./errors.ts";
+import { type DailyUsage, QuotaExceededError } from "../quota.ts";
+import type {
+  QuotaFactory,
+  TryonClients,
+  TryonMode,
+  TryonParams,
 } from "./types.ts";
 
-// Fake admin client: records which quota RPCs were called and returns a
-// scripted allow/reject for increment_feature_usage.
-function fakeAdmin(allowed: boolean) {
+const USAGE: DailyUsage = {
+  user_id: "u1",
+  usage_date: "2026-07-26",
+  tryon_count: 1,
+  chat_count: 0,
+  video_count: 0,
+};
+
+// The clients are opaque to the job now that quota goes through a port: nothing
+// in these tests reaches Supabase, so an empty object is an honest stand-in.
+const clients = {
+  admin: {},
+  materials: {},
+} as unknown as TryonClients;
+
+/**
+ * Fake `QuotaPort` recording the charge/refund sequence and the mode it was
+ * opened with, with a scripted allow/reject.
+ */
+function fakeQuota(allowed = true) {
   const calls: string[] = [];
-  const client = {
-    rpc(fn: string) {
-      calls.push(fn);
-      if (fn === "increment_feature_usage") {
-        return Promise.resolve({
-          data: { allowed, usage: { tryon_count: 1 } },
-          error: null,
-        });
-      }
-      // decrement_feature_usage (rollback)
-      return Promise.resolve({ data: true, error: null });
-    },
+  const modes: TryonMode[] = [];
+  const factory: QuotaFactory = (_admin, _userId, mode) => {
+    modes.push(mode);
+    return {
+      charge() {
+        calls.push("charge");
+        return Promise.resolve({ allowed, usage: USAGE });
+      },
+      refund() {
+        calls.push("refund");
+        return Promise.resolve();
+      },
+    };
   };
-  return { client: client as unknown as TryonClients["admin"], calls };
+  return { factory, calls, modes };
 }
 
 const imageParams: TryonParams = {
@@ -34,66 +54,247 @@ const imageParams: TryonParams = {
   mode: "image",
 };
 
-Deno.test("image mode returns imageUrl and does not call video", async () => {
-  const { client } = fakeAdmin(true);
+Deno.test("image mode uploads the generated image and does not call video", async () => {
+  const quota = fakeQuota();
   let videoCalled = false;
-  const result = await runTryonJob({ admin: client }, imageParams, {
+  let uploadedKey = "";
+  const result = await runTryonJob(clients, imageParams, {
+    quota: quota.factory,
     generate: () => Promise.resolve("GENERATEDB64"),
-    upload: () => Promise.resolve("https://img/result.png"),
+    upload: (_bytes, fileName) => {
+      uploadedKey = fileName;
+      return Promise.resolve("https://img/result.png");
+    },
     generateVideo: () => {
       videoCalled = true;
-      return Promise.resolve("https://vid/x.mp4");
+      return Promise.resolve(new Uint8Array());
     },
     now: () => 123,
   });
   assertEquals(result, {
     kind: "image",
     imageUrl: "https://img/result.png",
-    usage: { tryon_count: 1 },
+    usage: USAGE,
   });
+  assertEquals(uploadedKey, "u1/tryon-123.jpg");
   assertEquals(videoCalled, false);
+  assertEquals(quota.calls, ["charge"]);
+  assertEquals(quota.modes, ["image"]);
 });
 
-Deno.test("video mode returns videoUrl and does not upload an image", async () => {
-  const { client } = fakeAdmin(true);
-  let uploadCalled = false;
+Deno.test("video mode uploads the generated video bytes, not an image", async () => {
+  const quota = fakeQuota();
+  let imageUploadCalled = false;
+  let uploadedKey = "";
+  let uploadedBytes: number[] = [];
   const result = await runTryonJob(
-    { admin: client },
+    clients,
     { ...imageParams, mode: "video", transitionPrompt: "spin" },
     {
+      quota: quota.factory,
       generate: () => Promise.resolve("GENERATEDB64"),
       upload: () => {
-        uploadCalled = true;
+        imageUploadCalled = true;
         return Promise.resolve("https://img/should-not-happen.png");
       },
-      generateVideo: () => Promise.resolve("https://vid/x.mp4"),
+      generateVideo: () => Promise.resolve(new Uint8Array([1, 2, 3])),
+      uploadVideo: (bytes, fileName) => {
+        uploadedBytes = Array.from(bytes);
+        uploadedKey = fileName;
+        return Promise.resolve("https://vid/x.mp4");
+      },
+      now: () => 456,
     },
   );
   assertEquals(result, {
     kind: "video",
     videoUrl: "https://vid/x.mp4",
-    usage: { tryon_count: 1 },
+    usage: USAGE,
   });
-  assertEquals(uploadCalled, false);
+  assertEquals(uploadedKey, "u1/tryon-456.mp4");
+  assertEquals(uploadedBytes, [1, 2, 3]);
+  assertEquals(imageUploadCalled, false);
+});
+
+Deno.test("video mode opens the quota counter for the video feature", async () => {
+  const quota = fakeQuota();
+  await runTryonJob(clients, { ...imageParams, mode: "video" }, {
+    quota: quota.factory,
+    generate: () => Promise.resolve("GENERATEDB64"),
+    generateVideo: () => Promise.resolve(new Uint8Array([1])),
+    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+    now: () => 1,
+  });
+  assertEquals(quota.modes, ["video"]);
+});
+
+Deno.test("video mode passes the transition prompt to the generator", async () => {
+  const quota = fakeQuota();
+  let seenPrompt: string | undefined;
+  await runTryonJob(
+    clients,
+    { ...imageParams, mode: "video", transitionPrompt: "spin" },
+    {
+      quota: quota.factory,
+      generate: () => Promise.resolve("GENERATEDB64"),
+      generateVideo: (_image, transitionPrompt) => {
+        seenPrompt = transitionPrompt;
+        return Promise.resolve(new Uint8Array([1]));
+      },
+      uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+      now: () => 1,
+    },
+  );
+  assertEquals(seenPrompt, "spin");
+});
+
+Deno.test("the job runs on validated params, not the raw input", async () => {
+  const quota = fakeQuota();
+  let seenAvatar = "";
+  await runTryonJob(
+    clients,
+    {
+      ...imageParams,
+      // A blank second key survives the wire but must not reach the loader.
+      avatar: { base64: "AVATAR", path: "" } as unknown as TryonParams["avatar"],
+    },
+    {
+      quota: quota.factory,
+      generate: (avatarBase64) => {
+        seenAvatar = avatarBase64;
+        return Promise.resolve("GENERATEDB64");
+      },
+      upload: () => Promise.resolve("https://img/result.png"),
+      now: () => 1,
+    },
+  );
+  assertEquals(seenAvatar, "AVATAR");
+});
+
+Deno.test("invalid params are rejected before quota is charged", async () => {
+  const quota = fakeQuota();
+  await assertRejects(
+    () =>
+      runTryonJob(clients, { ...imageParams, garments: [] }, {
+        quota: quota.factory,
+      }),
+    Error,
+  );
+  assertEquals(quota.calls, []);
 });
 
 Deno.test("quota rejection throws QuotaExceededError with usage", async () => {
-  const { client } = fakeAdmin(false);
+  const quota = fakeQuota(false);
   const err = await assertRejects(
-    () => runTryonJob({ admin: client }, imageParams),
+    () => runTryonJob(clients, imageParams, { quota: quota.factory }),
     QuotaExceededError,
   );
-  assertEquals(err.usage, { tryon_count: 1 });
+  assertEquals(err.usage, USAGE);
 });
 
-Deno.test("null generation throws GenerationFailedError and rolls back quota", async () => {
-  const { client, calls } = fakeAdmin(true);
+Deno.test("null generation throws GenerationFailedError and refunds quota", async () => {
+  const quota = fakeQuota();
   await assertRejects(
     () =>
-      runTryonJob({ admin: client }, imageParams, {
+      runTryonJob(clients, imageParams, {
+        quota: quota.factory,
         generate: () => Promise.resolve(null),
       }),
     GenerationFailedError,
   );
-  assertEquals(calls.includes("decrement_feature_usage"), true);
+  assertEquals(quota.calls, ["charge", "refund"]);
+});
+
+Deno.test("a failed refund does not mask the original error", async () => {
+  // Refund throws on top of the real failure; the caller must still see the
+  // failure that actually caused the job to abort.
+  const quota: QuotaFactory = () => ({
+    charge: () => Promise.resolve({ allowed: true, usage: USAGE }),
+    refund: () => Promise.reject(new Error("refund exploded")),
+  });
+
+  const err = await assertRejects(
+    () =>
+      runTryonJob(clients, imageParams, {
+        quota,
+        generate: () => Promise.resolve(null),
+      }),
+    GenerationFailedError,
+  );
+  assertEquals(err.message, "image generation returned null");
+});
+
+Deno.test("product-ref garments are resolved before loading", async () => {
+  const quota = fakeQuota();
+  const seenGarmentB64: string[] = [];
+  const result = await runTryonJob(
+    clients,
+    {
+      userId: "u1",
+      avatar: { base64: "AVATAR" },
+      garments: [{ productId: "11111111-1111-1111-1111-111111111111" }],
+      mode: "image",
+    },
+    {
+      quota: quota.factory,
+      resolveProduct: () =>
+        Promise.resolve({ images: [{ base64: "PRODUCTB64" }], detail: "Product: X" }),
+      generate: (_avatar, garmentGroups) => {
+        seenGarmentB64.push(...garmentGroups.flat());
+        return Promise.resolve("GENERATEDB64");
+      },
+      upload: () => Promise.resolve("https://img/result.png"),
+      now: () => 123,
+    },
+  );
+  assertEquals(result.kind, "image");
+  assertEquals(seenGarmentB64, ["PRODUCTB64"]);
+});
+
+Deno.test("resolved product detail reaches the generator", async () => {
+  const quota = fakeQuota();
+  let seenDetails: (string | undefined)[] | undefined;
+  await runTryonJob(
+    clients,
+    {
+      userId: "u1",
+      avatar: { base64: "AVATAR" },
+      garments: [{ productId: "11111111-1111-1111-1111-111111111111" }],
+      mode: "image",
+    },
+    {
+      quota: quota.factory,
+      resolveProduct: () =>
+        Promise.resolve({ images: [{ base64: "P" }], detail: "Product: X" }),
+      generate: (_avatar, _groups, _scene, garmentDetails) => {
+        seenDetails = garmentDetails;
+        return Promise.resolve("GENERATEDB64");
+      },
+      upload: () => Promise.resolve("https://img/result.png"),
+      now: () => 123,
+    },
+  );
+  assertEquals(seenDetails, ["Product: X"]);
+});
+
+Deno.test("product resolution failure refunds quota", async () => {
+  const quota = fakeQuota();
+  await assertRejects(
+    () =>
+      runTryonJob(
+        clients,
+        {
+          userId: "u1",
+          avatar: { base64: "AVATAR" },
+          garments: [{ productId: "bad" }],
+          mode: "image",
+        },
+        {
+          quota: quota.factory,
+          resolveProduct: () => Promise.reject(new Error("no product")),
+        },
+      ),
+    Error,
+  );
+  assertEquals(quota.calls, ["charge", "refund"]);
 });

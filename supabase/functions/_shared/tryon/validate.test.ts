@@ -1,6 +1,12 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { assertTryonParams, parseTryonParams } from "./validate.ts";
-import { LIMITS, ValidationError, type TryonParams } from "./types.ts";
+import {
+  normalizeText,
+  requireImageSource,
+  requireString,
+  validateTryonParams,
+} from "./validate.ts";
+import { ValidationError } from "./errors.ts";
+import { LIMITS, type TryonParams } from "./types.ts";
 
 const validParams: TryonParams = {
   userId: "u1",
@@ -9,29 +15,37 @@ const validParams: TryonParams = {
   mode: "image",
 };
 
-Deno.test("assertTryonParams accepts valid params", () => {
-  assertTryonParams(validParams); // does not throw
+Deno.test("validateTryonParams accepts valid params", () => {
+  validateTryonParams(validParams); // does not throw
 });
 
-Deno.test("assertTryonParams rejects empty garments", () => {
+Deno.test("validateTryonParams rejects an empty userId", () => {
   assertThrows(
-    () => assertTryonParams({ ...validParams, garments: [] }),
+    () => validateTryonParams({ ...validParams, userId: "" }),
+    ValidationError,
+    "userId",
+  );
+});
+
+Deno.test("validateTryonParams rejects empty garments", () => {
+  assertThrows(
+    () => validateTryonParams({ ...validParams, garments: [] }),
     ValidationError,
   );
 });
 
-Deno.test("assertTryonParams rejects too many garments", () => {
+Deno.test("validateTryonParams rejects too many garments", () => {
   const g = { images: [{ base64: "X" }] };
   assertThrows(
-    () => assertTryonParams({ ...validParams, garments: [g, g, g, g] }),
+    () => validateTryonParams({ ...validParams, garments: [g, g, g, g] }),
     ValidationError,
   );
 });
 
-Deno.test("assertTryonParams rejects too many images in a garment", () => {
+Deno.test("validateTryonParams rejects too many images in a garment", () => {
   assertThrows(
     () =>
-      assertTryonParams({
+      validateTryonParams({
         ...validParams,
         garments: [{
           images: [{ base64: "1" }, { base64: "2" }, { base64: "3" }, { base64: "4" }],
@@ -41,69 +55,18 @@ Deno.test("assertTryonParams rejects too many images in a garment", () => {
   );
 });
 
-Deno.test("assertTryonParams rejects a source with both path and base64", () => {
+Deno.test("validateTryonParams rejects a source with both path and base64", () => {
   assertThrows(
     () =>
-      assertTryonParams({ ...validParams, avatar: { path: "p", base64: "b" } }),
+      validateTryonParams({ ...validParams, avatar: { path: "p", base64: "b" } }),
     ValidationError,
   );
 });
 
-Deno.test("parseTryonParams shapes wire body, coerces mode, attaches userId", () => {
-  const params = parseTryonParams(
-    {
-      avatar: { path: "u1/a.jpg" },
-      garments: [{ images: [{ path: "u1/top/x.jpg" }] }],
-      mode: "video",
-      transitionPrompt: "spin",
-    },
-    "u1",
-  );
-  assertEquals(params.userId, "u1");
-  assertEquals(params.mode, "video");
-  assertEquals(params.avatar, { path: "u1/a.jpg" });
-  assertEquals(params.garments, [{ images: [{ path: "u1/top/x.jpg" }] }]);
-  assertEquals(params.transitionPrompt, "spin");
-});
-
-Deno.test("parseTryonParams keeps a trimmed garment detail", () => {
-  const params = parseTryonParams(
-    {
-      avatar: { base64: "A" },
-      garments: [{ images: [{ base64: "B" }], detail: "  Material: Cotton  " }],
-    },
-    "u1",
-  );
-  assertEquals(params.garments[0].detail, "Material: Cotton");
-});
-
-Deno.test("parseTryonParams drops a blank garment detail", () => {
-  const params = parseTryonParams(
-    {
-      avatar: { base64: "A" },
-      garments: [{ images: [{ base64: "B" }], detail: "   " }],
-    },
-    "u1",
-  );
-  assertEquals(params.garments[0].detail, undefined);
-});
-
-Deno.test("parseTryonParams caps garment detail length", () => {
-  const long = "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 50);
-  const params = parseTryonParams(
-    {
-      avatar: { base64: "A" },
-      garments: [{ images: [{ base64: "B" }], detail: long }],
-    },
-    "u1",
-  );
-  assertEquals(params.garments[0].detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
-});
-
-Deno.test("assertTryonParams rejects a non-string garment detail", () => {
+Deno.test("validateTryonParams rejects a non-string garment detail", () => {
   assertThrows(
     () =>
-      assertTryonParams({
+      validateTryonParams({
         ...validParams,
         garments: [
           { images: [{ base64: "B" }], detail: 42 as unknown as string },
@@ -113,14 +76,154 @@ Deno.test("assertTryonParams rejects a non-string garment detail", () => {
   );
 });
 
-Deno.test("parseTryonParams defaults unknown mode to image", () => {
-  const params = parseTryonParams(
-    { avatar: { base64: "A" }, garments: [{ images: [{ base64: "B" }] }] },
-    "u1",
-  );
-  assertEquals(params.mode, "image");
+Deno.test("validateTryonParams accepts a product-ref garment", () => {
+  validateTryonParams({
+    ...validParams,
+    garments: [{ productId: "33333333-3333-3333-3333-333333333333" }],
+  }); // does not throw
 });
 
-Deno.test("parseTryonParams rejects non-object body", () => {
-  assertThrows(() => parseTryonParams(null, "u1"), ValidationError);
+Deno.test("validateTryonParams rejects an empty productId", () => {
+  assertThrows(
+    () => validateTryonParams({ ...validParams, garments: [{ productId: "" }] }),
+    ValidationError,
+  );
+});
+
+Deno.test("validateTryonParams rejects a non-string productId with a productId error", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        garments: [{ productId: 123 as unknown as string }],
+      }),
+    ValidationError,
+    "productId",
+  );
+});
+
+Deno.test("validateTryonParams rejects an invalid mode", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        mode: "gif" as unknown as TryonParams["mode"],
+      }),
+    ValidationError,
+    "mode",
+  );
+});
+
+Deno.test("validateTryonParams rejects an overlong garment detail", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        garments: [{
+          images: [{ base64: "B" }],
+          detail: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 1),
+        }],
+      }),
+    ValidationError,
+    "detail",
+  );
+});
+
+Deno.test("validateTryonParams accepts a garment detail exactly at the limit", () => {
+  validateTryonParams({
+    ...validParams,
+    garments: [{
+      images: [{ base64: "B" }],
+      detail: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH),
+    }],
+  }); // does not throw
+});
+
+Deno.test("validateTryonParams rejects an overlong scenePrompt", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        scenePrompt: "x".repeat(LIMITS.MAX_PROMPT_LENGTH + 1),
+      }),
+    ValidationError,
+    "scenePrompt",
+  );
+});
+
+Deno.test("validateTryonParams rejects an overlong transitionPrompt", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        mode: "video",
+        transitionPrompt: "x".repeat(LIMITS.MAX_PROMPT_LENGTH + 1),
+      }),
+    ValidationError,
+    "transitionPrompt",
+  );
+});
+
+Deno.test("validateTryonParams returns params with sources narrowed", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    avatar: { base64: "AAAA", path: "" } as unknown as TryonParams["avatar"],
+    garments: [{
+      images: [{ base64: "BBBB", path: "" } as unknown as TryonParams["avatar"]],
+      detail: "cotton tee",
+    }],
+    scenePrompt: "beach",
+  });
+  assertEquals(job.avatar, { base64: "AAAA" });
+  assertEquals(job.garments, [{
+    images: [{ base64: "BBBB" }],
+    detail: "cotton tee",
+  }]);
+  assertEquals(job.userId, "u1");
+  assertEquals(job.mode, "image");
+  assertEquals(job.scenePrompt, "beach");
+});
+
+Deno.test("validateTryonParams returns a product-ref garment as just its id", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    garments: [
+      {
+        productId: "33333333-3333-3333-3333-333333333333",
+        images: [{ base64: "IGNORED" }],
+      } as unknown as TryonParams["garments"][number],
+    ],
+  });
+  assertEquals(job.garments, [
+    { productId: "33333333-3333-3333-3333-333333333333" },
+  ]);
+});
+
+Deno.test("requireImageSource keeps exactly the one usable key", () => {
+  assertEquals(requireImageSource({ path: "a.jpg" }, "avatar"), { path: "a.jpg" });
+  assertEquals(requireImageSource({ base64: "AAA", path: "" }, "avatar"), {
+    base64: "AAA",
+  });
+});
+
+Deno.test("requireImageSource rejects zero or two usable keys", () => {
+  assertThrows(() => requireImageSource({}, "avatar"), ValidationError);
+  assertThrows(
+    () => requireImageSource({ path: "a", base64: "b" }, "avatar"),
+    ValidationError,
+  );
+});
+
+Deno.test("normalizeText trims, blanks to undefined, and never truncates", () => {
+  assertEquals(normalizeText("  hi  "), "hi");
+  assertEquals(normalizeText("   "), undefined);
+  assertEquals(normalizeText(42), undefined);
+  const long = "x".repeat(LIMITS.MAX_PROMPT_LENGTH + 10);
+  assertEquals(normalizeText(long)?.length, LIMITS.MAX_PROMPT_LENGTH + 10);
+});
+
+Deno.test("requireString rejects missing and empty values", () => {
+  assertEquals(requireString("ok", "field"), "ok");
+  assertThrows(() => requireString("", "field"), ValidationError, "field");
+  assertThrows(() => requireString(undefined, "field"), ValidationError);
 });

@@ -1,7 +1,12 @@
-import { detectMimeType } from "../image-utils.ts";
+/**
+ * Try-on prompt construction — pure, provider-agnostic, and the product's
+ * actual domain logic. Kept apart from `vertex.ts` (which only knows how to
+ * talk to Vertex AI) so the wording can be read, diffed, and unit-tested
+ * without touching a network client.
+ */
 
-const SYSTEM_INSTRUCTION =
-  `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. 
+export const SYSTEM_INSTRUCTION =
+  `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly.
 
 CRITICAL: ALL generated images MUST be in PORTRAIT orientation with 9:16 aspect ratio (vertical format, taller than wide). NEVER generate square or landscape images.
 
@@ -133,124 +138,17 @@ Place the person in this scene: ${scenePrompt}
   return prompt;
 }
 
-/**
- * Generate a try-on image using Vertex AI Gemini image generation via REST API.
- * Returns the base64-encoded image or null if generation failed.
- */
-export async function generateTryonImage(
-  avatarImage: string,
-  garmentGroups: string[][],
-  scenePrompt?: string,
-  garmentDetails?: (string | undefined)[],
-): Promise<string | null> {
-  const taskPrompt = buildTaskPrompt(garmentGroups, scenePrompt, garmentDetails);
-  const clothesImages = garmentGroups.flat();
-  
-  const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
-  const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";
-  const model = Deno.env.get("TRYON_MODEL") || "gemini-2.5-flash-image";
-  const apiKey = Deno.env.get("VERTEX_API_KEY");
+const DEFAULT_VIDEO_PROMPT =
+  "The person is wearing the new outfit and turning slightly to show the fit of the clothing. Natural movement, professional fashion video style.";
 
-  if (!project || !apiKey) {
-    throw new Error("GOOGLE_CLOUD_PROJECT and VERTEX_API_KEY environment variables are required");
+export function buildVideoPrompt(transitionPrompt?: string): string {
+  if (!transitionPrompt) {
+    return DEFAULT_VIDEO_PROMPT;
   }
 
-  const cleanAvatarBase64 = avatarImage.replace(/^data:image\/[a-z]+;base64,/, '');
-  
-  const parts: any[] = [
-    { text: taskPrompt },
-    {
-      inlineData: {
-        mimeType: detectMimeType(cleanAvatarBase64),
-        data: cleanAvatarBase64,
-      },
-    },
-  ];
+  let prompt = "The person is wearing the new outfit and showing the fit of the clothing.";
+  prompt += ` Camera and transition style: ${transitionPrompt}.`;
+  prompt += " Natural movement, professional fashion video style.";
 
-  for (const img of clothesImages) {
-    const cleanImg = img.replace(/^data:image\/[a-z]+;base64,/, '');
-    parts.push({
-      inlineData: {
-        mimeType: detectMimeType(cleanImg),
-        data: cleanImg,
-      },
-    });
-  }
-
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:generateContent`;
-
-  const requestBody = {
-    contents: [{
-      role: "user",
-      parts: parts,
-    }],
-    systemInstruction: {
-      role: "system",
-      parts: [{
-        text: SYSTEM_INSTRUCTION,
-      }],
-    },
-    generationConfig: {
-      responseModalities: ["IMAGE"],
-      temperature: 1.0,
-      topP: 0.95,
-      imageConfig: {
-        aspectRatio: "9:16",
-      },
-    },
-  };
-
-  const MAX_ATTEMPTS = 3;
-
-  try {
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to generate image. Status:", response.status);
-        console.error("Error response:", errorText);
-
-        if (response.status === 429 && attempt < MAX_ATTEMPTS) {
-          const backoffMs = 1000 * attempt;
-          console.warn(
-            `Vertex ${response.status}, retrying in ${backoffMs}ms ` +
-              `(attempt ${attempt}/${MAX_ATTEMPTS - 1})`,
-          );
-          await new Promise((resolve) => setTimeout(resolve, backoffMs));
-          continue;
-        }
-
-        throw new Error(`Failed to generate image: ${response.statusText} - ${errorText}`);
-      }
-
-      const data = await response.json();
-
-      const candidates = data.candidates ?? [];
-
-      for (const candidate of candidates) {
-        const parts = candidate.content?.parts ?? [];
-        for (const part of parts) {
-          if (part.inlineData?.mimeType?.startsWith("image/") && part.inlineData.data) {
-            return part.inlineData.data;
-          }
-        }
-      }
-
-      console.error("No image data in response:", JSON.stringify(data));
-      return null;
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Error generating try-on image:", error);
-    throw error;
-  }
+  return prompt;
 }

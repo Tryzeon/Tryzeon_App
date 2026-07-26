@@ -1,8 +1,30 @@
-import { LIMITS, ValidationError } from "./types.ts";
+/**
+ * The core's domain guard, plus the small normalization primitives every
+ * adapter's request parser shares.
+ *
+ * The primitives split by whether a missing value is legal, and the names say
+ * which: `require*` decodes a mandatory field and throws when it cannot,
+ * `normalize*` decodes an optional one and never throws. The `label` parameter
+ * follows the same line — it exists only to name the field in an error, so its
+ * presence marks exactly the functions that can raise one.
+ *
+ * Policy: normalization never silently changes the meaning of user input — it
+ * only trims and narrows shapes. Every limit is enforced by `validateTryonParams`,
+ * which throws. Truncation is reserved for server-generated text (see
+ * `buildProductGarmentDetail`), so a caller is never told "accepted" while its
+ * input was quietly cut short.
+ */
+import { nonEmptyStr } from "../text.ts";
+import { ValidationError } from "./errors.ts";
+import { isGarmentRef, LIMITS } from "./types.ts";
 import type { GarmentInput, ImageSource, TryonParams } from "./types.ts";
 
-/** Coerce an unknown value into an ImageSource with exactly one usable key. */
-function normalizeSource(source: unknown, label: string): ImageSource {
+/**
+ * Decode an unknown value into an ImageSource carrying exactly one usable key.
+ * Raises when it has neither or both — an image addressed two ways is a caller
+ * bug, not something to silently pick a winner for.
+ */
+export function requireImageSource(source: unknown, label: string): ImageSource {
   if (typeof source !== "object" || source === null) {
     throw new ValidationError(`${label} must be an object`);
   }
@@ -16,19 +38,76 @@ function normalizeSource(source: unknown, label: string): ImageSource {
   return { [keys[0]]: s[keys[0]] } as ImageSource;
 }
 
-function normalizeDetail(detail: unknown): string | undefined {
-  if (typeof detail !== "string") return undefined;
-  const trimmed = detail.trim();
-  if (trimmed.length === 0) return undefined;
-  return trimmed.slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+/** Require a non-empty string, for adapter parsers decoding wire fields. */
+export function requireString(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new ValidationError(`${label} is required`);
+  }
+  return value;
 }
 
 /**
- * Assert the lib's domain invariants on an already-typed params object.
- * Called by runTryonJob so every caller (app, LIFF, LINE) is guarded uniformly.
+ * Trim an optional text field; blank or non-string becomes undefined. The
+ * shared `nonEmptyStr` spelled for this module's optional convention, since
+ * `TryonParams`' optional fields are `undefined`-typed, not nullable.
  */
-export function assertTryonParams(params: TryonParams): void {
-  normalizeSource(params.avatar, "avatar");
+export function normalizeText(value: unknown): string | undefined {
+  return nonEmptyStr(value) ?? undefined;
+}
+
+/** Guard an optional text field: if present it must be a string within `max`. */
+function assertOptionalText(value: unknown, label: string, max: number): void {
+  if (value === undefined) return;
+  if (typeof value !== "string") {
+    throw new ValidationError(`${label} must be a string`);
+  }
+  if (value.length > max) {
+    throw new ValidationError(`${label} too long (max ${max})`);
+  }
+}
+
+/** Validate one garment and return it with its image sources narrowed. */
+function validateGarment(garment: GarmentInput): GarmentInput {
+  if (typeof garment !== "object" || garment === null) {
+    throw new ValidationError("each garment must be an object");
+  }
+  if (isGarmentRef(garment)) {
+    return { productId: requireString(garment.productId, "garment productId") };
+  }
+  if (!Array.isArray(garment.images) || garment.images.length === 0) {
+    throw new ValidationError("each garment must have a non-empty images array");
+  }
+  if (garment.images.length > LIMITS.MAX_IMAGES_PER_GARMENT) {
+    throw new ValidationError(
+      `too many images for a garment (max ${LIMITS.MAX_IMAGES_PER_GARMENT})`,
+    );
+  }
+  assertOptionalText(
+    garment.detail,
+    "garment detail",
+    LIMITS.MAX_GARMENT_DETAIL_LENGTH,
+  );
+  const images = garment.images.map((img) =>
+    requireImageSource(img, "garment image")
+  );
+  return garment.detail === undefined
+    ? { images }
+    : { images, detail: garment.detail };
+}
+
+/**
+ * Guard the lib's domain invariants and return the params with every image
+ * source narrowed to exactly one usable key. Called by runTryonJob so every
+ * caller (app, LIFF, LINE) is checked uniformly.
+ *
+ * It returns rather than merely asserting because normalization already
+ * produces the value the job should run on: handing it back means the
+ * orchestrator consumes checked data instead of re-reading the raw input.
+ */
+export function validateTryonParams(params: TryonParams): TryonParams {
+  requireString(params.userId, "userId");
+
+  const avatar = requireImageSource(params.avatar, "avatar");
 
   if (!Array.isArray(params.garments) || params.garments.length === 0) {
     throw new ValidationError("garments must be a non-empty array");
@@ -36,72 +115,22 @@ export function assertTryonParams(params: TryonParams): void {
   if (params.garments.length > LIMITS.MAX_GARMENTS) {
     throw new ValidationError(`too many garments (max ${LIMITS.MAX_GARMENTS})`);
   }
-  for (const garment of params.garments) {
-    if (
-      typeof garment !== "object" || garment === null ||
-      !Array.isArray(garment.images) || garment.images.length === 0
-    ) {
-      throw new ValidationError("each garment must have a non-empty images array");
-    }
-    if (garment.images.length > LIMITS.MAX_IMAGES_PER_GARMENT) {
-      throw new ValidationError(
-        `too many images for a garment (max ${LIMITS.MAX_IMAGES_PER_GARMENT})`,
-      );
-    }
-    for (const img of garment.images) {
-      normalizeSource(img, "garment image");
-    }
-    if (garment.detail !== undefined && typeof garment.detail !== "string") {
-      throw new ValidationError("garment detail must be a string");
-    }
-  }
+  const garments = params.garments.map(validateGarment);
 
   if (params.mode !== "image" && params.mode !== "video") {
     throw new ValidationError("mode must be 'image' or 'video'");
   }
-}
 
-/**
- * Parse an unknown wire body into validated TryonParams, attaching the
- * caller-supplied (authenticated) userId. Used by the app entry point to turn
- * JSON into params with clean 400s.
- */
-export function parseTryonParams(body: unknown, userId: string): TryonParams {
-  if (typeof body !== "object" || body === null) {
-    throw new ValidationError("body must be an object");
-  }
-  const b = body as Record<string, unknown>;
+  assertOptionalText(
+    params.scenePrompt, 
+    "scenePrompt", 
+    LIMITS.MAX_PROMPT_LENGTH
+  );
+  assertOptionalText(
+    params.transitionPrompt,
+    "transitionPrompt",
+    LIMITS.MAX_PROMPT_LENGTH,
+  );
 
-  const avatar = normalizeSource(b.avatar, "avatar");
-
-  if (!Array.isArray(b.garments) || b.garments.length === 0) {
-    throw new ValidationError("garments must be a non-empty array");
-  }
-  const garments: GarmentInput[] = (b.garments as unknown[]).map((rg) => {
-    if (typeof rg !== "object" || rg === null) {
-      throw new ValidationError("each garment must be an object");
-    }
-    const imagesRaw = (rg as Record<string, unknown>).images;
-    if (!Array.isArray(imagesRaw) || imagesRaw.length === 0) {
-      throw new ValidationError("each garment must have a non-empty images array");
-    }
-    const images = imagesRaw.map((img) => normalizeSource(img, "garment image"));
-    const detail = normalizeDetail((rg as Record<string, unknown>).detail);
-    return detail === undefined ? { images } : { images, detail };
-  });
-
-  const mode = b.mode === "video" ? "video" : "image";
-
-  const params: TryonParams = {
-    userId,
-    avatar,
-    garments,
-    mode,
-    scenePrompt: typeof b.scenePrompt === "string" ? b.scenePrompt : undefined,
-    transitionPrompt: typeof b.transitionPrompt === "string"
-      ? b.transitionPrompt
-      : undefined,
-  };
-  assertTryonParams(params);
-  return params;
+  return { ...params, avatar, garments };
 }

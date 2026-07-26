@@ -1,33 +1,40 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { fetchImageAsBase64 } from "../image-utils.ts";
-import { ValidationError } from "./types.ts";
-import type { GarmentInput, ImageSource } from "./types.ts";
-
-export type SourceResolver = (source: ImageSource) => Promise<string>;
+import type { SupabaseImageBucket } from "../storage.ts";
+import type { GarmentMaterial, ImageSource } from "./types.ts";
 
 /**
- * Builds the resolver backed by Supabase storage / R2. `path` is routed by
- * `fetchImageAsBase64` (R2 'stores/' keys, else the given Supabase `bucket`);
- * `base64` is passed through. Callers resolving different kinds of sources
- * (e.g. avatar vs. wardrobe garment) need separate resolvers, one per bucket.
+ * Loads one image source into the base64 bytes the model consumes. "Resolve"
+ * is reserved for turning a product ref into garment material (see
+ * `catalog.ts`); everything in this module is the later load stage.
  */
-export function makeSourceResolver(client: SupabaseClient, bucket: string): SourceResolver {
-  return (source: ImageSource): Promise<string> => {
-    if (source.base64) return Promise.resolve(source.base64);
-    if (source.path) return fetchImageAsBase64(client, source.path, bucket);
-    throw new ValidationError("image source has no usable key");
-  };
+export type SourceLoader = (source: ImageSource) => Promise<string>;
+
+/**
+ * Builds the loader backed by Supabase storage / R2. `path` is routed by
+ * `fetchImageAsBase64` (R2 'stores/' keys, else the given Supabase `bucket`);
+ * `base64` is passed through. Callers loading different kinds of sources
+ * (e.g. avatar vs. wardrobe garment) need one loader per bucket.
+ */
+export function makeSourceLoader(
+  client: SupabaseClient,
+  bucket: SupabaseImageBucket,
+): SourceLoader {
+  return (source: ImageSource): Promise<string> =>
+    "base64" in source
+      ? Promise.resolve(source.base64)
+      : fetchImageAsBase64(client, source.path, bucket);
 }
 
 /**
- * Resolves every garment's images to base64, preserving garment grouping and
- * order. All sources resolve concurrently (one wave, not per-garment).
+ * Loads every garment's images as base64, preserving garment grouping and
+ * order. All sources load concurrently (one wave, not per-garment).
  */
-export function resolveGarments(
-  garments: GarmentInput[],
-  resolver: SourceResolver,
+export function loadGarments(
+  garments: GarmentMaterial[],
+  load: SourceLoader,
 ): Promise<string[][]> {
   return Promise.all(
-    garments.map((garment) => Promise.all(garment.images.map(resolver))),
+    garments.map((garment) => Promise.all(garment.images.map(load))),
   );
 }
