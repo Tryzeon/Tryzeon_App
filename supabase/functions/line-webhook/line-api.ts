@@ -1,11 +1,16 @@
 const REPLY_URL = "https://api.line.me/v2/bot/message/reply";
 const PUSH_URL = "https://api.line.me/v2/bot/message/push";
+const LOADING_URL = "https://api.line.me/v2/bot/chat/loading/start";
 const contentUrl = (id: string) => `https://api-data.line.me/v2/bot/message/${id}/content`;
+
+/** Longest window LINE will hold the indicator for; it stops early on send. */
+const LOADING_SECONDS = 60;
 
 export interface LineApi {
   reply(replyToken: string, messages: object[]): Promise<void>;
   push(to: string, messages: object[]): Promise<void>;
   getContent(messageId: string): Promise<Uint8Array>;
+  showLoading(to: string): Promise<void>;
 }
 
 export function makeLineApi(accessToken: string, fetchFn: typeof fetch = fetch): LineApi {
@@ -31,6 +36,14 @@ export function makeLineApi(accessToken: string, fetchFn: typeof fetch = fetch):
       const r = await fetchFn(contentUrl(messageId), { headers: authHeaders });
       if (!r.ok) throw new Error(`LINE content failed ${r.status}`);
       return new Uint8Array(await r.arrayBuffer());
+    },
+    async showLoading(to) {
+      const r = await fetchFn(LOADING_URL, {
+        method: "POST",
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ chatId: to, loadingSeconds: LOADING_SECONDS }),
+      });
+      if (!r.ok) throw new Error(`LINE loading failed ${r.status}: ${await r.text()}`);
     },
   };
 }
