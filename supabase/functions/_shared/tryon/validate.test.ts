@@ -1,10 +1,5 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import {
-  normalizeText,
-  requireImageSource,
-  requireString,
-  validateTryonParams,
-} from "./validate.ts";
+import { requireImageSource, validateTryonParams } from "./validate.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS, type TryonParams } from "./types.ts";
 
@@ -183,18 +178,4 @@ Deno.test("requireImageSource rejects zero or two usable keys", () => {
     () => requireImageSource({ path: "a", base64: "b" }, "avatar"),
     ValidationError,
   );
-});
-
-Deno.test("normalizeText trims, blanks to undefined, and never truncates", () => {
-  assertEquals(normalizeText("  hi  "), "hi");
-  assertEquals(normalizeText("   "), undefined);
-  assertEquals(normalizeText(42), undefined);
-  const long = "x".repeat(LIMITS.MAX_PROMPT_LENGTH + 10);
-  assertEquals(normalizeText(long)?.length, LIMITS.MAX_PROMPT_LENGTH + 10);
-});
-
-Deno.test("requireString rejects missing and empty values", () => {
-  assertEquals(requireString("ok", "field"), "ok");
-  assertThrows(() => requireString("", "field"), ValidationError, "field");
-  assertThrows(() => requireString(undefined, "field"), ValidationError);
 });

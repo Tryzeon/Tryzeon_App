@@ -1,5 +1,7 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import type { DailyUsage } from "../quota.ts";
+import type { DailyUsage, QuotaPort } from "../quota.ts";
+
+export type { QuotaPort };
 
 /**
  * An image is addressed EITHER by storage key OR by inline bytes. A union
@@ -121,21 +123,11 @@ export const LIMITS = {
  */
 
 /**
- * The usage counter one job is charged against. `charge` runs before any work;
- * `refund` compensates when the job then fails, and is a no-op if the charge
- * never landed. A port for the same reason generation and persistence are: the
- * core says what it needs — an atomic charge with a compensating refund —
- * without naming the RPC pair that implements it or depending on its payload.
- */
-export interface QuotaPort {
-  charge(): Promise<{ allowed: boolean; usage: DailyUsage | null }>;
-  refund(): Promise<void>;
-}
-
-/**
  * Opens the quota counter for one user + mode. Takes the mode rather than a
  * feature name so the backend's vocabulary (`tryon` vs `tryon_video`) stays on
- * the implementation side of the port.
+ * the implementation side of the port. The port it returns belongs to
+ * `_shared/quota.ts` — the charge/refund contract is the counter's, not
+ * try-on's, and chat opens the same one.
  */
 export type QuotaFactory = (
   admin: SupabaseClient,

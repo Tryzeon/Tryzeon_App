@@ -9,12 +9,15 @@
  *
  * Running out of quota is not a try-on failure mode — it is the shared
  * counter's, raised identically for chat — so that class is owned by
- * `_shared/quota.ts` and merely classified here.
+ * `_shared/quota.ts` and merely classified here. A rejected input is shared for
+ * the same reason and comes from `_shared/validation.ts`; it is re-exported so
+ * this module still reads as the one list of what a try-on job can raise.
  */
 
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 
-export class ValidationError extends Error {}
+export { ValidationError } from "../validation.ts";
+import { ValidationError } from "../validation.ts";
 
 export class GenerationFailedError extends Error {}
 

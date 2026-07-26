@@ -37,6 +37,25 @@ export class QuotaExceededError extends Error {
 }
 
 /**
+ * The usage counter one unit of work is charged against. `charge` runs before
+ * any work; `refund` compensates when that work then fails, and is a no-op if
+ * the charge never landed.
+ *
+ * A port so a feature core can say what it needs — an atomic charge with a
+ * compensating refund — without naming the RPC pair that implements it or
+ * depending on its payload. It lives here rather than in either feature for the
+ * same reason {@link QuotaExceededError} does: the contract is the counter's,
+ * and try-on and chat charging through two structurally identical interfaces
+ * could only ever differ by accident. Each feature still declares its own
+ * factory, because what identifies a counter differs (try-on has a mode, chat
+ * does not).
+ */
+export interface QuotaPort {
+  charge(): Promise<{ allowed: boolean; usage: DailyUsage | null }>;
+  refund(): Promise<void>;
+}
+
+/**
  * Atomically increments the feature usage count and returns the post-mutation
  * row. The row is also returned when `success` is false (rate-limit case),
  * so callers can sync UI even on rejection.

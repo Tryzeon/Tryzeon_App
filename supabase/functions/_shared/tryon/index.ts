@@ -57,9 +57,9 @@ export {
   ValidationError,
 } from "./errors.ts";
 
-// Decoding wire fields, shared with every adapter's request parser.
-export {
-  normalizeText,
-  requireImageSource,
-  requireString,
-} from "./validate.ts";
+// Decoding wire fields, shared with every adapter's request parser. The generic
+// two are re-exported from `_shared/validation.ts` rather than owned here: an
+// adapter parsing a try-on body should not have to know which of its primitives
+// happen to be try-on's.
+export { requireImageSource } from "./validate.ts";
+export { normalizeText, requireString } from "../validation.ts";

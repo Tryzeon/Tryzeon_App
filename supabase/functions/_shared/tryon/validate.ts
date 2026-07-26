@@ -1,12 +1,8 @@
 /**
- * The core's domain guard, plus the small normalization primitives every
- * adapter's request parser shares.
- *
- * The primitives split by whether a missing value is legal, and the names say
- * which: `require*` decodes a mandatory field and throws when it cannot,
- * `normalize*` decodes an optional one and never throws. The `label` parameter
- * follows the same line — it exists only to name the field in an error, so its
- * presence marks exactly the functions that can raise one.
+ * The core's domain guard, plus the one decoding primitive that is specific to
+ * try-on's wire fields. The generic ones (`requireString`, `normalizeText`) and
+ * the error they raise are shared with every other core and live in
+ * `_shared/validation.ts`.
  *
  * Policy: normalization never silently changes the meaning of user input — it
  * only trims and narrows shapes. Every limit is enforced by `validateTryonParams`,
@@ -14,8 +10,7 @@
  * `buildProductGarmentDetail`), so a caller is never told "accepted" while its
  * input was quietly cut short.
  */
-import { nonEmptyStr } from "../text.ts";
-import { ValidationError } from "./errors.ts";
+import { requireString, ValidationError } from "../validation.ts";
 import { isGarmentRef, LIMITS } from "./types.ts";
 import type { GarmentInput, ImageSource, TryonParams } from "./types.ts";
 
@@ -36,23 +31,6 @@ export function requireImageSource(source: unknown, label: string): ImageSource 
     throw new ValidationError(`${label} must have exactly one of path | base64`);
   }
   return { [keys[0]]: s[keys[0]] } as ImageSource;
-}
-
-/** Require a non-empty string, for adapter parsers decoding wire fields. */
-export function requireString(value: unknown, label: string): string {
-  if (typeof value !== "string" || value.length === 0) {
-    throw new ValidationError(`${label} is required`);
-  }
-  return value;
-}
-
-/**
- * Trim an optional text field; blank or non-string becomes undefined. The
- * shared `nonEmptyStr` spelled for this module's optional convention, since
- * `TryonParams`' optional fields are `undefined`-typed, not nullable.
- */
-export function normalizeText(value: unknown): string | undefined {
-  return nonEmptyStr(value) ?? undefined;
 }
 
 /** Guard an optional text field: if present it must be a string within `max`. */
