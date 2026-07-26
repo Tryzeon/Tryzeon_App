@@ -4,11 +4,16 @@ import { LineProfile } from "./line-identity.ts";
 const SYNTHETIC_EMAIL_DOMAIN = "liff.tryzeon.app";
 
 /**
- * Maps a verified LINE profile to a stable Supabase auth user id.
- * Looks up line_user_links; on a miss, mints a new auth user keyed by the
- * synthetic email `line_<sub>@liff.tryzeon.app` and records the mapping.
+ * The stable auth user id for a verified LINE profile, creating one if this is
+ * the first time we have seen the account.
+ *
+ * Named for the write, not just the read: a miss in `line_user_links` mints an
+ * auth user keyed by the synthetic email `line_<sub>@liff.tryzeon.app` and
+ * records the mapping, permanently binding that LINE account to an identity.
+ * "Resolve" is reserved in this codebase for turning a reference into something
+ * that already exists (see `_shared/tryon/sources.ts`), which this is not.
  */
-export async function resolveSupabaseUser(
+export async function getOrCreateUserId(
   admin: SupabaseClient,
   profile: LineProfile,
 ): Promise<string> {

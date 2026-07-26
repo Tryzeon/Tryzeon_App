@@ -3,7 +3,7 @@ import { getAdminClient } from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { makeCors } from "../_shared/cors.ts";
 import { LineAuthError, verifyLineIdToken } from "../_shared/line-identity.ts";
-import { resolveSupabaseUser } from "../_shared/line-user.ts";
+import { getOrCreateUserId } from "../_shared/line-user.ts";
 import {
   base64ToUint8Array,
   detectMimeType,
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
     const profile = await verifyLineIdToken(idToken, channelId);
     const admin = getAdminClient();
-    const userId = await resolveSupabaseUser(admin, profile);
+    const userId = await getOrCreateUserId(admin, profile);
 
     const clean = avatarBase64.replace(/^data:image\/[a-z]+;base64,/, "");
     const mime = detectMimeType(clean);
