@@ -27,7 +27,7 @@
  * | `VERTEX_API_KEY`        | yes      | everything — the single credential   |
  * | `GOOGLE_CLOUD_PROJECT`  | yes      | try-on, to build the REST endpoint   |
  * | `GOOGLE_CLOUD_LOCATION` | no       | try-on; defaults to `us-central1`    |
- * | `CHAT_MODEL`            | no       | chat, image analysis, audio analysis |
+ * | `CHAT_MODEL`            | yes      | chat, image analysis, audio analysis |
  * | `TRYON_MODEL`           | yes      | try-on images                        |
  * | `VIDEO_MODEL`           | yes      | try-on video                         |
  *
