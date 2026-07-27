@@ -1,8 +1,9 @@
 /**
  * Vertex AI implementation of the core's `AgentRunner` port. This module owns
- * everything SDK-specific — the provider, the tool set, the stream, the
+ * everything SDK-specific about a chat turn — the tool set, the stream, the
  * structured-output call — and the core sees only "run a turn, get an answer
- * and the rounds it took".
+ * and the rounds it took". The provider itself is shared with the analysis
+ * helpers and lives in `vertex/provider.ts`.
  *
  * It also owns the transcript rule: a tool call is an assistant turn, its
  * result a user turn. That rule belongs wherever the loop is observed, because
@@ -10,8 +11,8 @@
  * that are already correct.
  */
 import { Output, stepCountIs, streamText } from "npm:ai@^6.0.208";
-import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
-import { chatModel, vertexApiKey } from "../vertex/config.ts";
+import { chatModel } from "../vertex/config.ts";
+import { vertexModel } from "../vertex/provider.ts";
 import { toModelMessages } from "./logic.ts";
 import { answerSchema, buildTools } from "./tools.ts";
 import type {
@@ -25,22 +26,6 @@ import type {
 // budget, not a caller-facing limit: a substituted `AgentRunner` sets its own.
 const MAX_AGENT_STEPS = 10;
 
-/**
- * The provider, built on first use and kept for the isolate.
- *
- * Deliberately not built at import: `run.ts` names this runner as its default,
- * so anything that touches the chat core pulls this module in — including
- * callers that always pass their own runner, and tests that never reach the
- * network. Building it at import would make a Vertex API key a requirement for
- * all of them.
- *
- * Express mode: the API key alone authenticates, and it is the same key try-on
- * and the analysis helpers use — neither project nor location is needed.
- */
-let provider: ReturnType<typeof createVertex> | null = null;
-const vertexProvider = () =>
-  provider ??= createVertex({ apiKey: vertexApiKey() });
-
 export const runVertexAgent: AgentRunner = async (req) => {
   const tools = buildTools({
     admin: req.admin,
@@ -52,7 +37,7 @@ export const runVertexAgent: AgentRunner = async (req) => {
   // re-prompts automatically (capped by stopWhen). The final answer is produced
   // as structured `output`, not as a tool call.
   const result = streamText({
-    model: vertexProvider()(chatModel()),
+    model: vertexModel(chatModel()),
     system: req.context.systemInstruction,
     messages: toModelMessages(req.messages),
     tools,

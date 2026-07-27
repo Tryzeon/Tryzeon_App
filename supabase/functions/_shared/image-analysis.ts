@@ -1,5 +1,5 @@
-import { GoogleGenAI } from "npm:@google/genai";
-import { getAIClient } from "./vertex/genai.ts";
+import { generateObject, jsonSchema } from "npm:ai@^6.0.208";
+import { vertexModel } from "./vertex/provider.ts";
 import { chatModel } from "./vertex/config.ts";
 import { detectMimeType } from "./image-utils.ts";
 import { jsonError, jsonRateLimited } from "./http.ts";
@@ -33,7 +33,14 @@ export async function checkImageAnalysisRateLimit(
   return null;
 }
 
-/** Runs a single-image structured-output analysis and returns the parsed object. */
+/**
+ * Runs a single-image structured-output analysis and returns the parsed object.
+ *
+ * Raises when the model returns nothing matching `schema`. A caller cannot tell
+ * an empty object meaning "no attributes found" from one meaning "the model
+ * failed", so an unreadable answer is reported rather than flattened into the
+ * same shape as a successful one.
+ */
 export async function analyzeImage<T extends Record<string, unknown> = Record<string, unknown>>(
   { base64, prompt, schema }: {
     base64: string;
@@ -41,27 +48,18 @@ export async function analyzeImage<T extends Record<string, unknown> = Record<st
     schema: Record<string, unknown>;
   },
 ): Promise<T> {
-  const ai: GoogleGenAI = getAIClient();
-  const result = await ai.models.generateContent({
-    model: chatModel(),
-    contents: [
+  const { object } = await generateObject({
+    model: vertexModel(chatModel()),
+    schema: jsonSchema<T>(schema),
+    messages: [
       {
         role: "user",
-        parts: [
-          { text: prompt },
-          { inlineData: { mimeType: detectMimeType(base64), data: base64 } },
+        content: [
+          { type: "text", text: prompt },
+          { type: "file", mediaType: detectMimeType(base64), data: base64 },
         ],
       },
     ],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: schema,
-    },
   });
-  try {
-    const parsed = JSON.parse(result.text ?? "{}");
-    return (parsed && typeof parsed === "object") ? parsed as T : {} as T;
-  } catch {
-    return {} as T;
-  }
+  return object;
 }

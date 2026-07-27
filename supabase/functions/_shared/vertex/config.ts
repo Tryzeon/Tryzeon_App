@@ -1,18 +1,17 @@
 /**
  * Every Vertex AI setting the edge functions read, in one place.
  *
- * Three call sites talk to Vertex through three different clients, and that
- * part is not an accident: chat needs the AI SDK's agent loop (streaming,
- * multi-step tool calls, structured output), image and audio analysis need
- * one-shot structured output that `@google/genai` states directly, and try-on
- * needs Gemini's image config plus Veo's long-running operation polling, which
- * no SDK wraps well. Each is the right tool for its job.
+ * Every call site reads its credential and its model name from here, and every
+ * language-model call goes through the one AI SDK provider in `provider.ts` —
+ * chat's agent loop and the one-shot analysis helpers alike, since they differ
+ * only in what they ask the model for. Try-on is the one exception, calling
+ * Vertex REST by hand for Gemini's image config and Veo's long-running
+ * operation polling, which no SDK wraps well.
  *
- * What *was* accidental is that each of them also picked its own credential and
- * its own names for the same project — a deployment had to keep
+ * That uniformity was not the starting point: each call site had picked its own
+ * credential and its own names for the same project — a deployment had to keep
  * GOOGLE_CLOUD_PROJECT and GOOGLE_VERTEX_PROJECT in agreement with nothing
- * checking, and rotating a key meant finding every reader. So the credential
- * and the configuration are unified here; the clients are not.
+ * checking, and rotating a key meant finding every reader.
  *
  * Readers are functions rather than constants because they raise when unset,
  * and no consumer needs the whole set: validating everything at import would
