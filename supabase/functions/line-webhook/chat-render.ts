@@ -9,8 +9,15 @@
  * bottom) for as long as it fits in a single send.
  */
 import type { ContentBlock } from "../_shared/chat/index.ts";
-import type { LineProduct } from "./chat-hydrate.ts";
+import {
+  clampProductName,
+  type LineProduct,
+  productInfoContents,
+  purchaseAction,
+} from "./product-card.ts";
+import { CARD_COLOR, primaryButton, secondaryButton } from "./card-kit.ts";
 import { chatErrorMessage } from "./messages.ts";
+import { tryonPostbackData } from "./postback.ts";
 
 /** Messages one reply/push may carry. */
 const MAX_LINE_MESSAGES = 5;
@@ -49,24 +56,27 @@ function textMessage(lines: string[]): object {
   return { type: "text", text: lines.join("\n").slice(0, MAX_TEXT_CHARS) };
 }
 
-function priceText(price: number): string {
-  return `NT$ ${Math.round(price).toLocaleString("en-US")}`;
-}
-
+/**
+ * One product as a card. The try-on is the primary action and is always
+ * offered; buying is a link the product may or may not have, so it sits
+ * beneath in the quieter style.
+ */
 function bubble(product: LineProduct): object {
-  const body: object[] = [
-    { type: "text", text: product.name, weight: "bold", size: "sm", wrap: true, maxLines: 2 },
-    { type: "text", text: priceText(product.price), size: "sm", color: "#333333" },
+  const purchase = purchaseAction(product);
+  const buttons: object[] = [
+    primaryButton("試穿這件", {
+      type: "postback",
+      label: "試穿這件",
+      data: tryonPostbackData(product.id),
+      // Without this the tap leaves no trace, and the bot appears to start
+      // talking for no reason. Clamped: `displayText` fails the whole send
+      // past 300 characters, and a product name has no length constraint.
+      displayText: `試穿「${clampProductName(product.name)}」`,
+    }),
   ];
-  if (product.storeName) {
-    body.push({ type: "text", text: product.storeName, size: "xs", color: "#999999", wrap: true });
+  if (purchase) {
+    buttons.push(secondaryButton("前往購買", purchase));
   }
-
-  // A LINE uri action only accepts an absolute http(s) link, and one it rejects
-  // fails the whole send rather than the one button — so a link that cannot be
-  // an action simply isn't offered as one, and the card falls back to being
-  // display-only.
-  const linkable = product.purchaseUrl?.startsWith("http") ? product.purchaseUrl : null;
 
   return {
     type: "bubble",
@@ -78,21 +88,26 @@ function bubble(product: LineProduct): object {
       aspectRatio: "1:1",
       aspectMode: "cover",
     },
-    body: { type: "box", layout: "vertical", spacing: "xs", contents: body },
-    ...(linkable
-      ? {
-        footer: {
-          type: "box",
-          layout: "vertical",
-          contents: [{
-            type: "button",
-            style: "primary",
-            height: "sm",
-            action: { type: "uri", label: "前往購買", uri: linkable },
-          }],
-        },
-      }
-      : {}),
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "16px",
+      contents: productInfoContents(product),
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      // `spacing` is the one gap here that cannot be stated in px: LINE accepts
+      // only keywords for it, unlike `margin` and `padding`.
+      spacing: "sm",
+      paddingAll: "16px",
+      paddingTop: "0px",
+      contents: buttons,
+    },
+    styles: {
+      body: { backgroundColor: CARD_COLOR.surface },
+      footer: { backgroundColor: CARD_COLOR.surface },
+    },
   };
 }
 

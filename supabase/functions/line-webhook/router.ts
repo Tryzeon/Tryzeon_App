@@ -1,20 +1,23 @@
 /**
- * Which handler a forwarded message event belongs to, if any.
+ * Which handler an incoming event belongs to, if any.
  *
- * An image is a garment to try on; text is a request for the chat agent. Both
- * take far longer than the webhook may, so both are returned as a task the
- * caller finishes in the background and delivers with a push. Anything else — a
- * sticker, a blank line — has no handler, and `null` says so.
+ * An image is a garment to try on; text is a request for the chat agent; a
+ * postback is a button we put on a card coming back. All three take far longer
+ * than the webhook may, so all three are returned as a task the caller finishes
+ * in the background and delivers with a push. Anything else — a sticker, a
+ * blank line, a postback from a card an older deploy sent — has no handler, and
+ * `null` says so.
  *
  * This lives beside the handlers rather than in `index.ts` because what counts
- * as a usable message is a rule about them, not about the transport: the text
- * normalization here and the length check in `chat-handler.ts` are two halves of
- * one answer, and `index.ts` is the one module in the feature with no test.
+ * as a usable event is a rule about them, not about the transport: the text
+ * normalization here and the length check in `chat-handler.ts` are two halves
+ * of one answer, and `index.ts` is the one module in the feature with no test.
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getAvatarPath } from "../_shared/user-profile.ts";
-import { handleImageMessage } from "./tryon-handler.ts";
+import { handleImageMessage, handleProductTryon } from "./tryon-handler.ts";
 import { handleTextMessage } from "./chat-handler.ts";
+import { parsePostback } from "./postback.ts";
 import { LineApi } from "./line-api.ts";
 
 export interface RouterDeps {
@@ -24,7 +27,17 @@ export interface RouterDeps {
   imagesBaseUrl: string;
 }
 
-export function routeMessageEvent(
+export function routeEvent(
+  deps: RouterDeps,
+  // deno-lint-ignore no-explicit-any
+  ev: Record<string, any>,
+): Promise<void> | null {
+  if (ev.type === "message") return routeMessage(deps, ev);
+  if (ev.type === "postback") return routePostback(deps, ev);
+  return null;
+}
+
+function routeMessage(
   deps: RouterDeps,
   // deno-lint-ignore no-explicit-any
   ev: Record<string, any>,
@@ -41,11 +54,37 @@ export function routeMessageEvent(
 
   if (ev.message?.type === "text") {
     const text = String(ev.message.text ?? "").trim();
-    return handleTextMessage(
-      { admin, line, imagesBaseUrl: deps.imagesBaseUrl },
-      { sourceUserId, text },
-    );
+    if (text) {
+      return handleTextMessage(
+        { admin, line, imagesBaseUrl: deps.imagesBaseUrl },
+        { sourceUserId, text },
+      );
+    }
   }
 
   return null;
+}
+
+function routePostback(
+  deps: RouterDeps,
+  // deno-lint-ignore no-explicit-any
+  ev: Record<string, any>,
+): Promise<void> | null {
+  const postback = parsePostback(ev.postback?.data);
+  if (postback === null) return null;
+
+  return handleProductTryon(
+    {
+      admin: deps.admin,
+      line: deps.line,
+      liffOnboardUrl: deps.liffOnboardUrl,
+      imagesBaseUrl: deps.imagesBaseUrl,
+      getAvatarPath,
+    },
+    {
+      replyToken: ev.replyToken,
+      sourceUserId: ev.source?.userId,
+      productId: postback.productId,
+    },
+  );
 }

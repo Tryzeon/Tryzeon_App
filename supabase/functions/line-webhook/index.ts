@@ -4,7 +4,7 @@ import { parseJsonObject } from "../_shared/validation.ts";
 import { verifyLineSignature } from "./signature.ts";
 import { makeLineApi } from "./line-api.ts";
 import { hintMessage } from "./messages.ts";
-import { routeMessageEvent } from "./router.ts";
+import { routeEvent } from "./router.ts";
 
 // EdgeRuntime.waitUntil keeps the function warm for the ~30s generation after
 // the 200 has been returned. Declared here for the Deno type checker.
@@ -45,18 +45,24 @@ Deno.serve(async (req) => {
   const line = makeLineApi(accessToken);
 
   for (const ev of events as Array<Record<string, any>>) {
-    if (ev.type !== "message" || ev.source?.type !== "user") continue;
+    if (ev.source?.type !== "user") continue;
+    if (ev.type !== "message" && ev.type !== "postback") continue;
 
-    const task = routeMessageEvent({ admin, line, liffOnboardUrl, imagesBaseUrl }, ev);
+    const task = routeEvent({ admin, line, liffOnboardUrl, imagesBaseUrl }, ev);
     if (task === null) {
       // Nothing we handle (a sticker, a blank line): nudge with a free reply.
-      await line.reply(ev.replyToken, [hintMessage()]).catch(() => {});
+      await line.reply(ev.replyToken, [hintMessage()]).catch((err) => {
+        console.warn("line-webhook hint reply failed:", err);
+      });
       continue;
     }
 
     // Return 200 fast; finish the work + push in the background.
-    if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(task);
-    else await task;
+    const guardedTask = task.catch((err) => {
+      console.error("line-webhook background task failed:", err);
+    });
+    if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(guardedTask);
+    else await guardedTask;
   }
 
   return new Response("OK", { status: 200 });

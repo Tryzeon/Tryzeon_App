@@ -1,11 +1,16 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-user.ts";
 import { classifyTryonError, runTryonJob } from "../_shared/tryon/index.ts";
+import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
+import { fetchLineProduct } from "./product-card.ts";
 import {
   onboardingMessage,
   processingMessage,
+  productProcessingMessage,
+  productResultMessage,
+  productUnavailableMessage,
   resultMessage,
   tryonErrorMessage,
 } from "./messages.ts";
@@ -26,23 +31,80 @@ export interface TryonHandlerDeps {
   runJob?: typeof runTryonJob;
 }
 
+/** The sender as try-on sees them: an account, and the model photo they onboarded with. */
+interface Actor {
+  userId: string;
+  avatarPath: string | null;
+}
+
 /**
- * Full lifecycle for one forwarded image: resolve user -> onboard if no model
- * photo -> otherwise reply "processing" and (in the caller's background task)
- * download the garment, run try-on with the stored avatar, and push the result.
+ * Resolves who is asking. A first-time sender is minted an account here, so
+ * this is a write as much as a read; a null `avatarPath` means they have not
+ * onboarded and every try-on path must stop and say so.
+ */
+async function resolveActor(
+  deps: TryonHandlerDeps,
+  sourceUserId: string,
+): Promise<Actor> {
+  const getOrCreateUserId = deps.getOrCreateUserId ?? defaultGetOrCreateUserId;
+  const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
+
+  const userId = await getOrCreateUserId(deps.admin, { sub: sourceUserId });
+  return { userId, avatarPath: await getAvatarPath(deps.admin, userId) };
+}
+
+/** One try-on job, reduced to what this channel can render. */
+type TryonOutcome =
+  | { ok: true; imageUrl: string }
+  | { ok: false; kind: "quota" | "generation" | "unknown" };
+
+/**
+ * Runs one try-on and classifies whatever comes back.
+ *
+ * An outcome rather than a message, because the two callers differ only in
+ * wording: a garment the user photographed comes back as a bare image, a
+ * catalog product as a card. Deciding that is each handler's business; the
+ * quota, the generation and the error classification are shared, and this is
+ * all of the shared part.
+ */
+async function runTryon(
+  deps: TryonHandlerDeps,
+  params: { userId: string; avatarPath: string; garment: GarmentInput },
+): Promise<TryonOutcome> {
+  const runJob = deps.runJob ?? runTryonJob;
+  try {
+    // `materials: admin` is safe here and stated explicitly: the avatar path is
+    // server-derived (read from the user's own profile), and a garment is
+    // either inline base64 or a product id the core resolves itself — this
+    // adapter never forwards a client-supplied path.
+    const result = await runJob({ admin: deps.admin, materials: deps.admin }, {
+      userId: params.userId,
+      avatar: { path: params.avatarPath },
+      garments: [params.garment],
+      mode: "image",
+    });
+    return { ok: true, imageUrl: result.imageUrl };
+  } catch (err) {
+    const kind = tryonFailureKind(err);
+    // "unknown" means a server-side fault (bad params, RLS, storage) rather
+    // than a user error — log it so it leaves a trace beyond the pushed message.
+    if (kind === "unknown") {
+      console.error("line-webhook try-on failed:", err);
+    }
+    return { ok: false, kind };
+  }
+}
+
+/**
+ * Full lifecycle for one forwarded image: resolve the sender -> onboard if no
+ * model photo -> otherwise reply "processing" and (in the caller's background
+ * task) download the garment, run try-on, and push the result.
  */
 export async function handleImageMessage(
   deps: TryonHandlerDeps,
   event: ImageEvent,
 ): Promise<void> {
-  const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
-  const getOrCreateUserId = deps.getOrCreateUserId ?? defaultGetOrCreateUserId;
-  const runJob = deps.runJob ?? runTryonJob;
-
-  const userId = await getOrCreateUserId(deps.admin, {
-    sub: event.sourceUserId,
-  });
-  const avatarPath = await getAvatarPath(deps.admin, userId);
+  const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
 
   if (!avatarPath) {
     await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffOnboardUrl)]);
@@ -54,39 +116,88 @@ export async function handleImageMessage(
   let bytes: Uint8Array;
   try {
     bytes = await deps.line.getContent(event.messageId);
-  } catch {
+  } catch (err) {
+    console.warn("line-webhook failed to download garment image:", err);
     await deps.line.push(event.sourceUserId, [tryonErrorMessage("download")]);
     return;
   }
 
-  try {
-    const garmentBase64 = uint8ToBase64(bytes);
-    // `materials: admin` is safe here and stated explicitly: the avatar path is
-    // server-derived (read from the user's own profile) and the garment arrives
-    // as base64 — this adapter never forwards a client-supplied path.
-    const result = await runJob({ admin: deps.admin, materials: deps.admin }, {
-      userId,
-      avatar: { path: avatarPath },
-      garments: [{ images: [{ base64: garmentBase64 }] }],
-      mode: "image",
-    });
-    await deps.line.push(event.sourceUserId, [resultMessage(result.imageUrl)]);
-  } catch (err) {
-    const kind = tryonFailureKind(err);
-    // "unknown" means a server-side fault (bad params, RLS, storage) rather
-    // than a user error — log it so it leaves a trace beyond the pushed message.
-    if (kind === "unknown") {
-      console.error("line-webhook try-on failed:", err);
-    }
-    await deps.line.push(event.sourceUserId, [tryonErrorMessage(kind)]);
+  const outcome = await runTryon(deps, {
+    userId,
+    avatarPath,
+    garment: { images: [{ base64: uint8ToBase64(bytes) }] },
+  });
+
+  await deps.line.push(event.sourceUserId, [
+    outcome.ok ? resultMessage(outcome.imageUrl) : tryonErrorMessage(outcome.kind),
+  ]);
+}
+
+export interface ProductTryonEvent {
+  replyToken: string;
+  sourceUserId: string;
+  productId: string;
+}
+
+export interface ProductTryonDeps extends TryonHandlerDeps {
+  /** Public R2 base the product card's image key is resolved against. */
+  imagesBaseUrl: string;
+  fetchProduct?: typeof fetchLineProduct;
+}
+
+/**
+ * Full lifecycle for a tap on a product card's try-on button.
+ *
+ * The product is read before anything is charged. `fetchLineProduct` returns
+ * null for exactly the two cases the core would later reject as validation
+ * errors — the row is gone, or it has no image — so checking here turns both
+ * into a sentence the user understands, and costs them no quota. It also
+ * supplies the name for the acknowledgement and the fields for the result
+ * card, which have to be read either way.
+ *
+ * The garment goes in as `{ productId }` rather than as bytes: the core
+ * resolves the catalog itself, which is how every one of the product's images
+ * and its generated description reach the model.
+ */
+export async function handleProductTryon(
+  deps: ProductTryonDeps,
+  event: ProductTryonEvent,
+): Promise<void> {
+  const fetchProduct = deps.fetchProduct ?? fetchLineProduct;
+  const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
+
+  if (!avatarPath) {
+    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffOnboardUrl)]);
+    return;
   }
+
+  const product = await fetchProduct(deps.admin, event.productId, deps.imagesBaseUrl);
+  if (!product) {
+    await deps.line.reply(event.replyToken, [productUnavailableMessage()]);
+    return;
+  }
+
+  await deps.line.reply(event.replyToken, [productProcessingMessage(product.name)]);
+
+  const outcome = await runTryon(deps, {
+    userId,
+    avatarPath,
+    garment: { productId: product.id },
+  });
+
+  await deps.line.push(event.sourceUserId, [
+    outcome.ok
+      ? productResultMessage(outcome.imageUrl, product)
+      : tryonErrorMessage(outcome.kind),
+  ]);
 }
 
 /**
  * Renders a core error as one of this channel's message kinds, from the same
  * `classifyTryonError` result the HTTP adapters use. A validation error is not
- * user-actionable here — this adapter builds its own params, so it means we
- * sent something wrong — and is reported as an unknown fault.
+ * user-actionable here — this adapter builds its own params, and a product is
+ * checked for existence before any job starts — so it is reported as an
+ * unknown fault.
  */
 function tryonFailureKind(err: unknown): "quota" | "generation" | "unknown" {
   const info = classifyTryonError(err);
