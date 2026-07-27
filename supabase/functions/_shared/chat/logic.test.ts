@@ -6,6 +6,7 @@ import {
   resolveCategoryFilter,
   SEARCH_LIMIT,
   toModelMessages,
+  toSearchResultItem,
 } from "./logic.ts";
 
 const CATEGORIES = new Map([["上衣", "cat-1"], ["洋裝", "cat-2"]]);
@@ -151,4 +152,76 @@ Deno.test("toModelMessages drops blank text and empty turns", () => {
     { role: "assistant", content: [{ type: "text", text: "嗨" }] },
   ]);
   assertEquals(out, [{ role: "assistant", content: "嗨" }]);
+});
+
+// One `list_shop_products` row, in the shape the RPC actually returns.
+const SHOP_ROW = {
+  id: "8f3a-p1",
+  store_id: "11aa-s1",
+  name: "白襯衫",
+  category_ids: ["cat-1", "cat-2"],
+  price: 1200,
+  image_paths: ["stores/s1/p1.jpg"],
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-02T00:00:00Z",
+  purchase_link: "https://shop.example/p1",
+  material: "棉",
+  elasticity: "low",
+  fit: "regular",
+  thickness: null,
+  styles: ["minimalist"],
+  seasons: [],
+  gender: "female",
+  product_variants: [
+    { id: "v1", product_id: "8f3a-p1", name: "S", created_at: "x", measurements: { chest: 90 } },
+    { id: "v2", product_id: "8f3a-p1", name: "M", created_at: "x", measurements: { chest: 94 } },
+  ],
+  store_profiles: {
+    id: "11aa-s1",
+    name: "某店",
+    address: "台北市…",
+    logo_path: "stores/s1/logo.jpg",
+    channels: ["online"],
+  },
+};
+
+Deno.test("toSearchResultItem keeps what the model judges and cites on", () => {
+  assertEquals(toSearchResultItem(SHOP_ROW), {
+    id: "8f3a-p1",
+    name: "白襯衫",
+    price: 1200,
+    store: "某店",
+    channels: ["online"],
+    sizes: ["S", "M"],
+    gender: "female",
+    material: "棉",
+    fit: "regular",
+    elasticity: "low",
+    styles: ["minimalist"],
+  });
+});
+
+Deno.test("toSearchResultItem ships no uuid but the one the model must copy", () => {
+  const item = toSearchResultItem(SHOP_ROW);
+  // The whole point of the projection: `store_id`, `category_ids` and each
+  // variant's own id are uuids that look exactly like the citable one, and
+  // copying the wrong one drops the card with no error raised anywhere.
+  for (const key of ["store_id", "category_ids", "product_variants", "store_profiles"]) {
+    assertEquals(key in item, false, `${key} must not reach the model`);
+  }
+  assertStringIncludes(JSON.stringify(item), "8f3a-p1");
+  assertEquals(JSON.stringify(item).includes("11aa-s1"), false);
+});
+
+Deno.test("toSearchResultItem drops unset attributes rather than sending nulls", () => {
+  const item = toSearchResultItem(SHOP_ROW);
+  // `thickness` is null and `seasons` is empty: unset and absent are the same
+  // fact to the model, and only one of them costs tokens.
+  assertEquals("thickness" in item, false);
+  assertEquals("seasons" in item, false);
+});
+
+Deno.test("toSearchResultItem tolerates a row with no variants and no store", () => {
+  const item = toSearchResultItem({ id: "p9", name: "褲", price: 500 });
+  assertEquals(item, { id: "p9", name: "褲", price: 500 });
 });

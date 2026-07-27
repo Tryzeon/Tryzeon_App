@@ -5,6 +5,7 @@ import {
   mapSearchProductsArgs,
   resolveCategoryFilter,
   SEARCH_LIMIT,
+  toSearchResultItem,
   WARDROBE_SELECT,
 } from "./logic.ts";
 import { nonEmptyStr } from "../text.ts";
@@ -30,7 +31,7 @@ async function runSearchProducts(
   const params = mapSearchProductsArgs(args, { categoryIds: category.categoryIds });
   const { data, error } = await admin.rpc("list_shop_products", params);
   if (error) throw error;
-  return { items: (data ?? []) as Record<string, any>[] };
+  return { items: ((data ?? []) as Record<string, any>[]).map(toSearchResultItem) };
 }
 
 async function runSearchWardrobe(

@@ -79,6 +79,37 @@ export function mapSearchProductsArgs(
   };
 }
 
+// An attribute the shop left unset and one that does not exist are the same
+// fact to the model, and only the first costs tokens — so only set fields ship.
+const withSetFields = (o: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(
+    Object.entries(o).filter(([, v]) =>
+      v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0)
+    ),
+  );
+
+
+export function toSearchResultItem(row: Record<string, any>): Record<string, unknown> {
+  const store = (row.store_profiles ?? null) as Record<string, unknown> | null;
+  const variants = Array.isArray(row.product_variants) ? row.product_variants : [];
+
+  return withSetFields({
+    id: String(row.id),
+    name: row.name,
+    price: row.price,
+    store: store?.name ?? null,
+    channels: store?.channels ?? null,
+    sizes: variants.map((v) => v?.name).filter(Boolean),
+    gender: row.gender,
+    material: row.material,
+    fit: row.fit,
+    elasticity: row.elasticity,
+    thickness: row.thickness,
+    styles: row.styles,
+    seasons: row.seasons,
+  });
+}
+
 // Map the standard conversation to AI SDK `ModelMessage[]`. The whole history is
 // replayed verbatim and uncompressed: assistant tool_use → a `tool-call` part,
 // the paired user tool_result → a `tool` message with a `tool-result` part (its
