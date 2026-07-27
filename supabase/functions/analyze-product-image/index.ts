@@ -45,17 +45,17 @@ function buildPrompt(categoryNames: string[]): string {
 
 function buildSchema(categoryNames: string[]): Record<string, unknown> {
   return {
-    type: "OBJECT",
+    type: "object",
     properties: {
-      name: { type: "STRING" },
-      category: { type: "STRING", enum: [...categoryNames, "unknown"] },
-      gender: { type: "STRING", enum: [...GENDER_VALUES, "unknown"] },
-      styles: { type: "ARRAY", items: { type: "STRING", enum: STYLE_VALUES } },
-      seasons: { type: "ARRAY", items: { type: "STRING", enum: SEASON_VALUES } },
-      material: { type: "STRING" },
-      fit: { type: "STRING", enum: [...FIT_VALUES, "unknown"] },
-      thickness: { type: "STRING", enum: [...THICKNESS_VALUES, "unknown"] },
-      elasticity: { type: "STRING", enum: [...ELASTICITY_VALUES, "unknown"] },
+      name: { type: "string" },
+      category: { type: "string", enum: [...categoryNames, "unknown"] },
+      gender: { type: "string", enum: [...GENDER_VALUES, "unknown"] },
+      styles: { type: "array", items: { type: "string", enum: STYLE_VALUES } },
+      seasons: { type: "array", items: { type: "string", enum: SEASON_VALUES } },
+      material: { type: "string" },
+      fit: { type: "string", enum: [...FIT_VALUES, "unknown"] },
+      thickness: { type: "string", enum: [...THICKNESS_VALUES, "unknown"] },
+      elasticity: { type: "string", enum: [...ELASTICITY_VALUES, "unknown"] },
     },
     required: ["category", "gender", "styles", "seasons", "thickness", "elasticity"],
   };

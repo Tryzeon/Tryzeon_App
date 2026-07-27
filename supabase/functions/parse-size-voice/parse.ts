@@ -40,25 +40,25 @@ export function buildPrompt(): string {
 
 export function buildSchema(): Record<string, unknown> {
   const measurement = {
-    type: "OBJECT",
+    type: "object",
     properties: {
-      value: { type: "NUMBER" },
-      unit: { type: "STRING", enum: [...UNIT_VALUES] },
+      value: { type: "number" },
+      unit: { type: "string", enum: [...UNIT_VALUES] },
     },
     required: ["value", "unit"],
   };
   const measurementProps: Record<string, unknown> = {};
   for (const key of MEASUREMENT_KEYS) measurementProps[key] = measurement;
   return {
-    type: "OBJECT",
+    type: "object",
     properties: {
       sizes: {
-        type: "ARRAY",
+        type: "array",
         items: {
-          type: "OBJECT",
+          type: "object",
           properties: {
-            name: { type: "STRING" },
-            measurements: { type: "OBJECT", properties: measurementProps },
+            name: { type: "string" },
+            measurements: { type: "object", properties: measurementProps },
           },
           required: ["name", "measurements"],
         },

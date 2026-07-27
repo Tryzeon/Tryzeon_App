@@ -29,13 +29,11 @@ const ANALYSIS_PROMPT =
   版型/圖案：素色、條紋、格紋、印花、拼接、寬鬆、合身
 只回 JSON，不要多餘文字。`;
 
-// @google/genai does not export a Type enum in the version used by this project;
-// use string-literal type descriptors for the structured-output schema instead.
 const ANALYSIS_SCHEMA = {
-  type: "OBJECT",
+  type: "object",
   properties: {
-    category: { type: "STRING", enum: SCHEMA_CATEGORIES },
-    tags: { type: "ARRAY", items: { type: "STRING" } },
+    category: { type: "string", enum: SCHEMA_CATEGORIES },
+    tags: { type: "array", items: { type: "string" } },
   },
   required: ["category", "tags"],
 };
