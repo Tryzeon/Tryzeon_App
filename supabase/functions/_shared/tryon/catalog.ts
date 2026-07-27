@@ -1,10 +1,8 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { isUuid } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
 import type { ResolvedGarment } from "./types.ts";
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Raw product columns needed to build a try-on garment. */
 export interface ProductGarmentRow {
@@ -55,7 +53,7 @@ export async function resolveProductGarment(
 ): Promise<ResolvedGarment> {
   // Reject non-UUID ids up front so garbage yields a clean validation error
   // instead of a Postgres "invalid input syntax for type uuid".
-  if (!UUID_RE.test(productId)) {
+  if (!isUuid(productId)) {
     throw new ValidationError(`invalid productId: ${productId}`);
   }
 
