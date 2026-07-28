@@ -117,3 +117,29 @@ export function tryonNote(product: LineProduct): ChatMessage {
     }],
   };
 }
+
+/**
+ * One forwarded photo, as a turn of the transcript.
+ *
+ * A `user` message for the same reason {@link tryonNote} is: `ChatRole` has
+ * only the two roles and this is something the user did.
+ *
+ * Where it differs is what it claims. {@link tryonNote} says the user *tried on*
+ * a product, so its caller writes it only when the generation succeeded; this
+ * one says only that a photo arrived, which is true whether or not the try-on
+ * that followed produced anything. So its caller writes it unconditionally, and
+ * a generation failure still leaves the agent able to answer "那有沒有類似的".
+ *
+ * The description arrives already trimmed and capped (`describeGarment` in
+ * `garment-analysis.ts`), so nothing is clamped again here — one cap, stated in
+ * the module that also states it to the model.
+ */
+export function photoNote(description: string): ChatMessage {
+  return {
+    role: "user",
+    content: [{
+      type: "text",
+      text: `（使用者傳了一張衣物照片：${description}）`,
+    }],
+  };
+}

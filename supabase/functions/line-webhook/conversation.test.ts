@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
   dehydrateMessages,
+  photoNote,
   redisConversations,
   type RedisLike,
   tryonNote,
@@ -107,6 +108,16 @@ Deno.test("an absurd product name cannot dominate the transcript", () => {
     (note.content[0] as { text: string }).text,
     `（使用者剛試穿了商品 id:${PID}「${"衣".repeat(40)}…」）`,
   );
+});
+
+Deno.test("a forwarded photo is recorded as a user turn describing what was sent", () => {
+  const note = photoNote("淺藍色寬鬆棉質抽繩長褲");
+
+  assertEquals(note.role, "user");
+  assertEquals(note.content, [{
+    type: "text",
+    text: "（使用者傳了一張衣物照片：淺藍色寬鬆棉質抽繩長褲）",
+  }]);
 });
 
 interface SetCall {
