@@ -8,9 +8,13 @@ import {
   runChatAgent,
 } from "../_shared/chat/index.ts";
 import { QuotaExceededError } from "../_shared/quota.ts";
+import { ValidationError } from "../_shared/validation.ts";
 import type { LineApi } from "./line-api.ts";
+import type { ChatMessage } from "../_shared/chat/index.ts";
+import { fakeConversations } from "./conversation.testing.ts";
 
 const USER = "Uline123";
+const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
 /** LINE double recording what was sent, with a scripted `showLoading` outcome. */
 function fakeLine(opts: { loadingFails?: boolean } = {}) {
@@ -39,12 +43,18 @@ function fakeLine(opts: { loadingFails?: boolean } = {}) {
  * Typed as `runChatAgent` itself, so a rename in `ChatParams` fails the build
  * here rather than leaving the assertions below silently reading `undefined`.
  */
-function fakeChat(outcome: { blocks: ContentBlock[] } | { throws: unknown }) {
+function fakeChat(
+  outcome: { blocks: ContentBlock[]; messages?: ChatMessage[] } | { throws: unknown },
+) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
   const runChat: typeof runChatAgent = (_clients, params, deps = {}) => {
     seen.push({ params, deps });
     if ("throws" in outcome) return Promise.reject(outcome.throws);
-    return Promise.resolve({ blocks: outcome.blocks, messages: [], usage: null });
+    return Promise.resolve({
+      blocks: outcome.blocks,
+      messages: outcome.messages ?? [],
+      usage: null,
+    });
   };
   return { runChat, seen };
 }
@@ -55,6 +65,7 @@ function deps(over: Partial<ChatHandlerDeps> = {}): ChatHandlerDeps {
     admin: {} as any,
     line: fakeLine().line,
     imagesBaseUrl: "https://img.example",
+    conversations: fakeConversations().store,
     getOrCreateUserId: () => Promise.resolve("user-uuid"),
     ...over,
   };
@@ -90,7 +101,7 @@ Deno.test("runs one turn for the incoming message and pushes the answer", async 
   });
 
   assertEquals(loading, [USER]);
-  // The transcript is exactly this message: nothing is stored between turns.
+  // A new conversation: the transcript is this message alone.
   assertEquals(chat.seen[0].params.userId, "user-uuid");
   assertEquals(chat.seen[0].params.messages, [
     { role: "user", content: [{ type: "text", text: "找白襯衫" }] },
@@ -160,4 +171,153 @@ Deno.test("a failed typing indicator does not cost the caller their answer", asy
     }));
 
   assertEquals(pushed, [[{ type: "text", text: "為你找到" }]]);
+});
+
+Deno.test("the turn runs on the stored conversation plus this message", async () => {
+  const prior: ChatMessage[] = [
+    { role: "user", content: [{ type: "text", text: "找外套" }] },
+    {
+      role: "assistant",
+      content: [{ type: "text", text: "為你找到" }, { type: "product", id: PID }],
+    },
+  ];
+  const conversations = fakeConversations({ prior });
+  const chat = fakeChat({ blocks: [{ type: "text", text: "這件比較便宜" }] });
+
+  await handleTextMessage(
+    deps({ runChat: chat.runChat, conversations: conversations.store }),
+    { sourceUserId: USER, text: "有便宜一點的嗎" },
+  );
+
+  // The follow-up is only answerable because the prior turns went in with it.
+  assertEquals(chat.seen[0].params.messages, [
+    ...prior,
+    { role: "user", content: [{ type: "text", text: "有便宜一點的嗎" }] },
+  ]);
+});
+
+Deno.test("the whole turn is written back, with recommended items reduced to ids", async () => {
+  const conversations = fakeConversations();
+  const answer: ChatMessage = {
+    role: "assistant",
+    content: [
+      { type: "text", text: "為你找到" },
+      { type: "product", item: { id: PID, name: "短版牛仔外套" } },
+    ],
+  };
+  const chat = fakeChat({
+    blocks: answer.content,
+    messages: [
+      {
+        role: "assistant",
+        content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
+      },
+      {
+        role: "user",
+        content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }],
+      },
+      answer,
+    ],
+  });
+
+  await handleTextMessage(
+    deps({ runChat: chat.runChat, conversations: conversations.store }),
+    { sourceUserId: USER, text: "找外套" },
+  );
+
+  assertEquals(conversations.writes.length, 1);
+  assertEquals(conversations.writes[0], [
+    { role: "user", content: [{ type: "text", text: "找外套" }] },
+    {
+      role: "assistant",
+      content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
+    },
+    {
+      role: "user",
+      content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }],
+    },
+    {
+      role: "assistant",
+      content: [{ type: "text", text: "為你找到" }, { type: "product", id: PID }],
+    },
+  ]);
+});
+
+Deno.test("a failed turn leaves the conversation untouched", async () => {
+  // A stored user message with no answer is a question the next turn's model
+  // would read as ignored, so a turn that did not happen is not recorded.
+  const conversations = fakeConversations();
+  const chat = fakeChat({ throws: new QuotaExceededError(null) });
+
+  await handleTextMessage(
+    deps({ runChat: chat.runChat, conversations: conversations.store }),
+    { sourceUserId: USER, text: "找外套" },
+  );
+
+  assertEquals(conversations.writes, []);
+});
+
+Deno.test("a validation failure resets the stored conversation instead of wedging it", async () => {
+  // With a stored transcript, a validation error most likely means the
+  // *history* broke a core limit (e.g. an unbounded assistant answer past
+  // MAX_TEXT_LENGTH). Left alone, every future turn would replay the same
+  // broken history and fail forever, since a failed turn never refreshes the
+  // TTL either. Resetting to `[]` is a fresh conversation, so the next
+  // message escapes it.
+  const prior: ChatMessage[] = [
+    { role: "user", content: [{ type: "text", text: "找外套" }] },
+  ];
+  const conversations = fakeConversations({ prior });
+  const chat = fakeChat({ throws: new ValidationError("messages too long") });
+
+  await handleTextMessage(
+    deps({ runChat: chat.runChat, conversations: conversations.store }),
+    { sourceUserId: USER, text: "有便宜一點的嗎" },
+  );
+
+  assertEquals(conversations.writes, [[]]);
+});
+
+Deno.test("a non-validation failure writes nothing, unlike a validation failure", async () => {
+  // The two failure kinds differ in exactly one way — whether the store is
+  // reset — so both are asserted here rather than trusting one to imply the
+  // other.
+  const prior: ChatMessage[] = [
+    { role: "user", content: [{ type: "text", text: "找外套" }] },
+  ];
+  const conversations = fakeConversations({ prior });
+  const chat = fakeChat({ throws: new QuotaExceededError(null) });
+
+  await handleTextMessage(
+    deps({ runChat: chat.runChat, conversations: conversations.store }),
+    { sourceUserId: USER, text: "有便宜一點的嗎" },
+  );
+
+  assertEquals(conversations.writes, []);
+});
+
+Deno.test("the answer is pushed before the conversation is written", async () => {
+  const trace: string[] = [];
+  const { line } = fakeLine();
+  const tracingLine: LineApi = {
+    ...line,
+    push: () => {
+      trace.push("push");
+      return Promise.resolve();
+    },
+  };
+  const conversations = fakeConversations({ onSave: () => trace.push("save") });
+  const chat = fakeChat({ blocks: [{ type: "text", text: "好" }] });
+
+  await handleTextMessage(
+    deps({
+      line: tracingLine,
+      runChat: chat.runChat,
+      conversations: conversations.store,
+    }),
+    { sourceUserId: USER, text: "找外套" },
+  );
+
+  // Bookkeeping never delays the reply the user is waiting for.
+  assertEquals(trace, ["push", "save"]);
 });

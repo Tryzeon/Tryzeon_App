@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import { type RouterDeps, routeEvent } from "./router.ts";
 import type { LineApi } from "./line-api.ts";
+import { fakeConversations } from "./conversation.testing.ts";
 
 const line: LineApi = {
   reply: () => Promise.resolve(),
@@ -15,6 +16,7 @@ const deps: RouterDeps = {
   line,
   liffOnboardUrl: "https://liff.example/onboard",
   imagesBaseUrl: "https://img.example",
+  conversations: fakeConversations().store,
 };
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
@@ -76,4 +78,20 @@ Deno.test("a postback we did not issue routes nowhere", () => {
 
 Deno.test("an event kind this module does not route returns nothing", () => {
   assertEquals(routed({ type: "follow", replyToken: "rt", source: { userId: "U1" } }), false);
+});
+
+Deno.test("an event with no source.userId routes nowhere", () => {
+  // LINE omits `source.userId` when the sender has not consented to the OA
+  // Terms of Use. Routing it anyway would key the conversation store on the
+  // literal string "undefined", pooling every such sender's transcript into
+  // one bucket — so this must be a no-handler case for every event kind, not
+  // a downstream concern for each handler.
+  assertEquals(
+    routed({ type: "message", replyToken: "rt", source: { type: "user" }, message: { type: "text", text: "hi" } }),
+    false,
+  );
+  assertEquals(
+    routed({ type: "postback", replyToken: "rt", source: { type: "user" }, postback: { data: `a=tryon&pid=${PID}` } }),
+    false,
+  );
 });

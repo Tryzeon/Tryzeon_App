@@ -5,6 +5,7 @@ import { verifyLineSignature } from "./signature.ts";
 import { makeLineApi } from "./line-api.ts";
 import { hintMessage } from "./messages.ts";
 import { routeEvent } from "./router.ts";
+import { redisConversations } from "./conversation.ts";
 
 // EdgeRuntime.waitUntil keeps the function warm for the ~30s generation after
 // the 200 has been returned. Declared here for the Deno type checker.
@@ -43,12 +44,16 @@ Deno.serve(async (req) => {
 
   const admin = getAdminClient();
   const line = makeLineApi(accessToken);
+  const conversations = redisConversations();
 
   for (const ev of events as Array<Record<string, any>>) {
     if (ev.source?.type !== "user") continue;
     if (ev.type !== "message" && ev.type !== "postback") continue;
 
-    const task = routeEvent({ admin, line, liffOnboardUrl, imagesBaseUrl }, ev);
+    const task = routeEvent(
+      { admin, line, liffOnboardUrl, imagesBaseUrl, conversations },
+      ev,
+    );
     if (task === null) {
       // Nothing we handle (a sticker, a blank line): nudge with a free reply.
       await line.reply(ev.replyToken, [hintMessage()]).catch((err) => {

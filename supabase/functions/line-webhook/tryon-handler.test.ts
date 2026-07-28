@@ -8,6 +8,7 @@ import {
 import { QuotaExceededError } from "../_shared/quota.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
+import { fakeConversations } from "./conversation.testing.ts";
 
 const USER = "Uline123";
 
@@ -149,6 +150,7 @@ function makeProductDeps(over: Partial<ProductTryonDeps> = {}): ProductTryonDeps
     ...makeDeps(),
     imagesBaseUrl: "https://img.example",
     fetchProduct: () => Promise.resolve(someProduct()),
+    conversations: fakeConversations().store,
     ...over,
   };
 }
@@ -280,4 +282,66 @@ Deno.test("an exhausted quota during a product try-on pushes the quota text, not
     type: "text",
     text: "今日試穿次數已用完，明天再回來試。",
   });
+});
+
+Deno.test("a completed product try-on becomes part of the conversation", async () => {
+  const { line } = fakeLine();
+  const prior = [{
+    role: "assistant" as const,
+    content: [{ type: "text", text: "這件如何？" }],
+  }];
+  const conversations = fakeConversations({ prior });
+
+  await handleProductTryon(
+    makeProductDeps({ line, conversations: conversations.store }),
+    productEvent,
+  );
+
+  // Appended, not replacing: the card the user tapped came from the turn
+  // before it, and "這件配什麼褲子" needs both.
+  assertEquals(conversations.writes.length, 1);
+  assertEquals(conversations.writes[0], [
+    ...prior,
+    {
+      role: "user",
+      content: [{
+        type: "text",
+        text: `（使用者剛試穿了商品 id:${PID}「短版牛仔外套」）`,
+      }],
+    },
+  ]);
+});
+
+Deno.test("a try-on that never happened is not recorded", async () => {
+  const { line } = fakeLine();
+  const conversations = fakeConversations();
+
+  await handleProductTryon(
+    makeProductDeps({
+      line,
+      conversations: conversations.store,
+      runJob: () => Promise.reject(new QuotaExceededError(null)),
+    }),
+    productEvent,
+  );
+
+  assertEquals(conversations.writes, []);
+});
+
+Deno.test("the result card is pushed before the conversation is written", async () => {
+  const trace: string[] = [];
+  const { line } = fakeLine({
+    push: () => {
+      trace.push("push");
+      return Promise.resolve();
+    },
+  });
+  const conversations = fakeConversations({ onSave: () => trace.push("save") });
+
+  await handleProductTryon(
+    makeProductDeps({ line, conversations: conversations.store }),
+    productEvent,
+  );
+
+  assertEquals(trace, ["push", "save"]);
 });

@@ -15,6 +15,7 @@ import {
   tryonErrorMessage,
 } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
+import { type ConversationStore, tryonNote } from "./conversation.ts";
 
 export interface ImageEvent {
   replyToken: string;
@@ -142,6 +143,7 @@ export interface ProductTryonEvent {
 export interface ProductTryonDeps extends TryonHandlerDeps {
   /** Public R2 base the product card's image key is resolved against. */
   imagesBaseUrl: string;
+  conversations: ConversationStore;
   fetchProduct?: typeof fetchLineProduct;
 }
 
@@ -190,6 +192,11 @@ export async function handleProductTryon(
       ? productResultMessage(outcome.imageUrl, product)
       : tryonErrorMessage(outcome.kind),
   ]);
+
+  if (outcome.ok) {
+    const prior = await deps.conversations.load(event.sourceUserId);
+    await deps.conversations.save(event.sourceUserId, [...prior, tryonNote(product)]);
+  }
 }
 
 /**

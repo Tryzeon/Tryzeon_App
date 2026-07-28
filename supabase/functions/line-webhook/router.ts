@@ -19,12 +19,14 @@ import { handleImageMessage, handleProductTryon } from "./tryon-handler.ts";
 import { handleTextMessage } from "./chat-handler.ts";
 import { parsePostback } from "./postback.ts";
 import { LineApi } from "./line-api.ts";
+import type { ConversationStore } from "./conversation.ts";
 
 export interface RouterDeps {
   admin: SupabaseClient;
   line: LineApi;
   liffOnboardUrl: string;
   imagesBaseUrl: string;
+  conversations: ConversationStore;
 }
 
 export function routeEvent(
@@ -37,13 +39,22 @@ export function routeEvent(
   return null;
 }
 
+function requireSourceUserId(
+  // deno-lint-ignore no-explicit-any
+  ev: Record<string, any>,
+): string | null {
+  const id = ev.source?.userId;
+  return typeof id === "string" && id.length > 0 ? id : null;
+}
+
 function routeMessage(
   deps: RouterDeps,
   // deno-lint-ignore no-explicit-any
   ev: Record<string, any>,
 ): Promise<void> | null {
   const { admin, line } = deps;
-  const sourceUserId = ev.source?.userId;
+  const sourceUserId = requireSourceUserId(ev);
+  if (sourceUserId === null) return null;
 
   if (ev.message?.type === "image") {
     return handleImageMessage(
@@ -56,7 +67,12 @@ function routeMessage(
     const text = String(ev.message.text ?? "").trim();
     if (text) {
       return handleTextMessage(
-        { admin, line, imagesBaseUrl: deps.imagesBaseUrl },
+        {
+          admin,
+          line,
+          imagesBaseUrl: deps.imagesBaseUrl,
+          conversations: deps.conversations,
+        },
         { sourceUserId, text },
       );
     }
@@ -73,17 +89,21 @@ function routePostback(
   const postback = parsePostback(ev.postback?.data);
   if (postback === null) return null;
 
+  const sourceUserId = requireSourceUserId(ev);
+  if (sourceUserId === null) return null;
+
   return handleProductTryon(
     {
       admin: deps.admin,
       line: deps.line,
       liffOnboardUrl: deps.liffOnboardUrl,
       imagesBaseUrl: deps.imagesBaseUrl,
+      conversations: deps.conversations,
       getAvatarPath,
     },
     {
       replyToken: ev.replyToken,
-      sourceUserId: ev.source?.userId,
+      sourceUserId,
       productId: postback.productId,
     },
   );
