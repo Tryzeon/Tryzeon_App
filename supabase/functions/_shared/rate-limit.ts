@@ -12,7 +12,7 @@ function getLimiter(
   let limiter = limiters.get(key);
   if (!limiter) {
     limiter = new Ratelimit({
-      redis,
+      redis: redis(),
       limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`),
       prefix: bucket,
     });
