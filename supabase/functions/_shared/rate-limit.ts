@@ -1,10 +1,5 @@
 import { Ratelimit } from "npm:@upstash/ratelimit";
-import { Redis } from "npm:@upstash/redis";
-
-const redis = new Redis({
-  url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
-  token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
-});
+import { redis } from "./redis.ts";
 
 const limiters = new Map<string, Ratelimit>();
 
