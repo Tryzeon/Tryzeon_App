@@ -144,8 +144,8 @@ export function App() {
         {Header}
         <div className="fit">
           {selectedItem && (
-            <div className="fit__frame">
-              <img className="fit__img" src={selectedItem.imageUrl} alt="" />
+            <div className="frame">
+              <img className="frame__img" src={selectedItem.imageUrl} alt="" />
               <div className="fit__scan" />
             </div>
           )}
