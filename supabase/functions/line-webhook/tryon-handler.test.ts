@@ -1,7 +1,8 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
-  handleImageMessage,
+  handleImageTryon,
   handleProductTryon,
+  type ImageTryonDeps,
   type ProductTryonDeps,
   type TryonHandlerDeps,
 } from "./tryon-handler.ts";
@@ -9,6 +10,7 @@ import { QuotaExceededError } from "../_shared/quota.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
+import { photoNote } from "./conversation.ts";
 
 const USER = "Uline123";
 
@@ -35,13 +37,14 @@ function fakeLine(overrides: Partial<LineApi> = {}): { line: LineApi; sent: Sent
   return { line, sent };
 }
 
-/** Deps with every collaborator stubbed; each test overrides what it cares about. */
-function makeDeps(over: Partial<TryonHandlerDeps> = {}): TryonHandlerDeps {
+/** What both paths share, every collaborator stubbed. */
+function baseDeps(): TryonHandlerDeps {
   return {
     // deno-lint-ignore no-explicit-any
     admin: {} as any,
     line: fakeLine().line,
     liffOnboardUrl: "https://liff.example/onboard",
+    conversations: fakeConversations().store,
     getOrCreateUserId: () => Promise.resolve("user-1"),
     getAvatarPath: () => Promise.resolve("user-1/avatar.jpg"),
     runJob: () =>
@@ -51,6 +54,14 @@ function makeDeps(over: Partial<TryonHandlerDeps> = {}): TryonHandlerDeps {
         usage: null,
         // deno-lint-ignore no-explicit-any
       } as any),
+  };
+}
+
+/** Photo-path deps; each test overrides what it cares about. */
+function makeDeps(over: Partial<ImageTryonDeps> = {}): ImageTryonDeps {
+  return {
+    ...baseDeps(),
+    describeGarment: () => Promise.resolve("淺藍色寬鬆棉質抽繩長褲"),
     ...over,
   };
 }
@@ -63,7 +74,7 @@ const textOf = (message: object) => (message as any).text as string;
 Deno.test("a sender with no model photo is asked to onboard, and nothing is generated", async () => {
   const { line, sent } = fakeLine();
   let ran = false;
-  await handleImageMessage(
+  await handleImageTryon(
     makeDeps({
       line,
       getAvatarPath: () => Promise.resolve(null),
@@ -85,7 +96,7 @@ Deno.test("a sender with no model photo is asked to onboard, and nothing is gene
 
 Deno.test("a garment image is acknowledged, then the result is pushed", async () => {
   const { line, sent } = fakeLine();
-  await handleImageMessage(makeDeps({ line }), event);
+  await handleImageTryon(makeDeps({ line }), event);
 
   assertEquals(sent.replies.length, 1);
   assertEquals(textOf(sent.replies[0][0]), "收到，正在試穿，請稍等！");
@@ -102,7 +113,7 @@ Deno.test("an image LINE will not hand over is reported as a download failure", 
     getContent: () => Promise.reject(new Error("410 gone")),
   });
   let ran = false;
-  await handleImageMessage(
+  await handleImageTryon(
     makeDeps({
       line,
       runJob: () => {
@@ -121,7 +132,7 @@ Deno.test("an image LINE will not hand over is reported as a download failure", 
 
 Deno.test("an exhausted quota is reported in try-on's own words", async () => {
   const { line, sent } = fakeLine();
-  await handleImageMessage(
+  await handleImageTryon(
     // `QuotaExceededError` carries the usage row it hit; null is fine here.
     makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(null)) }),
     event,
@@ -129,6 +140,93 @@ Deno.test("an exhausted quota is reported in try-on's own words", async () => {
 
   assertEquals(sent.pushes.length, 1);
   assertEquals(textOf(sent.pushes[0][0]), "今日試穿次數已用完，明天再回來試。");
+});
+
+Deno.test("a forwarded photo becomes part of the conversation", async () => {
+  const prior = [{
+    role: "assistant" as const,
+    content: [{ type: "text", text: "傳張照片給我" }],
+  }];
+  const conversations = fakeConversations({ prior });
+
+  await handleImageTryon(makeDeps({ conversations: conversations.store }), event);
+
+  assertEquals(conversations.writes.length, 1);
+  assertEquals(conversations.writes[0], [
+    ...prior,
+    photoNote("淺藍色寬鬆棉質抽繩長褲"),
+  ]);
+});
+
+Deno.test("what the user sent is recorded even when nothing could be generated", async () => {
+  // The note says a photo arrived, not that it was worn — true either way. So a
+  // sender who reads "這張沒能生成" can still follow up with "那有沒有類似的".
+  const conversations = fakeConversations();
+
+  await handleImageTryon(
+    makeDeps({
+      conversations: conversations.store,
+      runJob: () => Promise.reject(new QuotaExceededError(null)),
+    }),
+    event,
+  );
+
+  assertEquals(conversations.writes.length, 1);
+  assertEquals(conversations.writes[0], [photoNote("淺藍色寬鬆棉質抽繩長褲")]);
+});
+
+Deno.test("an unreadable photo costs the note, not the try-on", async () => {
+  const { line, sent } = fakeLine();
+  const conversations = fakeConversations();
+
+  await handleImageTryon(
+    makeDeps({
+      line,
+      conversations: conversations.store,
+      describeGarment: () => Promise.resolve(null),
+    }),
+    event,
+  );
+
+  assertEquals(conversations.writes, []);
+  assertEquals(sent.pushes.length, 1);
+  assertEquals(sent.pushes[0][0], {
+    type: "image",
+    originalContentUrl: "https://img.example/result.jpg",
+    previewImageUrl: "https://img.example/result.jpg",
+  });
+});
+
+Deno.test("the photo is described from the same bytes the try-on wears", async () => {
+  // One download, two readers, running together — the description must not cost
+  // the sender a second wait on top of the ~30s generation.
+  const seen: { userId: string; base64: string }[] = [];
+  // deno-lint-ignore no-explicit-any
+  const jobs: any[] = [];
+
+  await handleImageTryon(
+    makeDeps({
+      describeGarment: (userId, base64) => {
+        seen.push({ userId, base64 });
+        return Promise.resolve("白襯衫");
+      },
+      // deno-lint-ignore no-explicit-any
+      runJob: (_clients: any, params: any) => {
+        jobs.push(params);
+        return Promise.resolve({
+          kind: "image",
+          imageUrl: "https://img.example/result.jpg",
+          usage: null,
+          // deno-lint-ignore no-explicit-any
+        } as any);
+      },
+    }),
+    event,
+  );
+
+  assertEquals(seen.length, 1);
+  assertEquals(seen[0].userId, "user-1");
+  assertEquals(seen[0].base64, jobs[0].garments[0].images[0].base64);
 });
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
@@ -147,10 +245,9 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
 
 function makeProductDeps(over: Partial<ProductTryonDeps> = {}): ProductTryonDeps {
   return {
-    ...makeDeps(),
+    ...baseDeps(),
     imagesBaseUrl: "https://img.example",
     fetchProduct: () => Promise.resolve(someProduct()),
-    conversations: fakeConversations().store,
     ...over,
   };
 }
@@ -344,4 +441,48 @@ Deno.test("the result card is pushed before the conversation is written", async 
   );
 
   assertEquals(trace, ["push", "save"]);
+});
+
+Deno.test("the result image is pushed before the conversation is written", async () => {
+  const trace: string[] = [];
+  const { line } = fakeLine({
+    push: () => {
+      trace.push("push");
+      return Promise.resolve();
+    },
+  });
+  const conversations = fakeConversations({ onSave: () => trace.push("save") });
+
+  await handleImageTryon(makeDeps({ line, conversations: conversations.store }), event);
+
+  assertEquals(trace, ["push", "save"]);
+});
+
+Deno.test("a stalled description does not hold back the result", async () => {
+  // `Promise.all` would settle on the slower of the two, so a hung analysis
+  // would keep the sender from the image they waited 30s for. The description
+  // is context for the next turn; it is not what they are waiting on.
+  const trace: string[] = [];
+  let releaseDescription: (value: string | null) => void = () => {};
+  const described = new Promise<string | null>((resolve) => {
+    releaseDescription = resolve;
+  });
+
+  const { line } = fakeLine({
+    push: () => {
+      trace.push("push");
+      // Only now let the description finish, so the push provably did not wait.
+      releaseDescription("白襯衫");
+      return Promise.resolve();
+    },
+  });
+  const conversations = fakeConversations({ onSave: () => trace.push("save") });
+
+  await handleImageTryon(
+    makeDeps({ line, conversations: conversations.store, describeGarment: () => described }),
+    event,
+  );
+
+  assertEquals(trace, ["push", "save"]);
+  assertEquals(conversations.writes[0], [photoNote("白襯衫")]);
 });

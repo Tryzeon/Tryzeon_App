@@ -5,6 +5,7 @@ import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
 import { fetchLineProduct } from "./product-card.ts";
+import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
   onboardingMessage,
   processingMessage,
@@ -15,18 +16,13 @@ import {
   tryonErrorMessage,
 } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
-import { type ConversationStore, tryonNote } from "./conversation.ts";
-
-export interface ImageEvent {
-  replyToken: string;
-  sourceUserId: string;
-  messageId: string;
-}
+import { type ConversationStore, photoNote, tryonNote } from "./conversation.ts";
 
 export interface TryonHandlerDeps {
   admin: SupabaseClient;
   line: LineApi;
   liffOnboardUrl: string;
+  conversations: ConversationStore;
   getAvatarPath?: typeof defaultGetAvatarPath;
   getOrCreateUserId?: typeof defaultGetOrCreateUserId;
   runJob?: typeof runTryonJob;
@@ -96,15 +92,21 @@ async function runTryon(
   }
 }
 
-/**
- * Full lifecycle for one forwarded image: resolve the sender -> onboard if no
- * model photo -> otherwise reply "processing" and (in the caller's background
- * task) download the garment, run try-on, and push the result.
- */
-export async function handleImageMessage(
-  deps: TryonHandlerDeps,
-  event: ImageEvent,
+export interface ImageTryonEvent {
+  replyToken: string;
+  sourceUserId: string;
+  messageId: string;
+}
+
+export interface ImageTryonDeps extends TryonHandlerDeps {
+  describeGarment?: typeof defaultDescribeGarment;
+}
+
+export async function handleImageTryon(
+  deps: ImageTryonDeps,
+  event: ImageTryonEvent,
 ): Promise<void> {
+  const describeGarment = deps.describeGarment ?? defaultDescribeGarment;
   const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
 
   if (!avatarPath) {
@@ -123,15 +125,28 @@ export async function handleImageMessage(
     return;
   }
 
+  const base64 = uint8ToBase64(bytes);
+
+  const described = describeGarment(userId, base64).catch((err) => {
+    console.warn("line-webhook garment description failed:", err);
+    return null;
+  });
+
   const outcome = await runTryon(deps, {
     userId,
     avatarPath,
-    garment: { images: [{ base64: uint8ToBase64(bytes) }] },
+    garment: { images: [{ base64 }] },
   });
 
   await deps.line.push(event.sourceUserId, [
     outcome.ok ? resultMessage(outcome.imageUrl) : tryonErrorMessage(outcome.kind),
   ]);
+
+  const description = await described;
+  if (description !== null) {
+    const prior = await deps.conversations.load(event.sourceUserId);
+    await deps.conversations.save(event.sourceUserId, [...prior, photoNote(description)]);
+  }
 }
 
 export interface ProductTryonEvent {
@@ -143,7 +158,6 @@ export interface ProductTryonEvent {
 export interface ProductTryonDeps extends TryonHandlerDeps {
   /** Public R2 base the product card's image key is resolved against. */
   imagesBaseUrl: string;
-  conversations: ConversationStore;
   fetchProduct?: typeof fetchLineProduct;
 }
 

@@ -15,7 +15,7 @@
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getAvatarPath } from "../_shared/user-profile.ts";
-import { handleImageMessage, handleProductTryon } from "./tryon-handler.ts";
+import { handleImageTryon, handleProductTryon } from "./tryon-handler.ts";
 import { handleTextMessage } from "./chat-handler.ts";
 import { parsePostback } from "./postback.ts";
 import { LineApi } from "./line-api.ts";
@@ -57,8 +57,14 @@ function routeMessage(
   if (sourceUserId === null) return null;
 
   if (ev.message?.type === "image") {
-    return handleImageMessage(
-      { admin, line, liffOnboardUrl: deps.liffOnboardUrl, getAvatarPath },
+    return handleImageTryon(
+      {
+        admin,
+        line,
+        liffOnboardUrl: deps.liffOnboardUrl,
+        conversations: deps.conversations,
+        getAvatarPath,
+      },
       { replyToken: ev.replyToken, sourceUserId, messageId: ev.message.id },
     );
   }
