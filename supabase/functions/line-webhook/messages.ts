@@ -223,6 +223,32 @@ export function chatErrorMessage(kind: ChatErrorKind): object {
   }
 }
 
+/**
+ * The first thing anyone who follows this account reads.
+ *
+ * LINE also has a greeting message configurable in the OA Manager, and both
+ * would send if both were on — this one exists because that one cannot carry
+ * quick replies, and the welcome is the single message every user sees.
+ *
+ * Recommendation leads, not the camera: it pays off in seconds with nothing
+ * uploaded, while trying on a photo needs a garment picture and then a model
+ * photo before anything is generated. The product cards it returns each carry a
+ * try-on button, so the headline feature still arrives — attached to something
+ * the sender already wants.
+ */
+export function welcomeMessage(): object {
+  return withQuickReply({
+    type: "text",
+    text: "歡迎加入 Tryzeon！我是你的 AI 試穿助理。\n\n" +
+      "你可以直接傳一張衣服的照片給我，讓我就幫你試穿；\n" +
+      "也可以直接告訴我你想找什麼，我來幫你搜尋。",
+  }, [
+    messageChip("有什麼推薦", "有什麼推薦的商品嗎"),
+    cameraRollChip("傳衣服照試穿"),
+    messageChip("幫我配一套", "幫我配一套適合我的穿搭"),
+  ]);
+}
+
 export function hintMessage(): object {
   return withQuickReply({
     type: "text",

@@ -5,6 +5,7 @@ import {
   productTryonErrorMessage,
   productUnavailableMessage,
   tryonErrorMessage,
+  welcomeMessage,
 } from "./messages.ts";
 import type { LineProduct } from "./product-card.ts";
 
@@ -47,6 +48,17 @@ Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
   assertEquals(chipActions(message), [
     { type: "uri", label: "先逛逛商品", uri: "https://liff.example" },
     { type: "message", label: "這是什麼服務", text: "你是誰，你能幫我做什麼" },
+  ]);
+});
+
+Deno.test("the welcome leads with what costs the sender nothing", () => {
+  // A recommendation pays off in seconds with nothing uploaded; the camera
+  // needs a garment photo and then a model photo before anything is generated.
+  // Ordering is the whole decision here, so it is what this pins.
+  assertEquals(chipActions(welcomeMessage()), [
+    { type: "message", label: "有什麼推薦", text: "有什麼推薦的商品嗎" },
+    { type: "cameraRoll", label: "傳衣服照試穿" },
+    { type: "message", label: "幫我配一套", text: "幫我配一套適合我的穿搭" },
   ]);
 });
 

@@ -4,9 +4,10 @@
  * An image is a garment to try on; text is a request for the chat agent; a
  * postback is a button we put on a card coming back. All three take far longer
  * than the webhook may, so all three are returned as a task the caller finishes
- * in the background and delivers with a push. Anything else — a sticker, a
- * blank line, a postback from a card an older deploy sent — has no handler, and
- * `null` says so.
+ * in the background and delivers with a push. A follow is the exception: its
+ * answer is one fixed message, so it is done by the time the task resolves.
+ * Anything else — a sticker, a blank line, a postback from a card an older
+ * deploy sent — has no handler, and `null` says so.
  *
  * This lives beside the handlers rather than in `index.ts` because what counts
  * as a usable event is a rule about them, not about the transport: the text
@@ -18,6 +19,7 @@ import { getAvatarPath } from "../_shared/user-profile.ts";
 import { handleImageTryon, handleProductTryon } from "./tryon-handler.ts";
 import { handleTextMessage } from "./chat-handler.ts";
 import { parsePostback } from "./postback.ts";
+import { welcomeMessage } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 import type { ConversationStore } from "./conversation.ts";
 
@@ -36,7 +38,28 @@ export function routeEvent(
 ): Promise<void> | null {
   if (ev.type === "message") return routeMessage(deps, ev);
   if (ev.type === "postback") return routePostback(deps, ev);
+  if (ev.type === "follow") return routeFollow(deps, ev);
   return null;
+}
+
+/**
+ * A new follower, greeted on the reply token.
+ *
+ * The only event here that needs no `source.userId`: nothing is read, written
+ * or charged, so a sender who has not accepted the OA's terms — and whose id
+ * LINE therefore withholds — still gets the welcome.
+ *
+ * It fires on an unblock as well as a first follow (`follow.isUnblocked` tells
+ * them apart, but LINE does not guarantee that flag's accuracy). Both get the
+ * same message: greeting a returning follower twice costs nothing, and
+ * greeting a new one not at all is the failure this exists to fix.
+ */
+function routeFollow(
+  deps: RouterDeps,
+  // deno-lint-ignore no-explicit-any
+  ev: Record<string, any>,
+): Promise<void> {
+  return deps.line.reply(ev.replyToken, [welcomeMessage()]);
 }
 
 function requireSourceUserId(

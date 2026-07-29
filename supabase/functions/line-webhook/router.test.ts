@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals, assertStringIncludes } from "jsr:@std/assert";
 import { type RouterDeps, routeEvent } from "./router.ts";
 import type { LineApi } from "./line-api.ts";
 import { fakeConversations } from "./conversation.testing.ts";
@@ -77,15 +77,45 @@ Deno.test("a postback we did not issue routes nowhere", () => {
 });
 
 Deno.test("an event kind this module does not route returns nothing", () => {
-  assertEquals(routed({ type: "follow", replyToken: "rt", source: { userId: "U1" } }), false);
+  assertEquals(routed({ type: "unsend", source: { userId: "U1" } }), false);
+  assertEquals(routed({ type: "join", replyToken: "rt", source: { userId: "U1" } }), false);
+});
+
+Deno.test("a new follower is greeted on the reply token", async () => {
+  const sent: { token: string; messages: object[] }[] = [];
+  const recording: LineApi = {
+    ...line,
+    reply: (token, messages) => {
+      sent.push({ token, messages });
+      return Promise.resolve();
+    },
+  };
+
+  await routeEvent({ ...deps, line: recording }, {
+    type: "follow",
+    replyToken: "rt",
+    source: { type: "user", userId: "Uline123" },
+  });
+
+  assertEquals(sent.length, 1);
+  assertEquals(sent[0].token, "rt");
+  // deno-lint-ignore no-explicit-any
+  assertStringIncludes((sent[0].messages[0] as any).text, "Tryzeon");
+});
+
+Deno.test("a follower LINE will not name is greeted anyway", () => {
+  // The one event that needs no `source.userId`: nothing is read, written or
+  // charged, so someone who has not accepted the OA's terms still gets it.
+  assertEquals(routed({ type: "follow", replyToken: "rt", source: { type: "user" } }), true);
 });
 
 Deno.test("an event with no source.userId routes nowhere", () => {
   // LINE omits `source.userId` when the sender has not consented to the OA
   // Terms of Use. Routing it anyway would key the conversation store on the
   // literal string "undefined", pooling every such sender's transcript into
-  // one bucket — so this must be a no-handler case for every event kind, not
-  // a downstream concern for each handler.
+  // one bucket — so every event that reaches the store or the quota is dropped
+  // here rather than left as a downstream concern for each handler. A follow
+  // touches neither, which is why it is greeted regardless (see above).
   assertEquals(
     routed({ type: "message", replyToken: "rt", source: { type: "user" }, message: { type: "text", text: "hi" } }),
     false,
