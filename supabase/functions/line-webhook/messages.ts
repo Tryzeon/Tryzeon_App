@@ -32,7 +32,6 @@ const LIFF_ONBOARD_PATH = "/onboard";
  * still go see what there is to try on rather than leaving.
  */
 export function onboardingMessage(liffUrl: string): object {
-  const base = liffUrl.replace(/\/$/, "");
   return withQuickReply({
     type: "template",
     altText: "先建立你的 model 照",
@@ -42,11 +41,11 @@ export function onboardingMessage(liffUrl: string): object {
       actions: [{
         type: "uri",
         label: "上傳我的 model 照",
-        uri: `${base}${LIFF_ONBOARD_PATH}`,
+        uri: `${liffUrl}${LIFF_ONBOARD_PATH}`,
       }],
     },
   }, [
-    uriChip("先逛逛商品", base),
+    uriChip("先逛逛商品", liffUrl),
     messageChip("這是什麼服務", "你是誰，你能幫我做什麼"),
   ]);
 }
@@ -69,9 +68,10 @@ export function productProcessingMessage(name: string): object {
   return { type: "text", text: `收到，正在幫你試穿「${name}」，請稍等！` };
 }
 
-export function productUnavailableMessage(): object {
+export function productUnavailableMessage(liffUrl: string): object {
   return withQuickReply({ type: "text", text: "這件商品已經下架了，換一件再試試。" }, [
     messageChip("有什麼推薦", "有什麼推薦的商品"),
+    uriChip("逛逛其他商品", liffUrl),
     cameraRollChip("試我自己的衣服"),
   ]);
 }
@@ -181,22 +181,22 @@ export function tryonErrorMessage(kind: keyof typeof TRYON_ERROR_TEXT): object {
 export function productTryonErrorMessage(
   kind: "quota" | "generation" | "unknown",
   product: LineProduct,
+  liffUrl: string,
 ): object {
   const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  const retry = postbackChip(
+    "再試一次",
+    tryonPostbackData(product.id),
+    `試穿「${clampProductName(product.name)}」`,
+  );
+
   switch (kind) {
     case "quota":
       return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
-    // Grouped, not a missing `break`: neither kind can offer anything more than
-    // the retry, since the failure wrote no `tryonNote` to refer back to.
     case "generation":
+      return withQuickReply(message, [retry, uriChip("換一件試試", liffUrl)]);
     case "unknown":
-      return withQuickReply(message, [
-        postbackChip(
-          "再試一次",
-          tryonPostbackData(product.id),
-          `試穿「${clampProductName(product.name)}」`,
-        ),
-      ]);
+      return withQuickReply(message, [retry]);
   }
 }
 

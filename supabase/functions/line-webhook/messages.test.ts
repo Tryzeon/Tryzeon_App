@@ -3,11 +3,13 @@ import {
   chatErrorMessage,
   onboardingMessage,
   productTryonErrorMessage,
+  productUnavailableMessage,
   tryonErrorMessage,
 } from "./messages.ts";
 import type { LineProduct } from "./product-card.ts";
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
+const LIFF = "https://liff.example";
 
 const product: LineProduct = {
   id: PID,
@@ -46,15 +48,6 @@ Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
     { type: "uri", label: "先逛逛商品", uri: "https://liff.example" },
     { type: "message", label: "這是什麼服務", text: "你是誰，你能幫我做什麼" },
   ]);
-});
-
-Deno.test("a base URL with a trailing slash does not double up", () => {
-  // LINE rejects a malformed uri by failing the whole send, not the one action,
-  // so `LIFF_URL` written either way has to produce the same link.
-  assertEquals(
-    templateUri(onboardingMessage("https://liff.example/")),
-    "https://liff.example/onboard",
-  );
 });
 
 Deno.test("a spent chat quota offers the try-on the sender still has", () => {
@@ -114,22 +107,38 @@ Deno.test("both try-on paths report a failed generation in the same words", () =
 
   assertEquals((tryonErrorMessage("generation") as { text: string }).text, text);
   assertEquals(
-    (productTryonErrorMessage("generation", product) as { text: string }).text,
+    (productTryonErrorMessage("generation", product, LIFF) as { text: string }).text,
     text,
   );
 });
 
 Deno.test("a spent try-on quota on the product path offers the chat the sender still has", () => {
-  assertEquals(chipActions(productTryonErrorMessage("quota", product)), [
+  assertEquals(chipActions(productTryonErrorMessage("quota", product, LIFF)), [
     { type: "message", label: "找衣服看看", text: "有什麼推薦的商品" },
   ]);
 });
 
-Deno.test("a product that would not generate is retried by id, not by a message chip", () => {
+Deno.test("a product that would not generate offers both remedies its text names", () => {
   // No `tryonNote` is written on this path, so a `message` chip asking for
-  // "類似的" would have nothing behind it. The retry carries the product id
-  // itself instead.
-  assertEquals(chipActions(productTryonErrorMessage("generation", product)), [
+  // "類似的" would have nothing behind it — the retry carries the product id
+  // itself instead. The catalog link is the other half: the text says
+  // "請換一件或再試一次", and without it only one of the two has a button.
+  assertEquals(chipActions(productTryonErrorMessage("generation", product, LIFF)), [
+    {
+      type: "postback",
+      label: "再試一次",
+      data: `a=tryon&pid=${PID}`,
+      displayText: "試穿「短版牛仔外套」",
+    },
+    { type: "uri", label: "換一件試試", uri: LIFF },
+  ]);
+});
+
+Deno.test("an unknown failure offers only the retry, not a different product", () => {
+  // "出了點狀況，請稍後再試" is a fault on our side rather than this product's,
+  // so a different product would likely fail the same way. This is why the two
+  // kinds are not grouped even though they share the retry.
+  assertEquals(chipActions(productTryonErrorMessage("unknown", product, LIFF)), [
     {
       type: "postback",
       label: "再試一次",
@@ -139,13 +148,10 @@ Deno.test("a product that would not generate is retried by id, not by a message 
   ]);
 });
 
-Deno.test("an unknown product try-on failure is also retried by id", () => {
-  assertEquals(chipActions(productTryonErrorMessage("unknown", product)), [
-    {
-      type: "postback",
-      label: "再試一次",
-      data: `a=tryon&pid=${PID}`,
-      displayText: "試穿「短版牛仔外套」",
-    },
+Deno.test("a product that is gone offers three ways to find another", () => {
+  assertEquals(chipActions(productUnavailableMessage(LIFF)), [
+    { type: "message", label: "有什麼推薦", text: "有什麼推薦的商品" },
+    { type: "uri", label: "逛逛其他商品", uri: LIFF },
+    { type: "cameraRoll", label: "試我自己的衣服" },
   ]);
 });

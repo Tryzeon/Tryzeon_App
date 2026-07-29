@@ -190,7 +190,7 @@ export async function handleProductTryon(
 
   const product = await fetchProduct(deps.admin, event.productId, deps.imagesBaseUrl);
   if (!product) {
-    await deps.line.reply(event.replyToken, [productUnavailableMessage()]);
+    await deps.line.reply(event.replyToken, [productUnavailableMessage(deps.liffUrl)]);
     return;
   }
 
@@ -205,7 +205,7 @@ export async function handleProductTryon(
   await deps.line.push(event.sourceUserId, [
     outcome.ok
       ? productResultMessage(outcome.imageUrl, product)
-      : productTryonErrorMessage(outcome.kind, product),
+      : productTryonErrorMessage(outcome.kind, product, deps.liffUrl),
   ]);
 
   if (outcome.ok) {
