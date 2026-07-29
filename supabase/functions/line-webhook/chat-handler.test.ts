@@ -257,36 +257,17 @@ Deno.test("a failed turn leaves the conversation untouched", async () => {
   assertEquals(conversations.writes, []);
 });
 
-Deno.test("a validation failure resets the stored conversation instead of wedging it", async () => {
-  // With a stored transcript, a validation error most likely means the
-  // *history* broke a core limit (e.g. an unbounded assistant answer past
-  // MAX_TEXT_LENGTH). Left alone, every future turn would replay the same
-  // broken history and fail forever, since a failed turn never refreshes the
-  // TTL either. Resetting to `[]` is a fresh conversation, so the next
-  // message escapes it.
+Deno.test("a validation failure writes nothing either, stored transcript or not", async () => {
+  // No failure kind is special-cased: every one of them leaves the store as it
+  // was. A validation error is the one where that is worth stating, because it
+  // is the kind most likely to be about the *history* rather than this message
+  // — which was already length-checked above — and the transcript it blames is
+  // left in place for the idle TTL to retire.
   const prior: ChatMessage[] = [
     { role: "user", content: [{ type: "text", text: "找外套" }] },
   ];
   const conversations = fakeConversations({ prior });
   const chat = fakeChat({ throws: new ValidationError("messages too long") });
-
-  await handleTextMessage(
-    deps({ runChat: chat.runChat, conversations: conversations.store }),
-    { sourceUserId: USER, text: "有便宜一點的嗎" },
-  );
-
-  assertEquals(conversations.writes, [[]]);
-});
-
-Deno.test("a non-validation failure writes nothing, unlike a validation failure", async () => {
-  // The two failure kinds differ in exactly one way — whether the store is
-  // reset — so both are asserted here rather than trusting one to imply the
-  // other.
-  const prior: ChatMessage[] = [
-    { role: "user", content: [{ type: "text", text: "找外套" }] },
-  ];
-  const conversations = fakeConversations({ prior });
-  const chat = fakeChat({ throws: new QuotaExceededError(null) });
 
   await handleTextMessage(
     deps({ runChat: chat.runChat, conversations: conversations.store }),
