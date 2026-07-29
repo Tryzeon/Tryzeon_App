@@ -127,8 +127,10 @@ export function tryonNote(product: LineProduct): ChatMessage {
  * Where it differs is what it claims. {@link tryonNote} says the user *tried on*
  * a product, so its caller writes it only when the generation succeeded; this
  * one says only that a photo arrived, which is true whether or not the try-on
- * that followed produced anything. So its caller writes it unconditionally, and
- * a generation failure still leaves the agent able to answer "那有沒有類似的".
+ * that followed produced anything. So its caller writes it unconditionally of
+ * the generation's result — it still skips this when there is no description to
+ * write — and a generation failure still leaves the agent able to answer "那有
+ * 沒有類似的".
  *
  * The description arrives already trimmed and capped (`describeGarment` in
  * `garment-analysis.ts`), so nothing is clamped again here — one cap, stated in

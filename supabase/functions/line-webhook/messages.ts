@@ -6,13 +6,15 @@ import {
   purchaseAction,
 } from "./product-card.ts";
 import { CARD_COLOR, primaryButton } from "./card-kit.ts";
+import { cameraRollChip, messageChip, postbackChip, withQuickReply } from "./quick-reply.ts";
+import { tryonPostbackData } from "./postback.ts";
 
 export function processingMessage(): object {
   return { type: "text", text: "收到，正在試穿，請稍等！" };
 }
 
 export function onboardingMessage(liffUrl: string): object {
-  return {
+  return withQuickReply({
     type: "template",
     altText: "先建立你的 model 照",
     template: {
@@ -20,17 +22,23 @@ export function onboardingMessage(liffUrl: string): object {
       text: "想要試穿嗎？先花 3 秒上傳你的 model 照",
       actions: [{ type: "uri", label: "上傳我的 model 照", uri: liffUrl }],
     },
-  };
+  }, [
+    messageChip("這是什麼服務", "你是誰，你能幫我做什麼"),
+  ]);
 }
 
 export function resultMessage(imageUrl: string): object {
   // NOTE: LINE recommends previewImageUrl <= 1MB. v1 reuses the full URL for
   // both; if LINE rejects large previews, generate/upload a downscaled preview.
-  return {
+  return withQuickReply({
     type: "image",
     originalContentUrl: imageUrl,
     previewImageUrl: imageUrl,
-  };
+  }, [
+    cameraRollChip("再試一件"),
+    messageChip("找類似的商品", "幫我找類似剛剛那件的商品"),
+    messageChip("幫我配這件", "幫我搭配剛剛那件"),
+  ]);
 }
 
 export function productProcessingMessage(name: string): object {
@@ -38,7 +46,10 @@ export function productProcessingMessage(name: string): object {
 }
 
 export function productUnavailableMessage(): object {
-  return { type: "text", text: "這件商品已經下架了，換一件再試試。" };
+  return withQuickReply({ type: "text", text: "這件商品已經下架了，換一件再試試。" }, [
+    messageChip("有什麼推薦", "有什麼推薦的商品"),
+    cameraRollChip("試我自己的衣服"),
+  ]);
 }
 
 /**
@@ -54,7 +65,7 @@ export function productResultMessage(
   product: LineProduct,
 ): object {
   const purchase = purchaseAction(product);
-  return {
+  return withQuickReply({
     type: "flex",
     // Clamped: `altText` fails the whole send past 400 characters, and a
     // product name has no length constraint.
@@ -93,7 +104,11 @@ export function productResultMessage(
         footer: { backgroundColor: CARD_COLOR.surface },
       },
     },
-  };
+  }, [
+    messageChip("找類似的", "有沒有類似的其他商品"),
+    messageChip("幫我配這件", "幫我搭配剛剛試穿的那件"),
+    cameraRollChip("試我自己的衣服"),
+  ]);
 }
 
 /*
@@ -108,13 +123,57 @@ export function productResultMessage(
 
 const TRYON_ERROR_TEXT = {
   quota: "今日試穿次數已用完，明天再回來試。",
-  generation: "這張沒能生成，換一張更清楚的衣服圖再試。",
+  generation: "這件沒能生成，請換一件或再試一次看看！",
   download: "這張圖讀取失敗，麻煩再傳一次。",
   unknown: "出了點狀況，請稍後再試。",
 } as const;
 
 export function tryonErrorMessage(kind: keyof typeof TRYON_ERROR_TEXT): object {
-  return { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  switch (kind) {
+    case "quota":
+      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+    case "generation":
+      return withQuickReply(message, [
+        cameraRollChip("換一張再試"),
+        messageChip("找類似的商品", "幫我找類似剛剛那件的商品"),
+      ]);
+    case "download":
+      return withQuickReply(message, [cameraRollChip("重新傳一張")]);
+    case "unknown":
+      return withQuickReply(message, [cameraRollChip("再試一次")]);
+  }
+}
+
+/**
+ * The product-path counterpart of {@link tryonErrorMessage}.
+ *
+ * Narrower kind union: there is no download step for a catalog product, so
+ * `"download"` cannot happen here. And unlike the photo path, `tryonNote` is
+ * never written on failure — so the retry can only offer actions that need no
+ * transcript, which is why it carries the product id itself rather than a
+ * `message` chip asking for "類似的".
+ */
+export function productTryonErrorMessage(
+  kind: "quota" | "generation" | "unknown",
+  product: LineProduct,
+): object {
+  const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  switch (kind) {
+    case "quota":
+      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+    // Grouped, not a missing `break`: neither kind can offer anything more than
+    // the retry, since the failure wrote no `tryonNote` to refer back to.
+    case "generation":
+    case "unknown":
+      return withQuickReply(message, [
+        postbackChip(
+          "再試一次",
+          tryonPostbackData(product.id),
+          `試穿「${clampProductName(product.name)}」`,
+        ),
+      ]);
+  }
 }
 
 const CHAT_ERROR_TEXT = {
@@ -126,12 +185,27 @@ const CHAT_ERROR_TEXT = {
 export type ChatErrorKind = keyof typeof CHAT_ERROR_TEXT;
 
 export function chatErrorMessage(kind: ChatErrorKind): object {
-  return { type: "text", text: CHAT_ERROR_TEXT[kind] };
+  const message = { type: "text", text: CHAT_ERROR_TEXT[kind] };
+  switch (kind) {
+    case "quota":
+      return withQuickReply(message, [cameraRollChip("直接傳衣服試穿")]);
+    case "too_long":
+      return withQuickReply(message, [messageChip("有什麼推薦", "有什麼推薦的商品")]);
+    case "unknown":
+      return withQuickReply(message, [
+        messageChip("有什麼推薦", "有什麼推薦的商品嗎"),
+        cameraRollChip("傳衣服照試穿"),
+      ]);
+  }
 }
 
 export function hintMessage(): object {
-  return {
+  return withQuickReply({
     type: "text",
     text: "傳一張衣服的照片給我，我就幫你試穿；想找衣服的話，直接用文字告訴我你想要什麼。",
-  };
+  }, [
+    cameraRollChip("選一張衣服照"),
+    messageChip("幫我配一套", "幫我配一套適合我的穿搭"),
+    messageChip("有什麼推薦", "有什麼推薦的商品嗎"),
+  ]);
 }

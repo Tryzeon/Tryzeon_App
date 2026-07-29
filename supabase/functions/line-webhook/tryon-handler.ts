@@ -11,6 +11,7 @@ import {
   processingMessage,
   productProcessingMessage,
   productResultMessage,
+  productTryonErrorMessage,
   productUnavailableMessage,
   resultMessage,
   tryonErrorMessage,
@@ -204,7 +205,7 @@ export async function handleProductTryon(
   await deps.line.push(event.sourceUserId, [
     outcome.ok
       ? productResultMessage(outcome.imageUrl, product)
-      : tryonErrorMessage(outcome.kind),
+      : productTryonErrorMessage(outcome.kind, product),
   ]);
 
   if (outcome.ok) {

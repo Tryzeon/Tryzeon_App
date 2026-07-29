@@ -165,3 +165,52 @@ Deno.test("the body and footer sit on the 8px grid, and do not double up", () =>
   // into a 32px gap, which is too much air for a kilo card.
   assertEquals(bubble.footer.paddingTop, "0px");
 });
+
+/**
+ * The full actions a message's chips carry, in order.
+ *
+ * Full objects rather than labels alone: these chips are all `message` chips,
+ * and asserting only `label` would leave `text` — the string that lands in the
+ * chat as though the sender typed it — unchecked.
+ */
+const chipActions = (message: object): object[] =>
+  // deno-lint-ignore no-explicit-any
+  ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
+
+const NARROW_CHIPS = [
+  { type: "message", label: "便宜一點的", text: "有便宜一點的嗎" },
+  { type: "message", label: "換個風格", text: "換個風格看看" },
+  { type: "message", label: "幫我配整套", text: "幫我配一整套穿搭" },
+];
+
+Deno.test("an answer with products offers ways to narrow it", () => {
+  const out = renderAnswer([text("為你找到"), card(product("p1"))]);
+
+  // Only the last message carries them: LINE does not document which one wins
+  // when several in one send do, so the design never creates that situation.
+  assertEquals(chipActions(out[0]), []);
+  assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
+});
+
+Deno.test("a follow-up question is left alone", () => {
+  // The right response to "你想找什麼場合穿的？" is the sender's own answer.
+  // A chip here pushes them away from the one thing that would help.
+  const out = renderAnswer([text("你想找什麼場合穿的？")]);
+
+  assertEquals(chipActions(out[0]), []);
+});
+
+Deno.test("the chips survive the fold that drops messages", () => {
+  // 49 cards is one text message plus five 12-per-carousel chunks (MAX_BUBBLES):
+  // six messages, one over MAX_LINE_MESSAGES, so the slice truly drops the last
+  // carousel. A chip attached before that slice would go down with it.
+  const blocks = [
+    text("找到好多"),
+    ...Array.from({ length: 49 }, (_, i) => card(product(`p${i}`))),
+  ];
+
+  const out = renderAnswer(blocks);
+
+  assertEquals(out.length, 5);
+  assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
+});

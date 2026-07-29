@@ -18,6 +18,7 @@ import {
 import { CARD_COLOR, primaryButton, secondaryButton } from "./card-kit.ts";
 import { chatErrorMessage } from "./messages.ts";
 import { tryonPostbackData } from "./postback.ts";
+import { dressLast, messageChip } from "./quick-reply.ts";
 
 /** Messages one reply/push may carry. */
 const MAX_LINE_MESSAGES = 5;
@@ -150,6 +151,21 @@ function foldSections(sections: Section[]): Section[] {
 }
 
 /**
+ * What an answer offers next.
+ *
+ * Only when it recommended something: the chips narrow a set of products, so
+ * they only make sense once the answer contains at least one.
+ */
+function answerChips(blocks: ContentBlock[]): object[] {
+  if (!blocks.some((b) => b.type === "product")) return [];
+  return [
+    messageChip("便宜一點的", "有便宜一點的嗎"),
+    messageChip("換個風格", "換個風格看看"),
+    messageChip("幫我配整套", "幫我配一整套穿搭"),
+  ];
+}
+
+/**
  * The answer as messages, never more than LINE accepts in one send.
  *
  * When the interleaving fits, it is kept. When it does not — an outfit with
@@ -163,6 +179,10 @@ function foldSections(sections: Section[]): Section[] {
  * several searches whose every result was recommended. The cap is stated rather
  * than assumed away because silently sending four fifths of an answer is worse
  * than a rule you can read.
+ *
+ * The chips are attached last, after any fold and its slice: a message the
+ * slice drops must not take its chip's would-be home down with it. Which of
+ * the surviving messages wears them is `dressLast`'s rule, not this one's.
  */
 export function renderAnswer(blocks: ContentBlock[]): object[] {
   const sections = toSections(blocks);
@@ -173,7 +193,9 @@ export function renderAnswer(blocks: ContentBlock[]): object[] {
   if (sections.length === 0) return [chatErrorMessage("unknown")];
 
   const detailed = sections.flatMap(sectionMessages);
-  if (detailed.length <= MAX_LINE_MESSAGES) return detailed;
+  const messages = detailed.length <= MAX_LINE_MESSAGES
+    ? detailed
+    : foldSections(sections).flatMap(sectionMessages).slice(0, MAX_LINE_MESSAGES);
 
-  return foldSections(sections).flatMap(sectionMessages).slice(0, MAX_LINE_MESSAGES);
+  return dressLast(messages, answerChips(blocks));
 }

@@ -7,6 +7,7 @@ import {
   type TryonHandlerDeps,
 } from "./tryon-handler.ts";
 import { QuotaExceededError } from "../_shared/quota.ts";
+import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
@@ -71,6 +72,29 @@ const event = { replyToken: "rt", sourceUserId: USER, messageId: "m1" };
 // deno-lint-ignore no-explicit-any
 const textOf = (message: object) => (message as any).text as string;
 
+/** A message with its chips stripped, for assertions that are not about them. */
+const bare = (message: object) => {
+  // deno-lint-ignore no-explicit-any
+  const { quickReply: _ignored, ...rest } = message as Record<string, any>;
+  return rest;
+};
+
+/** The labels a message offers, in order. */
+const chipLabels = (message: object): string[] =>
+  // deno-lint-ignore no-explicit-any
+  ((message as any).quickReply?.items ?? []).map((i: any) => i.action.label);
+
+/**
+ * The full actions a message's chips carry, in order.
+ *
+ * Unlike {@link chipLabels}, this keeps `text` — the string a `message` chip
+ * sends as though the sender typed it — next to the `label` a test asserts
+ * against, so the two are read side by side rather than one going unchecked.
+ */
+const chipActions = (message: object): object[] =>
+  // deno-lint-ignore no-explicit-any
+  ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
+
 Deno.test("a sender with no model photo is asked to onboard, and nothing is generated", async () => {
   const { line, sent } = fakeLine();
   let ran = false;
@@ -101,7 +125,7 @@ Deno.test("a garment image is acknowledged, then the result is pushed", async ()
   assertEquals(sent.replies.length, 1);
   assertEquals(textOf(sent.replies[0][0]), "收到，正在試穿，請稍等！");
   assertEquals(sent.pushes.length, 1);
-  assertEquals(sent.pushes[0][0], {
+  assertEquals(bare(sent.pushes[0][0]), {
     type: "image",
     originalContentUrl: "https://img.example/result.jpg",
     previewImageUrl: "https://img.example/result.jpg",
@@ -190,7 +214,7 @@ Deno.test("an unreadable photo costs the note, not the try-on", async () => {
 
   assertEquals(conversations.writes, []);
   assertEquals(sent.pushes.length, 1);
-  assertEquals(sent.pushes[0][0], {
+  assertEquals(bare(sent.pushes[0][0]), {
     type: "image",
     originalContentUrl: "https://img.example/result.jpg",
     previewImageUrl: "https://img.example/result.jpg",
@@ -372,13 +396,16 @@ Deno.test("an exhausted quota during a product try-on pushes the quota text, not
 
   // A regression that reused the success path here would push
   // `productResultMessage(undefined, product)` — a flex card whose
-  // `hero.url` LINE rejects outright — so this asserts both the count and
-  // the exact (non-flex) message.
+  // `hero.url` LINE rejects outright — so this asserts both the count and,
+  // with `quickReply` stripped by `bare()`, the message body underneath it.
   assertEquals(sent.pushes.length, 1);
-  assertEquals(sent.pushes[0][0], {
+  assertEquals(bare(sent.pushes[0][0]), {
     type: "text",
     text: "今日試穿次數已用完，明天再回來試。",
   });
+  // The photo-path quota chip has coverage above; this is its product-path
+  // counterpart.
+  assertEquals(chipLabels(sent.pushes[0][0]), ["找衣服看看"]);
 });
 
 Deno.test("a completed product try-on becomes part of the conversation", async () => {
@@ -485,4 +512,77 @@ Deno.test("a stalled description does not hold back the result", async () => {
 
   assertEquals(trace, ["push", "save"]);
   assertEquals(conversations.writes[0], [photoNote("白襯衫")]);
+});
+
+Deno.test("a finished photo try-on offers the next one, and the shop", async () => {
+  const { line, sent } = fakeLine();
+  await handleImageTryon(makeDeps({ line }), event);
+
+  assertEquals(chipActions(sent.pushes[0][0]), [
+    { type: "cameraRoll", label: "再試一件" },
+    { type: "message", label: "找類似的商品", text: "幫我找類似剛剛那件的商品" },
+    { type: "message", label: "幫我配這件", text: "幫我搭配剛剛那件" },
+  ]);
+});
+
+Deno.test("a photo that would not generate offers another photo, not a retry", async () => {
+  // There is nothing to retry: the garment was these bytes, and they are the
+  // thing that failed. What the sender can do is send a clearer picture.
+  const { line, sent } = fakeLine();
+  await handleImageTryon(
+    makeDeps({
+      line,
+      runJob: () => Promise.reject(new GenerationFailedError("no image")),
+    }),
+    event,
+  );
+
+  assertEquals(chipActions(sent.pushes[0][0]), [
+    { type: "cameraRoll", label: "換一張再試" },
+    { type: "message", label: "找類似的商品", text: "幫我找類似剛剛那件的商品" },
+  ]);
+});
+
+Deno.test("a spent try-on quota offers the chat the sender still has", async () => {
+  // `FeatureName` is "chat" | "tryon" | "tryon_video" — three separate counters,
+  // so a spent try-on budget is not a spent conversation. Without this chip the
+  // message is a dead end for the rest of the day.
+  const { line, sent } = fakeLine();
+  await handleImageTryon(
+    makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(null)) }),
+    event,
+  );
+
+  assertEquals(chipLabels(sent.pushes[0][0]), ["找衣服看看"]);
+});
+
+Deno.test("a finished product try-on offers to build around it", async () => {
+  const { line, sent } = fakeLine();
+  await handleProductTryon(makeProductDeps({ line }), productEvent);
+
+  assertEquals(chipActions(sent.pushes[0][0]), [
+    { type: "message", label: "找類似的", text: "有沒有類似的其他商品" },
+    { type: "message", label: "幫我配這件", text: "幫我搭配剛剛試穿的那件" },
+    { type: "cameraRoll", label: "試我自己的衣服" },
+  ]);
+});
+
+Deno.test("a product that would not generate can be retried by id alone", async () => {
+  // The retry carries the product id in the postback, so it still works when the
+  // stored conversation has expired — which is exactly when a `message` chip
+  // asking for "類似的" would have nothing to be similar to.
+  const { line, sent } = fakeLine();
+  await handleProductTryon(
+    makeProductDeps({
+      line,
+      runJob: () => Promise.reject(new GenerationFailedError("no image")),
+    }),
+    productEvent,
+  );
+
+  // deno-lint-ignore no-explicit-any
+  const action = (sent.pushes[0][0] as any).quickReply.items[0].action;
+  assertEquals(action.type, "postback");
+  assertEquals(action.data, `a=tryon&pid=${PID}`);
+  assertEquals(action.displayText, "試穿「短版牛仔外套」");
 });
