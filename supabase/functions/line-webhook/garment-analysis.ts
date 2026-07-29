@@ -28,13 +28,18 @@ import { analyzeImage } from "../_shared/image-analysis.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 /**
- * Longest description that reaches the transcript.
+ * Longest description that reaches the transcript, in code points.
  *
  * Not cosmetic: this note is replayed to the model on every subsequent turn, so
  * a vision model left to produce "這是一件淺藍色的寬鬆版型棉質長褲，腰部有抽繩設計，
  * 適合休閒場合…" would crowd out the conversation it is supposed to be context
  * for. The prompt asks for the cap and the code enforces it, the same belt and
- * braces `clampProductName` applies in `product-card.ts`.
+ * braces `clampProductName` applies in `product-card.ts`: a description over
+ * the cap is cut to it and marked with a trailing `…` so a truncated phrase
+ * doesn't read to the model as a complete one. Counted by code point rather
+ * than `String.prototype.slice`'s UTF-16 code units, since the prompt invites
+ * free description of a non-garment photo, where an astral character (emoji,
+ * rare CJK) is reachable and `slice` would cut one in half.
  */
 const MAX_DESCRIPTION_CHARS = 20;
 
@@ -121,7 +126,12 @@ export async function describeGarment(
     const description = typeof parsed.description === "string"
       ? parsed.description.trim()
       : "";
-    return description ? description.slice(0, MAX_DESCRIPTION_CHARS) : null;
+    if (!description) return null;
+
+    const chars = [...description];
+    return chars.length > MAX_DESCRIPTION_CHARS
+      ? `${chars.slice(0, MAX_DESCRIPTION_CHARS).join("")}…`
+      : description;
   } catch (err) {
     console.warn("line-webhook garment analysis failed:", err);
     return null;

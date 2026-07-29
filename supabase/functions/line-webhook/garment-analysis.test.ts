@@ -72,7 +72,18 @@ Deno.test("an over-long description is clamped", async () => {
     analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
   }));
 
-  assertEquals(result, "藍".repeat(20));
+  assertEquals(result, `${"藍".repeat(20)}…`);
+});
+
+Deno.test("clamping counts characters, not UTF-16 code units", async () => {
+  // The prompt invites a free description when the photo is not a garment, so
+  // an astral character is reachable; `slice` would cut one in half and leave a
+  // lone surrogate in the transcript.
+  const result = await describeGarment(USER, B64, seams({
+    analyze: () => Promise.resolve({ description: "👗".repeat(30) }),
+  }));
+
+  assertEquals(result, `${"👗".repeat(20)}…`);
 });
 
 Deno.test("an empty or non-string description is no description at all", async () => {
@@ -140,7 +151,10 @@ Deno.test("ANALYSIS_PROMPT states the length cap describeGarment enforces", asyn
     analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
   }));
 
-  assertEquals(ANALYSIS_PROMPT.includes(`最多 ${clamped!.length} 字`), true);
+  // Derived, not hardcoded: the marker isn't part of the cap, and code points
+  // (not UTF-16 length) are what the cap is measured in.
+  const cap = [...clamped!.replace(/…$/, "")].length;
+  assertEquals(ANALYSIS_PROMPT.includes(`最多 ${cap} 字`), true);
 });
 
 Deno.test("ANALYSIS_SCHEMA requires the one field describeGarment reads", () => {
