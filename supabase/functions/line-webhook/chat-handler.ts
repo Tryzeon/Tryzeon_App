@@ -13,6 +13,7 @@ import { chatErrorMessage, type ChatErrorKind } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 
 export interface TextEvent {
+  replyToken: string;
   sourceUserId: string;
   text: string;
 }
@@ -28,17 +29,38 @@ export interface ChatHandlerDeps {
 }
 
 /**
+ * One outbound batch, on the reply token if it still holds and on a push if not.
+ *
+ * Any reply failure takes the fallback: an expired token and a LINE outage mean
+ * the same thing here — the answer has not been delivered — and telling them
+ * apart would only add a way to get it wrong.
+ */
+async function deliver(
+  deps: ChatHandlerDeps,
+  event: TextEvent,
+  messages: object[],
+): Promise<void> {
+  try {
+    await deps.line.reply(event.replyToken, messages);
+  } catch (err) {
+    console.warn("line-webhook reply failed, pushing instead:", err);
+    await deps.line.push(event.sourceUserId, messages);
+  }
+}
+
+/**
  * Full lifecycle for one forwarded text message: resolve user -> show the
- * typing indicator -> run one chat turn -> push the answer.
+ * typing indicator -> run one chat turn -> send the answer.
  *
  * Unlike the try-on path there is no onboarding gate: chat needs no model
  * photo, so someone who just followed the OA can be answered on their first
  * message.
  *
- * Every outbound message is a push rather than a reply. The turn takes as long
- * as the agent's tool loop does, which is far past the point where a reply token
- * can be relied on; the typing indicator covers the wait instead, and costs
- * nothing against the messaging quota.
+ * A reply costs nothing against the messaging quota and a push costs one per
+ * message, so every exit goes through `deliver`. The token holds for about a
+ * minute and a turn is usually a few seconds — but `MAX_AGENT_STEPS` is 10, and
+ * LINE says not to rely on the limit, so the fallback is what makes the tail
+ * safe rather than lossy.
  *
  * The conversation is stored between messages (see `conversation.ts`), so the
  * turn runs on the transcript so far plus this message and the result is
@@ -53,7 +75,7 @@ export async function handleTextMessage(
   const runChat = deps.runChat ?? runChatAgent;
 
   if (event.text.length > LIMITS.MAX_TEXT_LENGTH) {
-    await deps.line.push(event.sourceUserId, [chatErrorMessage("too_long")]);
+    await deliver(deps, event, [chatErrorMessage("too_long")]);
     return;
   }
 
@@ -84,7 +106,7 @@ export async function handleTextMessage(
       { hydrate: makeLineAnswerRows(deps.imagesBaseUrl) },
     );
 
-    await deps.line.push(event.sourceUserId, renderAnswer(blocks));
+    await deliver(deps, event, renderAnswer(blocks));
 
     await deps.conversations.save(
       event.sourceUserId,
@@ -95,7 +117,7 @@ export async function handleTextMessage(
     if (kind === "unknown") {
       console.error("line-webhook chat failed:", err);
     }
-    await deps.line.push(event.sourceUserId, [chatErrorMessage(kind)]);
+    await deliver(deps, event, [chatErrorMessage(kind)]);
   }
 }
 

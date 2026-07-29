@@ -100,6 +100,7 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
   };
 
   await handleTextMessage(chatDeps, {
+    replyToken: "rt",
     sourceUserId: USER,
     text: "這件配什麼褲子",
   });

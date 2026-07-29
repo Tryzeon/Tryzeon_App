@@ -79,7 +79,7 @@ function routeMessage(
           imagesBaseUrl: deps.imagesBaseUrl,
           conversations: deps.conversations,
         },
-        { sourceUserId, text },
+        { replyToken: ev.replyToken, sourceUserId, text },
       );
     }
   }

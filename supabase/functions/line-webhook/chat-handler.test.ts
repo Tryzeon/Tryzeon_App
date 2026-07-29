@@ -16,12 +16,17 @@ import { fakeConversations } from "./conversation.testing.ts";
 const USER = "Uline123";
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
-/** LINE double recording what was sent, with a scripted `showLoading` outcome. */
-function fakeLine(opts: { loadingFails?: boolean } = {}) {
+/** LINE double recording what was sent, with scripted `reply`/`showLoading` outcomes. */
+function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
+  const replied: object[][] = [];
   const pushed: object[][] = [];
   const loading: string[] = [];
   const line: LineApi = {
-    reply: () => Promise.resolve(),
+    reply: (_token, messages) => {
+      if (opts.replyFails) return Promise.reject(new Error("Invalid reply token"));
+      replied.push(messages);
+      return Promise.resolve();
+    },
     push: (_to, messages) => {
       pushed.push(messages);
       return Promise.resolve();
@@ -34,7 +39,7 @@ function fakeLine(opts: { loadingFails?: boolean } = {}) {
         : Promise.resolve();
     },
   };
-  return { line, pushed, loading };
+  return { line, replied, pushed, loading };
 }
 
 /**
@@ -91,11 +96,12 @@ async function captureConsole(
   return calls;
 }
 
-Deno.test("runs one turn for the incoming message and pushes the answer", async () => {
-  const { line, pushed, loading } = fakeLine();
+Deno.test("runs one turn for the incoming message and replies with the answer", async () => {
+  const { line, replied, loading } = fakeLine();
   const chat = fakeChat({ blocks: [{ type: "text", text: "為你找到" }] });
 
   await handleTextMessage(deps({ line, runChat: chat.runChat }), {
+    replyToken: "rt",
     sourceUserId: USER,
     text: "找白襯衫",
   });
@@ -106,13 +112,14 @@ Deno.test("runs one turn for the incoming message and pushes the answer", async 
   assertEquals(chat.seen[0].params.messages, [
     { role: "user", content: [{ type: "text", text: "找白襯衫" }] },
   ]);
-  assertEquals(pushed, [[{ type: "text", text: "為你找到" }]]);
+  assertEquals(replied, [[{ type: "text", text: "為你找到" }]]);
 });
 
 Deno.test("substitutes this channel's hydrator and nothing else", async () => {
   const chat = fakeChat({ blocks: [{ type: "text", text: "好" }] });
 
   await handleTextMessage(deps({ runChat: chat.runChat }), {
+    replyToken: "rt",
     sourceUserId: USER,
     text: "找白襯衫",
   });
@@ -121,56 +128,60 @@ Deno.test("substitutes this channel's hydrator and nothing else", async () => {
 });
 
 Deno.test("rejects an over-long message before charging anything", async () => {
-  const { line, pushed } = fakeLine();
+  const { line, replied } = fakeLine();
   const chat = fakeChat({ blocks: [] });
 
   await handleTextMessage(deps({ line, runChat: chat.runChat }), {
+    replyToken: "rt",
     sourceUserId: USER,
     text: "x".repeat(LIMITS.MAX_TEXT_LENGTH + 1),
   });
 
   assertEquals(chat.seen.length, 0);
-  assertStringIncludes(textOf(pushed[0][0]), "太長");
+  assertStringIncludes(textOf(replied[0][0]), "太長");
 });
 
 Deno.test("reports a spent quota in this channel's words", async () => {
-  const { line, pushed } = fakeLine();
+  const { line, replied } = fakeLine();
   const chat = fakeChat({ throws: new QuotaExceededError(null) });
 
   await handleTextMessage(deps({ line, runChat: chat.runChat }), {
+    replyToken: "rt",
     sourceUserId: USER,
     text: "找白襯衫",
   });
 
-  assertStringIncludes(textOf(pushed[0][0]), "今日對話次數");
+  assertStringIncludes(textOf(replied[0][0]), "今日對話次數");
 });
 
 Deno.test("reports an unexpected failure as a generic apology", async () => {
-  const { line, pushed } = fakeLine();
+  const { line, replied } = fakeLine();
   const chat = fakeChat({ throws: new Error("vertex exploded") });
 
   const errors = await captureConsole("error", () =>
     handleTextMessage(deps({ line, runChat: chat.runChat }), {
+      replyToken: "rt",
       sourceUserId: USER,
       text: "找白襯衫",
     }));
 
-  assertStringIncludes(textOf(pushed[0][0]), "稍後再試");
-  // A server fault leaves a trace beyond the pushed message.
+  assertStringIncludes(textOf(replied[0][0]), "稍後再試");
+  // A server fault leaves a trace beyond the message the sender sees.
   assertEquals(errors.length, 1);
 });
 
 Deno.test("a failed typing indicator does not cost the caller their answer", async () => {
-  const { line, pushed } = fakeLine({ loadingFails: true });
+  const { line, replied } = fakeLine({ loadingFails: true });
   const chat = fakeChat({ blocks: [{ type: "text", text: "為你找到" }] });
 
   await captureConsole("warn", () =>
     handleTextMessage(deps({ line, runChat: chat.runChat }), {
+      replyToken: "rt",
       sourceUserId: USER,
       text: "找白襯衫",
     }));
 
-  assertEquals(pushed, [[{ type: "text", text: "為你找到" }]]);
+  assertEquals(replied, [[{ type: "text", text: "為你找到" }]]);
 });
 
 Deno.test("the turn runs on the stored conversation plus this message", async () => {
@@ -186,7 +197,7 @@ Deno.test("the turn runs on the stored conversation plus this message", async ()
 
   await handleTextMessage(
     deps({ runChat: chat.runChat, conversations: conversations.store }),
-    { sourceUserId: USER, text: "有便宜一點的嗎" },
+    { replyToken: "rt", sourceUserId: USER, text: "有便宜一點的嗎" },
   );
 
   // The follow-up is only answerable because the prior turns went in with it.
@@ -222,7 +233,7 @@ Deno.test("the whole turn is written back, with recommended items reduced to ids
 
   await handleTextMessage(
     deps({ runChat: chat.runChat, conversations: conversations.store }),
-    { sourceUserId: USER, text: "找外套" },
+    { replyToken: "rt", sourceUserId: USER, text: "找外套" },
   );
 
   assertEquals(conversations.writes.length, 1);
@@ -251,7 +262,7 @@ Deno.test("a failed turn leaves the conversation untouched", async () => {
 
   await handleTextMessage(
     deps({ runChat: chat.runChat, conversations: conversations.store }),
-    { sourceUserId: USER, text: "找外套" },
+    { replyToken: "rt", sourceUserId: USER, text: "找外套" },
   );
 
   assertEquals(conversations.writes, []);
@@ -271,19 +282,19 @@ Deno.test("a validation failure writes nothing either, stored transcript or not"
 
   await handleTextMessage(
     deps({ runChat: chat.runChat, conversations: conversations.store }),
-    { sourceUserId: USER, text: "有便宜一點的嗎" },
+    { replyToken: "rt", sourceUserId: USER, text: "有便宜一點的嗎" },
   );
 
   assertEquals(conversations.writes, []);
 });
 
-Deno.test("the answer is pushed before the conversation is written", async () => {
+Deno.test("the answer is replied before the conversation is written", async () => {
   const trace: string[] = [];
   const { line } = fakeLine();
   const tracingLine: LineApi = {
     ...line,
-    push: () => {
-      trace.push("push");
+    reply: () => {
+      trace.push("reply");
       return Promise.resolve();
     },
   };
@@ -296,9 +307,27 @@ Deno.test("the answer is pushed before the conversation is written", async () =>
       runChat: chat.runChat,
       conversations: conversations.store,
     }),
-    { sourceUserId: USER, text: "找外套" },
+    { replyToken: "rt", sourceUserId: USER, text: "找外套" },
   );
 
   // Bookkeeping never delays the reply the user is waiting for.
-  assertEquals(trace, ["push", "save"]);
+  assertEquals(trace, ["reply", "save"]);
+});
+
+Deno.test("an expired reply token costs a push, not the answer", async () => {
+  // The token holds for about a minute and a turn is usually seconds — but the
+  // agent loop is capped at ten steps, and LINE says not to rely on the limit.
+  const { line, replied, pushed } = fakeLine({ replyFails: true });
+  const chat = fakeChat({ blocks: [{ type: "text", text: "為你找到" }] });
+
+  const warnings = await captureConsole("warn", () =>
+    handleTextMessage(deps({ line, runChat: chat.runChat }), {
+      replyToken: "rt",
+      sourceUserId: USER,
+      text: "找白襯衫",
+    }));
+
+  assertEquals(replied, []);
+  assertEquals(pushed, [[{ type: "text", text: "為你找到" }]]);
+  assertEquals(warnings.length, 1);
 });
