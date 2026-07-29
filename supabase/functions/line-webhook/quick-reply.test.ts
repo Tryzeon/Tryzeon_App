@@ -4,6 +4,7 @@ import {
   dressLast,
   messageChip,
   postbackChip,
+  uriChip,
   withQuickReply,
 } from "./quick-reply.ts";
 
@@ -36,6 +37,13 @@ Deno.test("a postback chip says out loud what was tapped", () => {
       data: "a=tryon&pid=p1",
       displayText: "試穿「短版牛仔外套」",
     },
+  });
+});
+
+Deno.test("a uri chip carries the link it opens", () => {
+  assertEquals(uriChip("先逛逛商品", "https://liff.example"), {
+    type: "action",
+    action: { type: "uri", label: "先逛逛商品", uri: "https://liff.example" },
   });
 });
 

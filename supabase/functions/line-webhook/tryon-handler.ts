@@ -22,7 +22,7 @@ import { type ConversationStore, photoNote, tryonNote } from "./conversation.ts"
 export interface TryonHandlerDeps {
   admin: SupabaseClient;
   line: LineApi;
-  liffOnboardUrl: string;
+  liffUrl: string;
   conversations: ConversationStore;
   getAvatarPath?: typeof defaultGetAvatarPath;
   getOrCreateUserId?: typeof defaultGetOrCreateUserId;
@@ -111,7 +111,7 @@ export async function handleImageTryon(
   const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
 
   if (!avatarPath) {
-    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffOnboardUrl)]);
+    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
     return;
   }
 
@@ -184,7 +184,7 @@ export async function handleProductTryon(
   const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
 
   if (!avatarPath) {
-    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffOnboardUrl)]);
+    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
     return;
   }
 

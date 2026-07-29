@@ -18,12 +18,12 @@ Deno.serve(async (req) => {
 
   const channelSecret = Deno.env.get("LINE_CHANNEL_SECRET");
   const accessToken = Deno.env.get("LINE_CHANNEL_ACCESS_TOKEN");
-  const liffOnboardUrl = Deno.env.get("LIFF_ONBOARD_URL");
+  const liffUrl = Deno.env.get("LIFF_URL");
   const imagesBaseUrl = Deno.env.get("R2_PUBLIC_IMAGES_BASE_URL");
-  if (!channelSecret || !accessToken || !liffOnboardUrl || !imagesBaseUrl) {
+  if (!channelSecret || !accessToken || !liffUrl || !imagesBaseUrl) {
     console.error(
       "line-webhook missing env (LINE_CHANNEL_SECRET/ACCESS_TOKEN/" +
-        "LIFF_ONBOARD_URL/R2_PUBLIC_IMAGES_BASE_URL)",
+        "LIFF_URL/R2_PUBLIC_IMAGES_BASE_URL)",
     );
     return new Response("Server misconfigured", { status: 500 });
   }
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     if (ev.type !== "message" && ev.type !== "postback") continue;
 
     const task = routeEvent(
-      { admin, line, liffOnboardUrl, imagesBaseUrl, conversations },
+      { admin, line, liffUrl, imagesBaseUrl, conversations },
       ev,
     );
     if (task === null) {

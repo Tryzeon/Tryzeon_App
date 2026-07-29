@@ -6,23 +6,47 @@ import {
   purchaseAction,
 } from "./product-card.ts";
 import { CARD_COLOR, primaryButton } from "./card-kit.ts";
-import { cameraRollChip, messageChip, postbackChip, withQuickReply } from "./quick-reply.ts";
+import {
+  cameraRollChip,
+  messageChip,
+  postbackChip,
+  uriChip,
+  withQuickReply,
+} from "./quick-reply.ts";
 import { tryonPostbackData } from "./postback.ts";
 
 export function processingMessage(): object {
   return { type: "text", text: "收到，正在試穿，請稍等！" };
 }
 
+/** liff-web's avatar screen. Its catalog is the app root — see `liff-web/src/router.tsx`. */
+const LIFF_ONBOARD_PATH = "/onboard";
+
+/**
+ * The gate every try-on hits without a model photo.
+ *
+ * Both destinations come from one base URL, because both screens are ours:
+ * liff-web serves the catalog at `/` and the avatar upload at
+ * {@link LIFF_ONBOARD_PATH}. The catalog chip matters more than it looks —
+ * uploading a photo of yourself is a real ask, and someone not ready for it can
+ * still go see what there is to try on rather than leaving.
+ */
 export function onboardingMessage(liffUrl: string): object {
+  const base = liffUrl.replace(/\/$/, "");
   return withQuickReply({
     type: "template",
     altText: "先建立你的 model 照",
     template: {
       type: "buttons",
       text: "想要試穿嗎？先花 3 秒上傳你的 model 照",
-      actions: [{ type: "uri", label: "上傳我的 model 照", uri: liffUrl }],
+      actions: [{
+        type: "uri",
+        label: "上傳我的 model 照",
+        uri: `${base}${LIFF_ONBOARD_PATH}`,
+      }],
     },
   }, [
+    uriChip("先逛逛商品", base),
     messageChip("這是什麼服務", "你是誰，你能幫我做什麼"),
   ]);
 }

@@ -24,7 +24,7 @@ import type { ConversationStore } from "./conversation.ts";
 export interface RouterDeps {
   admin: SupabaseClient;
   line: LineApi;
-  liffOnboardUrl: string;
+  liffUrl: string;
   imagesBaseUrl: string;
   conversations: ConversationStore;
 }
@@ -61,7 +61,7 @@ function routeMessage(
       {
         admin,
         line,
-        liffOnboardUrl: deps.liffOnboardUrl,
+        liffUrl: deps.liffUrl,
         conversations: deps.conversations,
         getAvatarPath,
       },
@@ -102,7 +102,7 @@ function routePostback(
     {
       admin: deps.admin,
       line: deps.line,
-      liffOnboardUrl: deps.liffOnboardUrl,
+      liffUrl: deps.liffUrl,
       imagesBaseUrl: deps.imagesBaseUrl,
       conversations: deps.conversations,
       getAvatarPath,

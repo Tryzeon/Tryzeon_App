@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
   chatErrorMessage,
+  onboardingMessage,
   productTryonErrorMessage,
   tryonErrorMessage,
 } from "./messages.ts";
@@ -29,6 +30,32 @@ const chipActions = (message: object): object[] =>
   ((message as { quickReply?: { items: any[] } }).quickReply?.items ?? []).map(
     (i) => i.action,
   );
+
+/** The template's own button, which is not a chip. */
+const templateUri = (message: object): string =>
+  (message as { template: { actions: { uri: string }[] } }).template.actions[0].uri;
+
+Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
+  // The paths belong to us (`liff-web/src/router.tsx`), so only the LIFF app's
+  // own URL is configuration. The catalog chip is the escape hatch for someone
+  // not ready to upload a photo of themselves: they can go look before leaving.
+  const message = onboardingMessage("https://liff.example");
+
+  assertEquals(templateUri(message), "https://liff.example/onboard");
+  assertEquals(chipActions(message), [
+    { type: "uri", label: "先逛逛商品", uri: "https://liff.example" },
+    { type: "message", label: "這是什麼服務", text: "你是誰，你能幫我做什麼" },
+  ]);
+});
+
+Deno.test("a base URL with a trailing slash does not double up", () => {
+  // LINE rejects a malformed uri by failing the whole send, not the one action,
+  // so `LIFF_URL` written either way has to produce the same link.
+  assertEquals(
+    templateUri(onboardingMessage("https://liff.example/")),
+    "https://liff.example/onboard",
+  );
+});
 
 Deno.test("a spent chat quota offers the try-on the sender still has", () => {
   assertEquals(chipActions(chatErrorMessage("quota")), [

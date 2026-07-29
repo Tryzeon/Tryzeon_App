@@ -44,7 +44,7 @@ function baseDeps(): TryonHandlerDeps {
     // deno-lint-ignore no-explicit-any
     admin: {} as any,
     line: fakeLine().line,
-    liffOnboardUrl: "https://liff.example/onboard",
+    liffUrl: "https://liff.example",
     conversations: fakeConversations().store,
     getOrCreateUserId: () => Promise.resolve("user-1"),
     getAvatarPath: () => Promise.resolve("user-1/avatar.jpg"),

@@ -67,7 +67,7 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
     // deno-lint-ignore no-explicit-any
     admin: {} as any,
     line,
-    liffOnboardUrl: "https://liff.example/onboard",
+    liffUrl: "https://liff.example",
     imagesBaseUrl: "https://img.example",
     conversations: conversations.store,
     getOrCreateUserId: () => Promise.resolve("user-1"),

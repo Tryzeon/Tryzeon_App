@@ -14,7 +14,7 @@ const deps: RouterDeps = {
   // deno-lint-ignore no-explicit-any
   admin: {} as any,
   line,
-  liffOnboardUrl: "https://liff.example/onboard",
+  liffUrl: "https://liff.example",
   imagesBaseUrl: "https://img.example",
   conversations: fakeConversations().store,
 };
