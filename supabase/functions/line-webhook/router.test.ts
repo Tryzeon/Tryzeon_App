@@ -36,15 +36,41 @@ const postbackEvent = (data: unknown) => ({
 });
 
 /**
+ * Whether the event produced any work at all.
+ *
  * The handlers are not stubbed: routing is asserted by whether a task comes
- * back at all, so a started task is swallowed rather than awaited. That keeps
- * the assertion on the routing decision, which is what this module owns.
+ * back, so a started task is swallowed rather than awaited. That keeps the
+ * assertion on the routing decision, which is what this module owns.
  */
 const routed = (ev: Record<string, unknown>) => {
   const task = routeEvent(deps, ev);
   task?.catch(() => {});
   return task !== null;
 };
+
+/**
+ * The reply routing sent, for the events answered by a fixed message.
+ *
+ * `routed` cannot tell those from the ones a handler took, because both now
+ * come back as a task — that is the point of the split, and this is how the
+ * difference is asserted.
+ */
+async function repliedWith(ev: Record<string, unknown>): Promise<object[]> {
+  const sent: object[][] = [];
+  const recording: LineApi = {
+    ...line,
+    reply: (_token, messages) => {
+      sent.push(messages);
+      return Promise.resolve();
+    },
+  };
+
+  await routeEvent({ ...deps, line: recording }, ev)?.catch(() => {});
+  return sent[0] ?? [];
+}
+
+// deno-lint-ignore no-explicit-any
+const textOf = (message: object) => (message as any).text as string;
 
 Deno.test("an image is routed to a handler", () => {
   assertEquals(routed(messageEvent({ type: "image", id: "m1" })), true);
@@ -54,26 +80,35 @@ Deno.test("text is routed to a handler", () => {
   assertEquals(routed(messageEvent({ type: "text", text: "找白襯衫" })), true);
 });
 
-Deno.test("whitespace-only text is not a request", () => {
-  assertEquals(routed(messageEvent({ type: "text", text: "   \n " })), false);
-  assertEquals(routed(messageEvent({ type: "text", text: "" })), false);
-  assertEquals(routed(messageEvent({ type: "text" })), false);
+Deno.test("whitespace-only text is nudged, not answered", async () => {
+  for (const message of [{ type: "text", text: "   \n " }, { type: "text", text: "" }, { type: "text" }]) {
+    assertStringIncludes(textOf((await repliedWith(messageEvent(message)))[0]), "傳一張衣服的照片");
+  }
 });
 
-Deno.test("a message kind with no handler routes nowhere", () => {
-  assertEquals(routed(messageEvent({ type: "sticker", id: "s1" })), false);
-  assertEquals(routed(messageEvent({ type: "audio", id: "a1" })), false);
+Deno.test("a message kind with no handler is nudged", async () => {
+  // Understood the sender well enough to know we cannot act on it, which is a
+  // different thing from the event not being a request — see the `unsend` test.
+  assertStringIncludes(
+    textOf((await repliedWith(messageEvent({ type: "sticker", id: "s1" })))[0]),
+    "傳一張衣服的照片",
+  );
+  assertStringIncludes(
+    textOf((await repliedWith(messageEvent({ type: "audio", id: "a1" })))[0]),
+    "傳一張衣服的照片",
+  );
 });
 
 Deno.test("a try-on postback is routed to a handler", () => {
   assertEquals(routed(postbackEvent(`a=tryon&pid=${PID}`)), true);
 });
 
-Deno.test("a postback we did not issue routes nowhere", () => {
-  assertEquals(routed(postbackEvent("a=save&pid=" + PID)), false);
-  assertEquals(routed(postbackEvent("a=tryon&pid=not-a-uuid")), false);
-  assertEquals(routed(postbackEvent(undefined)), false);
-  assertEquals(routed({ type: "postback", replyToken: "rt", source: { userId: "U1" } }), false);
+Deno.test("a postback we did not issue is nudged", async () => {
+  // A card from a deploy that no longer sends that shape: the sender tapped
+  // something real, so silence would read as the bot being broken.
+  for (const data of ["a=save&pid=" + PID, "a=tryon&pid=not-a-uuid", undefined]) {
+    assertStringIncludes(textOf((await repliedWith(postbackEvent(data)))[0]), "傳一張衣服的照片");
+  }
 });
 
 Deno.test("an event kind this module does not route returns nothing", () => {
@@ -109,19 +144,44 @@ Deno.test("a follower LINE will not name is greeted anyway", () => {
   assertEquals(routed({ type: "follow", replyToken: "rt", source: { type: "user" } }), true);
 });
 
-Deno.test("an event with no source.userId routes nowhere", () => {
+Deno.test("an event with no source.userId reaches no handler", async () => {
   // LINE omits `source.userId` when the sender has not consented to the OA
-  // Terms of Use. Routing it anyway would key the conversation store on the
-  // literal string "undefined", pooling every such sender's transcript into
-  // one bucket — so every event that reaches the store or the quota is dropped
-  // here rather than left as a downstream concern for each handler. A follow
-  // touches neither, which is why it is greeted regardless (see above).
-  assertEquals(
-    routed({ type: "message", replyToken: "rt", source: { type: "user" }, message: { type: "text", text: "hi" } }),
-    false,
+  // Terms of Use. Handling it anyway would key the conversation store on the
+  // literal string "undefined", pooling every such sender's transcript into one
+  // bucket — so every event that would reach the store or the quota is nudged
+  // instead. A follow touches neither, which is why it is greeted regardless.
+  const noId = { type: "user" };
+
+  assertStringIncludes(
+    textOf((await repliedWith({
+      type: "message",
+      replyToken: "rt",
+      source: noId,
+      message: { type: "text", text: "hi" },
+    }))[0]),
+    "傳一張衣服的照片",
   );
+  assertStringIncludes(
+    textOf((await repliedWith({
+      type: "postback",
+      replyToken: "rt",
+      source: noId,
+      postback: { data: `a=tryon&pid=${PID}` },
+    }))[0]),
+    "傳一張衣服的照片",
+  );
+});
+
+Deno.test("a group is not somewhere this feature answers", () => {
+  // Nothing here has an answer for a group yet, and pushing a try-on of
+  // someone's body into one would be the wrong first attempt at having one.
   assertEquals(
-    routed({ type: "postback", replyToken: "rt", source: { type: "user" }, postback: { data: `a=tryon&pid=${PID}` } }),
+    routed({
+      type: "message",
+      replyToken: "rt",
+      source: { type: "group", groupId: "G1", userId: "Uline123" },
+      message: { type: "text", text: "找白襯衫" },
+    }),
     false,
   );
 });
