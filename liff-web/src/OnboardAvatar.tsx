@@ -52,6 +52,14 @@ export function OnboardAvatar() {
         <p className="cta__hint">
           上傳一張清楚的全身照，之後所有試穿都會用它。照片只用於試穿。
         </p>
+        <div className="tipcard">
+          <span className="tipcard__icon" aria-hidden="true">
+            💡
+          </span>
+          <p className="tipcard__text">
+            建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。
+          </p>
+        </div>
         {message && <div className="errorcard">{message}</div>}
       </main>
       <div className="actionbar">
