@@ -194,6 +194,52 @@ button { font-family: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .cta__hint { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; letter-spacing: 0.04em; }
 
+/* ── Photo frame (shared: fitting ceremony + onboard preview) ──────────── */
+.frame {
+  position: relative;
+  width: min(64%, 240px);
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.frame__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  animation: reveal 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.frame__veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.42);
+  display: grid;
+  place-items: center;
+}
+.frame__badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 26px; height: 26px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+.frame__caption {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* ── Onboard preview ───────────────────────────────────────────────────── */
+.preview { margin: 0 0 16px; }
+
 /* ── Ceremony (generating) ─────────────────────────────────────────────── */
 .fit {
   flex: 1;
@@ -205,15 +251,6 @@ button { font-family: inherit; }
   padding: 40px 24px calc(40px + env(safe-area-inset-bottom));
   text-align: center;
 }
-.fit__frame {
-  position: relative;
-  width: min(64%, 240px);
-  aspect-ratio: 3 / 4;
-  border-radius: var(--r-card);
-  overflow: hidden;
-  background: var(--surface-2);
-}
-.fit__img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .fit__scan {
   position: absolute;
   inset: 0;
@@ -272,6 +309,7 @@ button { font-family: inherit; }
   color: var(--ink);
   font-size: 14px;
   letter-spacing: 0.02em;
+  text-align: center;
   cursor: pointer;
 }
 
