@@ -27,6 +27,11 @@ const USAGE: DailyUsage = {
 // nothing in these tests reaches Supabase, so an empty object is honest.
 const clients = { admin: {} } as unknown as ChatClients;
 
+// Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
+// rejects anything else.
+const PRODUCT_ID = "f8f49d33-e34a-4121-a6b9-f654e0614971";
+const WARDROBE_ID = "0b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9";
+
 const params: ChatParams = {
   userId: "u1",
   messages: [{ role: "user", content: [{ type: "text", text: "找白襯衫" }] }],
@@ -87,18 +92,21 @@ Deno.test("assembles blocks in the model's order and appends the answer turn", a
       output: {
         blocks: [
           { type: "text", text: "上身" },
-          { type: "product", id: "p1" },
-          { type: "wardrobe", id: "w1" },
+          { type: "product", id: PRODUCT_ID },
+          { type: "wardrobe", id: WARDROBE_ID },
         ],
       },
     }).runner,
-    hydrate: hydrator({ p1: { id: "p1", name: "襯衫" } }, { w1: { id: "w1" } }),
+    hydrate: hydrator(
+      { [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } },
+      { [WARDROBE_ID]: { id: WARDROBE_ID } },
+    ),
   });
 
   assertEquals(result.blocks, [
     { type: "text", text: "上身" },
-    { type: "product", item: { id: "p1", name: "襯衫" } },
-    { type: "wardrobe", item: { id: "w1" } },
+    { type: "product", item: { id: PRODUCT_ID, name: "襯衫" } },
+    { type: "wardrobe", item: { id: WARDROBE_ID } },
   ]);
   assertEquals(result.usage, USAGE);
   assertEquals(quota.calls, ["charge"]);
@@ -218,7 +226,7 @@ Deno.test("refunds when hydration fails — a lost row is not a graceful answer"
       runChatAgent(clients, params, {
         quota: quota.factory,
         loadContext: context,
-        runAgent: fakeAgent({ output: { blocks: [{ type: "product", id: "p1" }] } })
+        runAgent: fakeAgent({ output: { blocks: [{ type: "product", id: PRODUCT_ID }] } })
           .runner,
         hydrate: () => Promise.reject(new Error("db down")),
       }),

@@ -11,6 +11,11 @@ import {
 
 const CATEGORIES = new Map([["上衣", "cat-1"], ["洋裝", "cat-2"]]);
 
+// Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
+// rejects anything else.
+const PRODUCT_ID = "f8f49d33-e34a-4121-a6b9-f654e0614971";
+const WARDROBE_ID = "0b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9";
+
 Deno.test("resolveCategoryFilter maps a known name to its id", () => {
   const r = resolveCategoryFilter("上衣", CATEGORIES);
   assertEquals(r, { ok: true, categoryIds: ["cat-1"] });
@@ -91,14 +96,14 @@ Deno.test("parseAnswerRefs keeps ordered text + labelled product/wardrobe ids", 
   const refs = parseAnswerRefs({
     blocks: [
       { type: "text", text: "上身白襯衫" },
-      { type: "product", id: "p-1" },
-      { type: "wardrobe", id: "w-2" },
+      { type: "product", id: PRODUCT_ID },
+      { type: "wardrobe", id: WARDROBE_ID },
     ],
   });
   assertEquals(refs, [
     { type: "text", text: "上身白襯衫" },
-    { type: "product", id: "p-1" },
-    { type: "wardrobe", id: "w-2" },
+    { type: "product", id: PRODUCT_ID },
+    { type: "wardrobe", id: WARDROBE_ID },
   ]);
 });
 
@@ -108,10 +113,29 @@ Deno.test("parseAnswerRefs drops empty text and id-less product/wardrobe blocks"
       { type: "text", text: "   " },
       { type: "product" },
       { type: "wardrobe", id: "" },
-      { type: "product", id: "p-1" },
+      { type: "product", id: PRODUCT_ID },
     ],
   });
-  assertEquals(refs, [{ type: "product", id: "p-1" }]);
+  assertEquals(refs, [{ type: "product", id: PRODUCT_ID }]);
+});
+
+// A model can misquote an id it read from a tool result — the reported failure
+// dropped one character from the last group. Such an id reaches Postgres as a
+// uuid literal and fails the whole `.in()` batch with 22P02, taking the valid
+// ids down with it, so it is rejected here with the id-less blocks.
+Deno.test("parseAnswerRefs drops ids that are not uuids", () => {
+  const refs = parseAnswerRefs({
+    blocks: [
+      { type: "product", id: "f8f49d33-e34a-4121-a6b9-f654e061497" }, // one char short
+      { type: "wardrobe", id: "不是 uuid" },
+      { type: "text", text: "這件如何？" },
+      { type: "product", id: PRODUCT_ID },
+    ],
+  });
+  assertEquals(refs, [
+    { type: "text", text: "這件如何？" },
+    { type: "product", id: PRODUCT_ID },
+  ]);
 });
 
 Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to ModelMessages", () => {

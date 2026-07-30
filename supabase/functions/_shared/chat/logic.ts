@@ -1,6 +1,6 @@
 // Pure helpers for the chat agent loop. No SDK or network imports so they
 // unit-test offline (no Gemini SDK, no network).
-import { nonEmptyStr } from "../text.ts";
+import { isUuid, nonEmptyStr } from "../text.ts";
 import type {
   AnswerRef,
   AnswerRows,
@@ -186,13 +186,21 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
 // Parse the structured answer output into ordered refs. The model picks the block
 // type (product = shop, wardrobe = wardrobe) and gives the id; the edge fetches each
 // id from the matching table. Empty text and id-less product/wardrobe blocks drop.
+//
+// So does a block whose id is not a uuid. The model quotes ids back from tool
+// results and can misquote one — a dropped character is enough — and every id
+// here is spent as a uuid literal in the hydrator's `.in("id", ids)`, where
+// Postgres rejects the malformed one by failing the whole batch (22P02). That
+// would cost the caller the answer, valid ids and all, so the check belongs to
+// the parse: an id that cannot name a row is an id-less block, and the assembler
+// already drops those.
 export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
   const rawBlocks = Array.isArray(args?.blocks) ? args.blocks : [];
   const refs: AnswerRef[] = [];
   for (const b of rawBlocks) {
     if (b?.type === "product" || b?.type === "wardrobe") {
       const id = nonEmptyStr(b.id);
-      if (id) refs.push({ type: b.type, id });
+      if (id && isUuid(id)) refs.push({ type: b.type, id });
     } else if (b?.type === "text") {
       const text = nonEmptyStr(b.text);
       if (text) refs.push({ type: "text", text });
