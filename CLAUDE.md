@@ -1,26 +1,17 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Working notes
 
 - Design/spec docs under `docs/superpowers/` are gitignored and intentionally NOT committed. Write them there for reference, but never `git add -f` or commit them.
 - Development in this project does not require creating a branch — make changes directly on `main` and commit there. The user manages these changes themselves.
 - Always propose the best-practice solution. Do not compromise the design to minimize change scope or migration effort — optimize for correctness and quality, not for avoiding churn.
-
-## Project
-
-Tryzeon is a Flutter app (Dart SDK ^3.9) for AI virtual try-on and wardrobe management. Backend is Supabase (Postgres + Edge Functions in `supabase/functions/`); auth, storage, and analytics RPCs all run there. Subscriptions go through RevenueCat; crash/analytics through Firebase.
+- Dart/Flutter conventions (theme, state management, errors, logging) live in `lib/CLAUDE.md`.
 
 ## Common Commands
 
 ```bash
-flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # codegen: riverpod, freezed, json, isar, auto_mappr, envied
 dart run build_runner watch  --delete-conflicting-outputs  # incremental codegen during dev
-flutter run                                                # debug on default device
-flutter analyze                                            # lint (uses analysis_options.yaml; .g/.freezed/.gr files excluded)
-dart fix --apply && dart format .                          # autofix + format (page_width: 90)
 ```
 
 Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`). If imports of `*.g.dart` / `*.freezed.dart` are missing, run build_runner.
@@ -28,8 +19,6 @@ Code generation is required after editing any annotated file (`@riverpod`, `@fre
 `Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all five keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `CHOTTULINK_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
 
 ## Architecture
-
-- `liff-web/` — separate LINE LIFF web app (React 18 + Vite + TypeScript, not Flutter) for the LINE integration: avatar onboarding, catalog, try-on. Backed by the `liff-*` edge functions; built with `npm run build` inside `liff-web/`.
 
 ### Architecture rules
 
@@ -45,18 +34,7 @@ Every feature follows Clean Architecture. When adding code, these are hard rules
 - **Exception mapping:** extend `mapExceptionToFailure` with typed `is` checks when introducing a new error source. Never match on `toString()` contents, and never swallow errors with a bare `catch (_)` — at minimum log via `AppLogger`.
 - **Widgets stay thin:** no business logic (network calls, encoding, orchestration) inside `build()` or inline page callbacks — put it in a notifier/controller or usecase that returns `Result`.
 
-### State management
-
-Riverpod (hooks_riverpod + riverpod_generator). Use `@riverpod` codegen providers, not hand-written ones, when adding new state. The retry policy in `main.dart` exponentially backs off only for `NetworkFailure`; other failures fail fast — keep your `Failure` types accurate so retries behave correctly.
-
 ### Analytics
 
 Analytics pipeline (event batching → RPC → trigger → monthly summary) is documented in README.md §Analytics System.
-
-## Conventions
-
-- **Theme:** always pull colors/typography from `AppTheme` / `Theme.of(context).colorScheme`. Never hard-code colors. Design philosophy is "Clean Luxe" — flat surfaces, no `BoxShadow`/`Shadow` on widgets, charcoal-led UI with a single lavender brand accent (used only as a low-emphasis tonal container — selected chips, tags — via `primaryContainer`; high-emphasis CTAs/prices/active states use `primary` = charcoal), Material 3 tonal tokens. Full spec in `docs/ui-design-system.md`.
-- **Prefer themed components over hand-rolled UI:** reach for the standard Material widget that already has a theme defined in `AppTheme` (`build()` in `lib/core/theme/app_theme.dart`) before building a custom one — e.g. `CheckboxListTile`/`ListTile` (`listTileTheme`), `ChoiceChip`/`Chip` (`chipTheme`), `Divider` (`dividerTheme`), `TextButton`/`FilledButton`/`OutlinedButton`, `Card` (`cardTheme`), `TextField` (`inputDecorationTheme`). Don't re-specify values the theme already sets (padding, border, color, thickness). If a needed style is missing, add/extend the component theme in `AppTheme` rather than styling one-off at the call site. Use `AppSpacing`/`AppRadius` tokens for spacing and radii, never raw numbers.
-- **Errors:** model failures with the sealed types in `lib/core/error/failures.dart`; results use the `typed_result` package.
-- **Logging:** `talker_flutter` (don't add raw `print`).
 
