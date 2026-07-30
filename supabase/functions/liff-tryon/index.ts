@@ -6,6 +6,7 @@ import { makeCors } from "../_shared/cors.ts";
 import { parseLiffTryonBody } from "./request.ts";
 import { LineAuthError, verifyLineIdToken } from "../_shared/line-identity.ts";
 import { getOrCreateUserId } from "../_shared/line-user.ts";
+import { getAvatarPath } from "../_shared/user-profile.ts";
 import { tryonErrorResponse } from "../_shared/tryon/http.ts";
 import { runTryonJob } from "../_shared/tryon/index.ts";
 
@@ -26,14 +27,21 @@ Deno.serve(async (req) => {
     const admin = getAdminClient();
     const userId = await getOrCreateUserId(admin, profile);
 
+    const avatarPath = await getAvatarPath(admin, userId);
+    if (!avatarPath) {
+      return cors.wrap(
+        jsonError("No model photo on file", "NO_AVATAR", 400),
+      );
+    }
+
     // `materials: admin` is safe here and stated explicitly: this adapter never
-    // forwards a client-supplied path — the avatar arrives as base64 and the
-    // garment is a productId the core resolves against the catalog itself.
-    // `mode: "image"` is a literal, so the core's return type is the image
-    // variant — `result.imageUrl` needs no narrowing.
+    // forwards a client-supplied path — the avatar is read from the caller's own
+    // profile and the garment is a productId the core resolves against the
+    // catalog itself. `mode: "image"` is a literal, so the core's return type is
+    // the image variant — `result.imageUrl` needs no narrowing.
     const result = await runTryonJob({ admin, materials: admin }, {
       userId,
-      avatar: { base64: body.avatarBase64 },
+      avatar: { path: avatarPath },
       garments: [{ productId: body.productId }],
       mode: "image",
     });

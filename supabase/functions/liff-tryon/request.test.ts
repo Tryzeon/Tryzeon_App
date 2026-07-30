@@ -4,7 +4,6 @@ import { ValidationError } from "../_shared/tryon/index.ts";
 
 const valid = {
   idToken: "tok",
-  avatarBase64: "AAAA",
   productId: "11111111-1111-1111-1111-111111111111",
 };
 
@@ -12,9 +11,14 @@ Deno.test("parseLiffTryonBody decodes a complete body", () => {
   assertEquals(parseLiffTryonBody(JSON.stringify(valid)), valid);
 });
 
+Deno.test("parseLiffTryonBody ignores a legacy avatarBase64 field", () => {
+  // The old client sent the photo inline; the avatar now comes from the user's
+  // profile, so an extra field must not fail the request during the rollout.
+  const legacy = { ...valid, avatarBase64: "AAAA" };
+  assertEquals(parseLiffTryonBody(JSON.stringify(legacy)), valid);
+});
+
 Deno.test("parseLiffTryonBody rejects unparseable JSON as a validation error", () => {
-  // Previously this escaped as a SyntaxError and surfaced as a 500; owning
-  // JSON.parse here makes a malformed body a 400 like every other bad request.
   assertThrows(
     () => parseLiffTryonBody("{not json"),
     ValidationError,
@@ -28,7 +32,7 @@ Deno.test("parseLiffTryonBody rejects a non-object body", () => {
 });
 
 Deno.test("parseLiffTryonBody names the missing field", () => {
-  for (const field of ["idToken", "avatarBase64", "productId"] as const) {
+  for (const field of ["idToken", "productId"] as const) {
     const body = { ...valid, [field]: "" };
     assertThrows(
       () => parseLiffTryonBody(JSON.stringify(body)),

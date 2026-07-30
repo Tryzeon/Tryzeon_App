@@ -1,11 +1,13 @@
 // The LIFF web app's wire format. Decoding uses the core's `requireString` and
 // `ValidationError`, so a body-parse failure and a core resolution failure are
 // the same class, both reach `tryonErrorResponse`, and both map to one 400.
+//
+// The body carries no photo: the avatar is the one stored on the user's
+// profile, resolved server-side, exactly as the LINE chat try-on does.
 import { parseJsonObject, requireString } from "../_shared/tryon/index.ts";
 
 export interface LiffTryonBody {
   idToken: string;
-  avatarBase64: string;
   productId: string;
 }
 
@@ -19,7 +21,6 @@ export function parseLiffTryonBody(rawBody: string): LiffTryonBody {
   const b = parseJsonObject(rawBody);
   return {
     idToken: requireString(b.idToken, "idToken"),
-    avatarBase64: requireString(b.avatarBase64, "avatarBase64"),
     productId: requireString(b.productId, "productId"),
   };
 }
