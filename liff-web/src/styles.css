@@ -402,7 +402,6 @@ button { font-family: inherit; }
   object-fit: cover;
   display: block;
 }
-/* Ink, not white — every clip is a white-background brand animation. */
 .fit__status {
   position: absolute;
   left: 0;
