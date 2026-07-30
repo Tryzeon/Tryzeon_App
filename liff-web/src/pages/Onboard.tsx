@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { getIdToken } from "./liff";
-import { fileToBase64 } from "./image";
-import { setAvatar } from "./onboard";
+import { getIdToken } from "../lib/liff";
+import { fileToBase64 } from "../lib/image";
+import { setAvatar } from "../api/avatar";
+import { Header } from "../components/Header";
 
 // LIFF is already initialized + logged in by <LiffGate> before this renders.
 type Phase = "ready" | "saving" | "done" | "error";
@@ -13,7 +14,7 @@ const CTA_LABEL: Record<Phase, string> = {
   error: "換一張再試",
 };
 
-export function OnboardAvatar() {
+export function Onboard() {
   const [phase, setPhase] = useState<Phase>("ready");
   const [message, setMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -47,16 +48,9 @@ export function OnboardAvatar() {
     }
   }
 
-  const Header = (
-    <header className="header">
-      <p className="header__eyebrow">Virtual Try-On</p>
-      <h1 className="header__mark">Tryzeon</h1>
-    </header>
-  );
-
   return (
     <div className="app">
-      {Header}
+      <Header />
       <main className="main">
         <p className="eyebrow">建立你的 model</p>
 

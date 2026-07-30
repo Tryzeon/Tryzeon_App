@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { initAndLogin } from "./liff";
-import { App } from "./App";
-import { OnboardAvatar } from "./OnboardAvatar";
-
-const Header = (
-  <header className="header">
-    <p className="header__eyebrow">Virtual Try-On</p>
-    <h1 className="header__mark">Tryzeon</h1>
-  </header>
-);
+import { initAndLogin } from "./lib/liff";
+import { Header } from "./components/Header";
+import { Shop } from "./pages/Shop";
+import { Onboard } from "./pages/Onboard";
 
 // Initializes LIFF once for the whole app, then renders the matched route.
 // Child screens can assume LIFF is ready and the user is logged in.
@@ -24,12 +18,12 @@ function LiffGate() {
   }, []);
 
   if (state === "loading") {
-    return <div className="app">{Header}</div>;
+    return <div className="app"><Header /></div>;
   }
   if (state === "error") {
     return (
       <div className="app">
-        {Header}
+        <Header />
         <main className="main">
           <div className="errorcard">請從 LINE 開啟此頁面</div>
         </main>
@@ -45,8 +39,8 @@ export function AppRouter() {
   return (
     <Routes>
       <Route element={<LiffGate />}>
-        <Route path="/" element={<App />} />
-        <Route path="/onboard" element={<OnboardAvatar />} />
+        <Route path="/" element={<Shop />} />
+        <Route path="/onboard" element={<Onboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

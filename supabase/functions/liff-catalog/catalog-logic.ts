@@ -1,10 +1,5 @@
 import { publicImageUrl } from "../_shared/storage.ts";
 
-export interface CatalogSize {
-  name: string;
-  measurements: Record<string, unknown> | null;
-}
-
 export interface CatalogItem {
   productId: string;
   name: string;
@@ -12,20 +7,6 @@ export interface CatalogItem {
   storeName: string | null;
   imageUrls: string[];
   purchaseLink: string | null;
-  sizes: CatalogSize[];
-}
-
-function buildSizes(raw: unknown): CatalogSize[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((entry) => {
-    const r = (entry ?? {}) as Record<string, unknown>;
-    if (typeof r.name !== "string" || r.name.length === 0) return [];
-    const m = r.measurements;
-    const measurements = m !== null && typeof m === "object" && !Array.isArray(m)
-      ? m as Record<string, unknown>
-      : null;
-    return [{ name: r.name, measurements }];
-  });
 }
 
 /**
@@ -49,6 +30,5 @@ export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem | n
     storeName: store && typeof store.name === "string" ? store.name : null,
     imageUrls: keys.map((k) => publicImageUrl(baseUrl, k)),
     purchaseLink: typeof link === "string" && link.length > 0 ? link : null,
-    sizes: buildSizes(r.product_sizes),
   };
 }
