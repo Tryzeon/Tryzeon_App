@@ -41,6 +41,7 @@ button { font-family: inherit; }
 
 /* ── Shell ─────────────────────────────────────────────────────────────── */
 .app {
+  position: relative;
   max-width: 480px;
   margin: 0 auto;
   min-height: 100%;
@@ -57,6 +58,29 @@ button { font-family: inherit; }
   border-bottom: 1px solid var(--line);
   padding: 14px 20px 12px;
 }
+/* Laid over full-bleed media — a scrim keeps the white mark legible. */
+.header--overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: none;
+  backdrop-filter: none;
+  border-bottom: none;
+  padding-top: calc(14px + env(safe-area-inset-top));
+  color: #fff;
+}
+.header--overlay::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 160px;
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.55), transparent);
+  z-index: -1;
+}
+.header--overlay .header__eyebrow { color: rgba(255, 255, 255, 0.75); }
+
 .header__eyebrow {
   font-size: 10px;
   letter-spacing: 0.28em;
@@ -364,40 +388,19 @@ button { font-family: inherit; }
 .preview .frame { width: auto; }
 
 /* ── Ceremony (generating) ─────────────────────────────────────────────── */
+/* Full-bleed brand animation. The background shows through until the clip
+   buffers, matching the app's behaviour. */
 .fit {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 40px 24px calc(40px + env(safe-area-inset-bottom));
-  text-align: center;
+  position: relative;
+  flex: none;
+  height: 100dvh;
+  background: var(--surface-2);
 }
-.fit__scan {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 100%
-  );
-  height: 45%;
-  animation: scan 2.4s ease-in-out infinite;
-}
-.fit__status {
-  font-family: var(--sans);
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  min-height: 1.4em;
-}
-.fit__sub { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; }
-
-@keyframes scan {
-  0% { transform: translateY(-110%); }
-  100% { transform: translateY(230%); }
+.fit__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* ── Result reveal ─────────────────────────────────────────────────────── */
@@ -493,5 +496,4 @@ button { font-family: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .fit__scan { display: none; }
 }

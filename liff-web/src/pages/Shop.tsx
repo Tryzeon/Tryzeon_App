@@ -50,8 +50,8 @@ export function Shop() {
   if (tryon.state.phase === "generating") {
     return (
       <div className="app">
-        <Header />
-        <FittingScreen imageUrl={tryon.state.item.imageUrls[0]} />
+        <Header overlay />
+        <FittingScreen />
       </div>
     );
   }

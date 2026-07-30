@@ -1,34 +1,25 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { nextLoadingVideo } from "../lib/loadingVideos";
 
-// Rotating copy for the ~30s generation wait — a calm "fitting" sequence.
-const FITTING_STATUS = [
-  "正在讀取你的輪廓",
-  "正在讓衣服合身",
-  "正在打光與細節",
-  "即將完成",
-];
+const prefersReducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function FittingScreen({ imageUrl }: { imageUrl: string }) {
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(
-      () => setIdx((i) => Math.min(i + 1, FITTING_STATUS.length - 1)),
-      3000,
-    );
-    return () => clearInterval(id);
-  }, []);
+/** Full-bleed brand animation for the ~15s generation wait. */
+export function FittingScreen() {
+  const [src] = useState(nextLoadingVideo);
+  const [autoPlay] = useState(() => !prefersReducedMotion());
 
   return (
     <div className="fit">
-      <div className="frame">
-        <img className="frame__img" src={imageUrl} alt="" />
-        <div className="fit__scan" />
-      </div>
-      <div>
-        <div className="fit__status">{FITTING_STATUS[idx]}</div>
-        <div className="fit__sub">約 15 秒</div>
-      </div>
+      <video
+        className="fit__video"
+        src={src}
+        muted
+        loop
+        playsInline
+        autoPlay={autoPlay}
+        preload="auto"
+      />
     </div>
   );
 }
