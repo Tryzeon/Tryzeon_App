@@ -123,7 +123,13 @@ button { font-family: inherit; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.card__price { display: block; font-size: 13px; font-weight: 600; margin-top: 2px; }
+.card__price {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 2px;
+}
 
 
 .loadmore {
