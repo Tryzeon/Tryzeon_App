@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getIdToken } from "../lib/liff";
 import { fileToBase64 } from "../lib/image";
 import { setAvatar } from "../api/avatar";
@@ -10,11 +11,12 @@ type Phase = "ready" | "saving" | "done" | "error";
 const CTA_LABEL: Record<Phase, string> = {
   ready: "上傳我的 model 照",
   saving: "儲存中…",
-  done: "換一張 model 照",
+  done: "前往試衣間",
   error: "換一張再試",
 };
 
 export function Onboard() {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("ready");
   const [message, setMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -93,31 +95,31 @@ export function Onboard() {
       </main>
 
       <div className="actionbar">
-        <label
-          className={
-            phase === "done"
-              ? "btn-outline"
-              : `cta${phase === "saving" ? " is-loading" : ""}`
-          }
-        >
-          {phase === "saving" ? (
-            <span className="cta__spin">
-              <span className="spinner" aria-hidden="true" />
-              {CTA_LABEL.saving}
-            </span>
-          ) : (
-            CTA_LABEL[phase]
-          )}
-          {/* Remount per phase so re-picking the same file still fires onChange. */}
-          <input
-            key={phase}
-            type="file"
-            accept="image/*"
-            disabled={phase === "saving"}
-            onChange={onPick}
-            style={{ display: "none" }}
-          />
-        </label>
+        {phase === "done" ? (
+          <button type="button" className="cta" onClick={() => navigate("/")}>
+            {CTA_LABEL.done}
+          </button>
+        ) : (
+          <label className={`cta${phase === "saving" ? " is-loading" : ""}`}>
+            {phase === "saving" ? (
+              <span className="cta__spin">
+                <span className="spinner" aria-hidden="true" />
+                {CTA_LABEL.saving}
+              </span>
+            ) : (
+              CTA_LABEL[phase]
+            )}
+            {/* Remount per phase so re-picking the same file still fires onChange. */}
+            <input
+              key={phase}
+              type="file"
+              accept="image/*"
+              disabled={phase === "saving"}
+              onChange={onPick}
+              style={{ display: "none" }}
+            />
+          </label>
+        )}
         {phase === "done" && (
           <span className="cta__hint">回聊天室再傳一次衣服圖，就會自動幫你試穿。</span>
         )}
