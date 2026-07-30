@@ -20,6 +20,7 @@ export function FittingScreen() {
         autoPlay={autoPlay}
         preload="auto"
       />
+      <p className="fit__status">正在試穿中，請稍等</p>
     </div>
   );
 }
