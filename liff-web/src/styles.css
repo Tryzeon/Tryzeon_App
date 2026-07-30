@@ -111,7 +111,9 @@ button { font-family: inherit; }
   object-fit: cover;
   background: var(--surface-2);
 }
-.card__meta { padding: 10px 12px 12px; }
+/* Block, not inline: an inline box drops its padding around the block-level
+   lines inside it, which pushed the text into the card's rounded corners. */
+.card__meta { display: block; padding: 12px 14px 14px; }
 .card__name {
   font-size: 13px;
   line-height: 1.35;
@@ -121,7 +123,7 @@ button { font-family: inherit; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.card__price { font-size: 13px; font-weight: 600; margin-top: 2px; }
+.card__price { display: block; font-size: 13px; font-weight: 600; margin-top: 2px; }
 
 
 .loadmore {
