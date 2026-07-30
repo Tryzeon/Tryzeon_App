@@ -265,6 +265,8 @@ button { font-family: inherit; }
   scroll-snap-align: center;
   background: var(--surface-2);
 }
+/* Nothing to peek at with one photo — fill the row instead of leaving a gap. */
+.gallery__img:only-child { width: 100%; }
 
 .avatarprompt { margin-top: 20px; }
 .avatarprompt .cta { margin-top: 14px; }
