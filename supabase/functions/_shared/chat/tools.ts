@@ -60,14 +60,16 @@ async function runSearchWardrobe(
 // every turn, along with the JSON Schema the SDK derives from each.
 const SEARCH_PRODUCTS_SCHEMA = z.object({
   query: z.string().optional().describe(
-    "只比對『商品名稱』與『店家/品牌名稱』。多個詞以空白分隔，且每個詞都必須出現在商品名稱中（AND），所以請用少量、可能出現在名稱裡的字（如『襯衫』『洋裝』或品牌名）。顏色、材質、風格、季節、分類請勿放這裡——改用對應參數。",
+    "只比對『商品名稱』與『店家/品牌名稱』。多個詞以空白分隔，且每個詞都必須出現在商品名稱中（AND），詞越多越容易 0 筆，所以一次只放『一個』最具代表性、最可能原封不動寫進商品名稱的詞。\n" +
+      "適合放：品牌或店家名，系列、聯名、作品或角色等專有名詞（電影、動漫、遊戲，如『鬼滅』『蜘蛛人』『寶可夢』）。\n" +
+      "不要放：材質、風格、季節、版型、彈性、厚度、性別、價格、分類——這些都有對應參數。也不要把品類和專有名詞併成同一個 query（『蜘蛛人 T恤』會要求名稱同時含這兩個詞），品類請改用 category_name。\n",
   ),
   category_name: z.string().optional().describe("商品分類名稱，需與分類清單一致"),
   gender: z.string().optional().describe(
     "選填。依商品適用性別篩選，只能用：male, female, unisex。可參考使用者資訊自行決定是否使用。",
   ),
   materials: z.array(z.string()).optional().describe(
-    "選填。材質關鍵字（自由文字，子字串比對），如 棉、麻、羊毛、聚酯纖維。",
+    "選填。材質關鍵字（自由文字，子字串比對），如 棉、麻、羊毛、聚酯纖維。"
   ),
   styles: z.array(z.string()).optional().describe(
     "選填。風格，只能用這些固定英文值：japanese, korean, western, british, chinese, minimalist, casual, sporty, lazy, streetwear, business, preppy, functional, vintage, artsy, literary, elegant, mature, neutral, spicy, sweet。",
@@ -117,7 +119,7 @@ export function buildTools(deps: {
   return {
     search_products: tool({
       description:
-        "搜尋商店真實上架商品。需要具體單品時呼叫；回傳的 id 之後用於最終回覆的 product block。除 query 與 category_name 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
+        "搜尋商店真實上架商品。使用者提到任何想找、想買的商品時一律呼叫本工具查證，不可憑印象或常識回答有沒有；回傳的 id 之後用於最終回覆的 product block。除 query 與 category_name 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
       inputSchema: SEARCH_PRODUCTS_SCHEMA,
       execute: (args) => runSearchProducts(admin, args, categoryIdByName),
     }),

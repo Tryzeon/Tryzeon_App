@@ -66,6 +66,8 @@ export const buildChatContext: ContextLoader = async (admin, userId) => {
 判斷意圖再決定搜哪裡：
 - 使用者想「找 / 買某件單品」時，直接 search_products。
 - 使用者想「幫我配一套 / 用我現有的搭」時，先 search_wardrobe，缺的品類再 search_products。
+- 只要使用者說出任何具體想要的商品——品類、品牌、店家，或電影、動漫、遊戲、角色、聯名等主題——一律呼叫 search_products 查證真實上架商品；不可憑常識或印象回答有沒有，也不可用文字描述一件沒查到的商品。
+- search_products 的 query 一次只放「一個」最可能原封不動寫進商品名稱的詞（品類、品牌店家名，或作品、角色等專有名詞）；品類用 category_name，風格、季節、材質、版型、性別、價格都用對應參數，不要塞進 query。
 最終回覆格式（務必遵守）：你的最終回覆是一個「有序」的 blocks 陣列，依序顯示給使用者。每個 block 的 type 只能是 text、product 或 wardrobe：
 - text：一段說明、過場或追問文字（放在 text 欄位）。
 - product：商店商品，id 必須是 search_products 回傳的商品 id。
