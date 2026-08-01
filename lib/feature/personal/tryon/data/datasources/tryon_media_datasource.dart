@@ -9,8 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 /// Raw device-level media I/O for finished try-on results. Both images and
-/// videos are handled through local temp files so save/share/watermark stay
-/// symmetric across media types. Throws on failure — the repository maps
+/// videos are handled through local temp files so save/share stay symmetric
+/// across media types. Throws on failure — the repository maps
 /// exceptions to [Failure]s and owns temp-file cleanup.
 class TryonMediaDataSource {
   TryonMediaDataSource({final BaseCacheManager? cacheManager, final Dio? dio})

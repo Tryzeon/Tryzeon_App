@@ -168,12 +168,6 @@ class _SubscriptionContent extends ConsumerWidget {
             trailingValue: formatBenefit(value: capabilities?.hasVideoAccess),
             isFirst: true,
           ),
-          _BenefitRow(
-            title: '去除浮水印',
-            trailingValue: formatBenefit(
-              value: capabilities == null ? null : !capabilities!.requiresWatermark,
-            ),
-          ),
           const SizedBox(height: AppSpacing.xl),
           _PrimaryCta(tier: tier),
           if (tier == AppSubscriptionTier.pro) ...[

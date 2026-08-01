@@ -42,7 +42,7 @@ class SubscriptionCapabilitiesRepositoryImpl
         final cached = await _localDataSource.getPlanCapabilities(capabilityPlanId);
         switch (cached) {
           case CacheHit<SubscriptionPlanModel>(:final data):
-            return Ok(_toCapabilities(entitlement, data));
+            return Ok(_toCapabilities(data));
           case CacheEmpty<SubscriptionPlanModel>():
           case CacheMiss<SubscriptionPlanModel>():
             break;
@@ -69,7 +69,7 @@ class SubscriptionCapabilitiesRepositoryImpl
         );
       }
 
-      return Ok(_toCapabilities(entitlement, planInfo));
+      return Ok(_toCapabilities(planInfo));
     } catch (e, stackTrace) {
       AppLogger.error(
         'Failed to load subscription capabilities for $capabilityPlanId',
@@ -90,12 +90,8 @@ class SubscriptionCapabilitiesRepositoryImpl
     };
   }
 
-  SubscriptionCapabilities _toCapabilities(
-    final AppSubscriptionEntitlement entitlement,
-    final SubscriptionPlanModel planInfo,
-  ) {
+  SubscriptionCapabilities _toCapabilities(final SubscriptionPlanModel planInfo) {
     return SubscriptionCapabilities(
-      requiresWatermark: entitlement.isFree,
       hasVideoAccess: planInfo.videoLimit > 0,
       wardrobeLimit: planInfo.wardrobeLimit,
       dailyTryonLimit: planInfo.tryonLimit,
