@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/share_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_detail_body.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
-  const ProductDetailPage({super.key, required this.productId});
+  const ProductDetailPage({super.key, required this.productId, this.initialProduct});
 
   final String productId;
+  final ShopProduct? initialProduct;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productAsync = ref.watch(shopProductByIdProvider(productId));
+    final initial = initialProduct;
+    // initialProduct 是 final 建構子欄位，對同一個 widget instance 恆定，
+    // 因此這個條件式 watch 跨 rebuild 是穩定的。
+    final productAsync = initial != null
+        ? AsyncValue.data(initial)
+        : ref.watch(shopProductByIdProvider(productId));
     final product = productAsync.hasValue ? productAsync.value : null;
     final canShare = product != null;
 

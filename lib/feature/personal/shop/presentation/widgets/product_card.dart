@@ -53,7 +53,7 @@ class ProductCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.personalShopProductPath(product.id));
+        context.push(AppRoutes.personalShopProductPath(product.id), extra: product);
       },
       child: VisibilityDetector(
         key: Key('product-card-${product.id}'),
