@@ -4,7 +4,7 @@ import { jsonError } from "../_shared/http.ts";
 /// in lib/feature/common/product_size/domain/entities/.
 export const MEASUREMENT_KEYS = [
   "shoulder_width", "chest_circumference", "sleeve_length", "waist_circumference",
-  "hip_circumference", "length",
+  "hip_circumference", "thigh_circumference", "length",
 ] as const;
 
 export const UNIT_VALUES = ["centimeter", "cun", "inch"] as const;
@@ -14,6 +14,31 @@ export const TO_CM_FACTOR: Record<string, number> = {
   cun: 3.03,
   inch: 2.54,
 };
+
+/// Spoken size names → the canonical literal the app stores. Keys are compared
+/// after trimming, upper-casing and stripping spaces/hyphens/underscores.
+///
+/// Only the ingestion path normalizes: what a store owner types by hand is kept
+/// verbatim, because a custom size name is their decision. Values must stay in
+/// sync with StandardSizeLabel.display in
+/// lib/feature/common/product_size/domain/entities/standard_size_label.dart.
+const SIZE_NAME_ALIASES: Record<string, string> = {
+  "XS": "XS", "EXTRASMALL": "XS",
+  "S": "S", "SMALL": "S",
+  "M": "M", "MEDIUM": "M", "MED": "M",
+  "L": "L", "LARGE": "L",
+  "XL": "XL", "1XL": "XL", "EXTRALARGE": "XL",
+  "2XL": "2XL", "XXL": "2XL",
+  "F": "均碼", "FREE": "均碼", "FREESIZE": "均碼", "ONESIZE": "均碼", "均碼": "均碼", "均一": "均碼", "單一尺寸": "均碼",
+};
+
+/// Maps a spoken size name onto a standard label, or returns it trimmed when it
+/// is not one we recognise (`US 10`, `4XL`, …).
+export function normalizeSizeName(raw: string): string {
+  const trimmed = raw.trim();
+  const key = trimmed.toUpperCase().replace(/[\s\-_]/g, "");
+  return SIZE_NAME_ALIASES[key] ?? trimmed;
+}
 
 const MAX_AUDIO_BASE64_LENGTH = 10 * 1024 * 1024; // ~7.5MB binary, well above 60s AAC
 const SUPPORTED_MIME = new Set([
@@ -27,13 +52,13 @@ export function buildPrompt(): string {
     "請從語音中萃取每一個尺寸與其量測值，輸出 JSON。",
     "規則：",
     "1. 忽略口頭禪、語助詞、重複與與尺寸無關的閒聊，只保留尺寸資訊（去贅字）。",
-    "2. 量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、length(長度)。沒講到的欄位不要輸出。",
+    "2. 量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)。沒講到的欄位不要輸出。",
     "2-0. length 是衣服本身的長度，衣長、褲長、裙長、洋裝長一律填 length。",
     "2-1. 這是「衣服」的尺寸，不是人體的尺寸。身高不是衣服的尺寸，絕對不要輸出。",
-    "2-2. 胸圍、腰圍、臀圍是該部位一圈的長度。店家若說的是「平放衣服量的胸寬／腰寬／臀寬」（半圈），請乘以 2 後填入對應的圍度欄位。",
+    "2-2. 胸圍、腰圍、臀圍、大腿圍是該部位一圈的長度。店家若說的是「平放衣服量的胸寬／腰寬／臀寬／大腿寬」（半圈），請乘以 2 後填入對應的圍度欄位。",
     "3. 每個量測輸出 { value, unit }。value 為數字。",
     "4. unit 依口語判斷：公分=centimeter、台寸/寸=cun、英吋/吋/inch=inch。若完全沒提單位，一律填 centimeter。",
-    "5. name 原樣保留尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。",
+    "5. name 填聽到的尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。標準尺碼一律用 XS、S、M、L、XL、2XL、均碼 這幾個字面值（例如聽到「XXL」填 2XL、「free size」填 均碼）；不屬於標準尺碼的照聽到的原樣填。",
     "6. 若聽不出任何尺寸，sizes 回空陣列。",
   ].join("\n");
 }
@@ -98,7 +123,9 @@ export function normalizeParsedSizes(
   for (const s of sizes) {
     if (s === null || typeof s !== "object") continue;
     const nameRaw = (s as Record<string, unknown>).name;
-    const name = typeof nameRaw === "string" ? nameRaw.slice(0, 20) : "";
+    const name = typeof nameRaw === "string"
+      ? normalizeSizeName(nameRaw.slice(0, 20))
+      : "";
     const measurements: Record<string, { value: number; unit: string }> = {};
     const mRaw = (s as Record<string, unknown>).measurements;
     if (mRaw && typeof mRaw === "object") {
