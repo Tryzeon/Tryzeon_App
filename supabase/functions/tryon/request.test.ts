@@ -25,7 +25,7 @@ Deno.test("parseTryonParams rejects an empty body", () => {
 Deno.test("parseTryonParams shapes wire body, keeps mode, attaches userId", () => {
   const params = parse(
     {
-      avatar: { path: "u1/a.jpg" },
+      avatar: { base64: "AVATAR" },
       garments: [{ images: [{ path: "u1/top/x.jpg" }] }],
       mode: "video",
       transitionPrompt: "spin",
@@ -34,9 +34,24 @@ Deno.test("parseTryonParams shapes wire body, keeps mode, attaches userId", () =
   );
   assertEquals(params.userId, "u1");
   assertEquals(params.mode, "video");
-  assertEquals(params.avatar, { path: "u1/a.jpg" });
+  assertEquals(params.avatar, { base64: "AVATAR" });
   assertEquals(params.garments, [{ images: [{ path: "u1/top/x.jpg" }] }]);
   assertEquals(params.transitionPrompt, "spin");
+});
+
+Deno.test("parseTryonParams keeps an omitted avatar omitted", () => {
+  const params = parse({ garments: [{ images: [{ base64: "B" }] }] }, "u1");
+  assertEquals(params.avatar, undefined);
+});
+
+Deno.test("parseTryonParams defers a legacy path avatar to the core", () => {
+  // Decoding does not judge the field — `validateTryonParams` is where a
+  // non-override becomes `undefined`, so the two layers cannot disagree.
+  const params = parse(
+    { avatar: { path: "u1/a.jpg" }, garments: [{ images: [{ base64: "B" }] }] },
+    "u1",
+  );
+  assertEquals(params.avatar, { path: "u1/a.jpg" } as unknown as TryonParams["avatar"]);
 });
 
 Deno.test("parseTryonParams hands garments to the core without narrowing them", () => {

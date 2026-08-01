@@ -26,7 +26,6 @@ import {
 } from "../_shared/tryon/index.ts";
 import type {
   GarmentInput,
-  ImageSource,
   TryonParams,
 } from "../_shared/tryon/index.ts";
 
@@ -48,7 +47,7 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
 
   return {
     userId,
-    avatar: b.avatar as ImageSource,
+    avatar: b.avatar as TryonParams["avatar"],
     garments: b.garments as GarmentInput[],
     // Omitting `mode` means the default; naming an unknown one is an error, and
     // the core raises it. Mapping every unrecognised value onto "image" would
