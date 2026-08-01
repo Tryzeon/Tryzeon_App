@@ -31,7 +31,7 @@ interface WebhookPayload {
   event: RevenueCatEvent;
 }
 
-// Events where we resolve the new plan from entitlement_ids
+// Events where we resolve the new tier from entitlement_ids
 const PLAN_CHANGE_EVENTS = new Set([
   "INITIAL_PURCHASE",
   "RENEWAL",
