@@ -22,6 +22,9 @@ extension FailureMessage on Failure {
       RateLimitFailure(message: final msg?) => msg,
       RateLimitFailure() => '使用次數已達上限，請升級您的方案',
 
+      AvatarMissingFailure(message: final msg?) => msg,
+      AvatarMissingFailure() => '請先上傳個人照片才能開始試穿呦！',
+
       UserCanceledFailure(message: final msg?) => msg,
       UserCanceledFailure() => '',
 

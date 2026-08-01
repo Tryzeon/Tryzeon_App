@@ -54,6 +54,18 @@ class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message]);
 }
 
+class AvatarMissingFailure extends Failure {
+  const AvatarMissingFailure([super.message]);
+}
+
+
+String? _functionErrorCode(final FunctionException e) {
+  final details = e.details;
+  if (details is! Map) return null;
+  final code = details['code'];
+  return code is String ? code : null;
+}
+
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
   if (e is AuthException && e.code == 'otp_expired') {
@@ -74,6 +86,8 @@ Failure mapExceptionToFailure(final Object e) {
       return RateLimitFailure(usagePayload: usage);
     } else if (e.status == 422) {
       return const ServerFailure('AI 無法辨識圖片，請換一張試試');
+    } else if (e.status == 400 && _functionErrorCode(e) == 'NO_AVATAR') {
+      return const AvatarMissingFailure();
     }
   }
 

@@ -6,7 +6,7 @@ import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_media_rep
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/usecases/resolve_tryon_avatar.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/load_custom_avatar.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/save_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
@@ -34,8 +34,8 @@ Tryon tryonUseCase(final Ref ref) {
 }
 
 @riverpod
-ResolveTryonAvatar resolveTryonAvatarUseCase(final Ref ref) {
-  return ResolveTryonAvatar(mediaRepository: ref.watch(tryonMediaRepositoryProvider));
+LoadCustomAvatar loadCustomAvatarUseCase(final Ref ref) {
+  return LoadCustomAvatar(mediaRepository: ref.watch(tryonMediaRepositoryProvider));
 }
 
 // Media (save/share) — data source, repository, use cases

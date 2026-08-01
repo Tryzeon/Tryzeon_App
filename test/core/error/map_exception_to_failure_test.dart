@@ -104,5 +104,36 @@ void main() {
     test('unrecognised error maps to UnknownFailure', () {
       expect(mapExceptionToFailure(const FormatException('nope')), isA<UnknownFailure>());
     });
+
+    test('FunctionException 400 NO_AVATAR maps to AvatarMissingFailure', () {
+      expect(
+        mapExceptionToFailure(
+          const FunctionException(
+            status: 400,
+            details: {'error': 'No model photo on file', 'code': 'NO_AVATAR'},
+          ),
+        ),
+        isA<AvatarMissingFailure>(),
+      );
+    });
+
+    test('FunctionException 400 with another code maps to ServerFailure', () {
+      expect(
+        mapExceptionToFailure(
+          const FunctionException(
+            status: 400,
+            details: {'error': 'bad body', 'code': 'VALIDATION_ERROR'},
+          ),
+        ),
+        isA<ServerFailure>(),
+      );
+    });
+
+    test('FunctionException 400 with no details maps to ServerFailure', () {
+      expect(
+        mapExceptionToFailure(const FunctionException(status: 400)),
+        isA<ServerFailure>(),
+      );
+    });
   });
 }

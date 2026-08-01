@@ -9,21 +9,22 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 /// Owns the domain → wire serialization (built once via [TryonRequestModel.fromDomain])
 /// so the datasource stays pure transport and never imports domain entities.
 /// Hand-written rather than json_serializable because the body omits empty
-/// prompts and encodes polymorphic image sources as `{path}` / `{base64}`.
+/// prompts and an absent avatar, and encodes garment image sources as
+/// `{path}` / `{base64}`.
 class TryonRequestModel {
   const TryonRequestModel({
-    required this.avatar,
     required this.garments,
     required this.mode,
     required this.isVideo,
+    this.avatarBase64,
     this.scenePrompt,
     this.transitionPrompt,
   });
 
-  /// Maps a domain [request] (avatar already resolved) into the wire model.
+  /// Maps a domain [request] into the wire model.
   factory TryonRequestModel.fromDomain(final TryonRequest request) {
     return TryonRequestModel(
-      avatar: _sourceToJson(request.avatar),
+      avatarBase64: request.avatarBase64,
       garments: request.garments.map(_garmentToJson).toList(),
       mode: request.mode.name,
       isVideo: request.mode == TryonMode.video,
@@ -32,7 +33,7 @@ class TryonRequestModel {
     );
   }
 
-  final Map<String, String> avatar;
+  final String? avatarBase64;
   final List<Map<String, Object>> garments;
   final String mode;
   final bool isVideo;
@@ -41,10 +42,13 @@ class TryonRequestModel {
 
   Map<String, dynamic> toJson() {
     final body = <String, dynamic>{
-      'avatar': avatar,
       'garments': garments,
       AppConstants.paramMode: mode,
     };
+    final avatar = avatarBase64;
+    if (avatar != null && avatar.isNotEmpty) {
+      body['avatar'] = {'base64': avatar};
+    }
     final scene = scenePrompt;
     if (scene != null && scene.isNotEmpty) {
       body[AppConstants.paramScenePrompt] = scene;

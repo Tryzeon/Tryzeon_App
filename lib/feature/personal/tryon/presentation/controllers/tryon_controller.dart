@@ -87,15 +87,13 @@ class TryonController extends _$TryonController {
     final id = _uuid.v4();
     try {
       final customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
-      final profile = await ref.read(userProfileProvider.future);
-      final profileAvatarPath = profile?.avatarPath;
+      final hasCustomAvatar = customAvatarUrl != null && customAvatarUrl.isNotEmpty;
 
       // Precondition: "no avatar at all" is a UI prompt, not a failure — check
-      // it before inserting a placeholder so nothing flickers.
-      final hasAvatar =
-          (customAvatarUrl != null && customAvatarUrl.isNotEmpty) ||
-          (profileAvatarPath != null && profileAvatarPath.isNotEmpty);
-      if (!hasAvatar) {
+      // it before inserting a placeholder so nothing flickers. The backend
+      // answers NO_AVATAR either way, so this only saves a round trip.
+      final profile = await ref.read(userProfileProvider.future);
+      if (!hasCustomAvatar && !(profile?.avatarPath?.isNotEmpty ?? false)) {
         state = const TryonAvatarMissing();
         return;
       }
@@ -106,13 +104,12 @@ class TryonController extends _$TryonController {
 
       galleryNotifier.addPending(id: id, mode: mode);
 
-      final avatarResult = await ref.read(resolveTryonAvatarUseCaseProvider)(
-        customAvatarUrl: customAvatarUrl,
-        profileAvatarPath: profileAvatarPath,
+      final customAvatarBase64 = await ref.read(loadCustomAvatarUseCaseProvider)(
+        customAvatarUrl,
       );
-      if (avatarResult.isFailure) {
+      if (customAvatarBase64.isFailure) {
         galleryNotifier.removeById(id);
-        state = TryonFailed(avatarResult.getError()!);
+        state = TryonFailed(customAvatarBase64.getError()!);
         return;
       }
 
@@ -121,7 +118,7 @@ class TryonController extends _$TryonController {
           requestId: id,
           garments: garments,
           mode: mode,
-          avatar: avatarResult.get()!,
+          avatarBase64: customAvatarBase64.get(),
           scenePrompt: promptConfig?.scenePrompt,
           transitionPrompt: promptConfig?.transitionPrompt,
         ),
@@ -137,9 +134,11 @@ class TryonController extends _$TryonController {
         final failure = result.getError()!;
         usageCache.syncFromFailure(failure);
         galleryNotifier.removeById(id);
-        state = failure is RateLimitFailure
-            ? TryonRateLimited(isVideo: mode == TryonMode.video)
-            : TryonFailed(failure);
+        state = switch (failure) {
+          RateLimitFailure() => TryonRateLimited(isVideo: mode == TryonMode.video),
+          AvatarMissingFailure() => const TryonAvatarMissing(),
+          _ => TryonFailed(failure),
+        };
       }
     } catch (e, stackTrace) {
       AppLogger.error('Try-on orchestration failed unexpectedly', e, stackTrace);
