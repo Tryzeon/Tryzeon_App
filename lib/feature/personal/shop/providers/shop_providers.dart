@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
-import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_analytics_repository_impl.dart';
@@ -31,14 +30,6 @@ ShopRemoteDataSource shopRemoteDataSource(final Ref ref) {
 }
 
 @riverpod
-ShopLocalDataSource shopLocalDataSource(final Ref ref) {
-  return ShopLocalDataSource(
-    ref.watch(isarServiceProvider),
-    ref.watch(cacheEntryLocalDataSourceProvider),
-  );
-}
-
-@riverpod
 AdLocalDataSource adLocalDataSource(final Ref ref) {
   return AdLocalDataSource();
 }
@@ -48,8 +39,7 @@ AdLocalDataSource adLocalDataSource(final Ref ref) {
 @riverpod
 ProductRepository productRepository(final Ref ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
-  final local = ref.watch(shopLocalDataSourceProvider);
-  return ProductRepositoryImpl(remoteDataSource: remote, localDataSource: local);
+  return ProductRepositoryImpl(remoteDataSource: remote);
 }
 
 @riverpod
