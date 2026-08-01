@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
@@ -10,24 +10,38 @@ class ProductSizeManager {
   ProductSizeManager({
     required this.sizeEntries,
     required this.selectedUnit,
-    required this.addSize,
-    required this.removeSize,
+    required this.toggleStandard,
+    required this.addCustom,
+    required this.removeLabel,
     required this.changeUnit,
-    required this.appendParsedSizes,
+    required this.applyParsedSizes,
   });
 
   final List<ProductSizeEntryController> sizeEntries;
   final MeasurementUnit selectedUnit;
-  final VoidCallback addSize;
-  final void Function(int index) removeSize;
+
+  final void Function(StandardSizeLabel label) toggleStandard;
+  final void Function(String name) addCustom;
+  final void Function(String label) removeLabel;
   final void Function(MeasurementUnit unit) changeUnit;
-  final void Function(List<ParsedSize> parsed) appendParsedSizes;
+  final void Function(List<ParsedSize> parsed) applyParsedSizes;
+
+  bool hasLabel(final String label) {
+    final key = StandardSizeLabel.matchKeyOf(label);
+    return sizeEntries.any((final e) => e.matchKey == key);
+  }
+
+  bool isSelected(final StandardSizeLabel label) => hasLabel(label.display);
+
+  /// 這件商品自己新增的尺碼，照列的順序。
+  List<String> get customLabels => sizeEntries
+      .where((final e) => StandardSizeLabel.tryParse(e.label) == null)
+      .map((final e) => e.label)
+      .toList();
 
   /// The full list of sizes the store owner wants to end up with. Working out
   /// which are inserts, updates and deletes is the data layer's job.
-  ///
-  /// [visibleTypes] mirrors what the size editor showed — hidden dimensions
-  /// are dropped, see [ProductSizeEntryController.toSizeItem].
+  /// [visibleTypes] mirrors what the editor showed; hidden dimensions are dropped.
   List<SizeItem> toSizeItems({required final List<GarmentMeasurementType> visibleTypes}) {
     return sizeEntries
         .map(
@@ -46,13 +60,27 @@ ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}
   final sizeEntries = useState<List<ProductSizeEntryController>>([]);
   final selectedUnit = useState(MeasurementUnit.centimeter);
 
-  // Initialize size entries from existing product
+  ProductSizeEntryController? findByLabel(final String label) {
+    final key = StandardSizeLabel.matchKeyOf(label);
+    for (final entry in sizeEntries.value) {
+      if (entry.matchKey == key) return entry;
+    }
+    return null;
+  }
+
+  void insertEntry(final ProductSizeEntryController entry) {
+    final list = [...sizeEntries.value];
+    final index = sizeRowInsertIndex(
+      list.map((final e) => e.label).toList(),
+      entry.label,
+    );
+    list.insert(index, entry);
+    sizeEntries.value = list;
+  }
+
   useEffect(() {
-    if (initialSizes != null && initialSizes.isNotEmpty) {
-      final entries = initialSizes
-          .map(ProductSizeEntryController.fromProductSize)
-          .toList();
-      sizeEntries.value = entries;
+    for (final size in initialSizes ?? const <ProductSize>[]) {
+      insertEntry(ProductSizeEntryController.fromProductSize(size));
     }
 
     return () {
@@ -62,16 +90,30 @@ ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}
     };
   }, const []);
 
-  void addSize() {
-    sizeEntries.value = [...sizeEntries.value, ProductSizeEntryController()];
+  void addLabel(final String label) {
+    if (findByLabel(label) != null) return;
+    insertEntry(ProductSizeEntryController(label: label));
   }
 
-  void removeSize(final int index) {
-    if (index < 0 || index >= sizeEntries.value.length) return;
-    sizeEntries.value[index].dispose();
-    final newList = [...sizeEntries.value];
-    newList.removeAt(index);
-    sizeEntries.value = newList;
+  void removeLabel(final String label) {
+    final entry = findByLabel(label);
+    if (entry == null) return;
+    entry.dispose();
+    sizeEntries.value = [...sizeEntries.value]..remove(entry);
+  }
+
+  void toggleStandard(final StandardSizeLabel label) {
+    if (findByLabel(label.display) != null) {
+      removeLabel(label.display);
+    } else {
+      addLabel(label.display);
+    }
+  }
+
+  void addCustom(final String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    addLabel(StandardSizeLabel.tryParse(trimmed)?.display ?? trimmed);
   }
 
   void changeUnit(final MeasurementUnit newUnit) {
@@ -83,25 +125,26 @@ ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}
     }
   }
 
-  void appendParsedSizes(final List<ParsedSize> parsed) {
-    if (parsed.isEmpty) return;
-    final added = parsed
-        .map(
-          (final p) => ProductSizeEntryController.fromParsedSize(
-            p,
-            targetUnit: selectedUnit.value,
-          ),
-        )
-        .toList();
-    sizeEntries.value = [...sizeEntries.value, ...added];
+  void applyParsedSizes(final List<ParsedSize> parsed) {
+    for (final p in parsed) {
+      final label = StandardSizeLabel.tryParse(p.name)?.display ?? p.name.trim();
+      if (label.isEmpty) continue;
+      var entry = findByLabel(label);
+      if (entry == null) {
+        entry = ProductSizeEntryController(label: label);
+        insertEntry(entry);
+      }
+      entry.applyParsed(p, targetUnit: selectedUnit.value);
+    }
   }
 
   return ProductSizeManager(
     sizeEntries: sizeEntries.value,
     selectedUnit: selectedUnit.value,
-    addSize: addSize,
-    removeSize: removeSize,
+    toggleStandard: toggleStandard,
+    addCustom: addCustom,
+    removeLabel: removeLabel,
     changeUnit: changeUnit,
-    appendParsedSizes: appendParsedSizes,
+    applyParsedSizes: applyParsedSizes,
   );
 }

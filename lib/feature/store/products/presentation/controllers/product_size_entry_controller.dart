@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
 
 class ProductSizeEntryController {
   ProductSizeEntryController({
+    required this.label,
     this.id,
-    final String name = '',
     final GarmentMeasurements? measurements,
-  }) : nameController = TextEditingController(text: name) {
+  }) {
     for (final type in GarmentMeasurementType.values) {
       measurementControllers[type] = TextEditingController(
         text: measurements?.getValue(type)?.toString() ?? '',
@@ -20,31 +21,28 @@ class ProductSizeEntryController {
   factory ProductSizeEntryController.fromProductSize(final ProductSize size) {
     return ProductSizeEntryController(
       id: size.id,
-      name: size.name,
+      label: size.name,
       measurements: size.measurements,
     );
   }
 
-  factory ProductSizeEntryController.fromParsedSize(
-    final ParsedSize parsed, {
-    required final MeasurementUnit targetUnit,
-  }) {
-    final controller = ProductSizeEntryController(name: parsed.name);
+  final String? id;
+  final String label;
 
+  final Map<GarmentMeasurementType, TextEditingController> measurementControllers = {};
+
+  /// 比對重複與 chip 勾選狀態用的 key：標準尺碼的別名一律收斂到同一個字面值。
+  String get matchKey => StandardSizeLabel.matchKeyOf(label);
+
+  void applyParsed(final ParsedSize parsed, {required final MeasurementUnit targetUnit}) {
     String format(final double v) => v.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
 
     for (final entry in parsed.measurements.entries) {
       final m = entry.value;
       final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
-      controller.measurementControllers[entry.key]?.text = format(m.value * factor);
+      measurementControllers[entry.key]?.text = format(m.value * factor);
     }
-
-    return controller;
   }
-
-  final String? id;
-  final TextEditingController nameController;
-  final Map<GarmentMeasurementType, TextEditingController> measurementControllers = {};
 
   double? _parseAndConvert(final String? text, final MeasurementUnit unit) {
     if (text == null || text.isEmpty) return null;
@@ -73,12 +71,8 @@ class ProductSizeEntryController {
     final sizeId = id;
 
     return sizeId == null
-        ? SizeItem.newSize(name: nameController.text, measurements: measurements)
-        : SizeItem.existing(
-            id: sizeId,
-            name: nameController.text,
-            measurements: measurements,
-          );
+        ? SizeItem.newSize(name: label, measurements: measurements)
+        : SizeItem.existing(id: sizeId, name: label, measurements: measurements);
   }
 
   void convertValues({
@@ -101,7 +95,6 @@ class ProductSizeEntryController {
   }
 
   void dispose() {
-    nameController.dispose();
     for (final controller in measurementControllers.values) {
       controller.dispose();
     }

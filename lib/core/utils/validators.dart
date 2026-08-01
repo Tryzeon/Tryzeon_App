@@ -62,23 +62,27 @@ class AppValidators {
   /// multiplies the parsed value before the range check — pass a unit→canonical
   /// factor (e.g. cm-per-input-unit) so inputs in any unit validate against
   /// canonical bounds; the default `1.0` leaves the value unchanged.
+  ///
+  /// [compact] 讓訊息縮成 `20–70cm`，給放不下整句提示的表格欄位用。
   static String? validateRange(
     final String? value, {
     required final double min,
     required final double max,
     required final String unitSuffix,
     final double scale = 1.0,
+    final bool compact = false,
   }) {
     if (value == null || value.trim().isEmpty) {
       return null;
     }
+    final range = '${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)}';
     final number = double.tryParse(value);
     if (number == null) {
-      return '請輸入有效數字';
+      return compact ? '$range$unitSuffix' : '請輸入有效數字';
     }
     final scaled = number * scale;
     if (scaled < min || scaled > max) {
-      return '請輸入 ${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)} $unitSuffix';
+      return compact ? '$range $unitSuffix' : '請輸入 $range $unitSuffix';
     }
     return null;
   }

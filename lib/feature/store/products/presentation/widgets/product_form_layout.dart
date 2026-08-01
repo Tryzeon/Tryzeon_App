@@ -14,7 +14,7 @@ import 'package:tryzeon/feature/store/products/presentation/hooks/use_size_voice
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_advanced_fields_editor.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_fields_editor.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_image_editor.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_size_list_editor.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_size_matrix_editor.dart';
 
 class ProductFormLayout extends StatelessWidget {
   const ProductFormLayout({
@@ -140,7 +140,7 @@ class ProductFormLayout extends StatelessWidget {
             child: Row(
               children: [
                 const Expanded(
-            child: _FormSectionLabel(number: '03', title: '尺寸資訊'),
+                  child: _FormSectionLabel(number: '03', title: '尺寸資訊'),
                 ),
                 _SizeVoiceButton(status: voiceStatus, onPressed: onVoicePressed),
               ],
@@ -151,17 +151,11 @@ class ProductFormLayout extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: ValueListenableBuilder<String?>(
               valueListenable: formData.selectedCategoryId,
-              builder: (final context, final _, final _) => ProductSizeListEditor(
-                entries: sizeManager.sizeEntries,
+              builder: (final context, final _, final _) => ProductSizeMatrixEditor(
+                manager: sizeManager,
                 visibleTypes: formData.visibleMeasurementTypes(
                   productCategoriesAsync.value ?? const [],
                 ),
-                selectedUnit: sizeManager.selectedUnit,
-                onUnitChanged: sizeManager.changeUnit,
-                onAdd: sizeManager.addSize,
-                onRemove: sizeManager.removeSize,
-                voiceStatus: voiceStatus,
-                onVoicePressed: onVoicePressed,
               ),
             ),
           ),
