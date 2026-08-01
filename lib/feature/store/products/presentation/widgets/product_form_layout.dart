@@ -135,9 +135,16 @@ class ProductFormLayout extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           const Divider(),
           const SizedBox(height: AppSpacing.lg),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Row(
+              children: [
+                const Expanded(
             child: _FormSectionLabel(number: '03', title: '尺寸資訊'),
+                ),
+                _SizeVoiceButton(status: voiceStatus, onPressed: onVoicePressed),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Padding(
@@ -160,6 +167,43 @@ class ProductFormLayout extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SizeVoiceButton extends StatelessWidget {
+  const _SizeVoiceButton({required this.status, required this.onPressed});
+
+  final SizeVoiceStatus status;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return IconButton(
+      onPressed: status == SizeVoiceStatus.uploading ? null : onPressed,
+      tooltip: status == SizeVoiceStatus.recording
+          ? '錄音中，再按一下停止'
+          : '語音輸入尺寸：例「M 號，胸寬五十公分，衣長七十二」',
+      icon: switch (status) {
+        SizeVoiceStatus.uploading => SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: AppStroke.regular,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        SizeVoiceStatus.recording => Icon(
+          Icons.stop_circle_rounded,
+          color: colorScheme.error,
+        ),
+        SizeVoiceStatus.idle => Icon(
+          Icons.mic_none_rounded,
+          color: colorScheme.onSurface,
+        ),
+      },
     );
   }
 }

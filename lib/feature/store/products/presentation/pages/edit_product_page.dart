@@ -57,7 +57,7 @@ class _EditProductContent extends HookConsumerWidget {
       ref: ref,
       sizeManager: sizeManager,
       onApplied: (final count) =>
-          messenger.showSnackBar(SnackBar(content: Text('已新增 $count 筆尺寸，請檢查數字'))),
+          messenger.showSnackBar(SnackBar(content: Text('已填入 $count 筆尺寸，請檢查數字'))),
       onError: (final message) =>
           messenger.showSnackBar(SnackBar(content: Text(message))),
       onPermissionDenied: () =>

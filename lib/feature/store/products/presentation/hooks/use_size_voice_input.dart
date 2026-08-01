@@ -55,7 +55,7 @@ SizeVoiceInput useSizeVoiceInput({
         onError('沒有聽到尺寸資訊，請再試一次');
         return;
       }
-      sizeManager.appendParsedSizes(parsed);
+      sizeManager.applyParsedSizes(parsed);
       onApplied(parsed.length);
     } catch (e, st) {
       AppLogger.error('Size voice parse failed', e, st);
