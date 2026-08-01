@@ -4,7 +4,7 @@ import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/feature/auth/data/collections/auth_settings_cache.dart';
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
-import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_plan_cache.dart';
+import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_cache.dart';
@@ -28,7 +28,7 @@ class IsarService {
           WardrobeItemCacheSchema,
           ProductCacheSchema,
           StoreProfileCacheSchema,
-          SubscriptionPlanCacheSchema,
+          SubscriptionTierCacheSchema,
           ProductAnalyticsCacheSchema,
         ],
         directory: dir.path,

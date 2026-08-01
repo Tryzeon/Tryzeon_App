@@ -15,7 +15,7 @@ class AppConstants {
   static const String tableProducts = 'products';
   static const String tableProductSizes = 'product_sizes';
   static const String tableProductCategories = 'product_categories';
-  static const String tableSubscriptionPlans = 'subscription_plans';
+  static const String tableSubscriptionTiers = 'subscription_tiers';
   static const String tableWardrobeItems = 'wardrobe_items';
   static const String tableAnalyticsEvents = 'analytics_events';
   static const String tableAnalyticsProductMonthlySummary =
@@ -84,5 +84,5 @@ class AppConstants {
   static const Duration staleDurationProductCategories = Duration(days: 7);
   static const Duration staleDurationUserProfile = Duration(days: 7);
   static const Duration staleDurationStoreProfile = Duration(days: 7);
-  static const Duration staleDurationSubscriptionPlan = Duration(days: 7);
+  static const Duration staleDurationSubscriptionTier = Duration(days: 7);
 }

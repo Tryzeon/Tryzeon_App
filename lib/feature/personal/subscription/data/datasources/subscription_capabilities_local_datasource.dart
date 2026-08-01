@@ -3,8 +3,8 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
-import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_plan_cache.dart';
-import 'package:tryzeon/feature/personal/subscription/data/models/subscription_plan_model.dart';
+import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
+import 'package:tryzeon/feature/personal/subscription/data/models/subscription_tier_model.dart';
 
 class SubscriptionCapabilitiesLocalDataSource {
   SubscriptionCapabilitiesLocalDataSource(
@@ -16,38 +16,38 @@ class SubscriptionCapabilitiesLocalDataSource {
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
 
   static const _mappr = PersonalMappr();
-  static const _baseCacheKey = 'subscription_plan_capabilities';
+  static const _baseCacheKey = 'subscription_tier_capabilities';
 
-  String _planCacheKey(final String planId) => '${_baseCacheKey}_$planId';
+  String _tierCacheKey(final String tier) => '${_baseCacheKey}_$tier';
 
-  Future<CacheLookup<SubscriptionPlanModel>> getPlanCapabilities(
-    final String planId,
+  Future<CacheLookup<SubscriptionTierModel>> getTierCapabilities(
+    final String tier,
   ) async {
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
-      _planCacheKey(planId),
-      staleDuration: AppConstants.staleDurationSubscriptionPlan,
+      _tierCacheKey(tier),
+      staleDuration: AppConstants.staleDurationSubscriptionTier,
     );
     if (cacheStatus == null) return const CacheMiss();
     if (cacheStatus == CacheEntryStatus.empty) return const CacheEmpty();
 
     final isar = await _isarService.db;
-    final collection = await isar.subscriptionPlanCaches.getByPlanId(planId);
+    final collection = await isar.subscriptionTierCaches.getByTier(tier);
 
     if (collection == null) return const CacheMiss();
 
     return CacheHit(
-      _mappr.convert<SubscriptionPlanCache, SubscriptionPlanModel>(collection),
+      _mappr.convert<SubscriptionTierCache, SubscriptionTierModel>(collection),
     );
   }
 
-  Future<void> savePlanCapabilities(final SubscriptionPlanModel plan) async {
+  Future<void> saveTierCapabilities(final SubscriptionTierModel tier) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection = _mappr.convert<SubscriptionPlanModel, SubscriptionPlanCache>(
-        plan,
+      final collection = _mappr.convert<SubscriptionTierModel, SubscriptionTierCache>(
+        tier,
       );
-      await isar.subscriptionPlanCaches.putByPlanId(collection);
+      await isar.subscriptionTierCaches.putByTier(collection);
     });
-    await _cacheEntryLocalDataSource.markHasData(_planCacheKey(plan.id));
+    await _cacheEntryLocalDataSource.markHasData(_tierCacheKey(tier.id));
   }
 }

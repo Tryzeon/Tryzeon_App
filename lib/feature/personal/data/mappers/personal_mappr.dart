@@ -19,15 +19,15 @@ import '../../shop/data/models/shop_product_model.dart';
 import '../../shop/data/models/shop_store_info_model.dart';
 import '../../shop/domain/entities/shop_product.dart';
 import '../../shop/domain/entities/shop_store_info.dart';
-import '../../subscription/data/collections/subscription_plan_cache.dart';
-import '../../subscription/data/models/subscription_plan_model.dart';
+import '../../subscription/data/collections/subscription_tier_cache.dart';
+import '../../subscription/data/models/subscription_tier_model.dart';
 import '../../wardrobe/data/collections/wardrobe_item_cache.dart';
 import '../../wardrobe/data/models/wardrobe_item_model.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
 /// AutoMappr configuration for Personal feature
-/// Handles UserProfile, WardrobeItem, SubscriptionPlan, ShopProduct, ShopStoreInfo mappings
+/// Handles UserProfile, WardrobeItem, SubscriptionTier, ShopProduct, ShopStoreInfo mappings
 /// Note: ProductSize mappings are defined here directly for ShopProduct.sizes dependency
 /// Note: measurement mappings come from the two dedicated mapprs — body
 /// measurements for UserProfile, garment measurements for ProductSize.sizes
@@ -89,12 +89,12 @@ import 'personal_mappr.auto_mappr.dart';
     // ProductSize mappings (needed for ShopProduct.sizes)
     MapType<ProductSizeModel, ProductSize>(),
 
-    // SubscriptionPlan mappings (Model ↔ Collection for local cache)
-    MapType<SubscriptionPlanModel, SubscriptionPlanCache>(
-      fields: [Field('planId', from: 'id')],
+    // SubscriptionTier mappings (Model ↔ Collection for local cache)
+    MapType<SubscriptionTierModel, SubscriptionTierCache>(
+      fields: [Field('tier', from: 'id')],
     ),
-    MapType<SubscriptionPlanCache, SubscriptionPlanModel>(
-      fields: [Field('id', from: 'planId')],
+    MapType<SubscriptionTierCache, SubscriptionTierModel>(
+      fields: [Field('id', from: 'tier')],
     ),
   ],
   includes: [
