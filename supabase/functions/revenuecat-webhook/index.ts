@@ -46,16 +46,16 @@ const RESET_TO_FREE_EVENTS = new Set([
   "EXPIRATION",
 ]);
 
-// Events where we keep the current plan (CANCELLATION, BILLING_ISSUE, SUBSCRIPTION_PAUSED)
+// Events where we keep the current tier (CANCELLATION, BILLING_ISSUE, SUBSCRIPTION_PAUSED)
 // These are handled in the else branch — the user still has access until expiration.
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Maps RevenueCat entitlement_ids to the plan id in subscription_plans table.
+ * Maps RevenueCat entitlement_ids to the tier id in the subscription_tiers table.
  * Priority: max > pro > free
  */
-function resolveEntitlementToPlanId(entitlementIds?: string[] | null): string {
+function resolveEntitlementToTier(entitlementIds?: string[] | null): string {
   if (!entitlementIds || entitlementIds.length === 0) return "free";
   if (entitlementIds.includes("max")) return "max";
   if (entitlementIds.includes("pro")) return "pro";
@@ -97,20 +97,20 @@ Deno.serve(async (req) => {
       return json({ message: "Missing app_user_id" }, 200);
     }
 
-    // 5. Determine plan based on event type
+    // 5. Determine tier based on event type
     const eventType = event.type;
     const adminClient = getAdminClient();
-    let planId: string;
+    let tier: string;
 
     if (PLAN_CHANGE_EVENTS.has(eventType)) {
-      // Active subscription events → resolve plan from entitlement_ids
-      planId = resolveEntitlementToPlanId(event.entitlement_ids);
+      // Active subscription events → resolve tier from entitlement_ids
+      tier = resolveEntitlementToTier(event.entitlement_ids);
     } else if (RESET_TO_FREE_EVENTS.has(eventType)) {
       // Expired → reset to free
-      planId = "free";
+      tier = "free";
     } else {
       // CANCELLATION, BILLING_ISSUE, SUBSCRIPTION_PAUSED
-      // Plan doesn't change — user still has access until expiration.
+      // Tier doesn't change — user still has access until expiration.
       return json({ message: "OK" }, 200);
     }
 
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
       .upsert(
         {
           user_id: userId,
-          plan: planId,
+          tier: tier,
         },
         { onConflict: "user_id" }
       );
