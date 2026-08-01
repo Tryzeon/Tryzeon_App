@@ -586,3 +586,27 @@ Deno.test("a product that would not generate can be retried by id alone", async 
   assertEquals(action.data, `a=tryon&pid=${PID}`);
   assertEquals(action.displayText, "試穿「短版牛仔外套」");
 });
+
+Deno.test("a product try-on puts no avatar on the job params", async () => {
+  // The handler hands the photo to the core through `resolveAvatar`, never as a
+  // params field: a caller-named avatar is what went stale.
+  let seenAvatar: unknown = "unset";
+  await handleProductTryon(
+    makeProductDeps({
+      // deno-lint-ignore no-explicit-any
+      runJob: ((_clients: any, params: any) => {
+        seenAvatar = params.avatar;
+        return Promise.resolve({
+          kind: "image",
+          imageUrl: "https://img.example/result.jpg",
+          usage: null,
+          // deno-lint-ignore no-explicit-any
+        } as any);
+        // deno-lint-ignore no-explicit-any
+      }) as any,
+    }),
+    productEvent,
+  );
+
+  assertEquals(seenAvatar, undefined);
+});

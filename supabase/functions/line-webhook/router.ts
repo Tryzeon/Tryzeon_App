@@ -22,7 +22,6 @@
  * the one module in the feature with no test.
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { getAvatarPath } from "../_shared/user-profile.ts";
 import { handleImageTryon, handleProductTryon } from "./tryon-handler.ts";
 import { handleTextMessage } from "./chat-handler.ts";
 import { parsePostback } from "./postback.ts";
@@ -115,7 +114,6 @@ function routeMessage(
         line,
         liffUrl: deps.liffUrl,
         conversations: deps.conversations,
-        getAvatarPath,
       },
       { replyToken: ev.replyToken, sourceUserId, messageId: ev.message.id },
     );
@@ -157,7 +155,6 @@ function routePostback(
       liffUrl: deps.liffUrl,
       imagesBaseUrl: deps.imagesBaseUrl,
       conversations: deps.conversations,
-      getAvatarPath,
     },
     {
       replyToken: ev.replyToken,

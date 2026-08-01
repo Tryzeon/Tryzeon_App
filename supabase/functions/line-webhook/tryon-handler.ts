@@ -29,15 +29,15 @@ export interface TryonHandlerDeps {
   runJob?: typeof runTryonJob;
 }
 
-/** The sender as try-on sees them: an account, and the model photo they onboarded with. */
+/** The sender as try-on sees them: an account, and whether they onboarded. */
 interface Actor {
   userId: string;
-  avatarPath: string | null;
+  hasAvatar: boolean;
 }
 
 /**
  * Resolves who is asking. A first-time sender is minted an account here, so
- * this is a write as much as a read; a null `avatarPath` means they have not
+ * this is a write as much as a read; a false `hasAvatar` means they have not
  * onboarded and every try-on path must stop and say so.
  */
 async function resolveActor(
@@ -48,7 +48,10 @@ async function resolveActor(
   const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
 
   const userId = await getOrCreateUserId(deps.admin, { sub: sourceUserId });
-  return { userId, avatarPath: await getAvatarPath(deps.admin, userId) };
+  return {
+    userId,
+    hasAvatar: await getAvatarPath(deps.admin, userId) !== null,
+  };
 }
 
 /** One try-on job, reduced to what this channel can render. */
@@ -67,17 +70,16 @@ type TryonOutcome =
  */
 async function runTryon(
   deps: TryonHandlerDeps,
-  params: { userId: string; avatarPath: string; garment: GarmentInput },
+  params: { userId: string; garment: GarmentInput },
 ): Promise<TryonOutcome> {
   const runJob = deps.runJob ?? runTryonJob;
   try {
-    // `materials: admin` is safe here and stated explicitly: the avatar path is
-    // server-derived (read from the user's own profile), and a garment is
-    // either inline base64 or a product id the core resolves itself — this
-    // adapter never forwards a client-supplied path.
+    // `materials: admin` is safe here and stated explicitly: the avatar is
+    // resolved by the core from the user's own profile, and a garment is either
+    // inline base64 or a product id the core resolves itself — this adapter
+    // never forwards a client-supplied path.
     const result = await runJob({ admin: deps.admin, materials: deps.admin }, {
       userId: params.userId,
-      avatar: { path: params.avatarPath },
       garments: [params.garment],
       mode: "image",
     });
@@ -108,9 +110,9 @@ export async function handleImageTryon(
   event: ImageTryonEvent,
 ): Promise<void> {
   const describeGarment = deps.describeGarment ?? defaultDescribeGarment;
-  const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
+  const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
 
-  if (!avatarPath) {
+  if (!hasAvatar) {
     await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
     return;
   }
@@ -135,7 +137,6 @@ export async function handleImageTryon(
 
   const outcome = await runTryon(deps, {
     userId,
-    avatarPath,
     garment: { images: [{ base64 }] },
   });
 
@@ -181,9 +182,9 @@ export async function handleProductTryon(
   event: ProductTryonEvent,
 ): Promise<void> {
   const fetchProduct = deps.fetchProduct ?? fetchLineProduct;
-  const { userId, avatarPath } = await resolveActor(deps, event.sourceUserId);
+  const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
 
-  if (!avatarPath) {
+  if (!hasAvatar) {
     await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
     return;
   }
@@ -198,7 +199,6 @@ export async function handleProductTryon(
 
   const outcome = await runTryon(deps, {
     userId,
-    avatarPath,
     garment: { productId: product.id },
   });
 
@@ -230,6 +230,8 @@ function tryonFailureKind(err: unknown): "quota" | "generation" | "unknown" {
     case "generation":
       return "generation";
     case "validation":
+      return "unknown";
+    case "missingAvatar":
       return "unknown";
   }
 }
