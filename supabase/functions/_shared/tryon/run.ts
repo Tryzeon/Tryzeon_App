@@ -5,6 +5,7 @@ import {
 } from "../image-utils.ts";
 import { uploadTryonImageToR2, uploadTryonVideoToR2 } from "../r2.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
+import { resolveStoredAvatar } from "./avatar.ts";
 import { resolveProductGarment } from "./catalog.ts";
 import { supabaseQuota } from "./quota.ts";
 import { generateTryonImage, generateTryonVideo } from "./vertex.ts";
@@ -14,6 +15,7 @@ import { GenerationFailedError } from "./errors.ts";
 import { QuotaExceededError } from "../quota.ts";
 import {
   isGarmentRef,
+  type AvatarResolver,
   type ImageGenerator,
   type ImageUploader,
   type ProductResolver,
@@ -33,16 +35,18 @@ export interface RunTryonJobDeps {
   upload?: ImageUploader;
   uploadVideo?: VideoUploader;
   resolveProduct?: ProductResolver;
+  resolveAvatar?: AvatarResolver;
   quota?: QuotaFactory;
   now?: () => number;
 }
 
 /**
- * Single try-on entry point: validate -> quota -> resolve -> load -> generate
- * -> persist. Both modes end in a core-owned upload, so the result of a job is
- * always a URL the caller can hand straight to its client. Quota uses the
- * privileged `admin` client; source paths are read through `materials` so the
- * caller's RLS bounds which storage objects a request can fetch.
+ * Single try-on entry point: validate -> resolve avatar -> quota -> resolve
+ * products -> load -> generate -> persist. Both modes end in a core-owned
+ * upload, so the result of a job is always a URL the caller can hand straight
+ * to its client. Quota uses the privileged `admin` client; source paths are
+ * read through `materials` so the caller's RLS bounds which storage objects a
+ * request can fetch.
  *
  * The result type follows the mode: callers that hard-code a mode get exactly
  * that variant back, so narrowing the union is the compiler's job rather than a
@@ -64,6 +68,9 @@ export async function runTryonJob<M extends TryonMode>(
   const resolveProduct = deps.resolveProduct ?? resolveProductGarment;
   const openQuota = deps.quota ?? supabaseQuota;
   const now = deps.now ?? Date.now;
+
+  const resolveAvatar = deps.resolveAvatar ?? resolveStoredAvatar;
+  const avatar = job.avatar ?? await resolveAvatar(clients.admin, job.userId);
 
   const quota = openQuota(clients.admin, job.userId, job.mode);
   const { allowed, usage } = await quota.charge();
@@ -92,7 +99,7 @@ export async function runTryonJob<M extends TryonMode>(
       WARDROBE_IMAGES_BUCKET,
     );
     const [avatarBase64, garmentGroups] = await Promise.all([
-      loadAvatar(job.avatar),
+      loadAvatar(avatar),
       loadGarments(materialGarments, loadGarment),
     ]);
 

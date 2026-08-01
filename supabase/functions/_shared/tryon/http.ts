@@ -25,6 +25,8 @@ export function tryonErrorResponse(err: unknown): Response | null {
   switch (info.kind) {
     case "generation":
       return jsonError("Image generation failed", "AI_GENERATION_FAILED", 422);
+    case "missingAvatar":
+      return jsonError("No model photo on file", "NO_AVATAR", 400);
     case "validation":
     case "quota":
       return coreErrorResponse(info);

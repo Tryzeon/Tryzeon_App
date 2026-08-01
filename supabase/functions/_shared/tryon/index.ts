@@ -25,6 +25,7 @@
 // `runTryonJob`'s signature and its members would otherwise be unnameable.
 export { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 export type {
+  AvatarResolver,
   ImageGenerator,
   ImageUploader,
   ProductResolver,
@@ -37,6 +38,7 @@ export type {
 // Describing a job and reading its result.
 export { LIMITS } from "./types.ts";
 export type {
+  AvatarOverride,
   GarmentInput,
   GarmentMaterial,
   GarmentRef,

@@ -12,7 +12,12 @@
  */
 import { requireString, ValidationError } from "../validation.ts";
 import { isGarmentRef, LIMITS } from "./types.ts";
-import type { GarmentInput, ImageSource, TryonParams } from "./types.ts";
+import type {
+  AvatarOverride,
+  GarmentInput,
+  ImageSource,
+  TryonParams,
+} from "./types.ts";
 
 /**
  * Decode an unknown value into an ImageSource carrying exactly one usable key.
@@ -31,6 +36,31 @@ export function requireImageSource(source: unknown, label: string): ImageSource 
     throw new ValidationError(`${label} must have exactly one of path | base64`);
   }
   return { [keys[0]]: s[keys[0]] } as ImageSource;
+}
+
+/**
+ * Decode the optional avatar override. Only inline bytes can override; the
+ * legacy `{ path }` shape shipped clients still send means "no override", and
+ * so does `null` (some encoders serialize an absent field that way). Anything
+ * else that is not a usable `{ base64 }` is rejected rather than silently
+ * falling back — that silent fallback is the stale-photo bug this replaces.
+ */
+function optionalAvatarOverride(source: unknown): AvatarOverride | undefined {
+  if (source === undefined || source === null) return undefined;
+  if (typeof source !== "object") {
+    throw new ValidationError("avatar must be an object");
+  }
+  const s = source as Record<string, unknown>;
+  const base64 = s.base64;
+  if (base64 === undefined) {
+    const hasPath = typeof s.path === "string" && s.path.length > 0;
+    if (hasPath) return undefined;
+    throw new ValidationError("avatar must have a usable base64");
+  }
+  if (typeof base64 !== "string" || base64.length === 0) {
+    throw new ValidationError("avatar base64 must be a non-empty string");
+  }
+  return { base64 };
 }
 
 /** Guard an optional text field: if present it must be a string within `max`. */
@@ -80,7 +110,7 @@ function validateGarment(garment: GarmentInput): GarmentInput {
 export function validateTryonParams(params: TryonParams): TryonParams {
   requireString(params.userId, "userId");
 
-  const avatar = requireImageSource(params.avatar, "avatar");
+  const avatar = optionalAvatarOverride(params.avatar);
 
   if (!Array.isArray(params.garments) || params.garments.length === 0) {
     throw new ValidationError("garments must be a non-empty array");

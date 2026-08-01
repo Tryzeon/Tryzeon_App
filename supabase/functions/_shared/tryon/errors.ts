@@ -21,17 +21,26 @@ export { ValidationError } from "../validation.ts";
 
 export class GenerationFailedError extends Error {}
 
+/** The user has no model photo on their profile, so no job can be built. */
+export class MissingAvatarError extends Error {}
+
 /**
  * A core error narrowed to its kind, carrying exactly the payload a caller
  * needs to render it. Adding a case here — or to {@link CoreErrorInfo} —
  * forces every consumer's exhaustive switch to handle it.
  */
-export type TryonErrorInfo = CoreErrorInfo | { kind: "generation" };
+export type TryonErrorInfo =
+  | CoreErrorInfo
+  | { kind: "generation" }
+  | { kind: "missingAvatar" };
 
 /** Classifies a core error, or returns null when it did not come from the core. */
 export function classifyTryonError(err: unknown): TryonErrorInfo | null {
   if (err instanceof GenerationFailedError) {
     return { kind: "generation" };
+  }
+  if (err instanceof MissingAvatarError) {
+    return { kind: "missingAvatar" };
   }
   return classifyCoreError(err);
 }

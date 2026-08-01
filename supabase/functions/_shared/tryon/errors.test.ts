@@ -2,6 +2,7 @@ import { assertEquals } from "jsr:@std/assert";
 import {
   classifyTryonError,
   GenerationFailedError,
+  MissingAvatarError,
   ValidationError,
 } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
@@ -39,4 +40,10 @@ Deno.test("classifyTryonError returns null for foreign errors", () => {
   assertEquals(classifyTryonError(new TypeError("boom")), null);
   assertEquals(classifyTryonError("not an error"), null);
   assertEquals(classifyTryonError(undefined), null);
+});
+
+Deno.test("classifyTryonError narrows a missing avatar", () => {
+  assertEquals(classifyTryonError(new MissingAvatarError("no avatar on profile")), {
+    kind: "missingAvatar",
+  });
 });

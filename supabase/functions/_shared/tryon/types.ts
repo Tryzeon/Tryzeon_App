@@ -13,6 +13,13 @@ export type { UsageCounter };
  */
 export type ImageSource = { path: string } | { base64: string };
 
+/**
+ * An avatar supplied inline by the caller. The only way to name an avatar:
+ * the stored photo is resolved server-side from the user's profile, so a path
+ * is not part of the contract.
+ */
+export type AvatarOverride = { base64: string };
+
 /** Try-on a catalog product by reference; the core resolves it to material. */
 export interface GarmentRef {
   productId: string;
@@ -53,7 +60,7 @@ export type TryonMode = "image" | "video";
 
 export interface TryonParams {
   userId: string;
-  avatar: ImageSource;
+  avatar?: AvatarOverride;
   garments: GarmentInput[];
   mode: TryonMode;
   scenePrompt?: string;
@@ -98,12 +105,14 @@ export interface TryonClients {
   /** Privileged client for the quota RPC and catalog lookups. */
   admin: SupabaseClient;
   /**
-   * Client used to read avatar/garment `path` sources. Required — and required
-   * explicitly rather than defaulted — because it is the only thing bounding
-   * which storage objects a request can reach. An adapter that forwards
-   * client-supplied paths (the app) MUST pass its user-scoped client so RLS
-   * applies; an adapter whose paths are all server-derived (LINE) passes
-   * `admin` as a deliberate, visible choice.
+   * Client used to read `path` sources — garment images, and the
+   * server-resolved avatar. Required — and required explicitly rather than
+   * defaulted — because it is the only thing bounding which storage objects a
+   * request can reach. An adapter that forwards client-supplied paths (the
+   * app) MUST pass its user-scoped client so RLS applies; an adapter whose
+   * paths are all server-derived (LINE) passes `admin` as a deliberate,
+   * visible choice. Avatar paths are always produced by `resolveStoredAvatar`,
+   * never by a caller.
    */
   materials: SupabaseClient;
 }
@@ -171,3 +180,9 @@ export type ProductResolver = (
   admin: SupabaseClient,
   productId: string,
 ) => Promise<ResolvedGarment>;
+
+/** Resolves the user's stored model photo into a loadable source. */
+export type AvatarResolver = (
+  admin: SupabaseClient,
+  userId: string,
+) => Promise<ImageSource>;

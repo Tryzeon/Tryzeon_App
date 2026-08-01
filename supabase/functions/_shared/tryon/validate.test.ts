@@ -1,7 +1,7 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
 import { requireImageSource, validateTryonParams } from "./validate.ts";
 import { ValidationError } from "./errors.ts";
-import { LIMITS, type TryonParams } from "./types.ts";
+import { LIMITS, type ImageSource, type TryonParams } from "./types.ts";
 
 const validParams: TryonParams = {
   userId: "u1",
@@ -50,11 +50,88 @@ Deno.test("validateTryonParams rejects too many images in a garment", () => {
   );
 });
 
-Deno.test("validateTryonParams rejects a source with both path and base64", () => {
+Deno.test("validateTryonParams rejects a garment image with both path and base64", () => {
   assertThrows(
     () =>
-      validateTryonParams({ ...validParams, avatar: { path: "p", base64: "b" } }),
+      validateTryonParams({
+        ...validParams,
+        garments: [{ images: [{ path: "p", base64: "b" }] }],
+      }),
     ValidationError,
+  );
+});
+
+Deno.test("validateTryonParams keeps an inline avatar override", () => {
+  const job = validateTryonParams({ ...validParams, avatar: { base64: "AAAA" } });
+  assertEquals(job.avatar, { base64: "AAAA" });
+});
+
+Deno.test("validateTryonParams treats an omitted avatar as no override", () => {
+  const job = validateTryonParams({ ...validParams, avatar: undefined });
+  assertEquals(job.avatar, undefined);
+});
+
+Deno.test("validateTryonParams treats a legacy path avatar as no override", () => {
+  // Shipped app builds still send the profile path. It is not an override and
+  // must not be an error: the job falls back to the stored photo, which is the
+  // same picture, only current.
+  const job = validateTryonParams({
+    ...validParams,
+    avatar: { path: "u1/a.jpg" } as unknown as TryonParams["avatar"],
+  });
+  assertEquals(job.avatar, undefined);
+});
+
+Deno.test("validateTryonParams rejects an unusable avatar base64", () => {
+  assertThrows(
+    () => validateTryonParams({ ...validParams, avatar: { base64: "" } }),
+    ValidationError,
+    "avatar",
+  );
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        avatar: { base64: 5 as unknown as string },
+      }),
+    ValidationError,
+    "avatar",
+  );
+});
+
+Deno.test("validateTryonParams treats a null avatar as no override", () => {
+  // Some JSON encoders serialize an absent field as null rather than omitting
+  // it; that must read the same as omitting it entirely.
+  const job = validateTryonParams({
+    ...validParams,
+    avatar: null as unknown as TryonParams["avatar"],
+  });
+  assertEquals(job.avatar, undefined);
+});
+
+Deno.test("validateTryonParams rejects a non-object avatar", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        avatar: "AAAA" as unknown as TryonParams["avatar"],
+      }),
+    ValidationError,
+    "avatar",
+  );
+});
+
+Deno.test("validateTryonParams rejects an empty-object avatar", () => {
+  // Neither the legacy `{ path }` shape nor a usable override: silently
+  // falling back here would reproduce the stale-photo bug this guards against.
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        avatar: {} as unknown as TryonParams["avatar"],
+      }),
+    ValidationError,
+    "avatar",
   );
 });
 
@@ -137,9 +214,9 @@ Deno.test("validateTryonParams rejects an overlong transitionPrompt", () => {
 Deno.test("validateTryonParams returns params with sources narrowed", () => {
   const job = validateTryonParams({
     ...validParams,
-    avatar: { base64: "AAAA", path: "" } as unknown as TryonParams["avatar"],
+    avatar: { base64: "AAAA" },
     garments: [{
-      images: [{ base64: "BBBB", path: "" } as unknown as TryonParams["avatar"]],
+      images: [{ base64: "BBBB", path: "" } as unknown as ImageSource],
     }],
     scenePrompt: "beach",
   });

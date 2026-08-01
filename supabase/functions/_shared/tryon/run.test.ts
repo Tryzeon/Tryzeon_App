@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { runTryonJob } from "./run.ts";
-import { GenerationFailedError } from "./errors.ts";
+import { GenerationFailedError, MissingAvatarError } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 import type {
   QuotaFactory,
@@ -222,6 +222,66 @@ Deno.test("a failed refund does not mask the original error", async () => {
     GenerationFailedError,
   );
   assertEquals(err.message, "image generation returned null");
+});
+
+Deno.test("an omitted avatar is resolved from the user's profile", async () => {
+  const quota = fakeQuota();
+  const resolvedFor: string[] = [];
+  let seenAvatar = "";
+  await runTryonJob(clients, { ...imageParams, avatar: undefined }, {
+    quota: quota.factory,
+    resolveAvatar: (_admin, userId) => {
+      resolvedFor.push(userId);
+      // Base64 rather than a path: the loader would otherwise reach for storage
+      // through the stand-in client.
+      return Promise.resolve({ base64: "STORED" });
+    },
+    generate: (avatarBase64) => {
+      seenAvatar = avatarBase64;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+    now: () => 123,
+  });
+  assertEquals(resolvedFor, ["u1"]);
+  assertEquals(seenAvatar, "STORED");
+});
+
+Deno.test("an inline avatar override skips profile resolution", async () => {
+  const quota = fakeQuota();
+  let resolverCalled = false;
+  let seenAvatar = "";
+  await runTryonJob(clients, imageParams, {
+    quota: quota.factory,
+    resolveAvatar: () => {
+      resolverCalled = true;
+      return Promise.resolve({ base64: "STORED" });
+    },
+    generate: (avatarBase64) => {
+      seenAvatar = avatarBase64;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+    now: () => 123,
+  });
+  assertEquals(resolverCalled, false);
+  assertEquals(seenAvatar, "AVATAR");
+});
+
+Deno.test("a user with no stored avatar is never charged", async () => {
+  const quota = fakeQuota();
+  await assertRejects(
+    () =>
+      runTryonJob(clients, { ...imageParams, avatar: undefined }, {
+        quota: quota.factory,
+        resolveAvatar: () => Promise.reject(new MissingAvatarError("none")),
+        generate: () => Promise.resolve("GENERATEDB64"),
+        upload: () => Promise.resolve("https://img/result.png"),
+      }),
+    MissingAvatarError,
+  );
+  // Not charge-then-refund: having no photo is a precondition, not a failed job.
+  assertEquals(quota.calls, []);
 });
 
 Deno.test("product-ref garments are resolved before loading", async () => {
