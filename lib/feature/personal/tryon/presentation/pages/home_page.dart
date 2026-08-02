@@ -11,6 +11,7 @@ import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
@@ -56,6 +57,10 @@ class HomePage extends HookConsumerWidget {
         context,
         title: '選擇模特來源',
         hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
+        crop: const LockedCrop(
+          ratio: AppConstants.avatarAspectRatio,
+          title: '框出全身',
+        ),
       );
       if (imageFile == null) return;
 

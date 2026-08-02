@@ -8,23 +8,61 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/core/utils/crop_options.dart';
 
 class ImagePickerHelper {
   static final ImagePicker _picker = ImagePicker();
+
+  static const List<CropAspectRatioPreset> _defaultAspectRatioPresets = [
+    CropAspectRatioPreset.original,
+    CropAspectRatioPreset.square,
+    CropAspectRatioPreset.ratio3x2,
+    CropAspectRatioPreset.ratio4x3,
+    CropAspectRatioPreset.ratio16x9,
+  ];
+
+  static List<CropAspectRatioPreset> _presetsFor(final CropOptions crop) =>
+      crop is FreeCrop
+      ? crop.presets ?? _defaultAspectRatioPresets
+      : _defaultAspectRatioPresets;
+
+  static AndroidUiSettings _androidCropSettings(final CropOptions crop) {
+    final bool locked = crop is LockedCrop;
+    return AndroidUiSettings(
+      toolbarTitle: crop.title,
+      cropStyle: crop.style,
+      lockAspectRatio: locked,
+      initAspectRatio: locked ? null : CropAspectRatioPreset.original,
+      aspectRatioPresets: _presetsFor(crop),
+    );
+  }
+
+  static IOSUiSettings _iosCropSettings(final CropOptions crop) {
+    final bool locked = crop is LockedCrop;
+    return IOSUiSettings(
+      title: crop.title,
+      doneButtonTitle: '完成',
+      cancelButtonTitle: '取消',
+      cropStyle: crop.style,
+      aspectRatioLockEnabled: locked,
+      resetAspectRatioEnabled: !locked,
+      aspectRatioPickerButtonHidden: locked,
+      resetButtonHidden: locked,
+      rotateButtonsHidden: locked,
+      rotateClockwiseButtonHidden: locked,
+      aspectRatioPresets: _presetsFor(crop),
+    );
+  }
 
   static Future<File?> pickImage(
     final BuildContext context, {
     final double maxWidth = 1080,
     final double maxHeight = 1920,
     final int imageQuality = 85,
-    final bool enableCrop = false,
-    final CropStyle cropStyle = CropStyle.rectangle,
-    final List<CropAspectRatioPreset>? aspectRatioPresets,
+    final CropOptions? crop,
     final String? hint,
     final String title = '選擇圖片來源',
   }) async {
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
-
     ImageSource? source;
     await showAppActionSheet(
       context,
@@ -52,47 +90,24 @@ class ImagePickerHelper {
       if (pickedFile == null) return null;
 
       String sourcePath = pickedFile.path;
+      String? cropperOutputPath;
 
-      if (enableCrop) {
+      if (crop != null) {
         final croppedFile = await ImageCropper().cropImage(
           sourcePath: sourcePath,
-          uiSettings: [
-            AndroidUiSettings(
-              toolbarTitle: '編輯圖片',
-              toolbarColor: primaryColor,
-              toolbarWidgetColor: Colors.white,
-              activeControlsWidgetColor: primaryColor,
-              initAspectRatio: CropAspectRatioPreset.original,
-              lockAspectRatio: false,
-              cropStyle: cropStyle,
-              aspectRatioPresets:
-                  aspectRatioPresets ??
-                  [
-                    CropAspectRatioPreset.original,
-                    CropAspectRatioPreset.square,
-                    CropAspectRatioPreset.ratio3x2,
-                    CropAspectRatioPreset.ratio4x3,
-                    CropAspectRatioPreset.ratio16x9,
-                  ],
+          aspectRatio: switch (crop) {
+            LockedCrop(:final ratio) => CropAspectRatio(
+              ratioX: ratio.x.toDouble(),
+              ratioY: ratio.y.toDouble(),
             ),
-            IOSUiSettings(
-              title: '編輯圖片',
-              cropStyle: cropStyle,
-              aspectRatioPresets:
-                  aspectRatioPresets ??
-                  [
-                    CropAspectRatioPreset.original,
-                    CropAspectRatioPreset.square,
-                    CropAspectRatioPreset.ratio3x2,
-                    CropAspectRatioPreset.ratio4x3,
-                    CropAspectRatioPreset.ratio16x9,
-                  ],
-            ),
-          ],
+            FreeCrop() => null,
+          },
+          uiSettings: [_androidCropSettings(crop), _iosCropSettings(crop)],
         );
 
         if (croppedFile == null) return null;
         sourcePath = croppedFile.path;
+        cropperOutputPath = croppedFile.path;
       }
 
       // Generate timestamp based filename
@@ -114,6 +129,16 @@ class ImagePickerHelper {
       );
 
       if (compressedFile == null) return null;
+
+      // Compression already produced its own output; drop the cropper's intermediate file.
+      if (cropperOutputPath != null) {
+        try {
+          await File(cropperOutputPath).delete();
+        } catch (e, stackTrace) {
+          AppLogger.error('Delete cropper temp file failed', e, stackTrace);
+        }
+      }
+
       return File(compressedFile.path);
     } catch (e, stackTrace) {
       AppLogger.error('Pick image failed', e, stackTrace);
@@ -143,7 +168,6 @@ class ImagePickerHelper {
           maxWidth: maxWidth,
           maxHeight: maxHeight,
           imageQuality: imageQuality,
-          enableCrop: false,
         );
         return singleFile != null ? [singleFile] : null;
       }

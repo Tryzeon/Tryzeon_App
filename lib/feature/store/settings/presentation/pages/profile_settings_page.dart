@@ -11,6 +11,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -146,9 +147,10 @@ class _StoreProfileForm extends HookConsumerWidget {
     Future<void> updateLogo() async {
       final File? image = await ImagePickerHelper.pickImage(
         context,
-        enableCrop: true,
-        cropStyle: CropStyle.circle,
-        aspectRatioPresets: [CropAspectRatioPreset.square],
+        crop: const FreeCrop(
+          presets: [CropAspectRatioPreset.square],
+          style: CropStyle.circle,
+        ),
       );
       if (image == null) return;
 

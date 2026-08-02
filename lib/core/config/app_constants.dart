@@ -55,6 +55,7 @@ class AppConstants {
   static const String logoWordmarkText = 'assets/images/logo/tryzeon_wordmark.png';
 
   // Logic
+  static const ({int x, int y}) avatarAspectRatio = (x: 9, y: 16);
   static const int maxProductImages = 3;
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
