@@ -6,13 +6,14 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 /// Failure-only top banner (Direction A — refined card).
 /// White surface, soft tinted icon container, generous radius, lifted shadow.
 /// Success states stay silent; download-style results use AppSnackBar.
+///
+/// Stays until the user taps it — errors must not disappear on a timer.
 class TopNotification {
   static void show(final BuildContext context, {required final String message}) {
     HapticFeedback.mediumImpact();
 
     toastification.showCustom(
       context: context,
-      autoCloseDuration: AppDuration.toast,
       alignment: Alignment.topCenter,
       direction: TextDirection.ltr,
       animationDuration: AppDuration.slow,
@@ -42,45 +43,47 @@ class TopNotification {
                 borderRadius: AppRadius.dialogAll,
                 border: Border.all(color: colorScheme.outline),
               ),
-              child: ClipRRect(
+              child: Material(
+                color: Colors.transparent,
                 borderRadius: AppRadius.dialogAll,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => toastification.dismiss(holder),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.smMd,
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.md),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.smMd,
+                        ),
+                        child: Icon(
+                          Icons.error_outline_rounded,
+                          color: colorScheme.error,
+                          size: 20,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline_rounded,
-                            color: colorScheme.error,
-                            size: 20,
+                      const SizedBox(width: AppSpacing.smMd),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.smMd,
                           ),
-                          const SizedBox(width: AppSpacing.smMd),
-                          Expanded(
-                            child: Text(
-                              message,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                color: colorScheme.onSurface,
-                                height: 1.4,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                          child: Text(
+                            message,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: colorScheme.onSurface,
+                              height: 1.4,
                             ),
                           ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Icon(
-                            Icons.close_rounded,
-                            color: colorScheme.onSurfaceVariant,
-                            size: 16,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      IconButton(
+                        onPressed: () => toastification.dismiss(holder),
+                        tooltip: '關閉',
+                        icon: const Icon(Icons.close_rounded, size: 16),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                 ),
               ),

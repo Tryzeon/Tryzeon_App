@@ -107,7 +107,6 @@ class AppDuration {
   static const Duration standard = Duration(milliseconds: 200);
   static const Duration slow = Duration(milliseconds: 300);
   static const Duration thinking = Duration(milliseconds: 1800);
-  static const Duration toast = Duration(seconds: 4);
 }
 
 // ─── Curve Tokens ───────────────────────────────────────────────────────────────
