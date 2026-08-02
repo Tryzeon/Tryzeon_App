@@ -58,6 +58,9 @@ class AvatarMissingFailure extends Failure {
   const AvatarMissingFailure([super.message]);
 }
 
+class TimeoutFailure extends Failure {
+  const TimeoutFailure([super.message]);
+}
 
 String? _functionErrorCode(final FunctionException e) {
   final details = e.details;
@@ -108,8 +111,9 @@ Failure mapExceptionToFailure(final Object e) {
     // Network Exceptions
     SocketException() => const NetworkFailure(),
     // Client-side deadline (e.g. a long-running edge function killed at the
-    // platform's wall-clock limit never responding).
-    TimeoutException() => const NetworkFailure(),
+    // platform's wall-clock limit never responding, or a half-open socket left
+    // by a suspended app that never delivers bytes, EOF or an error).
+    TimeoutException() => const TimeoutFailure(),
     // http throws ClientException (often wrapping a SocketException) for
     // transport-level failures escaping Supabase.
     ClientException() => const NetworkFailure(),

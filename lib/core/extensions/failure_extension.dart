@@ -25,6 +25,9 @@ extension FailureMessage on Failure {
       AvatarMissingFailure(message: final msg?) => msg,
       AvatarMissingFailure() => '請先上傳個人照片才能開始試穿呦！',
 
+      TimeoutFailure(message: final msg?) => msg,
+      TimeoutFailure() => '處理時間過長而中斷，請重新嘗試；生成期間請讓 App 保持在前景',
+
       UserCanceledFailure(message: final msg?) => msg,
       UserCanceledFailure() => '',
 

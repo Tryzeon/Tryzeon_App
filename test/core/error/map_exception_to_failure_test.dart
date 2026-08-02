@@ -88,11 +88,15 @@ void main() {
       );
     });
 
-    test('TimeoutException maps to NetworkFailure', () {
-      expect(
-        mapExceptionToFailure(TimeoutException('deadline', const Duration(minutes: 2))),
-        isA<NetworkFailure>(),
+    // A client-side deadline is not a connectivity problem: reporting it as
+    // NetworkFailure both misleads the user and puts a long generation job on
+    // main.dart's NetworkFailure retry path.
+    test('TimeoutException maps to TimeoutFailure, not NetworkFailure', () {
+      final failure = mapExceptionToFailure(
+        TimeoutException('deadline', const Duration(minutes: 7)),
       );
+      expect(failure, isA<TimeoutFailure>());
+      expect(failure, isNot(isA<NetworkFailure>()));
     });
 
     test('custom ServerException preserves its message', () {
