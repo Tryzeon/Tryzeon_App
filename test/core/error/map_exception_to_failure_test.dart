@@ -200,5 +200,13 @@ void main() {
         isA<ServerFailure>(),
       );
     });
+
+    test('FunctionException 401 maps to AuthFailure with a neutral re-auth message', () {
+      final failure = mapExceptionToFailure(
+        const FunctionException(status: 401, details: {'code': 'UNAUTHORIZED'}),
+      );
+      expect(failure, isA<AuthFailure>());
+      expect(failure.message, '驗證失敗，請重新登入');
+    });
   });
 }

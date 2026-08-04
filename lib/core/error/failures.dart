@@ -93,6 +93,10 @@ Failure mapExceptionToFailure(final Object e) {
       if (coded != null) return coded;
     }
 
+    // A 401 never reaches our handler — the platform rejects the JWT first, so
+    // there is no code of ours to read and the status is all we get.
+    if (e.status == 401) return const AuthFailure('驗證失敗，請重新登入');
+
     // A 429 with no code of ours was imposed before our handler ran, so it
     // carries no usage either — ours always sends the two together.
     if (e.status == 429) return const RateLimitFailure();
