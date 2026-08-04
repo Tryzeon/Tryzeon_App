@@ -80,7 +80,11 @@ void revenueCatIdentitySync(final Ref ref) {
   final logOut = ref.watch(logOutRevenueCatUseCaseProvider);
   final auth = Supabase.instance.client.auth;
 
+  String? syncedUserId;
+
   Future<void> syncLogIn(final String userId) async {
+    if (syncedUserId == userId) return;
+    syncedUserId = userId;
     final result = await logIn(userId);
     if (result.isFailure) {
       AppLogger.error(
@@ -92,6 +96,7 @@ void revenueCatIdentitySync(final Ref ref) {
   }
 
   Future<void> syncLogOut() async {
+    syncedUserId = null;
     final result = await logOut();
     if (result.isFailure) {
       AppLogger.error(
@@ -113,6 +118,8 @@ void revenueCatIdentitySync(final Ref ref) {
   final subscription = auth.onAuthStateChange.listen((final state) {
     switch (state.event) {
       case AuthChangeEvent.signedIn:
+      case AuthChangeEvent.initialSession:
+      case AuthChangeEvent.tokenRefreshed:
         final user = state.session?.user;
         if (user != null) {
           unawaited(syncLogIn(user.id));
