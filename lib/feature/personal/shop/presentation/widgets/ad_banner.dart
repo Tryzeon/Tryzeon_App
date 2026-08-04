@@ -48,30 +48,39 @@ class AdBanner extends HookConsumerWidget {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            height: 160,
-            child: PageView.builder(
-              controller: pageController,
-              onPageChanged: (final index) => currentPage.value = index,
-              itemCount: adImages.length,
-              itemBuilder: (final context, final index) {
-                return GestureDetector(
-                  onTap: () {
-                    // TODO: 點擊廣告導向詳情頁或外部連結
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    decoration: BoxDecoration(
-                      borderRadius: AppRadius.cardAll,
-                      image: DecorationImage(
-                        image: AssetImage(adImages[index]),
-                        fit: BoxFit.cover,
+          LayoutBuilder(
+            builder: (final context, final constraints) {
+              // Size the viewport so each page — inset by its horizontal
+              // margin — is exactly 16:9, matching the ad artwork.
+              final pageWidth = constraints.maxWidth - AppSpacing.md * 2;
+              return SizedBox(
+                height: pageWidth * 9 / 16,
+                child: PageView.builder(
+                  controller: pageController,
+                  onPageChanged: (final index) => currentPage.value = index,
+                  itemCount: adImages.length,
+                  itemBuilder: (final context, final index) {
+                    return GestureDetector(
+                      onTap: () {
+                        // TODO: 點擊廣告導向詳情頁或外部連結
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: AppRadius.cardAll,
+                          image: DecorationImage(
+                            image: AssetImage(adImages[index]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
           if (adImages.length > 1) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -103,11 +112,15 @@ class AdBanner extends HookConsumerWidget {
         enabled: true,
         child: Skeleton.leaf(
           child: Container(
-            height: 160,
             margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.cardAll,
-              color: colorScheme.surfaceContainer,
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.cardAll,
+                  color: colorScheme.surfaceContainer,
+                ),
+              ),
             ),
           ),
         ),
