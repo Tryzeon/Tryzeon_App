@@ -16,12 +16,16 @@ const LINE_VERIFY_URL = "https://api.line.me/oauth2/v2.1/verify";
 export async function verifyLineIdToken(
   idToken: string,
   channelId: string,
+  nonce?: string,
   fetchFn: typeof fetch = fetch,
 ): Promise<LineProfile> {
+  const params = new URLSearchParams({ id_token: idToken, client_id: channelId });
+  if (nonce) params.set("nonce", nonce);
+
   const resp = await fetchFn(LINE_VERIFY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ id_token: idToken, client_id: channelId }),
+    body: params,
   });
 
   if (!resp.ok) {
