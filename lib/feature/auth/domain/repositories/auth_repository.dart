@@ -1,10 +1,11 @@
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/auth/domain/entities/login_provider.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class AuthRepository {
   Future<Result<void, Failure>> signInWithProvider({
-    required final String provider,
+    required final LoginProvider provider,
     required final UserType userType,
   });
 

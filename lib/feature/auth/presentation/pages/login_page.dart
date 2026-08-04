@@ -7,9 +7,11 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/auth/domain/entities/login_provider.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/sheets/email_otp_bottom_sheet.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/identity_segmented_control.dart';
+import 'package:tryzeon/feature/auth/presentation/widgets/login_provider_display.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -22,7 +24,7 @@ class LoginPage extends HookConsumerWidget {
     final userType = useState(UserType.personal);
     final isLoading = useState(false);
 
-    Future<void> handleSocialLogin(final String provider) async {
+    Future<void> handleSocialLogin(final LoginProvider provider) async {
       isLoading.value = true;
       final signInUseCase = ref.read(signInWithProviderUseCaseProvider);
       final result = await signInUseCase(provider: provider, userType: userType.value);
@@ -41,16 +43,16 @@ class LoginPage extends HookConsumerWidget {
       side: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
     );
 
-    Widget buildSocialButton(final String provider, final VoidCallback onTap) {
+    Widget buildSocialButton(final LoginProvider provider) {
       return OutlinedButton(
-        onPressed: isLoading.value ? null : onTap,
+        onPressed: isLoading.value ? null : () => handleSocialLogin(provider),
         style: softOutlineStyle,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset('assets/images/logo/$provider.svg', height: 20, width: 20),
+            SvgPicture.asset(provider.logoAsset, height: 20, width: 20),
             const SizedBox(width: AppSpacing.smMd),
-            Text('使用 $provider 繼續'),
+            Text('使用 ${provider.label} 繼續'),
           ],
         ),
       );
@@ -118,9 +120,11 @@ class LoginPage extends HookConsumerWidget {
                     ),
                   ),
                   const Spacer(),
-                  buildSocialButton('Apple', () => handleSocialLogin('Apple')),
+                  buildSocialButton(LoginProvider.apple),
                   const SizedBox(height: AppSpacing.md),
-                  buildSocialButton('Google', () => handleSocialLogin('Google')),
+                  buildSocialButton(LoginProvider.google),
+                  const SizedBox(height: AppSpacing.md),
+                  buildSocialButton(LoginProvider.line),
                   const SizedBox(height: AppSpacing.lg),
                   Row(
                     children: [

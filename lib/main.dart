@@ -7,9 +7,11 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -56,6 +58,14 @@ Future<void> main() async {
     anonKey: Env.supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
   );
+
+  // LINE SDK initialization
+  try {
+    await LineSDK.instance.setup(AppConstants.lineChannelId);
+  } catch (e, stack) {
+    AppLogger.error('[LINE] Initialization failed', e, stack);
+    await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
+  }
 
   // RevenueCat SDK initialization
   try {

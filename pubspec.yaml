@@ -67,6 +67,7 @@ dependencies:
   chottu_link: ^1.1.1
   simple_icons: ^16.23.0
   collection: ^1.19.0
+  flutter_line_sdk: ^2.7.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

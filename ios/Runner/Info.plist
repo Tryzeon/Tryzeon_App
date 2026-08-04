@@ -42,6 +42,14 @@
 				<string>com.googleusercontent.apps.924030382971-leijmlmni8hjrtlbeum428f9bl7ebtu0</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>line3rdp.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
@@ -51,6 +59,10 @@
 	<string>924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>lineauth2</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>

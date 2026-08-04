@@ -7,6 +7,7 @@ import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_que
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:tryzeon/feature/auth/domain/entities/login_provider.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/domain/repositories/auth_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -28,37 +29,31 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void, Failure>> signInWithProvider({
-    required final String provider,
+    required final LoginProvider provider,
     required final UserType userType,
   }) async {
     try {
       // Store login type preference before auth state changes fire.
       await _localDataSource.setLastLoginType(userType.value);
 
-      // Map provider string to OAuthProvider
-      final OAuthProvider oauthProvider;
-      switch (provider.toLowerCase()) {
-        case 'google':
-          oauthProvider = OAuthProvider.google;
-          break;
-        case 'apple':
-          oauthProvider = OAuthProvider.apple;
-          break;
-        default:
-          return const Err(UnknownFailure('Unsupported login method'));
-      }
-
-      if (oauthProvider == OAuthProvider.apple && Platform.isIOS) {
-        await _remoteDataSource.signInWithAppleNative();
-      } else if (oauthProvider == OAuthProvider.google) {
-        await _remoteDataSource.signInWithGoogleNative();
-      } else {
-        await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
+      // Exhaustive on purpose: no `default`, so a new provider is a compile
+      // error here rather than an "Unsupported login method" at runtime.
+      switch (provider) {
+        case LoginProvider.apple:
+          if (Platform.isIOS) {
+            await _remoteDataSource.signInWithAppleNative();
+          } else {
+            await _remoteDataSource.signInWithOAuthProvider(OAuthProvider.apple);
+          }
+        case LoginProvider.google:
+          await _remoteDataSource.signInWithGoogleNative();
+        case LoginProvider.line:
+          await _remoteDataSource.signInWithLineNative();
       }
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('$provider login failed', e, stackTrace);
+      AppLogger.error('${provider.name} login failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

@@ -8,6 +8,7 @@ class AppConstants {
       'https://www.google.com/maps/search/?api=1&query=';
   static const String googleServerClientId =
       '924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com';
+  static const String lineChannelId = '2010556446';
 
   // Supabase Tables
   static const String tableUserProfiles = 'user_profiles';
@@ -41,6 +42,7 @@ class AppConstants {
   static const String functionStoreImagesPresignProducts =
       '$functionStoreImages/presign-products';
   static const String functionStoreImagesDelete = '$functionStoreImages/delete';
+  static const String functionLineAuth = 'line-auth';
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
