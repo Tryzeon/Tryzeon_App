@@ -91,6 +91,7 @@ export async function generateTryonVideo(
     model: vertexVideoModel(tryonVideoModel()),
     prompt: { image: tryonImageBase64, text: buildVideoPrompt(transitionPrompt) },
     aspectRatio: "9:16",
+    generateAudio: false,
     providerOptions: { vertex: { pollIntervalMs: POLL_INTERVAL_MS } },
   });
 
