@@ -2,11 +2,9 @@
  * Every Vertex AI setting the edge functions read, in one place.
  *
  * Every call site reads its credential and its model name from here, and every
- * language-model call goes through the one AI SDK provider in `provider.ts` —
- * chat's agent loop and the one-shot analysis helpers alike, since they differ
- * only in what they ask the model for. Try-on is the one exception, calling
- * Vertex REST by hand for Gemini's image config and Veo's long-running
- * operation polling, which no SDK wraps well.
+ * Vertex call goes through the one AI SDK provider in `provider.ts` — chat's
+ * agent loop, the one-shot analysis helpers and try-on alike, since they differ
+ * only in what they ask the model for.
  *
  * That uniformity was not the starting point: each call site had picked its own
  * credential and its own names for the same project — a deployment had to keep
@@ -22,14 +20,15 @@
  *
  * ## Environment
  *
- * | Variable                | Required | Read by                              |
- * | ----------------------- | -------- | ------------------------------------ |
- * | `VERTEX_API_KEY`        | yes      | everything — the single credential   |
- * | `GOOGLE_CLOUD_PROJECT`  | yes      | try-on, to build the REST endpoint   |
- * | `GOOGLE_CLOUD_LOCATION` | no       | try-on; defaults to `us-central1`    |
- * | `CHAT_MODEL`            | yes      | chat, image analysis, audio analysis |
- * | `TRYON_MODEL`           | yes      | try-on images                        |
- * | `VIDEO_MODEL`           | yes      | try-on video                         |
+ * | Variable                 | Required | Read by                              |
+ * | ------------------------ | -------- | ------------------------------------ |
+ * | `GOOGLE_CLIENT_EMAIL`    | yes      | everything — the single credential   |
+ * | `GOOGLE_PRIVATE_KEY`     | yes      | everything — the single credential   |
+ * | `GOOGLE_PRIVATE_KEY_ID`  | no       | everything; names the signing key    |
+ * | `GOOGLE_CLOUD_PROJECT`   | yes      | every Vertex call, to name the project |
+ * | `CHAT_MODEL`             | yes      | chat, image analysis, audio analysis |
+ * | `TRYON_MODEL`            | yes      | try-on images                        |
+ * | `VIDEO_MODEL`            | yes      | try-on video                         |
  *
  * `CHAT_MODEL` naming three unrelated features is a known wart: changing the
  * chat model also changes how wardrobe photos and size recordings are read.
@@ -43,25 +42,38 @@ function requireEnv(name: string): string {
   return value;
 }
 
-/**
- * The one credential. Express-mode authentication: the key alone identifies the
- * project, which is why only try-on — whose REST URLs name it explicitly — has
- * to know the project id at all.
- */
-export const vertexApiKey = (): string => requireEnv("VERTEX_API_KEY");
+/** The service account every Vertex call authenticates as. */
+export interface VertexServiceAccount {
+  clientEmail: string;
+  privateKey: string;
+  privateKeyId?: string;
+}
 
-/** GCP project id, for callers that build Vertex REST URLs by hand. */
+/**
+ * The one credential. A service account rather than an express-mode API key,
+ * which serves a narrower model catalog and reports what it cannot see as a 404
+ * naming the model — indistinguishable from a typo.
+ *
+ * `\n` is un-escaped because a key pasted out of the JSON key file carries it
+ * literally; consumers strip whitespace but not that, and the base64 body then
+ * fails to decode.
+ */
+export const vertexServiceAccount = (): VertexServiceAccount => ({
+  clientEmail: requireEnv("GOOGLE_CLIENT_EMAIL"),
+  privateKey: requireEnv("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n"),
+  privateKeyId: Deno.env.get("GOOGLE_PRIVATE_KEY_ID"),
+});
+
+/** GCP project id. Named explicitly now that no credential implies it. */
 export const vertexProject = (): string => requireEnv("GOOGLE_CLOUD_PROJECT");
 
-/** Vertex region. Has a default, so it never fails. */
-export const VERTEX_LOCATION = Deno.env.get("GOOGLE_CLOUD_LOCATION") ??
-  "us-central1";
+export const VERTEX_LOCATION = "global";
 
 /** Model behind the chat agent and both analysis helpers. */
 export const chatModel = (): string => requireEnv("CHAT_MODEL");
 
 /** Model behind try-on image generation. */
-export const tryonImageModel = (): string => requireEnv("TRYON_MODEL");
+export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
 
 /** Model behind try-on video generation. No sensible default to fall back on. */
-export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL");
+export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // veo-3.1-generate-001
