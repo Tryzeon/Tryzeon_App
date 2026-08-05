@@ -49,8 +49,8 @@ ${lines.join("\n")}`;
 
 export function buildTaskPrompt(
   garmentGroups: string[][],
-  scenePrompt?: string,
   garmentDetails?: (string | undefined)[],
+  scenePrompt?: string,
 ): string {
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt =

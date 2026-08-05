@@ -19,14 +19,14 @@ Deno.test("buildTaskPrompt omits the scene section when no scene is given", () =
 });
 
 Deno.test("buildTaskPrompt adds the scene section and its invariant caveat", () => {
-  const prompt = buildTaskPrompt([["a"]], "a rooftop at dusk");
+  const prompt = buildTaskPrompt([["a"]], undefined, "a rooftop at dusk");
   assertStringIncludes(prompt, "SCENE CONTEXT — BACKGROUND ONLY");
   assertStringIncludes(prompt, "Place the person in this scene: a rooftop at dusk");
   assertStringIncludes(prompt, "(unless overridden by SCENE CONTEXT below)");
 });
 
 Deno.test("buildTaskPrompt includes only non-blank garment details", () => {
-  const prompt = buildTaskPrompt([["a"], ["b"], ["c"]], undefined, [
+  const prompt = buildTaskPrompt([["a"], ["b"], ["c"]], [
     "Material: Linen",
     "   ",
     undefined,
@@ -37,7 +37,7 @@ Deno.test("buildTaskPrompt includes only non-blank garment details", () => {
 });
 
 Deno.test("buildTaskPrompt omits the details section when all details are blank", () => {
-  const prompt = buildTaskPrompt([["a"]], undefined, [undefined]);
+  const prompt = buildTaskPrompt([["a"]], [undefined]);
   assertEquals(prompt.includes("GARMENT DETAILS"), false);
 });
 
