@@ -9,7 +9,9 @@
  * That uniformity was not the starting point: each call site had picked its own
  * credential and its own names for the same project — a deployment had to keep
  * GOOGLE_CLOUD_PROJECT and GOOGLE_VERTEX_PROJECT in agreement with nothing
- * checking, and rotating a key meant finding every reader.
+ * checking, and rotating a key meant finding every reader. The credential is now
+ * the key file itself, so the project id and the signing key cannot disagree:
+ * they are fields of one value that is replaced whole.
  *
  * Readers are functions rather than constants because they raise when unset,
  * and no consumer needs the whole set: validating everything at import would
@@ -20,15 +22,14 @@
  *
  * ## Environment
  *
- * | Variable                 | Required | Read by                              |
- * | ------------------------ | -------- | ------------------------------------ |
- * | `GOOGLE_CLIENT_EMAIL`    | yes      | everything — the single credential   |
- * | `GOOGLE_PRIVATE_KEY`     | yes      | everything — the single credential   |
- * | `GOOGLE_PRIVATE_KEY_ID`  | no       | everything; names the signing key    |
- * | `GOOGLE_CLOUD_PROJECT`   | yes      | every Vertex call, to name the project |
- * | `CHAT_MODEL`             | yes      | chat, image analysis, audio analysis |
- * | `TRYON_MODEL`            | yes      | try-on images                        |
- * | `VIDEO_MODEL`            | yes      | try-on video                         |
+ * | Variable                 | Required | Read by                                  |
+ * | ------------------------ | -------- | ---------------------------------------- |
+ * | `GOOGLE_SERVICE_ACCOUNT` | yes      | everything — credential and project id   |
+ * | `CHAT_MODEL`             | yes      | chat, image analysis, audio analysis     |
+ * | `TRYON_MODEL`            | yes      | try-on images                            |
+ * | `VIDEO_MODEL`            | yes      | try-on video                             |
+ *
+ * `GOOGLE_SERVICE_ACCOUNT` is the downloaded key file, pasted whole.
  *
  * `CHAT_MODEL` naming three unrelated features is a known wart: changing the
  * chat model also changes how wardrobe photos and size recordings are read.
@@ -42,30 +43,53 @@ function requireEnv(name: string): string {
   return value;
 }
 
-/** The service account every Vertex call authenticates as. */
+/** The service account every Vertex call authenticates as, and its project. */
 export interface VertexServiceAccount {
+  projectId: string;
   clientEmail: string;
   privateKey: string;
   privateKeyId?: string;
 }
 
-/**
- * The one credential. A service account rather than an express-mode API key,
- * which serves a narrower model catalog and reports what it cannot see as a 404
- * naming the model — indistinguishable from a typo.
- *
- * `\n` is un-escaped because a key pasted out of the JSON key file carries it
- * literally; consumers strip whitespace but not that, and the base64 body then
- * fails to decode.
- */
-export const vertexServiceAccount = (): VertexServiceAccount => ({
-  clientEmail: requireEnv("GOOGLE_CLIENT_EMAIL"),
-  privateKey: requireEnv("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n"),
-  privateKeyId: Deno.env.get("GOOGLE_PRIVATE_KEY_ID"),
-});
+/** Field names as they appear in a Google key file, for the error message. */
+const REQUIRED_FIELDS = ["project_id", "client_email", "private_key"] as const;
 
-/** GCP project id. Named explicitly now that no credential implies it. */
-export const vertexProject = (): string => requireEnv("GOOGLE_CLOUD_PROJECT");
+/**
+ * Decodes the key file into the fields the provider needs. Exported for its
+ * tests: it is the one place a deployment's credential can be malformed, and
+ * every failure here reads as "Vertex is down" from the outside.
+ */
+export function parseServiceAccount(raw: string): VertexServiceAccount {
+  let key: Record<string, unknown>;
+  try {
+    key = JSON.parse(raw);
+  } catch {
+    throw new Error("GOOGLE_SERVICE_ACCOUNT is not valid JSON");
+  }
+
+  const missing = REQUIRED_FIELDS.filter((field) => typeof key[field] !== "string");
+  if (missing.length > 0) {
+    throw new Error(`GOOGLE_SERVICE_ACCOUNT is missing: ${missing.join(", ")}`);
+  }
+
+  return {
+    projectId: key.project_id as string,
+    clientEmail: key.client_email as string,
+    privateKey: key.private_key as string,
+    privateKeyId: typeof key.private_key_id === "string" ? key.private_key_id : undefined,
+  };
+}
+
+let serviceAccount: VertexServiceAccount | null = null;
+
+/**
+ * The one credential, parsed once for the isolate. A service account rather than
+ * an express-mode API key, which serves a narrower model catalog and reports
+ * what it cannot see as a 404 naming the model — indistinguishable from a typo.
+ */
+export function vertexServiceAccount(): VertexServiceAccount {
+  return serviceAccount ??= parseServiceAccount(requireEnv("GOOGLE_SERVICE_ACCOUNT"));
+}
 
 export const VERTEX_LOCATION = "global";
 

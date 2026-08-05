@@ -14,7 +14,7 @@
  * would make Vertex credentials a requirement for all of them.
  */
 import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
-import { VERTEX_LOCATION, vertexProject, vertexServiceAccount } from "./config.ts";
+import { VERTEX_LOCATION, vertexServiceAccount } from "./config.ts";
 
 let provider: ReturnType<typeof createVertex> | null = null;
 
@@ -25,10 +25,13 @@ let provider: ReturnType<typeof createVertex> | null = null;
  * it here, which is what lets a test observe the call.
  */
 function vertexProvider() {
-  return provider ??= createVertex({
-    project: vertexProject(),
+  if (provider) return provider;
+
+  const { projectId, ...googleCredentials } = vertexServiceAccount();
+  return provider = createVertex({
+    project: projectId,
     location: VERTEX_LOCATION,
-    googleCredentials: vertexServiceAccount(),
+    googleCredentials,
   });
 }
 
