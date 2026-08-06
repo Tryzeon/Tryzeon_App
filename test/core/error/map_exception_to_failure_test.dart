@@ -54,6 +54,30 @@ void main() {
       );
     });
 
+    test('FunctionException SERVICE_BUSY maps to ServiceBusyFailure', () {
+      expect(
+        mapExceptionToFailure(
+          const FunctionException(
+            status: 503,
+            details: {'error': 'Service is busy, please try again shortly', 'code': 'SERVICE_BUSY'},
+          ),
+        ),
+        isA<ServiceBusyFailure>(),
+      );
+    });
+
+    test('the code decides, not the status it was rendered with', () {
+      // The edge functions keep one code per failure precisely so this is the
+      // identity; 503 is only how the HTTP transport spells it today, and the
+      // chat stream reports the same failure with no status at all.
+      expect(
+        mapExceptionToFailure(
+          const FunctionException(status: 529, details: {'code': 'SERVICE_BUSY'}),
+        ),
+        isA<ServiceBusyFailure>(),
+      );
+    });
+
     test('FunctionException AI_GENERATION_FAILED keeps its own copy', () {
       final failure = mapExceptionToFailure(
         const FunctionException(status: 422, details: {'code': 'AI_GENERATION_FAILED'}),

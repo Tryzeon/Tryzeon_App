@@ -33,4 +33,13 @@ void main() {
       expect(failure.displayMessage(), isNot(const NetworkFailure().displayMessage()));
     });
   });
+
+  group('ServiceBusyFailure copy', () {
+    test('tells the user to wait rather than to upgrade or check the network', () {
+      final message = const ServiceBusyFailure().displayMessage();
+      expect(message, contains('稍後'));
+      expect(message, isNot(contains('升級')));
+      expect(message, isNot(contains('網路')));
+    });
+  });
 }
