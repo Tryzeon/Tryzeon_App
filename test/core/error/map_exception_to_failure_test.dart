@@ -54,17 +54,54 @@ void main() {
       );
     });
 
-    test('FunctionException 429 maps to RateLimitFailure with usage payload', () {
+    test('FunctionException AI_GENERATION_FAILED keeps its own copy', () {
+      final failure = mapExceptionToFailure(
+        const FunctionException(status: 422, details: {'code': 'AI_GENERATION_FAILED'}),
+      );
+      expect(failure, isA<ServerFailure>());
+      expect(failure.message, 'AI 無法辨識圖片，請換一張試試');
+    });
+
+    test('FunctionException RATE_LIMIT_EXCEEDED carries usage', () {
       final failure = mapExceptionToFailure(
         const FunctionException(
           status: 429,
           details: {
+            'code': 'RATE_LIMIT_EXCEEDED',
             'usage': {'used': 3, 'limit': 3},
           },
         ),
       );
       expect(failure, isA<RateLimitFailure>());
       expect((failure as RateLimitFailure).usagePayload, {'used': 3, 'limit': 3});
+    });
+
+    test('a malformed body is decoded, not thrown on', () {
+      // This is the function that turns exceptions into Failures — a body whose
+      // shape surprises us must not become a second exception.
+      expect(
+        mapExceptionToFailure(const FunctionException(status: 500, details: 'not an object')),
+        isA<ServerFailure>(),
+      );
+      expect(
+        mapExceptionToFailure(const FunctionException(status: 500, details: {'code': 42})),
+        isA<ServerFailure>(),
+      );
+      final failure = mapExceptionToFailure(
+        const FunctionException(
+          status: 429,
+          details: {'code': 'RATE_LIMIT_EXCEEDED', 'usage': 'not a map'},
+        ),
+      );
+      expect((failure as RateLimitFailure).usagePayload, isNull);
+    });
+
+    test('a bare 429 with no code of ours is still a rate limit', () {
+      // `jsonRateLimited` sends the code and the usage together, so a 429
+      // without one has neither: it never reached our handler.
+      final failure = mapExceptionToFailure(const FunctionException(status: 429));
+      expect(failure, isA<RateLimitFailure>());
+      expect((failure as RateLimitFailure).usagePayload, isNull);
     });
 
     test('FunctionException 422 maps to ServerFailure', () {

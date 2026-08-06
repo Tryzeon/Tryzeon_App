@@ -46,6 +46,10 @@ class RateLimitFailure extends Failure {
   List<Object?> get props => [message, usagePayload];
 }
 
+class ServiceBusyFailure extends Failure {
+  const ServiceBusyFailure([super.message]);
+}
+
 class UserCanceledFailure extends Failure {
   const UserCanceledFailure([super.message]);
 }
@@ -62,12 +66,8 @@ class TimeoutFailure extends Failure {
   const TimeoutFailure([super.message]);
 }
 
-String? _functionErrorCode(final FunctionException e) {
-  final details = e.details;
-  if (details is! Map) return null;
-  final code = details['code'];
-  return code is String ? code : null;
-}
+Map<String, dynamic>? _usagePayload(final Object? usage) =>
+    usage is Map<String, dynamic> ? usage : null;
 
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
@@ -81,17 +81,21 @@ Failure mapExceptionToFailure(final Object e) {
   }
 
   if (e is FunctionException) {
-    if (e.status == 429) {
-      final details = e.details;
-      final usage = details is Map<String, dynamic>
-          ? details['usage'] as Map<String, dynamic>?
-          : null;
-      return RateLimitFailure(usagePayload: usage);
-    } else if (e.status == 422) {
-      return const ServerFailure('AI 無法辨識圖片，請換一張試試');
-    } else if (e.status == 400 && _functionErrorCode(e) == 'NO_AVATAR') {
-      return const AvatarMissingFailure();
+    final body = e.details;
+    if (body is Map) {
+      final Failure? coded = switch (body['code']) {
+        'SERVICE_BUSY' => const ServiceBusyFailure(),
+        'NO_AVATAR' => const AvatarMissingFailure(),
+        'AI_GENERATION_FAILED' => const ServerFailure('AI 無法辨識圖片，請換一張試試'),
+        'RATE_LIMIT_EXCEEDED' => RateLimitFailure(usagePayload: _usagePayload(body['usage'])),
+        _ => null,
+      };
+      if (coded != null) return coded;
     }
+
+    // A 429 with no code of ours was imposed before our handler ran, so it
+    // carries no usage either — ours always sends the two together.
+    if (e.status == 429) return const RateLimitFailure();
   }
 
   return switch (e) {
