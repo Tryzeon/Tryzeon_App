@@ -29,6 +29,7 @@ export function tryonErrorResponse(err: unknown): Response | null {
       return jsonError("No model photo on file", "NO_AVATAR", 400);
     case "validation":
     case "quota":
+    case "busy":
       return coreErrorResponse(info);
   }
 }

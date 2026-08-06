@@ -136,6 +136,8 @@ function chatFailureKind(err: unknown): ChatErrorKind {
   switch (info.kind) {
     case "quota":
       return "quota";
+    case "busy":
+      return "unknown";
     case "validation":
       return "unknown";
   }

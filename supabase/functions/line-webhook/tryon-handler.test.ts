@@ -7,6 +7,7 @@ import {
   type TryonHandlerDeps,
 } from "./tryon-handler.ts";
 import { QuotaExceededError } from "../_shared/quota.ts";
+import { ServiceBusyError } from "../_shared/errors.ts";
 import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
@@ -609,4 +610,18 @@ Deno.test("a product try-on puts no avatar on the job params", async () => {
   );
 
   assertEquals(seenAvatar, undefined);
+});
+
+Deno.test("generation refused for capacity is not reported as the sender's spent quota", async () => {
+  const { line, sent } = fakeLine();
+  await handleImageTryon(
+    makeDeps({
+      line,
+      runJob: () => Promise.reject(new ServiceBusyError("image generation is at capacity")),
+    }),
+    event,
+  );
+
+  assertEquals(sent.pushes.length, 1);
+  assertEquals(textOf(sent.pushes[0][0]), "現在使用的人比較多，請稍等幾分鐘再試。");
 });

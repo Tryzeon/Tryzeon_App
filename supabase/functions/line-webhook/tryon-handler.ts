@@ -15,6 +15,7 @@ import {
   productUnavailableMessage,
   resultMessage,
   tryonErrorMessage,
+  type TryonJobErrorKind,
 } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 import { type ConversationStore, photoNote, tryonNote } from "./conversation.ts";
@@ -57,7 +58,7 @@ async function resolveActor(
 /** One try-on job, reduced to what this channel can render. */
 type TryonOutcome =
   | { ok: true; imageUrl: string }
-  | { ok: false; kind: "quota" | "generation" | "unknown" };
+  | { ok: false; kind: TryonJobErrorKind };
 
 /**
  * Runs one try-on and classifies whatever comes back.
@@ -221,7 +222,7 @@ export async function handleProductTryon(
  * checked for existence before any job starts — so it is reported as an
  * unknown fault.
  */
-function tryonFailureKind(err: unknown): "quota" | "generation" | "unknown" {
+function tryonFailureKind(err: unknown): TryonJobErrorKind {
   const info = classifyTryonError(err);
   if (info === null) return "unknown";
   switch (info.kind) {
@@ -229,6 +230,8 @@ function tryonFailureKind(err: unknown): "quota" | "generation" | "unknown" {
       return "quota";
     case "generation":
       return "generation";
+    case "busy":
+      return "busy";
     case "validation":
       return "unknown";
     case "missingAvatar":

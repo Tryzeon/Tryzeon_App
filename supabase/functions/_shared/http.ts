@@ -42,5 +42,11 @@ export function coreErrorResponse(info: CoreErrorInfo): Response {
       return jsonError(info.message, CORE_ERROR_CODE.validation, 400);
     case "quota":
       return jsonRateLimited(info.usage);
+    case "busy":
+      return jsonError(
+        "Service is busy, please try again shortly",
+        CORE_ERROR_CODE.busy,
+        503,
+      );
   }
 }

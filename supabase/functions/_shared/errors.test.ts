@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
-import { classifyCoreError } from "./errors.ts";
+import { classifyCoreError, ServiceBusyError } from "./errors.ts";
 import { ValidationError } from "./validation.ts";
 import { QuotaExceededError } from "./quota.ts";
 import { SAMPLE_USAGE } from "./quota.testing.ts";
@@ -15,6 +15,12 @@ Deno.test("classifyCoreError carries usage for quota errors", () => {
   assertEquals(classifyCoreError(new QuotaExceededError(SAMPLE_USAGE)), {
     kind: "quota",
     usage: SAMPLE_USAGE,
+  });
+});
+
+Deno.test("classifyCoreError narrows a service that refused for capacity", () => {
+  assertEquals(classifyCoreError(new ServiceBusyError("image generation is at capacity")), {
+    kind: "busy",
   });
 });
 

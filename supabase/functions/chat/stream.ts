@@ -27,6 +27,8 @@ export function errorEvent(err: unknown): Record<string, unknown> {
   switch (info.kind) {
     case "quota":
       return { type: "error", code: CORE_ERROR_CODE.quota, usage: info.usage };
+    case "busy":
+      return { type: "error", code: CORE_ERROR_CODE.busy };
     case "validation":
       return {
         type: "error",
