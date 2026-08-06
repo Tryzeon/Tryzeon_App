@@ -3,11 +3,13 @@
  *
  * Two surfaces render a product now — the chat answer's carousel and the
  * try-on result card — so "which fields a card shows" stopped being the
- * hydrator's business and became its own. `chat-hydrate.ts` selects these
+ * hydrator's business and became its own. `fetchProductCards` reads these
  * columns in batch for an answer; `fetchLineProduct` reads a single one for a
  * card the user pointed at by id.
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
+import type { ContentBlock } from "../_shared/chat/index.ts";
 import { publicImageUrl } from "../_shared/storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 
@@ -51,6 +53,23 @@ export function toLineProduct(
     storeName: store?.name ?? null,
     purchaseUrl: row.purchase_link ?? null,
   };
+}
+
+/**
+ * The referenced products as cards, keyed by id. An id whose row is gone — or
+ * whose product has no image — is simply absent, and the assembler drops its
+ * block.
+ */
+export function fetchProductCards(
+  admin: SupabaseClient,
+  ids: string[],
+  imagesBaseUrl: string,
+): Promise<Map<string, ContentBlock>> {
+  return fetchRowsByIds(
+    admin.from("products").select(PRODUCT_CARD_SELECT),
+    ids,
+    (row) => toLineProduct(row, imagesBaseUrl),
+  );
 }
 
 /**

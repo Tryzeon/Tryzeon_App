@@ -3,6 +3,7 @@ import {
   amountText,
   clampProductName,
   fetchLineProduct,
+  fetchProductCards,
   type LineProduct,
   productInfoContents,
   purchaseAction,
@@ -44,6 +45,28 @@ function fakeAdmin(result: { data: any; error: any }) {
             eq(_column: string, id: string) {
               queried.push(id);
               return { maybeSingle: () => Promise.resolve(result) };
+            },
+          };
+        },
+      };
+    },
+  };
+  // deno-lint-ignore no-explicit-any
+  return { admin: client as any, queried };
+}
+
+/** Fake client answering one `.in()` batch lookup. */
+// deno-lint-ignore no-explicit-any
+function fakeBatchAdmin(result: { data: any; error: any }) {
+  const queried: string[][] = [];
+  const client = {
+    from() {
+      return {
+        select() {
+          return {
+            in(_column: string, ids: string[]) {
+              queried.push(ids);
+              return Promise.resolve(result);
             },
           };
         },
@@ -104,6 +127,43 @@ Deno.test("fetchLineProduct throws when the lookup itself failed", async () => {
   // A missing row and a broken query are different facts: the first is a
   // product the user can be told about, the second is ours to fix.
   await assertRejects(() => fetchLineProduct(admin, "p1", BASE), Error, "boom");
+});
+
+Deno.test("fetchProductCards keys the cards by product id", async () => {
+  const { admin, queried } = fakeBatchAdmin({
+    data: [row(), row({ id: "p2", name: "黑褲" })],
+    error: null,
+  });
+  const cards = await fetchProductCards(admin, ["p1", "p2"], BASE);
+
+  assertEquals(queried, [["p1", "p2"]]);
+  assertEquals([...cards.keys()], ["p1", "p2"]);
+  assertEquals((cards.get("p2") as LineProduct).name, "黑褲");
+});
+
+Deno.test("fetchProductCards leaves out a product with no image", async () => {
+  const { admin } = fakeBatchAdmin({
+    data: [row(), row({ id: "p2", image_paths: [] })],
+    error: null,
+  });
+  const cards = await fetchProductCards(admin, ["p1", "p2"], BASE);
+
+  // Absent, not present-and-null: the assembler drops it by the same
+  // missing-row rule it applies to a since-deleted product.
+  assertEquals([...cards.keys()], ["p1"]);
+});
+
+Deno.test("fetchProductCards queries nothing for an empty id list", async () => {
+  const { admin, queried } = fakeBatchAdmin({ data: null, error: null });
+  const cards = await fetchProductCards(admin, [], BASE);
+
+  assertEquals(queried, []);
+  assertEquals(cards.size, 0);
+});
+
+Deno.test("fetchProductCards throws when the lookup itself failed", async () => {
+  const { admin } = fakeBatchAdmin({ data: null, error: { message: "boom" } });
+  await assertRejects(() => fetchProductCards(admin, ["p1"], BASE));
 });
 
 Deno.test("purchaseAction is offered only for an absolute http link", () => {

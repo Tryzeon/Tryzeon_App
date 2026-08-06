@@ -8,25 +8,19 @@
  * This is the substitution the port exists for, not a variant of the app's
  * query.
  *
- * Only products are fetched. A LINE identity is always a freshly minted
- * `line_<sub>@liff.tryzeon.app` account — `getOrCreateUserId` is the sole writer
- * of `line_user_links` and it never binds an existing one — so its wardrobe is
- * empty by construction and no wardrobe id can name a real row. The map is
- * returned empty rather than omitted: should the model produce a wardrobe block
- * anyway, `assembleAnswerBlocks` drops it under the same missing-row rule it
- * applies to a since-deleted product.
+ * Wardrobe comes back empty: this channel has no card for one yet, so the map
+ * is returned rather than omitted and `assembleAnswerBlocks` drops any wardrobe
+ * block under the same missing-row rule it applies to a since-deleted product.
+ * It is no longer empty *by construction* — the app's LINE sign-in means a LINE
+ * identity can own wardrobe items — so this drops answers the model meant.
  */
 import type { AnswerHydrator, ContentBlock } from "../_shared/chat/index.ts";
-import { fetchRowsByIds, idsOf } from "../_shared/chat/hydrate.ts";
-import { PRODUCT_CARD_SELECT, toLineProduct } from "./product-card.ts";
+import { idsOf } from "../_shared/chat/hydrate.ts";
+import { fetchProductCards } from "./product-card.ts";
 
 export function makeLineAnswerRows(imagesBaseUrl: string): AnswerHydrator {
   return async (admin, _userId, refs) => ({
-    products: await fetchRowsByIds(
-      admin.from("products").select(PRODUCT_CARD_SELECT),
-      idsOf(refs, "product"),
-      (row) => toLineProduct(row, imagesBaseUrl),
-    ),
+    products: await fetchProductCards(admin, idsOf(refs, "product"), imagesBaseUrl),
     wardrobe: new Map<string, ContentBlock>(),
   });
 }

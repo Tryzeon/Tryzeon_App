@@ -50,17 +50,12 @@ Deno.test("hydrates only the referenced product ids", async () => {
   assertEquals([...rows.products.keys()], ["p1", "p2"]);
 });
 
-Deno.test("an image-less row is absent from the map, so its block drops", async () => {
-  const { admin } = fakeAdmin([row(), row({ id: "p2", image_paths: [] })]);
-  const rows = await makeLineAnswerRows(BASE)(admin, "u1", [
-    { type: "product", id: "p1" },
-    { type: "product", id: "p2" },
-  ]);
+// Which rows survive the read — an image-less product, an id whose row is
+// gone, an empty id list — is `fetchProductCards`' rule and is tested there.
+// What is left here is the hydrator's own share: which refs become a query,
+// where the base url goes, and that wardrobe always comes back as a map.
 
-  assertEquals([...rows.products.keys()], ["p1"]);
-});
-
-Deno.test("a trailing slash on the base does not double up", async () => {
+Deno.test("the base url reaches the card", async () => {
   const { admin } = fakeAdmin([row()]);
   const rows = await makeLineAnswerRows(`${BASE}/`)(admin, "u1", [
     { type: "product", id: "p1" },
@@ -69,7 +64,7 @@ Deno.test("a trailing slash on the base does not double up", async () => {
   assertEquals(rows.products.get("p1")?.imageUrl, "https://img.example/stores/s1/p1.jpg");
 });
 
-Deno.test("no product refs issues no query, and wardrobe is always empty", async () => {
+Deno.test("a wardrobe ref never becomes a product query, and wardrobe is always empty", async () => {
   const { admin, queried } = fakeAdmin([row()]);
   const rows = await makeLineAnswerRows(BASE)(admin, "u1", [
     { type: "text", text: "再多說一點" },
