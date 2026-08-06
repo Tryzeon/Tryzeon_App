@@ -12,7 +12,6 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -171,11 +170,9 @@ class _ProfileHeader extends HookConsumerWidget {
 
     final profileAsync = ref.watch(userProfileProvider);
     final avatarFileAsync = ref.watch(avatarFileProvider);
-    final user = ref.watch(currentUserProvider);
 
     final profile = profileAsync.value;
     final avatarFile = avatarFileAsync.value;
-    final email = user?.email ?? user?.userMetadata?['email'] as String?;
 
     final isProfileLoading = profileAsync.isLoading && !profileAsync.hasValue;
     final hasProfileError = profileAsync.hasError;
@@ -213,6 +210,8 @@ class _ProfileHeader extends HookConsumerWidget {
       if (profile == null) {
         return Text('尚未建立個人資料', style: theme.textTheme.titleMedium);
       }
+      
+      final email = profile.email;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
