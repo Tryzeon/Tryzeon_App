@@ -48,7 +48,11 @@ async function resolveActor(
   const getOrCreateUserId = deps.getOrCreateUserId ?? defaultGetOrCreateUserId;
   const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
 
-  const userId = await getOrCreateUserId(deps.admin, { sub: sourceUserId });
+  const userId = await getOrCreateUserId(
+    deps.admin,
+    { sub: sourceUserId },
+    () => deps.line.getDisplayName(sourceUserId),
+  );
   return {
     userId,
     hasAvatar: await getAvatarPath(deps.admin, userId) !== null,

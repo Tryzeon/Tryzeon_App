@@ -38,6 +38,7 @@ function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
         ? Promise.reject(new Error("loading down"))
         : Promise.resolve();
     },
+    getDisplayName: () => Promise.resolve(undefined),
   };
   return { line, replied, pushed, loading };
 }

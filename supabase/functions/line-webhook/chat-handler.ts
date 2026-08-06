@@ -88,7 +88,11 @@ export async function handleTextMessage(
   });
   const [prior, userId] = await Promise.all([
     deps.conversations.load(event.sourceUserId),
-    getOrCreateUserId(deps.admin, { sub: event.sourceUserId }),
+    getOrCreateUserId(
+      deps.admin,
+      { sub: event.sourceUserId },
+      () => deps.line.getDisplayName(event.sourceUserId),
+    ),
   ]);
   await loading;
 

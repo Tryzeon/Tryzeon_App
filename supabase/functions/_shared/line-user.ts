@@ -16,6 +16,7 @@ const SYNTHETIC_EMAIL_DOMAIN = "liff.tryzeon.app";
 export async function getOrCreateUserId(
   admin: SupabaseClient,
   profile: LineProfile,
+  resolveDisplayName?: () => Promise<string | undefined>,
 ): Promise<string> {
   const { data: existing, error: lookupError } = await admin
     .from("line_user_links")
@@ -30,11 +31,21 @@ export async function getOrCreateUserId(
     return existing.user_id as string;
   }
 
+  let name = profile.name;
+  if (!name && resolveDisplayName) {
+    try {
+      name = await resolveDisplayName();
+    } catch (err) {
+      // Cosmetic. Whoever is minting this user is mid-conversation with them.
+      console.warn(`line display name lookup failed for ${profile.sub}:`, err);
+    }
+  }
+
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email: `line_${profile.sub}@${SYNTHETIC_EMAIL_DOMAIN}`,
     email_confirm: true,
     app_metadata: { provider: "line", line_user_id: profile.sub },
-    user_metadata: profile.name ? { name: profile.name } : {},
+    user_metadata: name ? { name } : {},
   });
 
   if (createError || !created?.user) {

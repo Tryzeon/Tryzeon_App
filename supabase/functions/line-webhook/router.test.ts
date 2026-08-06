@@ -8,6 +8,7 @@ const line: LineApi = {
   push: () => Promise.resolve(),
   getContent: () => Promise.resolve(new Uint8Array()),
   showLoading: () => Promise.resolve(),
+  getDisplayName: () => Promise.resolve(undefined),
 };
 
 const deps: RouterDeps = {

@@ -34,6 +34,7 @@ function fakeLine(overrides: Partial<LineApi> = {}): { line: LineApi; sent: Sent
     },
     getContent: () => Promise.resolve(new Uint8Array([1, 2, 3])),
     showLoading: () => Promise.resolve(),
+    getDisplayName: () => Promise.resolve(undefined),
     ...overrides,
   };
   return { line, sent };
