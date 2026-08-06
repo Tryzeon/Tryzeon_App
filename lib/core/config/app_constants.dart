@@ -79,8 +79,10 @@ class AppConstants {
   static const String paramProductId = 'productId';
 
   // Shared Preferences Keys
-  static const String keyVideoScenePrompt = 'video_scene_prompt';
-  static const String keyVideoTransitionPrompt = 'video_transition_prompt';
+  // Stored names keep their `video_` prefix from when scene was video-only —
+  // renaming them would only cost a migration for v1.13 users.
+  static const String keyTryonScenePrompt = 'video_scene_prompt';
+  static const String keyTryonTransitionPrompt = 'video_transition_prompt';
 
   // Stale Durations
   static const Duration staleDurationProductCategories = Duration(days: 7);

@@ -98,9 +98,9 @@ class TryonController extends _$TryonController {
         return;
       }
 
-      final promptConfig = mode == TryonMode.video
-          ? await ref.read(videoPromptConfigProvider.future)
-          : null;
+      // Scene applies to both modes — video renders its first frame through the
+      // same image pass. Transition only reaches the video generator.
+      final promptConfig = await ref.read(tryonPromptConfigProvider.future);
 
       galleryNotifier.addPending(id: id, mode: mode);
 
@@ -119,8 +119,10 @@ class TryonController extends _$TryonController {
           garments: garments,
           mode: mode,
           avatarBase64: customAvatarBase64.get(),
-          scenePrompt: promptConfig?.scenePrompt,
-          transitionPrompt: promptConfig?.transitionPrompt,
+          scenePrompt: promptConfig.scenePrompt,
+          transitionPrompt: mode == TryonMode.video
+              ? promptConfig.transitionPrompt
+              : null,
         ),
       );
 

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/sheets/video_prompt_customize_sheet.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_style_sheet.dart';
 
 class TryonModeSheet extends StatelessWidget {
   const TryonModeSheet({
@@ -49,14 +51,16 @@ class TryonModeSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
+            // Title + style entry
             Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Row(
                 children: [
                   Icon(Icons.auto_awesome, color: colorScheme.onSurface, size: 24),
                   const SizedBox(width: AppSpacing.smMd),
                   Text('選擇試穿方式', style: textTheme.titleLarge),
+                  const Spacer(),
+                  _StyleEntryButton(hasVideoAccess: hasVideoAccess),
                 ],
               ),
             ),
@@ -89,15 +93,54 @@ class TryonModeSheet extends StatelessWidget {
                 Navigator.pop(context);
                 onModeSelected(TryonMode.video);
               },
-              onCustomize: () {
-                VideoPromptCustomizeSheet.show(context);
-              },
               colorScheme: colorScheme,
               textTheme: textTheme,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Style customisation entry. Lives in the title row rather than on a card so
+/// it can never be mistaken for the card's "start generating" tap target.
+class _StyleEntryButton extends ConsumerWidget {
+  const _StyleEntryButton({required this.hasVideoAccess});
+
+  final bool hasVideoAccess;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final config = ref.watch(tryonPromptConfigProvider).asData?.value;
+    final hasCustomStyle =
+        (config?.hasScene ?? false) || (config?.hasTransition ?? false);
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.tune_rounded),
+          tooltip: '自訂試穿風格',
+          onPressed: () => TryonStyleSheet.show(context, hasVideoAccess: hasVideoAccess),
+        ),
+        if (hasCustomStyle)
+          Positioned(
+            top: AppSpacing.sm,
+            right: AppSpacing.sm,
+            child: IgnorePointer(
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -112,7 +155,6 @@ class _ModeCard extends StatelessWidget {
     required this.onTap,
     required this.colorScheme,
     required this.textTheme,
-    this.onCustomize,
   });
 
   final IconData icon;
@@ -123,7 +165,6 @@ class _ModeCard extends StatelessWidget {
   final VoidCallback onTap;
   final ColorScheme colorScheme;
   final TextTheme textTheme;
-  final VoidCallback? onCustomize;
 
   @override
   Widget build(final BuildContext context) {
@@ -198,20 +239,6 @@ class _ModeCard extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Customize button (pencil) — only when unlocked and callback provided
-                  if (!isLocked && onCustomize != null)
-                    GestureDetector(
-                      onTap: onCustomize,
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        child: Icon(
-                          Icons.edit_outlined,
-                          size: 20,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
 
                   // Chevron (only show when unlocked)
                   if (!isLocked)

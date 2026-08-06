@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
-import 'package:tryzeon/feature/personal/settings/domain/entities/video_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
-import 'package:tryzeon/feature/personal/settings/domain/usecases/get_video_prompt_config.dart';
-import 'package:tryzeon/feature/personal/settings/domain/usecases/set_video_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/usecases/get_tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/usecases/set_tryon_prompt_config.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'settings_providers.g.dart';
@@ -14,23 +14,23 @@ SettingsRepository settingsRepository(final Ref ref) {
 }
 
 @riverpod
-GetVideoPromptConfig getVideoPromptConfigUseCase(final Ref ref) =>
-    GetVideoPromptConfig(ref.watch(settingsRepositoryProvider));
+GetTryonPromptConfig getTryonPromptConfigUseCase(final Ref ref) =>
+    GetTryonPromptConfig(ref.watch(settingsRepositoryProvider));
 
 @riverpod
-SetVideoPromptConfig setVideoPromptConfigUseCase(final Ref ref) =>
-    SetVideoPromptConfig(ref.watch(settingsRepositoryProvider));
+SetTryonPromptConfig setTryonPromptConfigUseCase(final Ref ref) =>
+    SetTryonPromptConfig(ref.watch(settingsRepositoryProvider));
 
 @riverpod
-class VideoPromptConfigNotifier extends _$VideoPromptConfigNotifier {
+class TryonPromptConfigNotifier extends _$TryonPromptConfigNotifier {
   @override
-  Future<VideoPromptConfig> build() async {
-    final result = await ref.read(getVideoPromptConfigUseCaseProvider)();
-    return result.isSuccess ? result.get()! : const VideoPromptConfig();
+  Future<TryonPromptConfig> build() async {
+    final result = await ref.read(getTryonPromptConfigUseCaseProvider)();
+    return result.isSuccess ? result.get()! : const TryonPromptConfig();
   }
 
-  Future<bool> save(final VideoPromptConfig config) async {
-    final result = await ref.read(setVideoPromptConfigUseCaseProvider)(config);
+  Future<bool> save(final TryonPromptConfig config) async {
+    final result = await ref.read(setTryonPromptConfigUseCaseProvider)(config);
     if (result.isSuccess) {
       state = AsyncData(config);
       return true;
