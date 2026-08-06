@@ -167,3 +167,8 @@ Deno.test("a product that is gone offers three ways to find another", () => {
     { type: "cameraRoll", label: "試我自己的衣服" },
   ]);
 });
+
+Deno.test("a busy try-on offers no chip on either path", () => {
+  assertEquals(chipActions(tryonErrorMessage("busy")), []);
+  assertEquals(chipActions(productTryonErrorMessage("busy", product, LIFF)), []);
+});

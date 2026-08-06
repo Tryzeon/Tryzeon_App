@@ -149,10 +149,14 @@ const TRYON_ERROR_TEXT = {
   quota: "今日試穿次數已用完，明天再回來試。",
   generation: "這件沒能生成，請換一件或再試一次看看！",
   download: "這張圖讀取失敗，麻煩再傳一次。",
+  busy: "現在使用的人比較多，請稍等幾分鐘再試。",
   unknown: "出了點狀況，請稍後再試。",
 } as const;
 
-export function tryonErrorMessage(kind: keyof typeof TRYON_ERROR_TEXT): object {
+export type TryonErrorKind = keyof typeof TRYON_ERROR_TEXT;
+export type TryonJobErrorKind = Exclude<TryonErrorKind, "download">;
+
+export function tryonErrorMessage(kind: TryonErrorKind): object {
   const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
   switch (kind) {
     case "quota":
@@ -164,6 +168,8 @@ export function tryonErrorMessage(kind: keyof typeof TRYON_ERROR_TEXT): object {
       ]);
     case "download":
       return withQuickReply(message, [cameraRollChip("重新傳一張")]);
+    case "busy":
+      return message;
     case "unknown":
       return withQuickReply(message, [cameraRollChip("再試一次")]);
   }
@@ -172,14 +178,13 @@ export function tryonErrorMessage(kind: keyof typeof TRYON_ERROR_TEXT): object {
 /**
  * The product-path counterpart of {@link tryonErrorMessage}.
  *
- * Narrower kind union: there is no download step for a catalog product, so
- * `"download"` cannot happen here. And unlike the photo path, `tryonNote` is
- * never written on failure — so the retry can only offer actions that need no
- * transcript, which is why it carries the product id itself rather than a
- * `message` chip asking for "類似的".
+ * Takes {@link TryonJobErrorKind} because a catalog product has no download
+ * step. And unlike the photo path, `tryonNote` is never written on failure — so
+ * the retry can only offer actions that need no transcript, which is why it
+ * carries the product id itself rather than a `message` chip asking for "類似的".
  */
 export function productTryonErrorMessage(
-  kind: "quota" | "generation" | "unknown",
+  kind: TryonJobErrorKind,
   product: LineProduct,
   liffUrl: string,
 ): object {
@@ -195,6 +200,8 @@ export function productTryonErrorMessage(
       return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
     case "generation":
       return withQuickReply(message, [retry, uriChip("換一件試試", liffUrl)]);
+    case "busy":
+      return message;
     case "unknown":
       return withQuickReply(message, [retry]);
   }
