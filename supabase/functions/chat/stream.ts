@@ -6,7 +6,7 @@
  * `classifyCoreError`: the taxonomy is decided once, and each transport says
  * what it means in its own vocabulary.
  */
-import { classifyCoreError } from "../_shared/chat/index.ts";
+import { classifyCoreError, CORE_ERROR_CODE } from "../_shared/chat/index.ts";
 
 const ENCODER = new TextEncoder();
 
@@ -26,11 +26,11 @@ export function errorEvent(err: unknown): Record<string, unknown> {
   }
   switch (info.kind) {
     case "quota":
-      return { type: "error", code: "RATE_LIMIT_EXCEEDED", usage: info.usage };
+      return { type: "error", code: CORE_ERROR_CODE.quota, usage: info.usage };
     case "validation":
       return {
         type: "error",
-        code: "VALIDATION_ERROR",
+        code: CORE_ERROR_CODE.validation,
         message: info.message,
       };
   }

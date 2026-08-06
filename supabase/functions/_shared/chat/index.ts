@@ -52,5 +52,5 @@ export type {
 // Classifying a failure. `ValidationError` is exported as a constructor too:
 // adapter request parsers raise it so a malformed body and a rejected message
 // reach the caller as one kind of error.
-export { classifyCoreError, type CoreErrorInfo } from "../errors.ts";
+export { classifyCoreError, CORE_ERROR_CODE, type CoreErrorInfo } from "../errors.ts";
 export { parseJsonObject, ValidationError } from "../validation.ts";
