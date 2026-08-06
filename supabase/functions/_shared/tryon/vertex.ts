@@ -9,6 +9,7 @@
  */
 import { experimental_generateVideo, generateText } from "npm:ai@^6.0.208";
 import { tryonImageModel, tryonVideoModel } from "../vertex/config.ts";
+import { rethrowAsBusy } from "../vertex/errors.ts";
 import { vertexModel, vertexVideoModel } from "../vertex/provider.ts";
 import { buildTaskPrompt, buildVideoPrompt, SYSTEM_INSTRUCTION } from "./prompt.ts";
 
@@ -55,7 +56,7 @@ export async function generateTryonImage(
         imageConfig: { aspectRatio: "9:16" },
       },
     },
-  });
+  }).catch(rethrowAsBusy);
 
   const image = files.find((file) => file.mediaType.startsWith("image/"));
   if (!image) {
@@ -93,7 +94,7 @@ export async function generateTryonVideo(
     aspectRatio: "9:16",
     generateAudio: false,
     providerOptions: { vertex: { pollIntervalMs: POLL_INTERVAL_MS } },
-  });
+  }).catch(rethrowAsBusy);
 
   return video.uint8Array;
 }

@@ -21,6 +21,8 @@
 import { type DailyUsage, QuotaExceededError } from "./quota.ts";
 import { ValidationError } from "./validation.ts";
 
+export class ServiceBusyError extends Error {}
+
 /**
  * A shared error narrowed to its kind, carrying exactly the payload a caller
  * needs to render it. Adding a case here forces every consumer's exhaustive
