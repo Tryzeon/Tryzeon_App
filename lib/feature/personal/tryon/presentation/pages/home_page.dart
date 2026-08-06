@@ -31,6 +31,10 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final avatarAsync = ref.watch(avatarFileProvider);
+    // Only surface an error once it settles with no photo to fall back on.
+    final avatarError = avatarAsync.isLoading || avatarAsync.hasValue
+        ? null
+        : avatarAsync.error;
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
@@ -130,24 +134,20 @@ class HomePage extends HookConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               child: SizedBox(
                 height: MediaQuery.of(context).size.height,
-                child: avatarAsync.when(
-                  skipLoadingOnReload: true,
-                  skipError: true,
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final error, final stack) => Center(
-                    child: ErrorView(
-                      message: error.displayMessage(context),
-                      onRetry: () => ref.invalidate(userProfileProvider),
-                    ),
-                  ),
-                  data: (final avatarFile) => TryonGallery(
-                    pageController: pageController,
-                    onPageChanged: galleryNotifier.setCurrentPage,
-                    entries: galleryState.entries,
-                    avatarFile: avatarFile,
-                    isUploadingAvatar: isUploadingAvatar,
-                  ),
-                ),
+                child: avatarError != null
+                    ? Center(
+                        child: ErrorView(
+                          message: avatarError.displayMessage(context),
+                          onRetry: () => ref.invalidate(userProfileProvider),
+                        ),
+                      )
+                    : TryonGallery(
+                        pageController: pageController,
+                        onPageChanged: galleryNotifier.setCurrentPage,
+                        entries: galleryState.entries,
+                        avatarFile: avatarAsync.value,
+                        isAvatarBusy: avatarAsync.isLoading || isUploadingAvatar,
+                      ),
               ),
             ),
 

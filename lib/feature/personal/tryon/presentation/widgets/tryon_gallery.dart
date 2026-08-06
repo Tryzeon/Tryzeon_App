@@ -18,14 +18,16 @@ class TryonGallery extends HookWidget {
     required this.onPageChanged,
     required this.entries,
     required this.avatarFile,
-    required this.isUploadingAvatar,
+    required this.isAvatarBusy,
   });
 
   final PageController pageController;
   final ValueChanged<int> onPageChanged;
   final List<TryonGalleryEntry> entries;
   final File? avatarFile;
-  final bool isUploadingAvatar;
+
+  /// True while the model photo is downloading or a replacement is uploading.
+  final bool isAvatarBusy;
 
   @override
   Widget build(final BuildContext context) {
@@ -49,7 +51,7 @@ class TryonGallery extends HookWidget {
                     TryonFullscreenViewer.open(context, imageProvider: imageProvider),
                 child: _AvatarImageItem(
                   imageProvider: imageProvider,
-                  isUploading: isUploadingAvatar,
+                  isBusy: isAvatarBusy,
                 ),
               );
             }
@@ -169,12 +171,12 @@ class _LoadingAnimationItem extends HookWidget {
 }
 
 /// Page 0 — the model photo, either the user's uploaded file or the bundled
-/// default, veiled by a spinner while a replacement uploads.
+/// default, veiled by a spinner while it downloads or a replacement uploads.
 class _AvatarImageItem extends HookWidget {
-  const _AvatarImageItem({required this.imageProvider, required this.isUploading});
+  const _AvatarImageItem({required this.imageProvider, required this.isBusy});
 
   final ImageProvider imageProvider;
-  final bool isUploading;
+  final bool isBusy;
 
   @override
   Widget build(final BuildContext context) {
@@ -186,7 +188,7 @@ class _AvatarImageItem extends HookWidget {
       fit: StackFit.expand,
       children: [
         Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
-        if (isUploading)
+        if (isBusy)
           ColoredBox(
             color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),
             child: Center(
