@@ -237,9 +237,11 @@ Deno.test("a wardrobe block becomes a card", () => {
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[1])[0] as any;
   assertEquals(bubble.hero.url, "https://sig.example/w1.png?token=abc");
-  // Background-removed PNGs: contain so sleeves are not cropped, and a pinned
+  // Background-removed PNGs: fit so sleeves are not cropped, and a pinned
   // surface so a transparent image is not shown on LINE's dark background.
-  assertEquals(bubble.hero.aspectMode, "contain");
+  // The literal matters — LINE accepts only `cover` and `fit` here and 400s
+  // the whole send on anything else, which is how CSS's `contain` shipped.
+  assertEquals(bubble.hero.aspectMode, "fit");
   assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);
   // No try-on yet, so no footer at all.
   assertEquals(bubble.footer, undefined);

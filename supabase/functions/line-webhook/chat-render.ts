@@ -132,11 +132,15 @@ function productBubble(product: LineProduct): object {
 /**
  * One wardrobe item as a card.
  *
- * No footer: this channel cannot try one on yet. `contain` rather than the
- * product card's `cover` because these images are usually background-removed
+ * No footer: this channel cannot try one on yet. `fit` rather than the product
+ * card's `cover` because these images are usually background-removed
  * (`AnalyzeWardrobeImage.removeBackground`) and cropping cuts the sleeves off;
  * the pinned background is what keeps a transparent PNG from rendering as a
  * black silhouette on LINE's dark chat surface.
+ *
+ * `fit` is the whole vocabulary LINE offers for this — `aspectMode` takes
+ * `cover` or `fit` and nothing else, and it rejects the entire send rather than
+ * the one property, so CSS's `contain` is not a synonym to reach for here.
  */
 function wardrobeBubble(item: LineWardrobeItem): object {
   return {
@@ -147,7 +151,7 @@ function wardrobeBubble(item: LineWardrobeItem): object {
       url: item.imageUrl,
       size: "full",
       aspectRatio: "1:1",
-      aspectMode: "contain",
+      aspectMode: "fit",
       backgroundColor: CARD_COLOR.surface,
     },
     body: {
