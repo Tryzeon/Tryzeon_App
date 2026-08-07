@@ -106,7 +106,7 @@ Deno.test("toLineProduct does not double up a trailing slash on the base", () =>
 
 Deno.test("fetchProductInfo reads the asked-for id", async () => {
   const { admin, queried } = fakeAdmin({ data: row(), error: null });
-  const found = await fetchProductInfo(admin, "p1", BASE);
+  const found = await fetchProductInfo(admin, "p1");
 
   assertEquals(queried, ["p1"]);
   assertEquals(found?.name, "白襯衫");
@@ -114,19 +114,19 @@ Deno.test("fetchProductInfo reads the asked-for id", async () => {
 
 Deno.test("fetchProductInfo is null for a product that is gone", async () => {
   const { admin } = fakeAdmin({ data: null, error: null });
-  assertEquals(await fetchProductInfo(admin, "p1", BASE), null);
+  assertEquals(await fetchProductInfo(admin, "p1"), null);
 });
 
 Deno.test("fetchProductInfo is null for a product with no image", async () => {
   const { admin } = fakeAdmin({ data: row({ image_paths: [] }), error: null });
-  assertEquals(await fetchProductInfo(admin, "p1", BASE), null);
+  assertEquals(await fetchProductInfo(admin, "p1"), null);
 });
 
 Deno.test("fetchProductInfo throws when the lookup itself failed", async () => {
   const { admin } = fakeAdmin({ data: null, error: { message: "boom" } });
   // A missing row and a broken query are different facts: the first is a
   // product the user can be told about, the second is ours to fix.
-  await assertRejects(() => fetchProductInfo(admin, "p1", BASE), Error, "boom");
+  await assertRejects(() => fetchProductInfo(admin, "p1"), Error, "boom");
 });
 
 Deno.test("fetchProductRows keys the rows by product id", async () => {

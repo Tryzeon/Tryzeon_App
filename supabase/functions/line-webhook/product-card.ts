@@ -5,7 +5,8 @@
  * try-on result card — so "which fields a card shows" stopped being the
  * hydrator's business and became its own. `fetchProductRows` reads these
  * columns in batch for an answer; `fetchProductInfo` reads a single one for a
- * card the user pointed at by id.
+ * card the user pointed at by id — text only, since that path shows the
+ * generated image rather than the catalog one.
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
@@ -16,31 +17,35 @@ import { CARD_COLOR } from "./card-kit.ts";
 export const PRODUCT_CARD_SELECT =
   "id, name, price, image_paths, purchase_link, store_profiles!products_store_id_fkey(name)";
 
-/** A shop product reduced to what one card displays. */
-export interface LineProduct {
+/** What a card's text lines say about a product. */
+export interface ProductInfo {
   id: string;
   name: string;
   price: number;
-  /** Public R2 URL of the product's first image. */
-  imageUrl: string;
   storeName: string | null;
   /** Destination for the card's purchase button, when the product has one. */
   purchaseUrl: string | null;
 }
 
+/** A product as a carousel card: its text, plus an image to show. */
+export interface LineProduct extends ProductInfo {
+  /** Public R2 URL of the product's first image. */
+  imageUrl: string;
+}
+
 /**
- * One product row as a card's worth of fields, or null when it has no image.
+ * One product row as the fields a card's text shows, or null when it has no
+ * image.
  *
- * A card whose image is missing is a shopping card you cannot see, so an
- * image-less product is dropped. That same absence is what makes the product
- * un-try-on-able — `resolveProductGarment` rejects it for having no garment
- * material — so one check answers both questions.
+ * The image check stays here even though this no longer builds a URL from it:
+ * an image-less product is not merely an invisible card, it is un-try-on-able —
+ * `resolveProductGarment` rejects it for having no garment material — so the
+ * one check answers both questions, and both callers need it.
  */
-export function toLineProduct(
+export function toProductInfo(
   // deno-lint-ignore no-explicit-any
   row: Record<string, any>,
-  imagesBaseUrl: string,
-): LineProduct | null {
+): ProductInfo | null {
   const key = (row.image_paths as string[] | null)?.[0];
   if (!key) return null;
 
@@ -49,10 +54,22 @@ export function toLineProduct(
     id: String(row.id),
     name: String(row.name),
     price: Number(row.price),
-    imageUrl: publicImageUrl(imagesBaseUrl, key),
     storeName: store?.name ?? null,
     purchaseUrl: row.purchase_link ?? null,
   };
+}
+
+/** The same fields, plus the image only a carousel card shows. */
+export function toLineProduct(
+  // deno-lint-ignore no-explicit-any
+  row: Record<string, any>,
+  imagesBaseUrl: string,
+): LineProduct | null {
+  const info = toProductInfo(row);
+  if (!info) return null;
+
+  const key = (row.image_paths as string[])[0];
+  return { ...info, imageUrl: publicImageUrl(imagesBaseUrl, key) };
 }
 
 /**
@@ -73,16 +90,19 @@ export function fetchProductRows(
 }
 
 /**
- * One product as a card, or null when there is nothing renderable to show —
- * the row is gone, or it has no image. A failed lookup throws instead: a
- * missing product is something the user can be told about, a broken query is
- * ours to fix.
+ * One product's text fields, or null when the id names nothing that can be
+ * acted on — the row is gone, or it has no image. A failed lookup throws
+ * instead: a missing product is something the user can be told about, a broken
+ * query is ours to fix.
+ *
+ * No image url, and so no `imagesBaseUrl`: this serves the try-on path, whose
+ * result card's hero is the generated image. The catalog image was carried here
+ * for years and never read.
  */
 export async function fetchProductInfo(
   admin: SupabaseClient,
   productId: string,
-  imagesBaseUrl: string,
-): Promise<LineProduct | null> {
+): Promise<ProductInfo | null> {
   const { data, error } = await admin
     .from("products")
     .select(PRODUCT_CARD_SELECT)
@@ -90,7 +110,7 @@ export async function fetchProductInfo(
     .maybeSingle();
 
   if (error) throw new Error(`product lookup failed: ${error.message}`);
-  return data ? toLineProduct(data, imagesBaseUrl) : null;
+  return data ? toProductInfo(data) : null;
 }
 
 /**
@@ -108,7 +128,7 @@ export async function fetchProductInfo(
  * even though that literal string is not something LINE accepts — so the
  * scheme is also confirmed against the original, unnormalized input.
  */
-export function purchaseAction(product: LineProduct): object | null {
+export function purchaseAction(product: ProductInfo): object | null {
   const url = product.purchaseUrl;
   if (!url) return null;
 
@@ -141,7 +161,7 @@ export function amountText(price: number): string {
  * amount takes high-emphasis charcoal at `lg` while the currency retreats to
  * muted `xs`, and the price stops reading at the same level as the name.
  */
-export function productInfoContents(product: LineProduct): object[] {
+export function productInfoContents(product: ProductInfo): object[] {
   const contents: object[] = [
     {
       type: "text",
