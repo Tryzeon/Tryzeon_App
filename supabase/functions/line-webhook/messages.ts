@@ -1,7 +1,7 @@
 import { LIMITS } from "../_shared/chat/index.ts";
 import {
   clampProductName,
-  type LineProduct,
+  type ProductInfo,
   productInfoContents,
   purchaseAction,
 } from "./product-card.ts";
@@ -13,7 +13,12 @@ import {
   uriChip,
   withQuickReply,
 } from "./quick-reply.ts";
-import { tryonPostbackData } from "./postback.ts";
+import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import {
+  garmentNoun,
+  type WardrobeItemInfo,
+  wardrobeInfoContents,
+} from "./wardrobe-card.ts";
 
 export function processingMessage(): object {
   return { type: "text", text: "收到，正在試穿，請稍等！" };
@@ -86,7 +91,7 @@ export function productUnavailableMessage(liffUrl: string): object {
  */
 export function productResultMessage(
   imageUrl: string,
-  product: LineProduct,
+  product: ProductInfo,
 ): object {
   const purchase = purchaseAction(product);
   return withQuickReply({
@@ -133,6 +138,102 @@ export function productResultMessage(
     messageChip("幫我配這件", "幫我搭配剛剛試穿的那件"),
     cameraRollChip("試我自己的衣服"),
   ]);
+}
+
+export function wardrobeProcessingMessage(categoryLabel: string): object {
+  return {
+    type: "text",
+    text: `收到，正在幫你試穿衣櫃裡這件${garmentNoun(categoryLabel)}，請稍等！`,
+  };
+}
+
+/**
+ * The item is gone, or was never theirs — one message for both, because
+ * `fetchWardrobeItemInfo` deliberately cannot tell them apart.
+ *
+ * Takes no `liffUrl`, unlike its product counterpart: sending someone to browse
+ * the catalog answers a question they did not ask. The chips stay in the
+ * wardrobe.
+ */
+export function wardrobeUnavailableMessage(): object {
+  return withQuickReply({ type: "text", text: "這件已經不在你的衣櫃裡了。" }, [
+    messageChip("我衣櫃裡還有什麼", "我衣櫃裡還有什麼可以試"),
+    cameraRollChip("傳一張衣服照試穿"),
+  ]);
+}
+
+/**
+ * A try-on of the sender's own clothes, as a card.
+ *
+ * No purchase footer — a wardrobe item is not for sale — so the way this card
+ * pays for itself is the first chip: the wardrobe earns nothing by itself, and
+ * pairing it with something that is for sale is the whole return on keeping one.
+ */
+export function wardrobeResultMessage(
+  imageUrl: string,
+  item: WardrobeItemInfo,
+): object {
+  return withQuickReply({
+    type: "flex",
+    altText: `為你試穿了衣櫃裡的${garmentNoun(item.categoryLabel)}`,
+    contents: {
+      type: "bubble",
+      hero: {
+        type: "image",
+        url: imageUrl,
+        size: "full",
+        aspectRatio: "9:16",
+        aspectMode: "cover",
+        action: { type: "uri", label: "看大圖", uri: imageUrl },
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        paddingAll: "16px",
+        contents: wardrobeInfoContents(item),
+      },
+      styles: { body: { backgroundColor: CARD_COLOR.surface } },
+    },
+  }, [
+    messageChip("幫我配這件", "幫我找可以搭配剛剛試穿那件的商品"),
+    messageChip("找類似的商品", "有沒有類似剛剛那件的商品"),
+    messageChip("再試一件", "我衣櫃裡還有什麼可以試"),
+  ]);
+}
+
+/**
+ * The wardrobe counterpart of {@link productTryonErrorMessage}. Takes
+ * {@link TryonJobErrorKind} for the same reason: this path has no download step.
+ *
+ * The retry chip carries the id rather than asking the agent for the item
+ * again, so it needs nothing from the transcript. `displayText` is not
+ * clamped — `garmentNoun` bounds the word to a fixed set of short labels, so
+ * it cannot approach the 300-character cap a product name can.
+ */
+export function wardrobeTryonErrorMessage(
+  kind: TryonJobErrorKind,
+  item: WardrobeItemInfo,
+): object {
+  const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  const retry = postbackChip(
+    "再試一次",
+    wardrobeTryonPostbackData(item.id),
+    `試穿「你的${garmentNoun(item.categoryLabel)}」`,
+  );
+
+  switch (kind) {
+    case "quota":
+      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+    case "generation":
+      return withQuickReply(message, [
+        retry,
+        messageChip("換一件試", "我衣櫃裡還有什麼可以試"),
+      ]);
+    case "busy":
+      return message;
+    case "unknown":
+      return withQuickReply(message, [retry]);
+  }
 }
 
 /*
@@ -185,13 +286,13 @@ export function tryonErrorMessage(kind: TryonErrorKind): object {
  */
 export function productTryonErrorMessage(
   kind: TryonJobErrorKind,
-  product: LineProduct,
+  product: ProductInfo,
   liffUrl: string,
 ): object {
   const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
   const retry = postbackChip(
     "再試一次",
-    tryonPostbackData(product.id),
+    productTryonPostbackData(product.id),
     `試穿「${clampProductName(product.name)}」`,
   );
 

@@ -5,9 +5,15 @@ import {
   productTryonErrorMessage,
   productUnavailableMessage,
   tryonErrorMessage,
+  wardrobeProcessingMessage,
+  wardrobeUnavailableMessage,
+  wardrobeResultMessage,
+  wardrobeTryonErrorMessage,
   welcomeMessage,
 } from "./messages.ts";
 import type { LineProduct } from "./product-card.ts";
+import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import type { WardrobeItemInfo } from "./wardrobe-card.ts";
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 const LIFF = "https://liff.example";
@@ -139,7 +145,7 @@ Deno.test("a product that would not generate offers both remedies its text names
     {
       type: "postback",
       label: "再試一次",
-      data: `a=tryon&pid=${PID}`,
+      data: productTryonPostbackData(PID),
       displayText: "試穿「短版牛仔外套」",
     },
     { type: "uri", label: "換一件試試", uri: LIFF },
@@ -154,7 +160,7 @@ Deno.test("an unknown failure offers only the retry, not a different product", (
     {
       type: "postback",
       label: "再試一次",
-      data: `a=tryon&pid=${PID}`,
+      data: productTryonPostbackData(PID),
       displayText: "試穿「短版牛仔外套」",
     },
   ]);
@@ -171,4 +177,65 @@ Deno.test("a product that is gone offers three ways to find another", () => {
 Deno.test("a busy try-on offers no chip on either path", () => {
   assertEquals(chipActions(tryonErrorMessage("busy")), []);
   assertEquals(chipActions(productTryonErrorMessage("busy", product, LIFF)), []);
+});
+
+const wardrobeItem: WardrobeItemInfo = {
+  id: "44444444-4444-4444-4444-444444444444",
+  categoryLabel: "上衣",
+  tags: ["寬鬆"],
+};
+
+Deno.test("the wardrobe acknowledgement names the kind of thing being tried on", () => {
+  assertEquals(wardrobeProcessingMessage("上衣"), {
+    type: "text",
+    text: "收到，正在幫你試穿衣櫃裡這件上衣，請稍等！",
+  });
+});
+
+Deno.test("the others bucket reads as 單品, not 其他, in the acknowledgement", () => {
+  // 「其他」 is a bucket label, not a countable noun — 「試穿這件其他」 is
+  // broken Chinese. `shoes` and `accessories` both remap to `others`
+  // (20260616120000_remap_wardrobe_category_enum.sql), so this is not rare.
+  assertEquals(wardrobeProcessingMessage("其他"), {
+    type: "text",
+    text: "收到，正在幫你試穿衣櫃裡這件單品，請稍等！",
+  });
+});
+
+Deno.test("a vanished wardrobe item does not send the user shopping", () => {
+  // A delisted product sends them to browse others; a wardrobe item that is
+  // gone has no such counterpart, so the chips stay in the wardrobe.
+  // deno-lint-ignore no-explicit-any
+  const message = wardrobeUnavailableMessage() as any;
+
+  assertEquals(message.text, "這件已經不在你的衣櫃裡了。");
+  assertEquals(message.quickReply.items.length, 2);
+});
+
+Deno.test("the wardrobe result card leads with the way to shop", () => {
+  // The wardrobe earns nothing by itself; pairing it with something for sale
+  // is the whole return on keeping one.
+  // deno-lint-ignore no-explicit-any
+  const card = wardrobeResultMessage("https://img/r.png", wardrobeItem) as any;
+
+  assertEquals(card.contents.hero.url, "https://img/r.png");
+  assertEquals(card.contents.hero.aspectRatio, "9:16");
+  assertEquals(card.contents.footer, undefined);
+  assertEquals(card.quickReply.items[0].action.text, "幫我找可以搭配剛剛試穿那件的商品");
+});
+
+Deno.test("a wardrobe try-on can be retried by its own id", () => {
+  // deno-lint-ignore no-explicit-any
+  const message = wardrobeTryonErrorMessage("generation", wardrobeItem) as any;
+  const [retry] = message.quickReply.items;
+
+  assertEquals(retry.action.type, "postback");
+  assertEquals(retry.action.data, wardrobeTryonPostbackData(wardrobeItem.id));
+  assertEquals(retry.action.displayText, "試穿「你的上衣」");
+});
+
+Deno.test("a busy service offers no button to press", () => {
+  // deno-lint-ignore no-explicit-any
+  const message = wardrobeTryonErrorMessage("busy", wardrobeItem) as any;
+  assertEquals(message.quickReply, undefined);
 });

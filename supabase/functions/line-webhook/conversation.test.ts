@@ -1,13 +1,16 @@
 import { assertEquals } from "jsr:@std/assert";
+import { LIMITS } from "../_shared/chat/index.ts";
 import {
   dehydrateMessages,
   photoNote,
   redisConversations,
   type RedisLike,
   tryonNote,
+  wardrobeTryonNote,
 } from "./conversation.ts";
 import type { ChatMessage } from "../_shared/chat/index.ts";
 import type { LineProduct } from "./product-card.ts";
+import type { WardrobeItemInfo } from "./wardrobe-card.ts";
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
@@ -209,4 +212,42 @@ Deno.test("a store that is down costs continuity, not the turn", async () => {
 
   // Neither call threw, and both left a trace.
   assertEquals(warnings.length, 2);
+});
+
+Deno.test("a finished wardrobe try-on is written back with what it was", () => {
+  // The next chip the user is offered says "幫我配這件", so the agent has to
+  // know which item that was.
+  const note = wardrobeTryonNote({
+    id: "44444444-4444-4444-4444-444444444444",
+    categoryLabel: "上衣",
+    tags: ["寬鬆", "米色"],
+  });
+
+  assertEquals(note.role, "user");
+  assertEquals(
+    note.content[0].text,
+    "（使用者剛試穿了自己衣櫃裡的單品 id:44444444-4444-4444-4444-444444444444「上衣 #寬鬆 #米色」）",
+  );
+});
+
+Deno.test("a tag-less wardrobe note still reads as a sentence", () => {
+  const note = wardrobeTryonNote({ id: "w1", categoryLabel: "外套", tags: [] });
+  assertEquals(note.content[0].text, "（使用者剛試穿了自己衣櫃裡的單品 id:w1「外套」）");
+});
+
+Deno.test("a pathologically long tag cannot blow up the transcript note", () => {
+  // Tags are free text with no constraint, so one absurd tag could exceed
+  // LIMITS.MAX_TEXT_LENGTH and break the sender's next chat turn — the same
+  // reason `tryonNote` clamps product names. The fix is `tagLine`, which caps at
+  // 40 chars with an ellipsis.
+  const longTag = "x".repeat(500);
+  const note = wardrobeTryonNote({
+    id: "w1",
+    categoryLabel: "外套",
+    tags: [longTag],
+  });
+
+  const text = note.content[0].text as string;
+  assertEquals(text.length < LIMITS.MAX_TEXT_LENGTH, true);
+  assertEquals(text.includes("…"), true); // tagLine truncates and marks it
 });

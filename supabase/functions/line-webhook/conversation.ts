@@ -8,7 +8,8 @@
  * points its guard exists for.
  */
 import type { ChatMessage, ContentBlock } from "../_shared/chat/index.ts";
-import { clampProductName, type LineProduct } from "./product-card.ts";
+import { clampProductName, type ProductInfo } from "./product-card.ts";
+import { tagLine, type WardrobeItemInfo } from "./wardrobe-card.ts";
 import { redis } from "../_shared/redis.ts";
 
 const KEY_PREFIX = "line:conv:";
@@ -108,7 +109,7 @@ export function dehydrateMessages(messages: ChatMessage[]): ChatMessage[] {
  * in prose; the name is clamped because `products.name` has no length
  * constraint and one absurd title should not crowd out the conversation.
  */
-export function tryonNote(product: LineProduct): ChatMessage {
+export function tryonNote(product: ProductInfo): ChatMessage {
   return {
     role: "user",
     content: [{
@@ -142,6 +143,28 @@ export function photoNote(description: string): ChatMessage {
     content: [{
       type: "text",
       text: `（使用者傳了一張衣物照片：${description}）`,
+    }],
+  };
+}
+
+/**
+ * A finished wardrobe try-on, as a turn of the transcript.
+ *
+ * Carries the tags as well as the category because the chip this card offers
+ * next is "幫我配這件" — the agent has to know what "這件" was to answer it,
+ * and a bare "上衣" is not enough to pair anything with. Tags are capped via
+ * `tagLine` because `wardrobe_items.tags` is unconstrained text and one absurd
+ * tag should not crowd out the conversation — the same reason `tryonNote` clamps
+ * product names.
+ */
+export function wardrobeTryonNote(item: WardrobeItemInfo): ChatMessage {
+  const tags = item.tags.length > 0 ? ` ${tagLine(item.tags)}` : "";
+  return {
+    role: "user",
+    content: [{
+      type: "text",
+      text:
+        `（使用者剛試穿了自己衣櫃裡的單品 id:${item.id}「${item.categoryLabel}${tags}」）`,
     }],
   };
 }
