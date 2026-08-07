@@ -3,7 +3,7 @@
  *
  * Two surfaces render a product now — the chat answer's carousel and the
  * try-on result card — so "which fields a card shows" stopped being the
- * hydrator's business and became its own. `fetchProductCards` reads these
+ * hydrator's business and became its own. `fetchProductRows` reads these
  * columns in batch for an answer; `fetchLineProduct` reads a single one for a
  * card the user pointed at by id.
  */
@@ -56,11 +56,11 @@ export function toLineProduct(
 }
 
 /**
- * The referenced products as cards, keyed by id. An id whose row is gone — or
- * whose product has no image — is simply absent, and the assembler drops its
- * block.
+ * The referenced products as the fields a card shows, keyed by id — the product
+ * half of `AnswerRows`. An id whose row is gone, or whose product has no image,
+ * is simply absent, and the assembler drops its block.
  */
-export function fetchProductCards(
+export function fetchProductRows(
   admin: SupabaseClient,
   ids: string[],
   imagesBaseUrl: string,

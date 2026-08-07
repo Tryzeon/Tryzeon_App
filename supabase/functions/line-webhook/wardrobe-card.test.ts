@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
 import {
-  fetchWardrobeCards,
+  fetchWardrobeRows,
   type LineWardrobeItem,
   tagLine,
   toLineWardrobeItem,
@@ -150,12 +150,12 @@ const signedOk = (paths: string[]) => ({
   error: null,
 });
 
-Deno.test("fetchWardrobeCards binds the query to the asking user", async () => {
+Deno.test("fetchWardrobeRows binds the query to the asking user", async () => {
   const { admin, eqCalls, inCalls } = fakeAdmin(
     [row()],
     signedOk(["u1/top/w1.png"]),
   );
-  await fetchWardrobeCards(admin, "u1", ["w1"]);
+  await fetchWardrobeRows(admin, "u1", ["w1"]);
 
   // Not a filter — this path runs on the admin client with no RLS beneath it,
   // so without the eq an id from one sender reads another's wardrobe.
@@ -163,17 +163,17 @@ Deno.test("fetchWardrobeCards binds the query to the asking user", async () => {
   assertEquals(inCalls, [["w1"]]);
 });
 
-Deno.test("fetchWardrobeCards signs the whole set in one call", async () => {
+Deno.test("fetchWardrobeRows signs the whole set in one call", async () => {
   const paths = ["u1/top/w1.png", "u1/top/w2.png"];
   const { admin, signCalls } = fakeAdmin(
     [row(), row({ id: "w2", image_path: paths[1] })],
     signedOk(paths),
   );
-  const cards = await fetchWardrobeCards(admin, "u1", ["w1", "w2"]);
+  const rows = await fetchWardrobeRows(admin, "u1", ["w1", "w2"]);
 
   assertEquals(signCalls.length, 1);
   assertEquals(signCalls[0], paths);
-  assertEquals([...cards.keys()], ["w1", "w2"]);
+  assertEquals([...rows.keys()], ["w1", "w2"]);
 });
 
 Deno.test("an item whose url came back null is absent, so its block drops", async () => {
@@ -184,23 +184,23 @@ Deno.test("an item whose url came back null is absent, so its block drops", asyn
     ],
     error: null,
   });
-  const cards = await fetchWardrobeCards(admin, "u1", ["w1", "w2"]);
+  const rows = await fetchWardrobeRows(admin, "u1", ["w1", "w2"]);
 
-  assertEquals([...cards.keys()], ["w1"]);
+  assertEquals([...rows.keys()], ["w1"]);
 });
 
-Deno.test("fetchWardrobeCards queries and signs nothing for an empty id list", async () => {
+Deno.test("fetchWardrobeRows queries and signs nothing for an empty id list", async () => {
   const { admin, inCalls, signCalls } = fakeAdmin([], { data: [], error: null });
-  const cards = await fetchWardrobeCards(admin, "u1", []);
+  const rows = await fetchWardrobeRows(admin, "u1", []);
 
   assertEquals(inCalls, []);
   assertEquals(signCalls, []);
-  assertEquals(cards.size, 0);
+  assertEquals(rows.size, 0);
 });
 
-Deno.test("fetchWardrobeCards throws when signing fails outright", async () => {
+Deno.test("fetchWardrobeRows throws when signing fails outright", async () => {
   // Same rule the product path follows: a broken read is a server fault, and
   // reporting it as "I found nothing" would charge the caller for a lie.
   const { admin } = fakeAdmin([row()], { data: null, error: { message: "boom" } });
-  await assertRejects(() => fetchWardrobeCards(admin, "u1", ["w1"]), Error, "boom");
+  await assertRejects(() => fetchWardrobeRows(admin, "u1", ["w1"]), Error, "boom");
 });

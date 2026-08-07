@@ -90,7 +90,7 @@ Deno.test("hydrates only the referenced product ids", async () => {
 });
 
 // Which rows survive the read — an image-less product, an id whose row is
-// gone, an empty id list — is `fetchProductCards`' rule and is tested there.
+// gone, an empty id list — is `fetchProductRows`' rule and is tested there.
 // What is left here is the hydrator's own share: which refs become a query,
 // where the base url goes, and that wardrobe always comes back as a map.
 

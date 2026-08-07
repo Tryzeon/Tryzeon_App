@@ -3,7 +3,7 @@ import {
   amountText,
   clampProductName,
   fetchLineProduct,
-  fetchProductCards,
+  fetchProductRows,
   type LineProduct,
   productInfoContents,
   purchaseAction,
@@ -129,41 +129,41 @@ Deno.test("fetchLineProduct throws when the lookup itself failed", async () => {
   await assertRejects(() => fetchLineProduct(admin, "p1", BASE), Error, "boom");
 });
 
-Deno.test("fetchProductCards keys the cards by product id", async () => {
+Deno.test("fetchProductRows keys the rows by product id", async () => {
   const { admin, queried } = fakeBatchAdmin({
     data: [row(), row({ id: "p2", name: "黑褲" })],
     error: null,
   });
-  const cards = await fetchProductCards(admin, ["p1", "p2"], BASE);
+  const rows = await fetchProductRows(admin, ["p1", "p2"], BASE);
 
   assertEquals(queried, [["p1", "p2"]]);
-  assertEquals([...cards.keys()], ["p1", "p2"]);
-  assertEquals((cards.get("p2") as LineProduct).name, "黑褲");
+  assertEquals([...rows.keys()], ["p1", "p2"]);
+  assertEquals((rows.get("p2") as LineProduct).name, "黑褲");
 });
 
-Deno.test("fetchProductCards leaves out a product with no image", async () => {
+Deno.test("fetchProductRows leaves out a product with no image", async () => {
   const { admin } = fakeBatchAdmin({
     data: [row(), row({ id: "p2", image_paths: [] })],
     error: null,
   });
-  const cards = await fetchProductCards(admin, ["p1", "p2"], BASE);
+  const rows = await fetchProductRows(admin, ["p1", "p2"], BASE);
 
   // Absent, not present-and-null: the assembler drops it by the same
   // missing-row rule it applies to a since-deleted product.
-  assertEquals([...cards.keys()], ["p1"]);
+  assertEquals([...rows.keys()], ["p1"]);
 });
 
-Deno.test("fetchProductCards queries nothing for an empty id list", async () => {
+Deno.test("fetchProductRows queries nothing for an empty id list", async () => {
   const { admin, queried } = fakeBatchAdmin({ data: null, error: null });
-  const cards = await fetchProductCards(admin, [], BASE);
+  const rows = await fetchProductRows(admin, [], BASE);
 
   assertEquals(queried, []);
-  assertEquals(cards.size, 0);
+  assertEquals(rows.size, 0);
 });
 
-Deno.test("fetchProductCards throws when the lookup itself failed", async () => {
+Deno.test("fetchProductRows throws when the lookup itself failed", async () => {
   const { admin } = fakeBatchAdmin({ data: null, error: { message: "boom" } });
-  await assertRejects(() => fetchProductCards(admin, ["p1"], BASE));
+  await assertRejects(() => fetchProductRows(admin, ["p1"], BASE));
 });
 
 Deno.test("purchaseAction is offered only for an absolute http link", () => {

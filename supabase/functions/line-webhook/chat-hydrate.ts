@@ -12,14 +12,14 @@
  */
 import type { AnswerHydrator } from "../_shared/chat/index.ts";
 import { idsOf } from "../_shared/chat/hydrate.ts";
-import { fetchProductCards } from "./product-card.ts";
-import { fetchWardrobeCards } from "./wardrobe-card.ts";
+import { fetchProductRows } from "./product-card.ts";
+import { fetchWardrobeRows } from "./wardrobe-card.ts";
 
 export function makeLineAnswerRows(imagesBaseUrl: string): AnswerHydrator {
   return async (admin, userId, refs) => {
     const [products, wardrobe] = await Promise.all([
-      fetchProductCards(admin, idsOf(refs, "product"), imagesBaseUrl),
-      fetchWardrobeCards(admin, userId, idsOf(refs, "wardrobe")),
+      fetchProductRows(admin, idsOf(refs, "product"), imagesBaseUrl),
+      fetchWardrobeRows(admin, userId, idsOf(refs, "wardrobe")),
     ]);
     return { products, wardrobe };
   };

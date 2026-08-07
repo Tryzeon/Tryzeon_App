@@ -158,38 +158,39 @@ async function signImageUrls(
 }
 
 /**
- * The referenced wardrobe items as cards, keyed by id.
+ * The referenced wardrobe items as the fields a card shows, keyed by id — the
+ * wardrobe half of `AnswerRows`.
  *
  * `userId` bounds the query, and that is a security property rather than a
  * filter: this path runs on the admin client with no RLS beneath it, so without
  * the `.eq` an id the model quoted could name another sender's item.
- * `fetchProductCards` takes no such parameter because the catalog is public —
+ * `fetchProductRows` takes no such parameter because the catalog is public —
  * the asymmetry is the point, and closing it would open a leak.
  *
  * Two round trips, both batched: the rows, then every image signed at once.
  */
-export async function fetchWardrobeCards(
+export async function fetchWardrobeRows(
   admin: SupabaseClient,
   userId: string,
   ids: string[],
 ): Promise<Map<string, ContentBlock>> {
   // deno-lint-ignore no-explicit-any
-  const rows: Map<string, Record<string, any>> = await fetchRowsByIds(
+  const raw: Map<string, Record<string, any>> = await fetchRowsByIds(
     admin.from("wardrobe_items").select(WARDROBE_CARD_SELECT).eq("user_id", userId),
     ids,
   );
 
   const urls = await signImageUrls(
     admin,
-    [...rows.values()]
+    [...raw.values()]
       .map((r) => r.image_path)
       .filter((p): p is string => typeof p === "string" && p.length > 0),
   );
 
-  const cards = new Map<string, ContentBlock>();
-  for (const [id, row] of rows) {
-    const card = toLineWardrobeItem(row, urls.get(row.image_path));
-    if (card) cards.set(id, card);
+  const rows = new Map<string, ContentBlock>();
+  for (const [id, row] of raw) {
+    const item = toLineWardrobeItem(row, urls.get(row.image_path));
+    if (item) rows.set(id, item);
   }
-  return cards;
+  return rows;
 }
