@@ -14,25 +14,64 @@ const row = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-/** Fake client recording the ids `.in()` was called with. */
-function fakeAdmin(rows: Record<string, unknown>[]) {
+/**
+ * Fake client answering the product lookup, the wardrobe lookup and the batch
+ * signing. `table` records which tables were read, so a test can assert that a
+ * ref of one kind never queries the other's table.
+ */
+function fakeAdmin(
+  productRows: Record<string, unknown>[],
+  wardrobeRows: Record<string, unknown>[] = [],
+) {
+  const tables: string[] = [];
   const queried: string[][] = [];
+  const eqCalls: Array<[string, string]> = [];
+
   const client = {
-    from() {
+    from(table: string) {
+      const rows = table === "products" ? productRows : wardrobeRows;
+      // Recorded on an actual `.in()` run, not on `.from()` alone: both
+      // hydrators build their query unconditionally (it's an argument
+      // expression, evaluated before the empty-ids check inside
+      // `fetchRowsByIds` ever runs), so only the run itself tells a real read
+      // apart from a query that got built and then never fired.
+      const runIn = (ids: string[]) => {
+        tables.push(table);
+        queried.push(ids);
+        return Promise.resolve({ data: rows, error: null });
+      };
       return {
         select() {
           return {
-            in(_column: string, ids: string[]) {
-              queried.push(ids);
-              return Promise.resolve({ data: rows, error: null });
+            in: (_c: string, ids: string[]) => runIn(ids),
+            eq(column: string, value: string) {
+              eqCalls.push([column, value]);
+              return { in: (_c: string, ids: string[]) => runIn(ids) };
             },
           };
         },
       };
     },
+    storage: {
+      from() {
+        return {
+          createSignedUrls(paths: string[], _expiresIn: number) {
+            return Promise.resolve({
+              data: paths.map((p) => ({
+                error: null,
+                path: p,
+                signedUrl: `https://sig.example/${p}?t=1`,
+              })),
+              error: null,
+            });
+          },
+        };
+      },
+    },
   };
+
   // deno-lint-ignore no-explicit-any
-  return { admin: client as any, queried };
+  return { admin: client as any, tables, queried, eqCalls };
 }
 
 Deno.test("hydrates only the referenced product ids", async () => {
@@ -64,14 +103,31 @@ Deno.test("the base url reaches the card", async () => {
   assertEquals(rows.products.get("p1")?.imageUrl, "https://img.example/stores/s1/p1.jpg");
 });
 
-Deno.test("a wardrobe ref never becomes a product query, and wardrobe is always empty", async () => {
-  const { admin, queried } = fakeAdmin([row()]);
+Deno.test("a wardrobe ref reads the wardrobe, bound to the asking user", async () => {
+  const wardrobeRow = {
+    id: "w1",
+    image_path: "u1/top/w1.png",
+    category: "top",
+    tags: ["寬鬆"],
+  };
+  const { admin, tables, eqCalls } = fakeAdmin([], [wardrobeRow]);
+
   const rows = await makeLineAnswerRows(BASE)(admin, "u1", [
-    { type: "text", text: "再多說一點" },
     { type: "wardrobe", id: "w1" },
   ]);
 
-  assertEquals(queried, []);
-  assertEquals(rows.products.size, 0);
-  assertEquals(rows.wardrobe.size, 0);
+  assertEquals(tables, ["wardrobe_items"]);
+  assertEquals(eqCalls, [["user_id", "u1"]]);
+  assertEquals([...rows.wardrobe.keys()], ["w1"]);
+});
+
+Deno.test("neither kind of ref queries the other's table", async () => {
+  const { admin, tables } = fakeAdmin([row()], []);
+
+  await makeLineAnswerRows(BASE)(admin, "u1", [
+    { type: "text", text: "再多說一點" },
+    { type: "product", id: "p1" },
+  ]);
+
+  assertEquals(tables, ["products"]);
 });

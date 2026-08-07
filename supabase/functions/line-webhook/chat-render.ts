@@ -1,12 +1,13 @@
 /**
  * Renders an answer as LINE messages.
  *
- * The core hands back an ordered list of blocks — text and products, in the
- * sequence the model composed them. LINE has no equivalent of that sequence: it
- * has messages, and a bubble carousel is one message. So consecutive products
- * collapse into one carousel and each text block stays its own message, which
- * preserves the ordering the model meant ("上身…" then the top, "下身…" then the
- * bottom) for as long as it fits in a single send.
+ * The core hands back an ordered list of blocks — text, shop products and the
+ * sender's own wardrobe items, in the sequence the model composed them. LINE
+ * has no equivalent of that sequence: it has messages, and a bubble carousel is
+ * one message. So consecutive cards collapse into one carousel and each text
+ * block stays its own message, which preserves the ordering the model meant
+ * ("上身…" then the top, "下身…" then the bottom) for as long as it fits in a
+ * single send.
  */
 import type { ContentBlock } from "../_shared/chat/index.ts";
 import {
@@ -15,6 +16,7 @@ import {
   productInfoContents,
   purchaseAction,
 } from "./product-card.ts";
+import { type LineWardrobeItem, wardrobeInfoContents } from "./wardrobe-card.ts";
 import { CARD_COLOR, primaryButton, secondaryButton } from "./card-kit.ts";
 import { chatErrorMessage } from "./messages.ts";
 import { tryonPostbackData } from "./postback.ts";
@@ -27,9 +29,18 @@ const MAX_BUBBLES = 12;
 /** Characters one text message may carry. */
 const MAX_TEXT_CHARS = 5000;
 
+/**
+ * One card in a carousel. A union rather than two section kinds: the two sit
+ * side by side in one carousel, so everything between here and the send —
+ * chunking, folding, the message cap — is written against cards, not tables.
+ */
+type LineCard =
+  | { kind: "product"; item: LineProduct }
+  | { kind: "wardrobe"; item: LineWardrobeItem };
+
 type Section =
   | { kind: "text"; lines: string[] }
-  | { kind: "cards"; items: LineProduct[] };
+  | { kind: "cards"; items: LineCard[] };
 
 /**
  * Groups the answer into alternating runs of prose and products, preserving
@@ -39,15 +50,21 @@ type Section =
 function toSections(blocks: ContentBlock[]): Section[] {
   const sections: Section[] = [];
 
-  for (const block of blocks) {
+  const pushCard = (card: LineCard) => {
     const last = sections.at(-1);
+    if (last?.kind === "cards") last.items.push(card);
+    else sections.push({ kind: "cards", items: [card] });
+  };
+
+  for (const block of blocks) {
     if (block.type === "text") {
+      const last = sections.at(-1);
       if (last?.kind === "text") last.lines.push(block.text);
       else sections.push({ kind: "text", lines: [block.text] });
     } else if (block.type === "product") {
-      const item = block.item as LineProduct;
-      if (last?.kind === "cards") last.items.push(item);
-      else sections.push({ kind: "cards", items: [item] });
+      pushCard({ kind: "product", item: block.item as LineProduct });
+    } else if (block.type === "wardrobe") {
+      pushCard({ kind: "wardrobe", item: block.item as LineWardrobeItem });
     }
   }
   return sections;
@@ -62,7 +79,7 @@ function textMessage(lines: string[]): object {
  * offered; buying is a link the product may or may not have, so it sits
  * beneath in the quieter style.
  */
-function bubble(product: LineProduct): object {
+function productBubble(product: LineProduct): object {
   const purchase = purchaseAction(product);
   const buttons: object[] = [
     primaryButton("試穿這件", {
@@ -112,10 +129,65 @@ function bubble(product: LineProduct): object {
   };
 }
 
-function carouselMessage(items: LineProduct[]): object {
+/**
+ * One wardrobe item as a card.
+ *
+ * No footer: this channel cannot try one on yet. `contain` rather than the
+ * product card's `cover` because these images are usually background-removed
+ * (`AnalyzeWardrobeImage.removeBackground`) and cropping cuts the sleeves off;
+ * the pinned background is what keeps a transparent PNG from rendering as a
+ * black silhouette on LINE's dark chat surface.
+ */
+function wardrobeBubble(item: LineWardrobeItem): object {
+  return {
+    type: "bubble",
+    size: "kilo",
+    hero: {
+      type: "image",
+      url: item.imageUrl,
+      size: "full",
+      aspectRatio: "1:1",
+      aspectMode: "contain",
+      backgroundColor: CARD_COLOR.surface,
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "16px",
+      contents: wardrobeInfoContents(item),
+    },
+    styles: {
+      body: { backgroundColor: CARD_COLOR.surface },
+    },
+  };
+}
+
+const bubble = (card: LineCard): object =>
+  card.kind === "product" ? productBubble(card.item) : wardrobeBubble(card.item);
+
+/**
+ * What a carousel is called when it cannot be shown — a notification, or a
+ * client that will not render Flex. Named for what is in it, because "件商品"
+ * is wrong for clothes the sender already owns.
+ *
+ * Asked per kind rather than by counting products against the total: counting
+ * would make "none of them are products" mean "all of them are wardrobe", which
+ * only holds while the union has exactly two arms, and would answer an empty
+ * carousel with the most confident wording of the three.
+ */
+function carouselAltText(items: LineCard[]): string {
+  const hasProduct = items.some((c) => c.kind === "product");
+  const hasWardrobe = items.some((c) => c.kind === "wardrobe");
+
+  if (hasWardrobe && !hasProduct) return `你衣櫃裡的 ${items.length} 件`;
+  if (hasProduct && !hasWardrobe) return `為你找到 ${items.length} 件商品`;
+  return `為你找到 ${items.length} 件`;
+}
+
+function carouselMessage(items: LineCard[]): object {
   return {
     type: "flex",
-    altText: `為你找到 ${items.length} 件商品`,
+    altText: carouselAltText(items),
     contents: { type: "carousel", contents: items.map(bubble) },
   };
 }

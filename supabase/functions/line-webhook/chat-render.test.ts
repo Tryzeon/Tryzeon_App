@@ -1,6 +1,8 @@
 import { assertEquals } from "jsr:@std/assert";
 import { renderAnswer } from "./chat-render.ts";
 import type { LineProduct } from "./product-card.ts";
+import { CARD_COLOR } from "./card-kit.ts";
+import type { LineWardrobeItem } from "./wardrobe-card.ts";
 
 const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
   id,
@@ -17,6 +19,19 @@ const card = (p: LineProduct) => ({ type: "product", item: p });
 
 // deno-lint-ignore no-explicit-any
 const bubbles = (message: any) => message.contents.contents as any[];
+
+const wardrobeItem = (
+  id: string,
+  over: Partial<LineWardrobeItem> = {},
+): LineWardrobeItem => ({
+  id,
+  imageUrl: `https://sig.example/${id}.png?token=abc`,
+  categoryLabel: "上衣",
+  tags: ["寬鬆"],
+  ...over,
+});
+
+const wardrobeCard = (w: LineWardrobeItem) => ({ type: "wardrobe", item: w });
 
 Deno.test("a text-only answer is a single text message", () => {
   const out = renderAnswer([text("你想找什麼樣的衣服？")]);
@@ -213,4 +228,52 @@ Deno.test("the chips survive the fold that drops messages", () => {
 
   assertEquals(out.length, 5);
   assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
+});
+
+Deno.test("a wardrobe block becomes a card", () => {
+  const out = renderAnswer([text("你衣櫃裡這件可以"), wardrobeCard(wardrobeItem("w1"))]);
+
+  assertEquals(out.length, 2);
+  // deno-lint-ignore no-explicit-any
+  const bubble = bubbles(out[1])[0] as any;
+  assertEquals(bubble.hero.url, "https://sig.example/w1.png?token=abc");
+  // Background-removed PNGs: contain so sleeves are not cropped, and a pinned
+  // surface so a transparent image is not shown on LINE's dark background.
+  assertEquals(bubble.hero.aspectMode, "contain");
+  assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);
+  // No try-on yet, so no footer at all.
+  assertEquals(bubble.footer, undefined);
+});
+
+Deno.test("products and wardrobe items share one carousel", () => {
+  const out = renderAnswer([
+    text("配起來像這樣"),
+    card(product("p1")),
+    wardrobeCard(wardrobeItem("w1")),
+  ]);
+
+  assertEquals(out.length, 2);
+  assertEquals(bubbles(out[1]).length, 2);
+});
+
+Deno.test("the carousel altText names what is actually in it", () => {
+  const alt = (blocks: object[]) =>
+    // deno-lint-ignore no-explicit-any
+    (renderAnswer(blocks as any).at(-1) as any).altText;
+
+  assertEquals(alt([card(product("p1"))]), "為你找到 1 件商品");
+  assertEquals(alt([wardrobeCard(wardrobeItem("w1"))]), "你衣櫃裡的 1 件");
+  assertEquals(
+    alt([card(product("p1")), wardrobeCard(wardrobeItem("w1"))]),
+    "為你找到 2 件",
+  );
+});
+
+Deno.test("a wardrobe-only answer offers no shopping chips", () => {
+  // The chips narrow a set of products ("便宜一點的"), which says nothing
+  // about clothes the user already owns.
+  const out = renderAnswer([wardrobeCard(wardrobeItem("w1"))]);
+
+  // deno-lint-ignore no-explicit-any
+  assertEquals((out.at(-1) as any).quickReply, undefined);
 });
