@@ -7,8 +7,10 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 /// White surface, soft tinted icon container, generous radius, lifted shadow.
 /// Success states stay silent; download-style results use AppSnackBar.
 ///
-/// Stays until the user taps it — errors must not disappear on a timer.
+/// Auto-dismisses after 30s, or immediately when the user taps close.
 class TopNotification {
+  static const Duration _autoCloseDuration = Duration(seconds: 30);
+
   static void show(final BuildContext context, {required final String message}) {
     HapticFeedback.mediumImpact();
 
@@ -16,6 +18,7 @@ class TopNotification {
       context: context,
       alignment: Alignment.topCenter,
       direction: TextDirection.ltr,
+      autoCloseDuration: _autoCloseDuration,
       animationDuration: AppDuration.slow,
       animationBuilder: (final context, final animation, final alignment, final child) {
         return SlideTransition(
