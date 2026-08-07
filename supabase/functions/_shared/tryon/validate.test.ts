@@ -256,3 +256,25 @@ Deno.test("requireImageSource rejects zero or two usable keys", () => {
     ValidationError,
   );
 });
+
+Deno.test("validateTryonParams accepts a wardrobe ref", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    garments: [{ wardrobeItemId: "44444444-4444-4444-4444-444444444444" }],
+  });
+  assertEquals(job.garments, [
+    { wardrobeItemId: "44444444-4444-4444-4444-444444444444" },
+  ]);
+});
+
+Deno.test("validateTryonParams rejects an empty wardrobeItemId", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        garments: [{ wardrobeItemId: "" }],
+      }),
+    ValidationError,
+    "wardrobeItemId",
+  );
+});

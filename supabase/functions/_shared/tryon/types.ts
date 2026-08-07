@@ -25,6 +25,15 @@ export interface GarmentRef {
   productId: string;
 }
 
+/**
+ * Try-on an item from the sender's own wardrobe. A reference and not a path,
+ * so that binding the read to its owner is the core's job rather than every
+ * adapter's — see `resolveWardrobeGarment`.
+ */
+export interface WardrobeRef {
+  wardrobeItemId: string;
+}
+
 /** A garment described directly by the user's own image sources. */
 export interface GarmentMaterial {
   images: ImageSource[];
@@ -34,26 +43,29 @@ export interface GarmentMaterial {
  * Garment material as the model will finally see it: the sources, plus the
  * description built for a catalog product.
  *
- * `detail` lives here and not on `GarmentMaterial` because nothing outside the
- * server produces one. Leaving the field on the input type would advertise a
- * way to write arbitrary text into the prompt that no caller uses and no client
- * should have; here, the only thing that can set it is `resolveProductGarment`,
- * which runs after validation.
+ * `detail` lives here and not on `GarmentMaterial` because no caller writes it
+ * directly: it is always composed server-side from rows the server itself
+ * read (`resolveProductGarment`, `resolveWardrobeGarment`), after validation.
  */
 export interface ResolvedGarment extends GarmentMaterial {
   detail?: string;
 }
 
 /**
- * A garment is either a product reference (resolved server-side against the
- * catalog) or user-supplied material. Product concept stays a first-class
- * domain source, not an adapter concern.
+ * A garment is a product reference, one of the user's own wardrobe items, or
+ * material they supplied directly. Both reference kinds are resolved
+ * server-side; only the third carries bytes or paths from a caller.
  */
-export type GarmentInput = GarmentRef | GarmentMaterial;
+export type GarmentInput = GarmentRef | WardrobeRef | GarmentMaterial;
 
-/** True when a garment is a product reference (a real `productId` string). */
-export function isGarmentRef(garment: GarmentInput): garment is GarmentRef {
+/** True when a garment names a catalog product. */
+export function isProductRef(garment: GarmentInput): garment is GarmentRef {
   return "productId" in garment;
+}
+
+/** True when a garment names one of the user's own wardrobe items. */
+export function isWardrobeRef(garment: GarmentInput): garment is WardrobeRef {
+  return "wardrobeItemId" in garment;
 }
 
 export type TryonMode = "image" | "video";
@@ -179,6 +191,17 @@ export type VideoUploader = (
 export type ProductResolver = (
   admin: SupabaseClient,
   productId: string,
+) => Promise<ResolvedGarment>;
+
+/**
+ * Resolves a wardrobe item reference to trusted garment material. Takes the
+ * owner as well as the id: unlike the catalog, which is public, a wardrobe read
+ * is only correct when it is bound to whose wardrobe it is.
+ */
+export type WardrobeResolver = (
+  admin: SupabaseClient,
+  userId: string,
+  wardrobeItemId: string,
 ) => Promise<ResolvedGarment>;
 
 /** Resolves the user's stored model photo into a loadable source. */

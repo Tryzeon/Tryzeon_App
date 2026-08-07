@@ -11,7 +11,7 @@
  * input was quietly cut short.
  */
 import { requireString, ValidationError } from "../validation.ts";
-import { isGarmentRef, LIMITS } from "./types.ts";
+import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
 import type {
   AvatarOverride,
   GarmentInput,
@@ -79,8 +79,16 @@ function validateGarment(garment: GarmentInput): GarmentInput {
   if (typeof garment !== "object" || garment === null) {
     throw new ValidationError("each garment must be an object");
   }
-  if (isGarmentRef(garment)) {
+  if (isProductRef(garment)) {
     return { productId: requireString(garment.productId, "garment productId") };
+  }
+  if (isWardrobeRef(garment)) {
+    return {
+      wardrobeItemId: requireString(
+        garment.wardrobeItemId,
+        "garment wardrobeItemId",
+      ),
+    };
   }
   if (!Array.isArray(garment.images) || garment.images.length === 0) {
     throw new ValidationError("each garment must have a non-empty images array");
@@ -91,8 +99,8 @@ function validateGarment(garment: GarmentInput): GarmentInput {
     );
   }
   // No `detail` to check: a caller cannot supply one. The only description a
-  // job carries is the product text `resolveProductGarment` attaches after this
-  // guard has run, which is capped where it is built.
+  // job carries is the text a resolver attaches after this guard has run,
+  // which is capped where it is built.
   return {
     images: garment.images.map((img) => requireImageSource(img, "garment image")),
   };

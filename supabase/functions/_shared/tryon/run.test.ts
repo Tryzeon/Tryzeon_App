@@ -358,3 +358,80 @@ Deno.test("product resolution failure refunds quota", async () => {
   );
   assertEquals(quota.calls, ["charge", "refund"]);
 });
+
+Deno.test("a wardrobe ref is resolved with the job's own user id", async () => {
+  const quota = fakeQuota();
+  const seen: Array<[string, string]> = [];
+  const seenGarmentB64: string[] = [];
+  await runTryonJob(
+    clients,
+    {
+      userId: "u1",
+      avatar: { base64: "AVATAR" },
+      garments: [{ wardrobeItemId: "44444444-4444-4444-4444-444444444444" }],
+      mode: "image",
+    },
+    {
+      quota: quota.factory,
+      resolveWardrobe: (_admin, userId, itemId) => {
+        // The user id comes from the job, never from the caller's garment —
+        // that is what makes the ownership bound unforgeable.
+        seen.push([userId, itemId]);
+        return Promise.resolve({
+          images: [{ base64: "WARDROBEB64" }],
+          detail: "Category: top",
+        });
+      },
+      generate: (_avatar, garmentGroups) => {
+        seenGarmentB64.push(...garmentGroups.flat());
+        return Promise.resolve("GENERATEDB64");
+      },
+      upload: () => Promise.resolve("https://img/result.png"),
+      now: () => 123,
+    },
+  );
+
+  assertEquals(seen, [["u1", "44444444-4444-4444-4444-444444444444"]]);
+  assertEquals(seenGarmentB64, ["WARDROBEB64"]);
+});
+
+Deno.test("each garment kind reaches its own resolver", async () => {
+  const quota = fakeQuota();
+  let productCalls = 0;
+  let wardrobeCalls = 0;
+  const seenGarmentB64: string[] = [];
+  await runTryonJob(
+    clients,
+    {
+      userId: "u1",
+      avatar: { base64: "AVATAR" },
+      garments: [
+        { productId: "11111111-1111-1111-1111-111111111111" },
+        { wardrobeItemId: "44444444-4444-4444-4444-444444444444" },
+        { images: [{ base64: "RAWB64" }] },
+      ],
+      mode: "image",
+    },
+    {
+      quota: quota.factory,
+      resolveProduct: () => {
+        productCalls++;
+        return Promise.resolve({ images: [{ base64: "PRODUCTB64" }] });
+      },
+      resolveWardrobe: () => {
+        wardrobeCalls++;
+        return Promise.resolve({ images: [{ base64: "WARDROBEB64" }] });
+      },
+      generate: (_avatar, garmentGroups) => {
+        seenGarmentB64.push(...garmentGroups.flat());
+        return Promise.resolve("GENERATEDB64");
+      },
+      upload: () => Promise.resolve("https://img/result.png"),
+      now: () => 123,
+    },
+  );
+
+  assertEquals([productCalls, wardrobeCalls], [1, 1]);
+  // Order preserved, and caller-supplied material still passes through untouched.
+  assertEquals(seenGarmentB64, ["PRODUCTB64", "WARDROBEB64", "RAWB64"]);
+});

@@ -7,6 +7,7 @@ import { uploadTryonImageToR2, uploadTryonVideoToR2 } from "../r2.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
 import { resolveStoredAvatar } from "./avatar.ts";
 import { resolveProductGarment } from "./catalog.ts";
+import { resolveWardrobeGarment } from "./wardrobe.ts";
 import { supabaseQuota } from "./quota.ts";
 import { generateTryonImage, generateTryonVideo } from "./vertex.ts";
 import { loadGarments, makeSourceLoader } from "./sources.ts";
@@ -14,11 +15,13 @@ import { validateTryonParams } from "./validate.ts";
 import { GenerationFailedError } from "./errors.ts";
 import { QuotaExceededError } from "../quota.ts";
 import {
-  isGarmentRef,
+  isProductRef,
+  isWardrobeRef,
   type AvatarResolver,
   type ImageGenerator,
   type ImageUploader,
   type ProductResolver,
+  type WardrobeResolver,
   type QuotaFactory,
   type ResolvedGarment,
   type TryonClients,
@@ -35,6 +38,7 @@ export interface RunTryonJobDeps {
   upload?: ImageUploader;
   uploadVideo?: VideoUploader;
   resolveProduct?: ProductResolver;
+  resolveWardrobe?: WardrobeResolver;
   resolveAvatar?: AvatarResolver;
   quota?: QuotaFactory;
   now?: () => number;
@@ -42,7 +46,7 @@ export interface RunTryonJobDeps {
 
 /**
  * Single try-on entry point: validate -> resolve avatar -> quota -> resolve
- * products -> load -> generate -> persist. Both modes end in a core-owned
+ * garments -> load -> generate -> persist. Both modes end in a core-owned
  * upload, so the result of a job is always a URL the caller can hand straight
  * to its client. Quota uses the privileged `admin` client; source paths are
  * read through `materials` so the caller's RLS bounds which storage objects a
@@ -66,6 +70,7 @@ export async function runTryonJob<M extends TryonMode>(
   const upload = deps.upload ?? uploadTryonImageToR2;
   const uploadVideo = deps.uploadVideo ?? uploadTryonVideoToR2;
   const resolveProduct = deps.resolveProduct ?? resolveProductGarment;
+  const resolveWardrobe = deps.resolveWardrobe ?? resolveWardrobeGarment;
   const openQuota = deps.quota ?? supabaseQuota;
   const now = deps.now ?? Date.now;
 
@@ -79,15 +84,21 @@ export async function runTryonJob<M extends TryonMode>(
   }
 
   try {
-    // Stage 1: resolve product refs to concrete garment material. Uses the
-    // privileged admin client — resolveProductGarment is the gatekeeper, so a
-    // client can only reach a real product's image, never an arbitrary object.
-    // User-supplied material passes through untouched, which is also why this
-    // is the only stage that can attach a `detail`: the description reaching
-    // the model is built here or not at all.
+    // Stage 1: resolve product and wardrobe refs to concrete garment material.
+    // Uses the privileged admin client — resolveProductGarment is the
+    // gatekeeper for the catalog, and resolveWardrobeGarment binds the read to
+    // job.userId, so a client can only reach a real product's image or its own
+    // wardrobe item, never an arbitrary object. User-supplied material passes
+    // through untouched, which is also why this is the only stage that can
+    // attach a `detail`: the description reaching the model is built here or
+    // not at all.
     const materialGarments: ResolvedGarment[] = await Promise.all(
       job.garments.map((g) =>
-        isGarmentRef(g) ? resolveProduct(clients.admin, g.productId) : g
+        isProductRef(g)
+          ? resolveProduct(clients.admin, g.productId)
+          : isWardrobeRef(g)
+          ? resolveWardrobe(clients.admin, job.userId, g.wardrobeItemId)
+          : g
       ),
     );
 

@@ -14,11 +14,13 @@
  * What belongs here is what a caller needs in order to run a job, describe its
  * inputs and outputs, and classify its failures — nothing more. The pieces the
  * core wires up for itself (`validateTryonParams`, `resolveProductGarment`,
- * `supabaseQuota`, `buildProductGarmentDetail`, `isGarmentRef`) are reachable
- * by their own modules, and are left out so that "public surface" stays a
- * claim about this file rather than a description of the folder. Quota
- * exhaustion is likewise not ours to publish: `QuotaExceededError` belongs to
- * `_shared/quota.ts`, and adapters read it through `classifyTryonError`.
+ * `resolveWardrobeGarment`, `supabaseQuota`, `buildProductGarmentDetail`,
+ * `buildWardrobeGarmentDetail`, `isProductRef`, `isWardrobeRef`)
+ * are reachable by their own modules, and are left out so that "public
+ * surface" stays a claim about this file rather than a description of the
+ * folder. Quota exhaustion is likewise not ours to publish: `QuotaExceededError`
+ * belongs to `_shared/quota.ts`, and adapters read it through
+ * `classifyTryonError`.
  */
 
 // Running a job. The ports come along because `RunTryonJobDeps` is part of
@@ -29,6 +31,7 @@ export type {
   ImageGenerator,
   ImageUploader,
   ProductResolver,
+  WardrobeResolver,
   QuotaFactory,
   UsageCounter,
   VideoGenerator,
@@ -42,6 +45,7 @@ export type {
   GarmentInput,
   GarmentMaterial,
   GarmentRef,
+  WardrobeRef,
   ImageSource,
   ResolvedGarment,
   TryonClients,

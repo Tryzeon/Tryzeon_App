@@ -5,8 +5,9 @@ import type { ImageSource, ResolvedGarment } from "./types.ts";
 
 /**
  * Loads one image source into the base64 bytes the model consumes. "Resolve"
- * is reserved for turning a product ref into garment material (see
- * `catalog.ts`); everything in this module is the later load stage.
+ * is reserved for turning a garment ref (product or wardrobe) into material
+ * (see `catalog.ts`, `wardrobe.ts`); everything in this module is the later
+ * load stage.
  */
 export type SourceLoader = (source: ImageSource) => Promise<string>;
 
