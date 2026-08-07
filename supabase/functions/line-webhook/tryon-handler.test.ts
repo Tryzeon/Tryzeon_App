@@ -2,9 +2,11 @@ import { assertEquals } from "jsr:@std/assert";
 import {
   handleImageTryon,
   handleProductTryon,
+  handleWardrobeTryon,
   type ImageTryonDeps,
   type ProductTryonDeps,
   type TryonHandlerDeps,
+  type WardrobeTryonDeps,
 } from "./tryon-handler.ts";
 import { QuotaExceededError } from "../_shared/quota.ts";
 import { ServiceBusyError } from "../_shared/errors.ts";
@@ -12,7 +14,8 @@ import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
-import { photoNote } from "./conversation.ts";
+import { photoNote, wardrobeTryonNote } from "./conversation.ts";
+import { productTryonPostbackData } from "./postback.ts";
 
 const USER = "Uline123";
 
@@ -272,7 +275,6 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
 function makeProductDeps(over: Partial<ProductTryonDeps> = {}): ProductTryonDeps {
   return {
     ...baseDeps(),
-    imagesBaseUrl: "https://img.example",
     fetchProduct: () => Promise.resolve(someProduct()),
     ...over,
   };
@@ -585,7 +587,7 @@ Deno.test("a product that would not generate can be retried by id alone", async 
   // deno-lint-ignore no-explicit-any
   const action = (sent.pushes[0][0] as any).quickReply.items[0].action;
   assertEquals(action.type, "postback");
-  assertEquals(action.data, `a=tryon&pid=${PID}`);
+  assertEquals(action.data, productTryonPostbackData(PID));
   assertEquals(action.displayText, "試穿「短版牛仔外套」");
 });
 
@@ -625,4 +627,124 @@ Deno.test("generation refused for capacity is not reported as the sender's spent
 
   assertEquals(sent.pushes.length, 1);
   assertEquals(textOf(sent.pushes[0][0]), "現在使用的人比較多，請稍等幾分鐘再試。");
+});
+
+const ITEM = {
+  id: "44444444-4444-4444-4444-444444444444",
+  categoryLabel: "上衣",
+  tags: ["寬鬆"],
+};
+
+const wardrobeEvent = {
+  replyToken: "rt",
+  sourceUserId: USER,
+  wardrobeItemId: ITEM.id,
+};
+
+/** Wardrobe-path deps; each test overrides what it cares about. */
+function makeWardrobeDeps(
+  over: Partial<WardrobeTryonDeps> = {},
+): WardrobeTryonDeps {
+  return { ...baseDeps(), fetchItem: () => Promise.resolve(ITEM), ...over };
+}
+
+Deno.test("a wardrobe try-on with no model photo generates nothing", async () => {
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleWardrobeTryon(
+    makeWardrobeDeps({
+      line,
+      getAvatarPath: () => Promise.resolve(null),
+      runJob: () => {
+        ran = true;
+        return Promise.reject(new Error("must not run"));
+      },
+    }),
+    wardrobeEvent,
+  );
+
+  assertEquals(ran, false);
+  assertEquals(sent.replies.length, 1);
+  assertEquals(sent.pushes.length, 0);
+});
+
+Deno.test("an item that is gone costs the sender no quota", async () => {
+  // Read before the job starts, exactly as a product is, so an item deleted
+  // since the card was sent is a sentence rather than a charged failure.
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleWardrobeTryon(
+    makeWardrobeDeps({
+      line,
+      fetchItem: () => Promise.resolve(null),
+      runJob: () => {
+        ran = true;
+        return Promise.reject(new Error("must not run"));
+      },
+    }),
+    wardrobeEvent,
+  );
+
+  assertEquals(ran, false);
+  assertEquals(textOf(sent.replies[0][0]), "這件已經不在你的衣櫃裡了。");
+  assertEquals(sent.pushes.length, 0);
+});
+
+Deno.test("a wardrobe try-on sends the core an id, never a path", async () => {
+  // This adapter holds the admin client, so a path it chose would be a path
+  // with nothing checking whose it was. The core resolves the id against the
+  // job's own user instead.
+  const { line } = fakeLine();
+  // deno-lint-ignore no-explicit-any
+  let seenGarment: any;
+  await handleWardrobeTryon(
+    makeWardrobeDeps({
+      line,
+      runJob: (_clients, params) => {
+        seenGarment = params.garments[0];
+        return Promise.resolve({
+          kind: "image",
+          imageUrl: "https://img.example/result.jpg",
+          usage: null,
+          // deno-lint-ignore no-explicit-any
+        } as any);
+      },
+    }),
+    wardrobeEvent,
+  );
+
+  assertEquals(seenGarment, { wardrobeItemId: ITEM.id });
+});
+
+Deno.test("a finished wardrobe try-on is remembered so the next turn can pair it", async () => {
+  // The first chip the result card offers is 「幫我配這件」, which the agent
+  // can only answer if the transcript says what 這件 was.
+  const { line, sent } = fakeLine();
+  const conversations = fakeConversations();
+  await handleWardrobeTryon(
+    makeWardrobeDeps({ line, conversations: conversations.store }),
+    wardrobeEvent,
+  );
+
+  assertEquals(conversations.writes, [[wardrobeTryonNote(ITEM)]]);
+  // Regression: swapping in the wrong result builder, or pushing the error
+  // card on a success, would go unnoticed without inspecting what was sent.
+  // deno-lint-ignore no-explicit-any
+  assertEquals((sent.pushes[0][0] as any).contents.hero.url, "https://img.example/result.jpg");
+});
+
+Deno.test("a wardrobe try-on that failed is not remembered as one that happened", async () => {
+  const { line, sent } = fakeLine();
+  const conversations = fakeConversations();
+  await handleWardrobeTryon(
+    makeWardrobeDeps({
+      line,
+      conversations: conversations.store,
+      runJob: () => Promise.reject(new GenerationFailedError("nope")),
+    }),
+    wardrobeEvent,
+  );
+
+  assertEquals(conversations.writes.length, 0);
+  assertEquals(textOf(sent.pushes[0][0]), "這件沒能生成，請換一件或再試一次看看！");
 });

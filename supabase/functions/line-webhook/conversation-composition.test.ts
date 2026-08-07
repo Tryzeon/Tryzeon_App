@@ -69,7 +69,6 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
     admin: {} as any,
     line,
     liffUrl: "https://liff.example",
-    imagesBaseUrl: "https://img.example",
     conversations: conversations.store,
     getOrCreateUserId: () => Promise.resolve("user-1"),
     getAvatarPath: () => Promise.resolve("user-1/avatar.jpg"),

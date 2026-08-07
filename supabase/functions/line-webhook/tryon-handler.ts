@@ -5,6 +5,7 @@ import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
 import { fetchProductInfo } from "./product-card.ts";
+import { fetchWardrobeItemInfo } from "./wardrobe-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
   onboardingMessage,
@@ -16,9 +17,18 @@ import {
   resultMessage,
   tryonErrorMessage,
   type TryonJobErrorKind,
+  wardrobeProcessingMessage,
+  wardrobeResultMessage,
+  wardrobeTryonErrorMessage,
+  wardrobeUnavailableMessage,
 } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
-import { type ConversationStore, photoNote, tryonNote } from "./conversation.ts";
+import {
+  type ConversationStore,
+  photoNote,
+  tryonNote,
+  wardrobeTryonNote,
+} from "./conversation.ts";
 
 export interface TryonHandlerDeps {
   admin: SupabaseClient;
@@ -80,8 +90,9 @@ async function runTryon(
   const runJob = deps.runJob ?? runTryonJob;
   try {
     // `materials: admin` is safe here and stated explicitly: the avatar is
-    // resolved by the core from the user's own profile, and a garment is either
-    // inline base64 or a product id the core resolves itself — this adapter
+    // resolved by the core from the user's own profile, and a garment is inline
+    // base64, a product id, or a wardrobe item id — the core resolves both id
+    // forms itself, binding the wardrobe one to `job.userId`, so this adapter
     // never forwards a client-supplied path.
     const result = await runJob({ admin: deps.admin, materials: deps.admin }, {
       userId: params.userId,
@@ -163,8 +174,6 @@ export interface ProductTryonEvent {
 }
 
 export interface ProductTryonDeps extends TryonHandlerDeps {
-  /** Public R2 base the product card's image key is resolved against. */
-  imagesBaseUrl: string;
   fetchProduct?: typeof fetchProductInfo;
 }
 
@@ -194,7 +203,7 @@ export async function handleProductTryon(
     return;
   }
 
-  const product = await fetchProduct(deps.admin, event.productId, deps.imagesBaseUrl);
+  const product = await fetchProduct(deps.admin, event.productId);
   if (!product) {
     await deps.line.reply(event.replyToken, [productUnavailableMessage(deps.liffUrl)]);
     return;
@@ -219,11 +228,80 @@ export async function handleProductTryon(
   }
 }
 
+export interface WardrobeTryonEvent {
+  replyToken: string;
+  sourceUserId: string;
+  wardrobeItemId: string;
+}
+
+export interface WardrobeTryonDeps extends TryonHandlerDeps {
+  fetchItem?: typeof fetchWardrobeItemInfo;
+}
+
+/**
+ * Full lifecycle for a tap on a wardrobe card's try-on button.
+ *
+ * The mirror of {@link handleProductTryon}, and deliberately not a
+ * parameterisation of it: what is read, how the acknowledgement reads, the
+ * result card, the error card and the transcript note all differ, which leaves
+ * only the skeleton in common. `resolveActor` and `runTryon` are the parts that
+ * genuinely are shared, and they already are.
+ *
+ * The item is read before anything is charged, for the reason the product path
+ * reads its product first: an item deleted since the card was sent becomes a
+ * sentence the user understands and costs them no quota.
+ *
+ * The garment goes in as `{ wardrobeItemId }` and never as a path. This adapter
+ * holds the admin client, so a path it chose would be a path with nothing
+ * checking whose it was; the core resolves the id against `job.userId` instead.
+ */
+export async function handleWardrobeTryon(
+  deps: WardrobeTryonDeps,
+  event: WardrobeTryonEvent,
+): Promise<void> {
+  const fetchItem = deps.fetchItem ?? fetchWardrobeItemInfo;
+  const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
+
+  if (!hasAvatar) {
+    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
+    return;
+  }
+
+  const item = await fetchItem(deps.admin, userId, event.wardrobeItemId);
+  if (!item) {
+    await deps.line.reply(event.replyToken, [wardrobeUnavailableMessage()]);
+    return;
+  }
+
+  await deps.line.reply(event.replyToken, [
+    wardrobeProcessingMessage(item.categoryLabel),
+  ]);
+
+  const outcome = await runTryon(deps, {
+    userId,
+    garment: { wardrobeItemId: item.id },
+  });
+
+  await deps.line.push(event.sourceUserId, [
+    outcome.ok
+      ? wardrobeResultMessage(outcome.imageUrl, item)
+      : wardrobeTryonErrorMessage(outcome.kind, item),
+  ]);
+
+  if (outcome.ok) {
+    const prior = await deps.conversations.load(event.sourceUserId);
+    await deps.conversations.save(event.sourceUserId, [
+      ...prior,
+      wardrobeTryonNote(item),
+    ]);
+  }
+}
+
 /**
  * Renders a core error as one of this channel's message kinds, from the same
  * `classifyTryonError` result the HTTP adapters use. A validation error is not
- * user-actionable here — this adapter builds its own params, and a product is
- * checked for existence before any job starts — so it is reported as an
+ * user-actionable here — this adapter builds its own params, and each kind of
+ * ref is checked for existence before any job starts — so it is reported as an
  * unknown fault.
  */
 function tryonFailureKind(err: unknown): TryonJobErrorKind {

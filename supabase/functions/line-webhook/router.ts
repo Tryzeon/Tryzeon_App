@@ -22,7 +22,11 @@
  * the one module in the feature with no test.
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { handleImageTryon, handleProductTryon } from "./tryon-handler.ts";
+import {
+  handleImageTryon,
+  handleProductTryon,
+  handleWardrobeTryon,
+} from "./tryon-handler.ts";
 import { handleTextMessage } from "./chat-handler.ts";
 import { parsePostback } from "./postback.ts";
 import { hintMessage, welcomeMessage } from "./messages.ts";
@@ -148,18 +152,34 @@ function routePostback(
   const sourceUserId = requireSourceUserId(ev);
   if (sourceUserId === null) return hint(deps, ev);
 
-  return handleProductTryon(
-    {
-      admin: deps.admin,
-      line: deps.line,
-      liffUrl: deps.liffUrl,
-      imagesBaseUrl: deps.imagesBaseUrl,
-      conversations: deps.conversations,
-    },
-    {
-      replyToken: ev.replyToken,
-      sourceUserId,
-      productId: postback.productId,
-    },
-  );
+  switch (postback.kind) {
+    case "product":
+      return handleProductTryon(
+        {
+          admin: deps.admin,
+          line: deps.line,
+          liffUrl: deps.liffUrl,
+          conversations: deps.conversations,
+        },
+        {
+          replyToken: ev.replyToken,
+          sourceUserId,
+          productId: postback.productId,
+        },
+      );
+    case "wardrobe":
+      return handleWardrobeTryon(
+        {
+          admin: deps.admin,
+          line: deps.line,
+          liffUrl: deps.liffUrl,
+          conversations: deps.conversations,
+        },
+        {
+          replyToken: ev.replyToken,
+          sourceUserId,
+          wardrobeItemId: postback.wardrobeItemId,
+        },
+      );
+  }
 }

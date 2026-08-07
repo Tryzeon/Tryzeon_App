@@ -2,6 +2,7 @@ import { assertEquals, assertStringIncludes } from "jsr:@std/assert";
 import { type RouterDeps, routeEvent } from "./router.ts";
 import type { LineApi } from "./line-api.ts";
 import { fakeConversations } from "./conversation.testing.ts";
+import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 
 const line: LineApi = {
   reply: () => Promise.resolve(),
@@ -21,6 +22,7 @@ const deps: RouterDeps = {
 };
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
+const WID = "44444444-4444-4444-4444-444444444444";
 
 const messageEvent = (message: Record<string, unknown>) => ({
   type: "message",
@@ -101,13 +103,22 @@ Deno.test("a message kind with no handler is nudged", async () => {
 });
 
 Deno.test("a try-on postback is routed to a handler", () => {
-  assertEquals(routed(postbackEvent(`a=tryon&pid=${PID}`)), true);
+  assertEquals(routed(postbackEvent(`a=tryon_product&pid=${PID}`)), true);
 });
 
 Deno.test("a postback we did not issue is nudged", async () => {
   // A card from a deploy that no longer sends that shape: the sender tapped
   // something real, so silence would read as the bot being broken.
-  for (const data of ["a=save&pid=" + PID, "a=tryon&pid=not-a-uuid", undefined]) {
+  for (
+    const data of [
+      "a=save&pid=" + PID,
+      "a=tryon_product&pid=not-a-uuid",
+      // A card from before the rename: the action name changed, so this is
+      // now exactly what this test is about.
+      "a=tryon&pid=" + PID,
+      undefined,
+    ]
+  ) {
     assertStringIncludes(textOf((await repliedWith(postbackEvent(data)))[0]), "傳一張衣服的照片");
   }
 });
@@ -167,7 +178,7 @@ Deno.test("an event with no source.userId reaches no handler", async () => {
       type: "postback",
       replyToken: "rt",
       source: noId,
-      postback: { data: `a=tryon&pid=${PID}` },
+      postback: { data: productTryonPostbackData(PID) },
     }))[0]),
     "傳一張衣服的照片",
   );
@@ -184,5 +195,23 @@ Deno.test("a group is not somewhere this feature answers", () => {
       message: { type: "text", text: "找白襯衫" },
     }),
     false,
+  );
+});
+
+Deno.test("a wardrobe try-on postback is routed to a handler", () => {
+  assertEquals(routed(postbackEvent(wardrobeTryonPostbackData(WID))), true);
+});
+
+Deno.test("a wardrobe postback with no sender is nudged", async () => {
+  // Same rule the product path follows: without `source.userId` there is
+  // nobody whose wardrobe this would be.
+  assertStringIncludes(
+    textOf((await repliedWith({
+      type: "postback",
+      replyToken: "rt",
+      source: { type: "user" },
+      postback: { data: wardrobeTryonPostbackData(WID) },
+    }))[0]),
+    "傳一張衣服的照片",
   );
 });
