@@ -3,6 +3,7 @@ import { renderAnswer } from "./chat-render.ts";
 import type { LineProduct } from "./product-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
+import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 
 const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
   id,
@@ -116,10 +117,10 @@ Deno.test("every product card offers a try-on, keyed by its own id", () => {
   assertEquals(first.footer.contents[0].action, {
     type: "postback",
     label: "試穿這件",
-    data: "a=tryon&pid=p1",
+    data: productTryonPostbackData("p1"),
     displayText: "試穿「商品 p1」",
   });
-  assertEquals(second.footer.contents[0].action.data, "a=tryon&pid=p2");
+  assertEquals(second.footer.contents[0].action.data, productTryonPostbackData("p2"));
 });
 
 Deno.test("the try-on button is filled and the purchase button is outlined", () => {
@@ -243,8 +244,6 @@ Deno.test("a wardrobe block becomes a card", () => {
   // the whole send on anything else, which is how CSS's `contain` shipped.
   assertEquals(bubble.hero.aspectMode, "fit");
   assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);
-  // No try-on yet, so no footer at all.
-  assertEquals(bubble.footer, undefined);
 });
 
 Deno.test("products and wardrobe items share one carousel", () => {
@@ -278,4 +277,37 @@ Deno.test("a wardrobe-only answer offers no shopping chips", () => {
 
   // deno-lint-ignore no-explicit-any
   assertEquals((out.at(-1) as any).quickReply, undefined);
+});
+
+Deno.test("a wardrobe card offers a try-on keyed by its own id", () => {
+  const out = renderAnswer([wardrobeCard(wardrobeItem("44444444-4444-4444-4444-444444444444"))]);
+  // deno-lint-ignore no-explicit-any
+  const bubble = bubbles(out[0])[0] as any;
+  const [button] = bubble.footer.contents;
+
+  assertEquals(button.action.type, "postback");
+  assertEquals(
+    button.action.data,
+    wardrobeTryonPostbackData("44444444-4444-4444-4444-444444444444"),
+  );
+  assertEquals(button.action.displayText, "試穿「你的上衣」");
+});
+
+Deno.test("the others bucket's card button reads 單品, not 其他", () => {
+  // Same rule as the acknowledgement text: 「試穿「你的其他」」 is broken
+  // Chinese, and `others` is not a rare code — see messages.test.ts's sibling.
+  const out = renderAnswer([wardrobeCard(wardrobeItem("w1", { categoryLabel: "其他" }))]);
+  // deno-lint-ignore no-explicit-any
+  const bubble = bubbles(out[0])[0] as any;
+
+  assertEquals(bubble.footer.contents[0].action.displayText, "試穿「你的單品」");
+});
+
+Deno.test("a product card still offers only its own actions", () => {
+  // The two cards sit in one carousel, so a change to one must not leak.
+  const out = renderAnswer([card(product("p1"))]);
+  // deno-lint-ignore no-explicit-any
+  const bubble = bubbles(out[0])[0] as any;
+  assertEquals(bubble.footer.contents.length, 1);
+  assertEquals(bubble.footer.contents[0].action.data, productTryonPostbackData("p1"));
 });

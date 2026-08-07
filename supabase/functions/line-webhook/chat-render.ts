@@ -16,10 +16,10 @@ import {
   productInfoContents,
   purchaseAction,
 } from "./product-card.ts";
-import { type LineWardrobeItem, wardrobeInfoContents } from "./wardrobe-card.ts";
+import { garmentNoun, type LineWardrobeItem, wardrobeInfoContents } from "./wardrobe-card.ts";
 import { CARD_COLOR, primaryButton, secondaryButton } from "./card-kit.ts";
 import { chatErrorMessage } from "./messages.ts";
-import { tryonPostbackData } from "./postback.ts";
+import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 import { dressLast, messageChip } from "./quick-reply.ts";
 
 /** Messages one reply/push may carry. */
@@ -85,7 +85,7 @@ function productBubble(product: LineProduct): object {
     primaryButton("試穿這件", {
       type: "postback",
       label: "試穿這件",
-      data: tryonPostbackData(product.id),
+      data: productTryonPostbackData(product.id),
       // Without this the tap leaves no trace, and the bot appears to start
       // talking for no reason. Clamped: `displayText` fails the whole send
       // past 300 characters, and a product name has no length constraint.
@@ -132,11 +132,11 @@ function productBubble(product: LineProduct): object {
 /**
  * One wardrobe item as a card.
  *
- * No footer: this channel cannot try one on yet. `fit` rather than the product
- * card's `cover` because these images are usually background-removed
- * (`AnalyzeWardrobeImage.removeBackground`) and cropping cuts the sleeves off;
- * the pinned background is what keeps a transparent PNG from rendering as a
- * black silhouette on LINE's dark chat surface.
+ * `fit` rather than the product card's `cover` because these images are
+ * usually background-removed (`AnalyzeWardrobeImage.removeBackground`) and
+ * cropping cuts the sleeves off; the pinned background is what keeps a
+ * transparent PNG from rendering as a black silhouette on LINE's dark chat
+ * surface.
  *
  * `fit` is the whole vocabulary LINE offers for this — `aspectMode` takes
  * `cover` or `fit` and nothing else, and it rejects the entire send rather than
@@ -160,8 +160,27 @@ function wardrobeBubble(item: LineWardrobeItem): object {
       paddingAll: "16px",
       contents: wardrobeInfoContents(item),
     },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "16px",
+      paddingTop: "0px",
+      contents: [
+        primaryButton("試穿這件", {
+          type: "postback",
+          label: "試穿這件",
+          data: wardrobeTryonPostbackData(item.id),
+          // Not clamped, unlike a product's: `garmentNoun` bounds the word to
+          // a fixed set of short labels, so it cannot approach displayText's
+          // 300-character cap the way a name with no length constraint can.
+          displayText: `試穿「你的${garmentNoun(item.categoryLabel)}」`,
+        }),
+      ],
+    },
     styles: {
       body: { backgroundColor: CARD_COLOR.surface },
+      footer: { backgroundColor: CARD_COLOR.surface },
     },
   };
 }

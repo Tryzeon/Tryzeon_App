@@ -1,9 +1,13 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
 import {
+  fetchWardrobeItemInfo,
   fetchWardrobeRows,
+  garmentNoun,
   type LineWardrobeItem,
   tagLine,
   toLineWardrobeItem,
+  toWardrobeItemInfo,
+  type WardrobeItemInfo,
   wardrobeInfoContents,
 } from "./wardrobe-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
@@ -73,6 +77,20 @@ Deno.test("tagLine truncates a line LINE would reject the whole send for", () =>
   const long = tagLine(["a".repeat(50)]);
   assertEquals(long.length, 41);
   assertEquals(long.endsWith("…"), true);
+});
+
+Deno.test("garmentNoun keeps a real noun as-is", () => {
+  assertEquals(garmentNoun("上衣"), "上衣");
+  assertEquals(garmentNoun("下身"), "下身");
+  assertEquals(garmentNoun("外套"), "外套");
+  assertEquals(garmentNoun("套裝"), "套裝");
+});
+
+Deno.test("garmentNoun turns the others bucket, and anything unmapped, into 單品", () => {
+  // 「其他」 reads fine as a standalone label but not inside a sentence like
+  // 「試穿你的其他」, and an unmapped enum code is not a word at all.
+  assertEquals(garmentNoun("其他"), "單品");
+  assertEquals(garmentNoun("hats"), "單品");
 });
 
 Deno.test("the info block is category, tags and the wardrobe label", () => {
@@ -203,4 +221,80 @@ Deno.test("fetchWardrobeRows throws when signing fails outright", async () => {
   // reporting it as "I found nothing" would charge the caller for a lie.
   const { admin } = fakeAdmin([row()], { data: null, error: { message: "boom" } });
   await assertRejects(() => fetchWardrobeRows(admin, "u1", ["w1"]), Error, "boom");
+});
+
+/**
+ * Fake client for the single-item read. Records the filters so a test can prove
+ * the ownership bound, and records whether signing was ever attempted.
+ */
+function fakeItemAdmin(row: Record<string, unknown> | null) {
+  const filters: Array<[string, string]> = [];
+  let signCalls = 0;
+  const client = {
+    from() {
+      return {
+        select() {
+          const chain = {
+            eq(column: string, value: string) {
+              filters.push([column, value]);
+              return chain;
+            },
+            maybeSingle: () => Promise.resolve({ data: row, error: null }),
+          };
+          return chain;
+        },
+      };
+    },
+    storage: {
+      from() {
+        return {
+          createSignedUrls() {
+            signCalls++;
+            return Promise.resolve({ data: [], error: null });
+          },
+        };
+      },
+    },
+  };
+  // deno-lint-ignore no-explicit-any
+  return { admin: client as any, filters, signCalls: () => signCalls };
+}
+
+Deno.test("fetchWardrobeItemInfo binds the read to the asking user", async () => {
+  const { admin, filters } = fakeItemAdmin(row());
+  await fetchWardrobeItemInfo(admin, "u1", "w1");
+
+  assertEquals(filters, [["id", "w1"], ["user_id", "u1"]]);
+});
+
+Deno.test("fetchWardrobeItemInfo signs nothing", async () => {
+  // The try-on result card's hero is the generated image, and the body needs
+  // only the text. Signing here would be a round trip nobody reads — and a
+  // signing failure would refuse a try-on the core could have completed.
+  const { admin, signCalls } = fakeItemAdmin(row());
+  await fetchWardrobeItemInfo(admin, "u1", "w1");
+
+  assertEquals(signCalls(), 0);
+});
+
+Deno.test("fetchWardrobeItemInfo yields the text fields and no image url", async () => {
+  const { admin } = fakeItemAdmin(row());
+  const info = await fetchWardrobeItemInfo(admin, "u1", "w1");
+
+  assertEquals(info, { id: "w1", categoryLabel: "上衣", tags: ["寬鬆", "米色"] });
+});
+
+Deno.test("fetchWardrobeItemInfo is null for an item that is gone or never theirs", async () => {
+  // One answer for both, for the same reason `resolveWardrobeGarment` gives
+  // one error for both: telling them apart would be an oracle.
+  const { admin } = fakeItemAdmin(null);
+  assertEquals(await fetchWardrobeItemInfo(admin, "u1", "w1"), null);
+});
+
+Deno.test("toWardrobeItemInfo needs no url to describe an item", () => {
+  assertEquals(toWardrobeItemInfo(row()), {
+    id: "w1",
+    categoryLabel: "上衣",
+    tags: ["寬鬆", "米色"],
+  });
 });

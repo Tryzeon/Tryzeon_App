@@ -36,13 +36,38 @@ const MAX_TAGS = 3;
  */
 const MAX_TAG_LINE_CHARS = 40;
 
-/** A wardrobe item reduced to what one card displays. */
-export interface LineWardrobeItem {
+/** What a card's text lines say about an item. */
+export interface WardrobeItemInfo {
   id: string;
-  /** Signed URL of the item's image; wardrobe images are not public. */
-  imageUrl: string;
   categoryLabel: string;
   tags: string[];
+}
+
+/** A wardrobe item as a carousel card: its text, plus an image to show. */
+export interface LineWardrobeItem extends WardrobeItemInfo {
+  /** Signed URL of the item's image; wardrobe images are not public. */
+  imageUrl: string;
+}
+
+/**
+ * The text fields, which a row always yields. Separate from
+ * `toLineWardrobeItem` because the try-on path needs the words without needing
+ * a picture.
+ */
+export function toWardrobeItemInfo(
+  // deno-lint-ignore no-explicit-any
+  row: Record<string, any>,
+): WardrobeItemInfo {
+  const category = String(row.category ?? "");
+  const tags = Array.isArray(row.tags) ? row.tags : [];
+
+  return {
+    id: String(row.id),
+    categoryLabel: CATEGORY_LABEL[category] ?? category,
+    tags: tags
+      .filter((t: unknown): t is string => typeof t === "string" && t.length > 0)
+      .slice(0, MAX_TAGS),
+  };
 }
 
 /**
@@ -56,18 +81,7 @@ export function toLineWardrobeItem(
   signedUrl: string | undefined,
 ): LineWardrobeItem | null {
   if (!signedUrl) return null;
-
-  const category = String(row.category ?? "");
-  const tags = Array.isArray(row.tags) ? row.tags : [];
-
-  return {
-    id: String(row.id),
-    imageUrl: signedUrl,
-    categoryLabel: CATEGORY_LABEL[category] ?? category,
-    tags: tags
-      .filter((t: unknown): t is string => typeof t === "string" && t.length > 0)
-      .slice(0, MAX_TAGS),
-  };
+  return { ...toWardrobeItemInfo(row), imageUrl: signedUrl };
 }
 
 /** The tags as the one line a card shows them on. */
@@ -79,12 +93,32 @@ export function tagLine(tags: string[]): string {
 }
 
 /**
+ * The labels that are real nouns — every `CATEGORY_LABEL` entry except the
+ * `others` bucket. Derived rather than re-listed so the two cannot drift.
+ */
+const NOUN_LABELS = new Set(
+  Object.entries(CATEGORY_LABEL)
+    .filter(([code]) => code !== "others")
+    .map(([, label]) => label),
+);
+
+/**
+ * The label as it reads inside a sentence. `其他` is a bucket, not a noun, and
+ * an unmapped code is not a word at all — both become `單品`, which is true of
+ * anything in a wardrobe. The card's own headline keeps the raw label, where a
+ * bucket name reads fine standing alone.
+ */
+export function garmentNoun(categoryLabel: string): string {
+  return NOUN_LABELS.has(categoryLabel) ? categoryLabel : "單品";
+}
+
+/**
  * The category / tags / source lines the card shows.
  *
  * A tag-less item drops its middle line entirely rather than rendering an empty
  * one, the way a product with no store shows two lines instead of three.
  */
-export function wardrobeInfoContents(item: LineWardrobeItem): object[] {
+export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
   const contents: object[] = [
     {
       type: "text",
@@ -193,4 +227,37 @@ export async function fetchWardrobeRows(
     if (item) rows.set(id, item);
   }
   return rows;
+}
+
+/**
+ * One wardrobe item's text fields, or null when the id names nothing the
+ * sender owns.
+ *
+ * No signed URL, and that is the one place this departs from `fetchProductInfo`:
+ * a try-on result card's hero is the generated image, so the body needs only
+ * the words. Signing here would be a round trip nobody reads, and a signing
+ * failure would refuse a try-on the core could have completed — the core reads
+ * the storage object itself and never wants a URL.
+ *
+ * Bound to `userId` like every wardrobe read. `resolveWardrobeGarment` binds it
+ * again inside the job; this one exists so that "gone, or never yours" becomes
+ * a sentence before any quota is charged, which is the same reason
+ * `handleProductTryon` reads its product up front.
+ */
+export async function fetchWardrobeItemInfo(
+  admin: SupabaseClient,
+  userId: string,
+  wardrobeItemId: string,
+): Promise<WardrobeItemInfo | null> {
+  const { data, error } = await admin
+    .from("wardrobe_items")
+    .select(WARDROBE_CARD_SELECT)
+    .eq("id", wardrobeItemId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`wardrobe item lookup failed: ${error.message}`);
+  }
+  return data ? toWardrobeItemInfo(data) : null;
 }
