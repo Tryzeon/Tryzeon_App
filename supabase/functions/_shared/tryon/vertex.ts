@@ -8,6 +8,7 @@
  * persistence path.
  */
 import { experimental_generateVideo, generateText } from "npm:ai@^6.0.208";
+import { base64ToUint8Array } from "../image-utils.ts";
 import { tryonImageModel, tryonVideoModel } from "../vertex/config.ts";
 import { rethrowAsBusy } from "../vertex/errors.ts";
 import { vertexModel, vertexVideoModel } from "../vertex/provider.ts";
@@ -96,5 +97,5 @@ export async function generateTryonVideo(
     providerOptions: { vertex: { pollIntervalMs: POLL_INTERVAL_MS } },
   }).catch(rethrowAsBusy);
 
-  return video.uint8Array;
+  return base64ToUint8Array(video.base64);
 }
