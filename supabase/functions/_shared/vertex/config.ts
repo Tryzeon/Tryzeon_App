@@ -22,12 +22,13 @@
  *
  * ## Environment
  *
- * | Variable                 | Required | Read by                                  |
- * | ------------------------ | -------- | ---------------------------------------- |
- * | `GOOGLE_SERVICE_ACCOUNT` | yes      | everything — credential and project id   |
- * | `CHAT_MODEL`             | yes      | chat, image analysis, audio analysis     |
- * | `TRYON_MODEL`            | yes      | try-on images                            |
- * | `VIDEO_MODEL`            | yes      | try-on video                             |
+ * | Variable                 | Required     | Read by                              |
+ * | ------------------------ | ------------ | ------------------------------------ |
+ * | `GOOGLE_SERVICE_ACCOUNT` | yes          | everything — credential and project  |
+ * | `CHAT_MODEL`             | yes          | chat, image analysis, audio analysis |
+ * | `TRYON_MODEL`            | yes          | try-on images                        |
+ * | `VIDEO_MODEL`            | yes          | try-on video                         |
+ * | `VERTEX_LOCATION`        | no, `global` | everything — the endpoint region     |
  *
  * `GOOGLE_SERVICE_ACCOUNT` is the downloaded key file, pasted whole.
  *
@@ -91,7 +92,8 @@ export function vertexServiceAccount(): VertexServiceAccount {
   return serviceAccount ??= parseServiceAccount(requireEnv("GOOGLE_SERVICE_ACCOUNT"));
 }
 
-export const VERTEX_LOCATION = "global";
+/** Region every Vertex call is routed to. `global` serves the models we use. */
+export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "global";
 
 /** Model behind the chat agent and both analysis helpers. */
 export const chatModel = (): string => requireEnv("CHAT_MODEL");
