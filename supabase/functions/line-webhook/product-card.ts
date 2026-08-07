@@ -4,7 +4,7 @@
  * Two surfaces render a product now — the chat answer's carousel and the
  * try-on result card — so "which fields a card shows" stopped being the
  * hydrator's business and became its own. `fetchProductRows` reads these
- * columns in batch for an answer; `fetchLineProduct` reads a single one for a
+ * columns in batch for an answer; `fetchProductInfo` reads a single one for a
  * card the user pointed at by id.
  */
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
@@ -78,7 +78,7 @@ export function fetchProductRows(
  * missing product is something the user can be told about, a broken query is
  * ours to fix.
  */
-export async function fetchLineProduct(
+export async function fetchProductInfo(
   admin: SupabaseClient,
   productId: string,
   imagesBaseUrl: string,

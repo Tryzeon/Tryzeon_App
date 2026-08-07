@@ -4,7 +4,7 @@ import { classifyTryonError, runTryonJob } from "../_shared/tryon/index.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
-import { fetchLineProduct } from "./product-card.ts";
+import { fetchProductInfo } from "./product-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
   onboardingMessage,
@@ -165,13 +165,13 @@ export interface ProductTryonEvent {
 export interface ProductTryonDeps extends TryonHandlerDeps {
   /** Public R2 base the product card's image key is resolved against. */
   imagesBaseUrl: string;
-  fetchProduct?: typeof fetchLineProduct;
+  fetchProduct?: typeof fetchProductInfo;
 }
 
 /**
  * Full lifecycle for a tap on a product card's try-on button.
  *
- * The product is read before anything is charged. `fetchLineProduct` returns
+ * The product is read before anything is charged. `fetchProductInfo` returns
  * null for exactly the two cases the core would later reject as validation
  * errors — the row is gone, or it has no image — so checking here turns both
  * into a sentence the user understands, and costs them no quota. It also
@@ -186,7 +186,7 @@ export async function handleProductTryon(
   deps: ProductTryonDeps,
   event: ProductTryonEvent,
 ): Promise<void> {
-  const fetchProduct = deps.fetchProduct ?? fetchLineProduct;
+  const fetchProduct = deps.fetchProduct ?? fetchProductInfo;
   const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
 
   if (!hasAvatar) {
