@@ -7,6 +7,15 @@
 - Always propose the best-practice solution. Do not compromise the design to minimize change scope or migration effort — optimize for correctness and quality, not for avoiding churn.
 - Dart/Flutter conventions (theme, state management, errors, logging) live in `lib/CLAUDE.md`.
 
+## Engineering principles
+
+- **No backward-compatibility cruft:** delete the obsolete path outright instead of stacking a compatibility layer on top of it.
+- **Grow in layers:** build the smallest working end-to-end version first, then add layers on top. Never replace something that works with a half-finished version.
+- **Stay modular:** keep component responsibilities cleanly separated.
+- **Prefer mature wheels:** if an existing library reduces complexity, use it instead of reinventing it.
+- **Use what the project already depends on:** check the docs of existing dependencies before writing new code — don't rush to add a new package.
+- **Decide for the long term:** don't accept "let's do it this way for now and refactor later" solutions.
+
 ## Common Commands
 
 ```bash
