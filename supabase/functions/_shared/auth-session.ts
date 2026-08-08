@@ -11,7 +11,7 @@
  * keeps that format from acquiring a second knower.
  */
 import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { CONFIG } from "./supabase.ts";
+import { supabaseAnonKey, supabaseUrl } from "./supabase.ts";
 
 /** A GoTrue session, reduced to the one credential a client needs to adopt it. */
 export interface MintedSession {
@@ -24,7 +24,7 @@ export interface MintedSession {
  * one with.
  */
 function defaultAnonClient(): SupabaseClient {
-  return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
+  return createClient(supabaseUrl(), supabaseAnonKey(), {
     auth: { persistSession: false, autoRefreshToken: false, flowType: "implicit" },
   });
 }

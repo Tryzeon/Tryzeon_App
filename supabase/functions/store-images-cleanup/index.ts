@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getAdminClient, CONFIG } from "../_shared/supabase.ts";
+import { getAdminClient } from "../_shared/supabase.ts";
 import {
   deletePublicImagesFromR2,
   listPublicImagesFromR2,

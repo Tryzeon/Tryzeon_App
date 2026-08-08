@@ -9,11 +9,18 @@ function requireEnv(name: string): string {
     return value;
 }
 
-export const CONFIG = {
-    SUPABASE_URL: requireEnv("SUPABASE_URL"),
-    SUPABASE_ANON_KEY: requireEnv("SUPABASE_ANON_KEY"),
-    SUPABASE_SERVICE_ROLE_KEY: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
-} as const;
+/**
+ * Readers rather than a constant object. This module is reachable from code
+ * that never builds a client — `auth-session.ts` and its tests among them — and
+ * validating at import made all three variables a condition of merely loading
+ * the file, so a test with no environment failed before its first assertion.
+ * Each caller now asks for the one variable it uses, when it uses it.
+ */
+export const supabaseUrl = (): string => requireEnv("SUPABASE_URL");
+export const supabaseAnonKey = (): string => requireEnv("SUPABASE_ANON_KEY");
+
+/** Service-role key. Unexported: `getAdminClient` is the only sanctioned reader. */
+const supabaseServiceRoleKey = (): string => requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
 /**
  * Validates the Authorization header and returns an authenticated `SupabaseClient` instance and the user.
@@ -32,8 +39,8 @@ export const getAuthenticatedUserClient = async (
     }
 
     const userClient = createClient(
-        CONFIG.SUPABASE_URL,
-        CONFIG.SUPABASE_ANON_KEY,
+        supabaseUrl(),
+        supabaseAnonKey(),
         { global: { headers: { Authorization: authHeader } } }
     );
 
@@ -58,5 +65,5 @@ export const getAuthenticatedUserClient = async (
  * Use with caution to bypass Row Level Security.
  */
 export const getAdminClient = (): SupabaseClient => {
-    return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE_ROLE_KEY);
+    return createClient(supabaseUrl(), supabaseServiceRoleKey());
 };
