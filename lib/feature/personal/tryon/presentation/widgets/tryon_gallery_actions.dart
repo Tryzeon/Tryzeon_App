@@ -9,8 +9,8 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 
 /// The action button floating over the gallery. Replacing the model photo is
-/// offered on every page; a try-on page adds share / download / set-as-avatar /
-/// delete on top.
+/// offered on every page; a finished try-on adds share / download /
+/// set-as-avatar / delete on top, and one still generating offers to cancel.
 ///
 /// Owns its own handlers so the home page stays a layout — the only action it
 /// cannot own is [onReplaceAvatar], which the home CTA offers as well.
@@ -50,7 +50,29 @@ class TryonGalleryActions extends ConsumerWidget {
       }
     }
 
+    final targetId = gallery.currentId;
+
+    Future<void> confirmCancelGeneration() async {
+      if (targetId == null) return;
+
+      final choice = await showAppOkCancelDialog(
+        context: context,
+        message: '確定要取消這次試穿嗎？',
+        okLabel: '取消生成',
+        cancelLabel: '繼續等待',
+        isDestructiveAction: true,
+      );
+
+      // Dropping the placeholder is the cancel: the controller sees it gone and
+      // lets the in-flight response land silently.
+      if (choice == OkCancelResult.ok) {
+        ref.read(tryonGalleryProvider.notifier).removeById(targetId);
+      }
+    }
+
     Future<void> confirmDelete() async {
+      if (targetId == null) return;
+
       final choice = await showAppOkCancelDialog(
         context: context,
         message: '確定要刪除這張試穿照片嗎？',
@@ -60,7 +82,7 @@ class TryonGalleryActions extends ConsumerWidget {
       );
 
       if (choice == OkCancelResult.ok) {
-        ref.read(tryonGalleryProvider.notifier).deleteCurrent();
+        ref.read(tryonGalleryProvider.notifier).removeById(targetId);
       }
     }
 
@@ -71,39 +93,50 @@ class TryonGalleryActions extends ConsumerWidget {
       onTap: onReplaceAvatar,
     );
 
-    final actions = gallery.isAvatarPage
-        ? [replaceAvatar]
-        : [
-            AppMenuAction(
-              icon: Icons.ios_share_rounded,
-              title: '分享',
-              subtitle: '分享試穿照片',
-              onTap: shareMedia,
-            ),
-            AppMenuAction(
-              icon: Icons.download_rounded,
-              title: '下載',
-              subtitle: '儲存到相簿',
-              onTap: downloadMedia,
-            ),
-            if (result?.mode == TryonMode.image)
-              AppMenuAction(
-                icon: isCurrentTheAvatar
-                    ? Icons.person_off_outlined
-                    : Icons.person_outline_rounded,
-                title: isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
-                subtitle: isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象',
-                onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
-              ),
-            replaceAvatar,
-            AppMenuAction(
-              icon: Icons.delete_outline_rounded,
-              title: '刪除此試穿',
-              subtitle: '移除這張試穿照片',
-              onTap: confirmDelete,
-              isDestructive: true,
-            ),
-          ];
+    final actions = switch (gallery) {
+      TryonGalleryState(isAvatarPage: true) => [replaceAvatar],
+      TryonGalleryState(isCurrentPending: true) => [
+        replaceAvatar,
+        AppMenuAction(
+          icon: Icons.stop_circle_outlined,
+          title: '取消生成',
+          subtitle: '停止等待這次試穿結果',
+          onTap: confirmCancelGeneration,
+          isDestructive: true,
+        ),
+      ],
+      _ => [
+        AppMenuAction(
+          icon: Icons.ios_share_rounded,
+          title: '分享',
+          subtitle: '分享試穿照片',
+          onTap: shareMedia,
+        ),
+        AppMenuAction(
+          icon: Icons.download_rounded,
+          title: '下載',
+          subtitle: '儲存到相簿',
+          onTap: downloadMedia,
+        ),
+        if (result?.mode == TryonMode.image)
+          AppMenuAction(
+            icon: isCurrentTheAvatar
+                ? Icons.person_off_outlined
+                : Icons.person_outline_rounded,
+            title: isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
+            subtitle: isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象',
+            onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
+          ),
+        replaceAvatar,
+        AppMenuAction(
+          icon: Icons.delete_outline_rounded,
+          title: '刪除此試穿',
+          subtitle: '移除這張試穿照片',
+          onTap: confirmDelete,
+          isDestructive: true,
+        ),
+      ],
+    };
 
     return IconButton(
       icon: Icon(Icons.more_vert_rounded, color: Theme.of(context).colorScheme.onPrimary),

@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
@@ -88,8 +89,12 @@ class TryonController extends _$TryonController {
   }) async {
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final id = _uuid.v4();
+
+    // Setup runs before the placeholder exists, so its failures always speak up.
+    final String? customAvatarUrl;
+    final TryonPromptConfig promptConfig;
     try {
-      final customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
+      customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
       final hasCustomAvatar = customAvatarUrl != null && customAvatarUrl.isNotEmpty;
 
       // Precondition: "no avatar at all" is a UI prompt, not a failure — check
@@ -103,15 +108,21 @@ class TryonController extends _$TryonController {
 
       // Scene applies to both modes — video renders its first frame through the
       // same image pass. Transition only reaches the video generator.
-      final promptConfig = await ref.read(tryonPromptConfigProvider.future);
+      promptConfig = await ref.read(tryonPromptConfigProvider.future);
+    } catch (e, stackTrace) {
+      AppLogger.error('Try-on setup failed', e, stackTrace);
+      state = TryonFailed(mapExceptionToFailure(e));
+      return;
+    }
 
-      galleryNotifier.addPending(id: id, mode: mode);
+    galleryNotifier.addPending(id: id, mode: mode);
 
+   try {
       final customAvatarBase64 = await ref.read(loadCustomAvatarUseCaseProvider)(
         customAvatarUrl,
       );
       if (customAvatarBase64.isFailure) {
-        galleryNotifier.removeById(id);
+        if (!galleryNotifier.removeById(id)) return;
         state = TryonFailed(customAvatarBase64.getError()!);
         return;
       }
@@ -129,16 +140,17 @@ class TryonController extends _$TryonController {
         ),
       );
 
+      // Usage syncs even for a cancelled run — the generation was still spent.
       final usageCache = ref.read(dailyUsageTodayProvider.notifier);
       if (result.isSuccess) {
         final tryonResult = result.get()!;
         usageCache.syncFromSnapshot(tryonResult.usage);
-        galleryNotifier.complete(tryonResult);
+        if (!galleryNotifier.complete(tryonResult)) return;
         state = const TryonSucceeded();
       } else {
         final failure = result.getError()!;
         usageCache.syncFromFailure(failure);
-        galleryNotifier.removeById(id);
+        if (!galleryNotifier.removeById(id)) return;
         state = switch (failure) {
           RateLimitFailure() => TryonRateLimited(isVideo: mode == TryonMode.video),
           AvatarMissingFailure() => const TryonAvatarMissing(),
@@ -147,7 +159,7 @@ class TryonController extends _$TryonController {
       }
     } catch (e, stackTrace) {
       AppLogger.error('Try-on orchestration failed unexpectedly', e, stackTrace);
-      galleryNotifier.removeById(id);
+      if (!galleryNotifier.removeById(id)) return;
       state = TryonFailed(mapExceptionToFailure(e));
     }
   }

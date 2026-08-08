@@ -71,17 +71,21 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     );
   }
 
-  void complete(final TryonResult result) {
+  /// Swaps the placeholder for its finished result. False when the entry is
+  /// gone — the user dropped it while the try-on was still running.
+  bool complete(final TryonResult result) {
     final index = state.entries.indexWhere((final e) => e.id == result.id);
-    if (index == -1) return;
+    if (index == -1) return false;
     state = state.copyWith(
       entries: [...state.entries]..[index] = FinishedTryonEntry(result),
     );
+    return true;
   }
 
-  void removeById(final String id) {
+  /// Drops [id] from the gallery. False when it was already gone.
+  bool removeById(final String id) {
     final index = state.entries.indexWhere((final e) => e.id == id);
-    if (index == -1) return;
+    if (index == -1) return false;
 
     final nextEntries = [...state.entries]..removeAt(index);
 
@@ -98,17 +102,12 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
       currentId: nextCurrent,
       customAvatarId: state.customAvatarId == id ? null : state.customAvatarId,
     );
+    return true;
   }
 
   void toggleAvatarForCurrent() {
     final id = state.currentId;
     if (id == null) return;
     state = state.copyWith(customAvatarId: state.customAvatarId == id ? null : id);
-  }
-
-  void deleteCurrent() {
-    final id = state.currentId;
-    if (id == null) return;
-    removeById(id);
   }
 }

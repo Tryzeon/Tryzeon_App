@@ -142,7 +142,6 @@ class HomePage extends HookConsumerWidget {
         (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0);
 
     final isAvatarPage = galleryState.isAvatarPage;
-    final isCurrentPending = galleryState.isCurrentPending;
 
     return Scaffold(
       extendBody: true,
@@ -194,22 +193,21 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 3. Top Right — Avatar Badge + More Options (parallel).
-            // Hidden only while a try-on is loading.
-            if (!isCurrentPending)
-              Positioned(
-                top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
-                right: AppSpacing.md,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    TryonAvatarBadge(isVisible: isCurrentTheAvatar),
-                    const SizedBox(width: AppSpacing.sm),
-                    TryonGalleryActions(onReplaceAvatar: uploadAvatar),
-                  ],
-                ),
+            // 3. Top Right — Avatar Badge + More Options (parallel). Always up:
+            // the sheet adapts its actions to the page in view.
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
+              right: AppSpacing.md,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TryonAvatarBadge(isVisible: isCurrentTheAvatar),
+                  const SizedBox(width: AppSpacing.sm),
+                  TryonGalleryActions(onReplaceAvatar: uploadAvatar),
+                ],
               ),
+            ),
 
             // 4. Bottom Left — Indicator (white floating lines)
             if (!isAvatarPage)
