@@ -71,8 +71,15 @@ class StorageCleanupService {
     }
   }
 
+  /**
+   * Only the user-scoped Supabase buckets. Store logos and product images used
+   * to be swept from here too, but they live in R2 under `stores/` now (see
+   * `_shared/storage.ts`, written by `store-images`), so that branch was naming
+   * buckets nothing writes to — and swallowing the resulting error. Deleting the
+   * auth user orphans those R2 keys, which `store-images-cleanup` is what
+   * collects.
+   */
   async cleanupUserStorage(userId: string): Promise<void> {
-    // 1. Clean User-Centric Buckets (files stored under userId/)
     const userBuckets = [USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET];
     await Promise.all(
       userBuckets.map(async (bucket) => {
@@ -88,43 +95,6 @@ class StorageCleanupService {
         }
       })
     );
-
-    // 2. Clean Store-Centric Buckets (files stored under storeId/)
-    try {
-      // Fetch stores owned by user to get storeIds
-      const { data: stores, error: storeError } = await this.supabase
-        .from("store_profiles")
-        .select("id")
-        .eq("owner_id", userId);
-
-      if (storeError) {
-        console.warn("Failed to fetch user stores for cleanup:", storeError);
-      } else if (stores && stores.length > 0) {
-        const storeBuckets = ["store-logos", "product-images"];
-
-        for (const store of stores) {
-          const storeId = store.id;
-          await Promise.all(
-            storeBuckets.map(async (bucket) => {
-              try {
-                // Products bucket structure: storeId/products/filename (files are deeper)
-                // Logos bucket structure: storeId/logo/filename
-                // So we just recursively delete from storeId/
-                const files = await this.listFilesRecursively(bucket, storeId);
-                if (files.length > 0) {
-                  console.log(`Deleting ${files.length} files from ${bucket}/${storeId}`);
-                  await this.deleteFiles(bucket, files);
-                }
-              } catch (error) {
-                console.warn(`Cleanup error in ${bucket} for store ${storeId}:`, error);
-              }
-            })
-          );
-        }
-      }
-    } catch (error) {
-      console.warn("Error in store cleanup logic:", error);
-    }
   }
 }
 
