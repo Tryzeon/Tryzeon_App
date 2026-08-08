@@ -93,7 +93,11 @@ class TryonStyleSheet extends HookConsumerWidget {
 
             Text('場景 Scene', style: textTheme.titleSmall),
             const SizedBox(height: AppSpacing.sm),
-            _PresetChips(controller: sceneController, presets: scenePresets),
+            _PresetChips(
+              controller: sceneController,
+              presets: scenePresets,
+              emptyLabel: '沿用原背景',
+            ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: sceneController,
@@ -124,6 +128,7 @@ class TryonStyleSheet extends HookConsumerWidget {
               _PresetChips(
                 controller: transitionController,
                 presets: transitionPresets,
+                emptyLabel: '預設走秀',
               ),
               const SizedBox(height: AppSpacing.sm),
               TextField(
@@ -158,11 +163,20 @@ class TryonStyleSheet extends HookConsumerWidget {
 
 /// Presets as a single-choice row over [controller]'s text — typing anything
 /// off-list simply leaves every chip unselected.
+///
+/// [emptyLabel] names what an empty prompt actually does, which differs per
+/// field: an empty scene keeps the original background, an empty transition
+/// falls back to the default runway motion.
 class _PresetChips extends StatelessWidget {
-  const _PresetChips({required this.controller, required this.presets});
+  const _PresetChips({
+    required this.controller,
+    required this.presets,
+    required this.emptyLabel,
+  });
 
   final TextEditingController controller;
   final List<String> presets;
+  final String emptyLabel;
 
   void _apply(final String text) {
     controller.value = TextEditingValue(
@@ -182,7 +196,7 @@ class _PresetChips extends StatelessWidget {
           runSpacing: AppSpacing.xs,
           children: [
             ChoiceChip(
-              label: const Text('不指定'),
+              label: Text(emptyLabel),
               selected: current.isEmpty,
               onSelected: (final _) => _apply(''),
             ),

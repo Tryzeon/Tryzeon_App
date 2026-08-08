@@ -239,13 +239,6 @@ class _ModeCard extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Chevron (only show when unlocked)
-                  if (!isLocked)
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
                 ],
               ),
 
