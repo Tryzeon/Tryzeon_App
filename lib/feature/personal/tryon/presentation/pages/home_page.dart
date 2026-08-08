@@ -14,8 +14,11 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
@@ -40,6 +43,12 @@ class HomePage extends HookConsumerWidget {
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
+    final hasVideoAccess = ref
+        .watch(subscriptionCapabilitiesProvider)
+        .maybeWhen(
+          data: (final capabilities) => capabilities.hasVideoAccess,
+          orElse: () => false,
+        );
     final pageController = usePageController(initialPage: 0);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -106,7 +115,7 @@ class HomePage extends HookConsumerWidget {
       if (outcome != null) handleTryonOutcome(outcome);
     });
 
-    Future<void> tryonFromLocal() async {
+    Future<void> tryonFromLocal(final TryonMode mode) async {
       final File? garmentImage = await ImagePickerHelper.pickImage(
         context,
         title: '選擇服飾來源',
@@ -114,7 +123,18 @@ class HomePage extends HookConsumerWidget {
       );
       if (garmentImage == null) return;
 
-      await ref.read(tryonCoordinatorProvider).tryonFromLocalImage(garmentImage);
+      await ref
+          .read(tryonCoordinatorProvider)
+          .tryonFromLocalImage(garmentImage, mode: mode);
+    }
+
+    void startTryon() {
+      HapticFeedback.mediumImpact();
+      TryonModeSheet.show(
+        context: context,
+        hasVideoAccess: hasVideoAccess,
+        onModeSelected: tryonFromLocal,
+      );
     }
 
     final bottomOffset =
@@ -223,7 +243,7 @@ class HomePage extends HookConsumerWidget {
                         color: colorScheme.primaryContainer,
                       ),
                 isDisabled: isUploadingAvatar,
-                onTap: hasAvatar ? tryonFromLocal : uploadAvatar,
+                onTap: hasAvatar ? startTryon : uploadAvatar,
               ),
             ),
           ],

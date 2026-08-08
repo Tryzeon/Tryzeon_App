@@ -33,8 +33,11 @@ class TryonController extends _$TryonController {
   @override
   bool updateShouldNotify(final TryonOutcome? previous, final TryonOutcome? next) => true;
 
-  /// Runs an image try-on from a locally picked garment photo.
-  Future<void> tryonFromLocalImage(final File image) async {
+  /// Runs a try-on from a locally picked garment photo.
+  Future<void> tryonFromLocalImage(
+    final File image, {
+    final TryonMode mode = TryonMode.image,
+  }) async {
     final Uint8List bytes;
     try {
       bytes = await image.readAsBytes();
@@ -48,7 +51,7 @@ class TryonController extends _$TryonController {
       garments: [
         TryonGarment.images(images: [TryonImageSource.base64(base64Encode(bytes))]),
       ],
-      mode: TryonMode.image,
+      mode: mode,
     );
   }
 

@@ -30,10 +30,15 @@ class TryonCoordinator {
     if (_navigateToHome == fn) _navigateToHome = null;
   }
 
-  /// Starts an image try-on from a locally picked garment photo.
-  Future<void> tryonFromLocalImage(final File image) async {
+  /// Starts a try-on from a locally picked garment photo.
+  Future<void> tryonFromLocalImage(
+    final File image, {
+    final TryonMode mode = TryonMode.image,
+  }) async {
     _navigateToHome?.call();
-    await _ref.read(tryonControllerProvider.notifier).tryonFromLocalImage(image);
+    await _ref
+        .read(tryonControllerProvider.notifier)
+        .tryonFromLocalImage(image, mode: mode);
   }
 
   /// Starts a try-on from garment images already stored remotely (by path).
