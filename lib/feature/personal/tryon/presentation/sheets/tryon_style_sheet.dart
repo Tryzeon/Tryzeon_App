@@ -91,7 +91,20 @@ class TryonStyleSheet extends HookConsumerWidget {
               ),
             ),
 
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
             Text('場景 Scene', style: textTheme.titleSmall),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  '圖片與影片試穿',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.sm),
             _PresetChips(
               controller: sceneController,
