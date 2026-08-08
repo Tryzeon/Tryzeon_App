@@ -95,7 +95,7 @@ class TryonStyleSheet extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-            Text('場景 Scene', style: textTheme.titleSmall),
+                Text('場景 Scene', style: textTheme.titleSmall),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   '圖片與影片試穿',
@@ -175,7 +175,8 @@ class TryonStyleSheet extends HookConsumerWidget {
 }
 
 /// Presets as a single-choice row over [controller]'s text — typing anything
-/// off-list simply leaves every chip unselected.
+/// off-list surfaces a selected "自訂" chip, so exactly one chip is always lit
+/// and an unlisted prompt never reads as "nothing applied".
 ///
 /// [emptyLabel] names what an empty prompt actually does, which differs per
 /// field: an empty scene keeps the original background, an empty transition
@@ -204,6 +205,7 @@ class _PresetChips extends StatelessWidget {
       valueListenable: controller,
       builder: (final context, final value, final _) {
         final current = value.text.trim();
+        final isCustom = current.isNotEmpty && !presets.contains(current);
         return Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.xs,
@@ -218,6 +220,14 @@ class _PresetChips extends StatelessWidget {
                 label: Text(preset),
                 selected: current == preset,
                 onSelected: (final _) => _apply(preset),
+              ),
+            // Mirrors the field rather than setting it — re-picking the value
+            // already typed is a no-op.
+            if (isCustom)
+              ChoiceChip(
+                label: const Text('自訂'),
+                selected: true,
+                onSelected: (final _) {},
               ),
           ],
         );
