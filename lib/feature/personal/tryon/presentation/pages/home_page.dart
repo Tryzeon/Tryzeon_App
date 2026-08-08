@@ -35,6 +35,8 @@ class HomePage extends HookConsumerWidget {
     final avatarError = avatarAsync.isLoading || avatarAsync.hasValue
         ? null
         : avatarAsync.error;
+    final hasAvatar =
+        ref.watch(userProfileProvider).value?.avatarPath?.isNotEmpty ?? false;
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
@@ -198,33 +200,29 @@ class HomePage extends HookConsumerWidget {
                 ),
               ),
 
-            // 5. Bottom Right — Try On Button (dark glassmorphism pill)
-            avatarAsync.maybeWhen(
-              data: (final avatarFile) {
-                final hasAvatar = avatarFile != null;
-                return Positioned(
-                  bottom: bottomOffset + AppSpacing.lg,
-                  right: AppSpacing.lg,
-                  child: HomePrimaryActionButton(
-                    label: hasAvatar ? '虛擬試穿' : '上傳照片',
-                    icon: hasAvatar
-                        ? Image.asset(
-                            AppConstants.logoMark,
-                            width: 20,
-                            height: 20,
-                            fit: BoxFit.contain,
-                          )
-                        : Icon(
-                            Icons.upload_rounded,
-                            size: 20,
-                            color: colorScheme.primaryContainer,
-                          ),
-                    isDisabled: isUploadingAvatar,
-                    onTap: hasAvatar ? tryonFromLocal : uploadAvatar,
-                  ),
-                );
-              },
-              orElse: () => const SizedBox.shrink(),
+            // 5. Bottom Right — Try On Button (dark glassmorphism pill).
+            // Only an in-flight avatar upload blocks it: the backend resolves
+            // the model photo itself, so a try-on never waits on the download.
+            Positioned(
+              bottom: bottomOffset + AppSpacing.lg,
+              right: AppSpacing.lg,
+              child: HomePrimaryActionButton(
+                label: hasAvatar ? '虛擬試穿' : '上傳照片',
+                icon: hasAvatar
+                    ? Image.asset(
+                        AppConstants.logoMark,
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.contain,
+                      )
+                    : Icon(
+                        Icons.upload_rounded,
+                        size: 20,
+                        color: colorScheme.primaryContainer,
+                      ),
+                isDisabled: isUploadingAvatar,
+                onTap: hasAvatar ? tryonFromLocal : uploadAvatar,
+              ),
             ),
           ],
         ),
