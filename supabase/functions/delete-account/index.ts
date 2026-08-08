@@ -2,12 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { json } from "../_shared/http.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
-
-// --- Configuration ---
-const CONFIG = {
-  SUPABASE_URL: Deno.env.get("SUPABASE_URL"),
-  SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-};
+import { getAdminClient, supabaseAnonKey, supabaseUrl } from "../_shared/supabase.ts";
 
 // --- Error Handling ---
 class AppError extends Error {
@@ -140,21 +135,17 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new AppError("Missing Authorization header", 401);
 
-    // Create user client for auth
     const userClient = createClient(
-      CONFIG.SUPABASE_URL!,
-      CONFIG.SUPABASE_SERVICE_ROLE_KEY!,
+      supabaseUrl(),
+      supabaseAnonKey(),
       { global: { headers: { Authorization: authHeader } } }
     );
 
     const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) throw new AppError("Unauthorized", 401);
 
-    // 2. Create admin client for database and storage operations
-    const adminClient = createClient(
-      CONFIG.SUPABASE_URL!,
-      CONFIG.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // 2. Admin client for database and storage operations
+    const adminClient = getAdminClient();
 
     // 3. Clean up user storage files
     const storageService = new StorageCleanupService(adminClient);
