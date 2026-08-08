@@ -77,7 +77,9 @@ class HomePage extends HookConsumerWidget {
           context,
           message: result.getError()!.displayMessage(context),
         );
+        return;
       }
+      galleryNotifier.showAvatarPage();
     }
 
     void handleTryonOutcome(final TryonOutcome outcome) {

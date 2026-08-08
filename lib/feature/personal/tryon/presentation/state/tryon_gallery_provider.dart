@@ -58,6 +58,8 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     state = state.copyWith(currentId: id);
   }
 
+  void showAvatarPage() => setCurrentPage(0);
+
   /// Inserts the pending placeholder for a try-on that just started.
   void addPending({required final String id, required final TryonMode mode}) {
     state = state.copyWith(
