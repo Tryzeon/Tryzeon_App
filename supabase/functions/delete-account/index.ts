@@ -1,8 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import { json } from "../_shared/http.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
-import { getAdminClient, supabaseAnonKey, supabaseUrl } from "../_shared/supabase.ts";
+import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 
 // --- Error Handling ---
 class AppError extends Error {
@@ -102,27 +101,18 @@ class StorageCleanupService {
 Deno.serve(async (req) => {
   try {
     // 1. Authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new AppError("Missing Authorization header", 401);
-
-    const userClient = createClient(
-      supabaseUrl(),
-      supabaseAnonKey(),
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) throw new AppError("Unauthorized", 401);
+    const { user, errorResponse } = await getAuthenticatedUserClient(req);
+    if (errorResponse) return errorResponse;
 
     // 2. Admin client for database and storage operations
     const adminClient = getAdminClient();
 
     // 3. Clean up user storage files
     const storageService = new StorageCleanupService(adminClient);
-    await storageService.cleanupUserStorage(user.id);
+    await storageService.cleanupUserStorage(user!.id);
 
     // 4. Delete auth user (triggers cascade delete for all DB records)
-    const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(user.id);
+    const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(user!.id);
     if (deleteAuthError) {
       console.error("Failed to delete auth user:", deleteAuthError);
       throw new AppError("Failed to delete authentication account", 500);
