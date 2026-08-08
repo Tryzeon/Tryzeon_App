@@ -8,9 +8,9 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 
-/// The action button floating over the gallery. It opens a sheet of the actions
-/// that apply to the page in view: replacing the model photo on the avatar page,
-/// or share / download / set-as-avatar / delete on a try-on.
+/// The action button floating over the gallery. Replacing the model photo is
+/// offered on every page; a try-on page adds share / download / set-as-avatar /
+/// delete on top.
 ///
 /// Owns its own handlers so the home page stays a layout — the only action it
 /// cannot own is [onReplaceAvatar], which the home CTA offers as well.
@@ -64,15 +64,15 @@ class TryonGalleryActions extends ConsumerWidget {
       }
     }
 
+    final replaceAvatar = AppMenuAction(
+      icon: Icons.swap_horiz_rounded,
+      title: '更換模特圖片',
+      subtitle: '上傳照片更換試穿模特',
+      onTap: onReplaceAvatar,
+    );
+
     final actions = gallery.isAvatarPage
-        ? [
-            AppMenuAction(
-              icon: Icons.swap_horiz_rounded,
-              title: '更換模特圖片',
-              subtitle: '上傳照片更換試穿模特',
-              onTap: onReplaceAvatar,
-            ),
-          ]
+        ? [replaceAvatar]
         : [
             AppMenuAction(
               icon: Icons.ios_share_rounded,
@@ -95,6 +95,7 @@ class TryonGalleryActions extends ConsumerWidget {
                 subtitle: isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象',
                 onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
               ),
+            replaceAvatar,
             AppMenuAction(
               icon: Icons.delete_outline_rounded,
               title: '刪除此試穿',
