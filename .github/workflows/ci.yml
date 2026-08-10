@@ -109,7 +109,7 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: true
-          swap-storage: true
+          swap-storage: false  # 7.8GB runner needs the swap headroom; disk is not the constraint
 
       - name: Setup Java
         uses: actions/setup-java@v4
