@@ -1,0 +1,92 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { getAdminClient } from "../_shared/supabase.ts";
+import { json, jsonError } from "../_shared/http.ts";
+import {
+  channelFromUserAgent,
+  codeFromPathname,
+  detectSurface,
+  platformFromUserAgent,
+} from "./surface.ts";
+import { buildStoreDestination, isOpenWith } from "./destination.ts";
+
+/**
+ * 各開啟方式所需的設定。刻意不在啟動時檢查：缺 LIFF_URL 只該讓 liff 型的連結失敗，
+ * 而不是讓整支函式失效 —— 之後 web 型的連結不需要這項設定也要能運作。
+ */
+const DESTINATION_CONFIG = {
+  liffUrl: Deno.env.get("LIFF_URL") ?? null,
+};
+
+/** 一律 no-store —— 每次呼叫都會記一筆開啟事件，所以呼叫端不能對這支端點加快取。 */
+function noStore(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", "no-store");
+  return new Response(response.body, { status: response.status, headers });
+}
+
+/**
+ * 一個短連結 code 指向哪裡：`{ "url": "…" }`。
+ *
+ * 狀態碼是有意義的：404 是「這個 code 不存在或已停用」，5xx 是「我們壞了」。呼叫端
+ * 目前把兩者都導回站台首頁，但區分留在協定裡，因為兩者該給使用者的訊息不同 ——
+ * 把故障說成「連結已失效」等於告訴店家的客人他的立牌沒用。
+ *
+ * `detectSurface` 的結果不影響回應，只寫進 `link_events.source`。之後要不要讓非 LINE
+ * 環境改走「點擊進入」而不是 302（iOS 18.3 之後 redirect 不再觸發 universal link），
+ * 就靠這份資料決定，而不是靠猜。
+ */
+Deno.serve(async (req) => {
+  try {
+    const code = codeFromPathname(new URL(req.url).pathname);
+    if (!code) {
+      return noStore(jsonError("Malformed code", "NOT_FOUND", 404));
+    }
+
+    const adminClient = getAdminClient();
+    const { data: link, error } = await adminClient
+      .from("short_links")
+      .select("code, store_id, open_with")
+      .eq("code", code)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (error) {
+      console.error("short-links lookup failed:", error);
+      return noStore(jsonError("Lookup failed", "INTERNAL_ERROR", 500));
+    }
+    if (!link) {
+      console.warn(`short-links: unknown or inactive code "${code}"`);
+      return noStore(jsonError("Unknown or inactive code", "NOT_FOUND", 404));
+    }
+
+    // DB 的 check constraint 只允許已實作的值，所以走到這裡代表 schema 與程式碼不同步。
+    if (!isOpenWith(link.open_with)) {
+      console.error(`short-links: unsupported open_with "${link.open_with}" on "${link.code}"`);
+      return noStore(jsonError("Unsupported link target", "INTERNAL_ERROR", 500));
+    }
+
+    const url = buildStoreDestination(link.open_with, link.store_id, DESTINATION_CONFIG);
+    if (url === null) {
+      console.error(`short-links: missing config for open_with "${link.open_with}"`);
+      return noStore(jsonError("Server misconfigured", "INTERNAL_ERROR", 500));
+    }
+
+    const userAgent = req.headers.get("User-Agent");
+
+    // 記錄失敗絕不阻擋回應 —— 掃碼的人在等，log 可以再補。
+    const { error: insertError } = await adminClient.from("link_events").insert({
+      code: link.code,
+      source: detectSurface(userAgent),
+      platform: platformFromUserAgent(userAgent),
+      channel: channelFromUserAgent(userAgent),
+    });
+    if (insertError) {
+      console.error("short-links: failed to record open:", insertError);
+    }
+
+    return noStore(json({ url }));
+  } catch (err) {
+    console.error("short-links handler error:", err);
+    return noStore(jsonError("Internal server error", "INTERNAL_ERROR", 500));
+  }
+});

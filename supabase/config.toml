@@ -1,7 +1,7 @@
 [functions.revenuecat-webhook]
 verify_jwt = false
 
-[functions.resolve-link]
+[functions.short-links]
 verify_jwt = false
 
 [functions.liff-tryon]

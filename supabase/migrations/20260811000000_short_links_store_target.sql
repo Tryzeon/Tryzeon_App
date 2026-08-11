@@ -12,6 +12,11 @@
 --     store_profiles 推導,不可推導的只有「印在哪」這行備註
 --   * code 加小寫格式 check —— 原本 PK 大小寫敏感,PinkyRabbit 與 pinkyrabbit
 --     會是兩筆
+--   * open_with 宣告這個連結要在哪裡開啟。一個連結只支援一種開啟方式,所以這是連結
+--     的屬性,不隨掃碼環境改變 —— 環境只決定「能不能直接 302」,不決定「去哪裡」。
+--     目前只實作 liff;web 與 app 之後各自加一個值,屆時 check 要一起放寬。限制在已實作
+--     的值,資料庫就無法存進程式還不會處理的狀態,與 store_id 用 typed FK 的理由相同。
+--     有 default 是為了讓建立 QR 的流程不必知道這個欄位,直到真的有第二種開啟方式。
 --   * link_events.code 的 FK 補 on delete cascade —— 否則刪店家會被 FK 擋住並變成
 --     HTTP 500,與 20260619000000 修過的 link_events.user_id 同一類問題
 --
@@ -25,10 +30,12 @@ drop table if exists public.short_links;
 create table public.short_links (
   code       text primary key,
   store_id   uuid not null references public.store_profiles(id) on delete cascade,
+  open_with  text not null default 'liff',
   is_active  boolean not null default true,
   note       text,
   created_at timestamptz not null default now(),
-  constraint short_links_code_format check (code ~ '^[a-z0-9][a-z0-9-]{1,31}$')
+  constraint short_links_code_format check (code ~ '^[a-z0-9][a-z0-9-]{1,31}$'),
+  constraint short_links_open_with_check check (open_with in ('liff'))
 );
 
 alter table public.short_links enable row level security;
@@ -44,6 +51,7 @@ alter table public.link_events
 -- 解析器已經刪除,所以這支 RPC 沒有任何呼叫端了。
 --
 -- 已安裝的舊版 App binary 仍會攔截 /s/ 並呼叫它,呼叫會失敗 —— 那條路徑上的
--- resolveShortLinkDestination 會接住錯誤並退回首頁。這是刻意接受的降級:為尚未
--- 更新的版本留一支沒人維護的 RPC,就是 backward-compat 包袱。新 QR 印 /q/,不受影響。
+-- resolveShortLinkDestination 會接住錯誤並退回首頁。這是刻意接受的降級:為尚未更新的
+-- 版本留一支沒人維護的 RPC,就是 backward-compat 包袱。更新過的版本不再宣告 /s/,
+-- 掃碼會正常進到瀏覽器與 LIFF。
 drop function if exists public.record_link_open(text, text, text);
