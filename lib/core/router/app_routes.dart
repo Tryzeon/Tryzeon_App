@@ -39,8 +39,6 @@ abstract final class AppRoutes {
   // Deep link content routes (top-level, redirect to feature routes)
   static const String deepLinkProduct = '/product/:productId';
   static const String deepLinkStore = '/store/:storeId';
-  // Tracked short link (QR/shares/campaigns).
-  static const String deepLinkShort = '/s/:code';
 
   static String homeForUserType(final UserType userType) {
     return userType == UserType.store ? dashboardAccount : personalHome;

@@ -34,7 +34,6 @@ class AppConstants {
   static const String functionLogAnalyticsEvents = 'log_analytics_events';
   static const String functionAnalyzeWardrobeImage = 'analyze-wardrobe-image';
   static const String functionAnalyzeProductImage = 'analyze-product-image';
-  static const String functionRecordLinkOpen = 'record_link_open';
   static const String functionParseSizeVoice = 'parse-size-voice';
   static const String functionStoreImages = 'store-images';
   static const String functionStoreImagesPresignLogo =

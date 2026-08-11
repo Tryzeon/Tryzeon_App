@@ -2,8 +2,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/modules/short_link/data/short_link_code.dart';
-import 'package:tryzeon/core/modules/short_link/providers/pending_link_provider.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/auth_refresh_listenable.dart';
 import 'package:tryzeon/core/router/routes/auth_routes.dart';
@@ -37,36 +35,22 @@ Raw<GoRouter> appRouter(final Ref ref) {
       final path = state.matchedLocation;
       final isAuthPath = path == AppRoutes.login;
 
-      // 1. 未登入 → 暫存 /s/{code} 掃碼意圖，導向登入頁
+      // 1. 未登入 → 導向登入頁
       if (!isLoggedIn) {
-        if (isAuthPath) return null;
-        if (path.startsWith('/s/')) {
-          final shortCode = shortLinkCodeFromUrl(path);
-          if (shortCode != null) {
-            ref.read(pendingLinkProvider.notifier).set(code: shortCode, source: 'app');
-          }
-        }
-        return AppRoutes.login;
+        return isAuthPath ? null : AppRoutes.login;
       }
 
-      // 2. 已登入 + 有 pending 短連結 → 立即導向 /s/{code} 消費。Deep link 優先於
-      //    onboarding；!path.startsWith('/s/') 避免 resolver 自我重導迴圈。
-      final pending = ref.read(pendingLinkProvider);
-      if (pending != null && !path.startsWith('/s/')) {
-        return '/s/${pending.code}';
-      }
-
-      // 3. 已登入但仍處於登入頁 → 導向首頁
+      // 2. 已登入但仍處於登入頁 → 導向首頁
       if (isAuthPath) return _resolveHomePath(ref);
 
-      // 4. 商家 Onboarding 攔截（排除 Deep Link 與 Onboarding 頁面本身）
+      // 3. 商家 Onboarding 攔截（排除 Deep Link 與 Onboarding 頁面本身）
       final storeRedirect = _handleStoreOnboardingRedirect(
         path,
         ref.read(storeProfileProvider),
       );
       if (storeRedirect != null) return storeRedirect;
 
-      // 5. 個人 Onboarding 攔截（deep link 內容頁在內部豁免，優先顯示）
+      // 4. 個人 Onboarding 攔截（deep link 內容頁在內部豁免，優先顯示）
       final personalRedirect = _handlePersonalOnboardingRedirect(
         path,
         ref.read(userProfileProvider),
@@ -93,12 +77,6 @@ Raw<GoRouter> appRouter(final Ref ref) {
 
   // 監聽 user profile 變化，觸發 redirect 重新評估（例如完成 onboarding 後）
   ref.listen(userProfileProvider, (final _, final _) {
-    refreshListenable.refresh();
-  });
-
-  // 監聽 pending 短連結變化（例如 runtime 收到 deferred link、或啟動 hydrate），
-  // 觸發 redirect 重新評估以消費它。
-  ref.listen(pendingLinkProvider, (final _, final _) {
     refreshListenable.refresh();
   });
 
