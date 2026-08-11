@@ -40,6 +40,8 @@ export function AppRouter() {
     <Routes>
       <Route element={<LiffGate />}>
         <Route path="/" element={<Shop />} />
+        {/* 店家 QR 的落點:resolve-link 302 到 ${LIFF_URL}/store/{store_id}。 */}
+        <Route path="/store/:storeId" element={<Shop />} />
         <Route path="/onboard" element={<Onboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

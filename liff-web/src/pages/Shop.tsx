@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { CatalogItem } from "../api/catalog";
 import { Header } from "../components/Header";
 import { ProductGrid } from "../components/ProductGrid";
@@ -11,7 +11,12 @@ import { useCatalog } from "../hooks/useCatalog";
 import { useTryon } from "../hooks/useTryon";
 
 export function Shop() {
-  const catalog = useCatalog();
+  // /store/:storeId 進來時篩選成單一店家；首頁沒有這個參數就是全站商品。
+  const { storeId } = useParams<{ storeId: string }>();
+  const catalog = useCatalog(storeId);
+
+  // 店名沿用 catalog item 已經帶的 storeName，不另外開一支端點。
+  const storeName = storeId ? catalog.items[0]?.storeName ?? null : null;
 
   const tryon = useTryon();
   const navigate = useNavigate();
@@ -50,7 +55,7 @@ export function Shop() {
   if (tryon.state.phase === "generating") {
     return (
       <div className="app">
-        <Header overlay />
+        <Header overlay title={storeName} />
         <FittingScreen />
       </div>
     );
@@ -59,7 +64,7 @@ export function Shop() {
   if (tryon.state.phase === "done") {
     return (
       <div className="app">
-        <Header />
+        <Header title={storeName} />
         <ResultScreen
           item={tryon.state.item}
           imageUrl={tryon.state.imageUrl}
@@ -71,7 +76,7 @@ export function Shop() {
 
   return (
     <div className="app">
-      <Header />
+      <Header title={storeName} />
       <main className="main">
         <SearchSortBar
           sort={catalog.sort}
@@ -93,7 +98,7 @@ export function Shop() {
         )}
 
         {catalog.status === "ready" && (catalog.items.length === 0
-          ? <p className="empty">找不到符合的商品。</p>
+          ? <p className="empty">{storeId ? "這家店還沒有上架商品。" : "找不到符合的商品。"}</p>
           : <ProductGrid items={catalog.items} onOpen={openSheet} />)}
 
         {catalog.status === "ready" && catalog.hasMore && (

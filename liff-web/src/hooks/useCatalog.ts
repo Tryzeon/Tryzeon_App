@@ -3,7 +3,7 @@ import { fetchCatalog, type CatalogItem, type SortOption } from "../api/catalog"
 
 type Status = "loading" | "ready" | "error";
 
-export function useCatalog() {
+export function useCatalog(storeId?: string) {
   const [query, setQuery] = useState<{ q: string; sort: SortOption }>({
     q: "",
     sort: "latest",
@@ -24,7 +24,7 @@ export function useCatalog() {
     // A replaced list should not leave the viewport mid-list, so jump back to
     // the top whenever a new query starts (never on loadMore, which appends).
     window.scrollTo(0, 0);
-    fetchCatalog({ ...query, offset: 0 }).then(
+    fetchCatalog({ ...query, storeId, offset: 0 }).then(
       (page) => {
         if (id !== requestId.current) return;
         setItems(page.items);
@@ -37,13 +37,13 @@ export function useCatalog() {
         setStatus("error");
       },
     );
-  }, [query]);
+  }, [query, storeId]);
 
   const loadMore = useCallback(() => {
     if (loadingMore) return;
     const id = requestId.current;
     setLoadingMore(true);
-    fetchCatalog({ ...query, offset })
+    fetchCatalog({ ...query, storeId, offset })
       .then((page) => {
         if (id !== requestId.current) return;
         setItems((prev) => [...prev, ...page.items]);
@@ -53,7 +53,7 @@ export function useCatalog() {
       // A load-more failure is non-fatal: keep what is already on screen.
       .catch(() => {})
       .finally(() => setLoadingMore(false));
-  }, [loadingMore, offset, query]);
+  }, [loadingMore, offset, query, storeId]);
 
   // Each call makes a fresh query object on purpose: pressing 搜尋 again with
   // the same text is a deliberate reload, not a no-op.

@@ -21,12 +21,16 @@ export interface CatalogQuery {
   q: string;
   sort: SortOption;
   offset: number;
+  storeId?: string;
 }
 
-export async function fetchCatalog({ q, sort, offset }: CatalogQuery): Promise<CatalogPage> {
+export async function fetchCatalog(
+  { q, sort, offset, storeId }: CatalogQuery,
+): Promise<CatalogPage> {
   const base = import.meta.env.VITE_LIFF_CATALOG_URL as string;
   const params = new URLSearchParams({ offset: String(offset), sort });
   if (q) params.set("q", q);
+  if (storeId) params.set("store", storeId);
 
   const data = await readJson(await fetch(`${base}?${params}`));
   return {
