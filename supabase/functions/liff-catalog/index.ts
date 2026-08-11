@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
 
     const admin = getAdminClient();
     const { data, error } = await admin.rpc("list_shop_products", {
+      p_store_id: query.storeId,
       p_search_query: query.searchQuery,
       p_sort_column: query.sortColumn,
       p_sort_ascending: query.sortAscending,

@@ -8,6 +8,7 @@ Deno.test("parseCatalogQuery defaults to newest-first, no search, offset 0", () 
   assertEquals(parseCatalogQuery(url("")), {
     offset: 0,
     searchQuery: null,
+    storeId: null,
     sortColumn: "created_at",
     sortAscending: false,
   });
@@ -36,4 +37,17 @@ Deno.test("parseCatalogQuery clamps a bad offset to 0", () => {
   assertEquals(parseCatalogQuery(url("?offset=30")).offset, 30);
   assertEquals(parseCatalogQuery(url("?offset=-5")).offset, 0);
   assertEquals(parseCatalogQuery(url("?offset=abc")).offset, 0);
+});
+
+Deno.test("parseCatalogQuery accepts a store uuid", () => {
+  const id = "d01f159f-ef0a-48d7-965f-6da518ee76c4";
+  assertEquals(parseCatalogQuery(url(`?store=${id}`)).storeId, id);
+  // 大小寫無關:uuid 一律正規化成小寫再交給 RPC。
+  assertEquals(parseCatalogQuery(url(`?store=${id.toUpperCase()}`)).storeId, id);
+});
+
+Deno.test("parseCatalogQuery rejects a malformed store id", () => {
+  // 讓格式錯誤變成 400,而不是把垃圾字串丟給 Postgres 變成 500。
+  assertThrows(() => parseCatalogQuery(url("?store=nope")), ValidationError, "store");
+  assertThrows(() => parseCatalogQuery(url("?store=")), ValidationError, "store");
 });

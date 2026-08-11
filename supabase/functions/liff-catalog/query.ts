@@ -10,6 +10,7 @@ export type SortOption = typeof SORT_OPTIONS[number];
 export interface CatalogQuery {
   offset: number;
   searchQuery: string | null;
+  storeId: string | null;
   sortColumn: "created_at" | "price";
   sortAscending: boolean;
 }
@@ -24,6 +25,21 @@ const SORT_MAP: Record<SortOption, SortPair> = {
 
 function isSortOption(value: string): value is SortOption {
   return (SORT_OPTIONS as readonly string[]).includes(value);
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * 店家篩選。格式先驗證再往下傳:一個不是 uuid 的字串到了 RPC 只會變成 Postgres
+ * 的型別錯誤與 500,在這裡擋掉就是一個誠實的 400。
+ */
+function parseStoreId(raw: string | null): string | null {
+  if (raw === null) return null;
+  const value = raw.trim().toLowerCase();
+  if (!UUID_PATTERN.test(value)) {
+    throw new ValidationError("store must be a uuid");
+  }
+  return value;
 }
 
 /** Decodes the request URL's query string. Raises on an unknown `sort`. */
@@ -43,6 +59,7 @@ export function parseCatalogQuery(url: URL): CatalogQuery {
   return {
     offset,
     searchQuery: q.length > 0 ? q : null,
+    storeId: parseStoreId(url.searchParams.get("store")),
     ...SORT_MAP[sort],
   };
 }
