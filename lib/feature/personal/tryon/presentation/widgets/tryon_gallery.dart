@@ -224,8 +224,14 @@ class _TryonImageItem extends HookWidget {
       fadeOutDuration: Duration.zero,
       placeholder: (final context, final url) =>
           const Center(child: CircularProgressIndicator()),
-      errorWidget: (final context, final url, final error) =>
-          const Center(child: Icon(Icons.broken_image_outlined)),
+      // The cache streams bytes to disk and keeps no copy, so a failed write
+      // (full device) discards an image that downloaded fine.
+      errorWidget: (final context, final url, final error) => Image.network(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (final context, final error, final stackTrace) =>
+            const Center(child: Icon(Icons.broken_image_outlined)),
+      ),
     );
   }
 }
