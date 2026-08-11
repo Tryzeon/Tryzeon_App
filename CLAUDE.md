@@ -25,7 +25,7 @@ dart run build_runner watch  --delete-conflicting-outputs  # incremental codegen
 
 Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`). If imports of `*.g.dart` / `*.freezed.dart` are missing, run build_runner.
 
-`Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all five keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `CHOTTULINK_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
+`Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all four keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
 
 ## Architecture
 

@@ -13,9 +13,6 @@ abstract class Env {
   @EnviedField(varName: 'REVENUE_CAT_API_KEY')
   static final String revenueCatApiKey = _Env.revenueCatApiKey;
 
-  @EnviedField(varName: 'CHOTTULINK_API_KEY')
-  static final String chottuLinkApiKey = _Env.chottuLinkApiKey;
-
   @EnviedField(varName: 'R2_PUBLIC_IMAGES_BASE_URL')
   static final String r2PublicImagesBaseUrl = _Env.r2PublicImagesBaseUrl;
 }
