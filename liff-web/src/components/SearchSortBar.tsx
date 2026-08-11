@@ -31,7 +31,7 @@ export function SearchSortBar({ sort, onSearch, onSortChange }: Props) {
           className="searchbar__input"
           type="search"
           value={draft}
-          placeholder="搜尋商品或店家"
+          placeholder="搜尋商品"
           onChange={(e) => setDraft(e.target.value)}
         />
         <button className="searchbar__submit" type="submit">搜尋</button>
