@@ -280,17 +280,19 @@ button { font-family: inherit; }
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  aspect-ratio: 25 / 26;
 }
 .gallery__img {
   flex: 0 0 auto;
-  width: 78%;
+  height: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;
   scroll-snap-align: center;
   background: var(--surface-2);
 }
-/* Nothing to peek at with one photo — fill the row instead of leaving a gap. */
-.gallery__img:only-child { width: 100%; }
+/* Nothing to peek at with one photo — fill the row (cropping) instead of
+   leaving a gap. */
+.gallery__img:only-child { width: 100%; aspect-ratio: auto; }
 
 .avatarprompt { margin-top: 20px; }
 .avatarprompt .cta { margin-top: 14px; }
