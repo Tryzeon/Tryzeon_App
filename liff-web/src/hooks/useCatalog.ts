@@ -92,6 +92,7 @@ export function useCatalog(storeId?: string) {
   return {
     items,
     store,
+    appliedQuery: query.q,
     status,
     hasMore,
     loadingMore,

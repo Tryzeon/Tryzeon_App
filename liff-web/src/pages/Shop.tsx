@@ -49,6 +49,11 @@ export function Shop() {
     pushed.current = true;
   }
 
+  function emptyMessage(): string {
+    if (catalog.appliedQuery) return `找不到符合「${catalog.appliedQuery}」的商品。`;
+    return storeId ? "這家店還沒有上架商品。" : "找不到符合的商品。";
+  }
+
   function closeSheet() {
     tryon.reset();
     if (pushed.current) {
@@ -101,7 +106,7 @@ export function Shop() {
         )}
 
         {catalog.status === "ready" && (catalog.items.length === 0
-          ? <p className="empty">{storeId ? "這家店還沒有上架商品。" : "找不到符合的商品。"}</p>
+          ? <p className="empty">{emptyMessage()}</p>
           : <ProductGrid items={catalog.items} onOpen={openSheet} />)}
 
         {catalog.status === "ready" && catalog.hasMore && (
