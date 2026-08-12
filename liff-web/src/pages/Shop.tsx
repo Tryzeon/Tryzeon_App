@@ -15,8 +15,7 @@ export function Shop() {
   const { storeId } = useParams<{ storeId: string }>();
   const catalog = useCatalog(storeId);
 
-  // 店名沿用 catalog item 已經帶的 storeName，不另外開一支端點。
-  const storeName = storeId ? catalog.items[0]?.storeName ?? null : null;
+  const storeName = catalog.store?.name ?? null;
 
   const tryon = useTryon();
   const navigate = useNavigate();

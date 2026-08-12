@@ -11,8 +11,15 @@ export interface CatalogItem {
   purchaseLink: string | null;
 }
 
+/** 這份目錄所屬的店家。未指定店家的全站目錄為 null。 */
+export interface CatalogStore {
+  id: string;
+  name: string;
+}
+
 export interface CatalogPage {
   items: CatalogItem[];
+  store: CatalogStore | null;
   nextOffset: number;
   hasMore: boolean;
 }
@@ -35,6 +42,7 @@ export async function fetchCatalog(
   const data = await readJson(await fetch(`${base}?${params}`));
   return {
     items: Array.isArray(data.items) ? (data.items as CatalogItem[]) : [],
+    store: (data.store ?? null) as CatalogStore | null,
     nextOffset: typeof data.nextOffset === "number" ? data.nextOffset : offset,
     hasMore: Boolean(data.hasMore),
   };

@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchCatalog, type CatalogItem, type SortOption } from "../api/catalog";
+import {
+  fetchCatalog,
+  type CatalogItem,
+  type CatalogStore,
+  type SortOption,
+} from "../api/catalog";
 
 type Status = "loading" | "ready" | "error";
 
@@ -9,6 +14,7 @@ export function useCatalog(storeId?: string) {
     sort: "latest",
   });
   const [items, setItems] = useState<CatalogItem[]>([]);
+  const [store, setStore] = useState<CatalogStore | null>(null);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -28,6 +34,7 @@ export function useCatalog(storeId?: string) {
       (page) => {
         if (id !== requestId.current) return;
         setItems(page.items);
+        setStore(page.store);
         setOffset(page.nextOffset);
         setHasMore(page.hasMore);
         setStatus("ready");
@@ -66,6 +73,7 @@ export function useCatalog(storeId?: string) {
 
   return {
     items,
+    store,
     status,
     hasMore,
     loadingMore,
