@@ -416,10 +416,33 @@ button { font-family: inherit; }
 
 /* ── Result reveal ─────────────────────────────────────────────────────── */
 .result { flex: 1; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); }
+/* Holds the 3:4 box until the signed URL downloads, so the screen doesn't
+   collapse onto the caption and buttons. */
+.result__frame { position: relative; }
+.result__frame.is-pending {
+  aspect-ratio: 3 / 4;
+  background: var(--surface);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.result__frame.is-pending .result__img { position: absolute; opacity: 0; }
+.result__sk { position: absolute; inset: 0; }
+.result__failed {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
 .result__img {
   width: 100%;
   border-radius: var(--r-card);
   display: block;
+}
+.result__frame:not(.is-pending) .result__img {
   animation: reveal 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .result__caption {
