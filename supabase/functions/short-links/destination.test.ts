@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
-import { buildStoreDestination, isOpenWith } from "./destination.ts";
+import { buildStoreDestination, deliveryFor, isOpenWith } from "./destination.ts";
 
 const LIFF = { liffUrl: "https://liff.line.me/1234-abcd" };
 
@@ -30,4 +30,16 @@ Deno.test("isOpenWith accepts only implemented opening methods", () => {
   assertEquals(isOpenWith("web"), false);
   assertEquals(isOpenWith("app"), false);
   assertEquals(isOpenWith(null), false);
+});
+
+Deno.test("deliveryFor lets only LINE's in-app browser take a redirect", () => {
+  // 外部瀏覽器不能靠 302 喚起 LIFF:Apple 從 iOS 18.3 起不再讓 redirect 觸發
+  // universal link,LINE 也不保證外部瀏覽器能開起來。
+  assertEquals(deliveryFor("liff", "line"), "redirect");
+  assertEquals(deliveryFor("liff", "web"), "interstitial");
+});
+
+Deno.test("deliveryFor gives a crawler a page, never a redirect", () => {
+  // 預覽卡要抓得到 OG tag。
+  assertEquals(deliveryFor("liff", "bot"), "interstitial");
 });

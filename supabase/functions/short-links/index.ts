@@ -1,14 +1,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getAdminClient } from "../_shared/supabase.ts";
+import { publicImageUrl } from "../_shared/storage.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import {
   channelFromUserAgent,
   codeFromPathname,
   detectSurface,
   platformFromUserAgent,
+  type Surface,
 } from "./surface.ts";
-import { buildStoreDestination, isOpenWith } from "./destination.ts";
+import { buildStoreDestination, deliveryFor, isOpenWith } from "./destination.ts";
 
 // EdgeRuntime.waitUntil 讓寫入在回應送出之後才跑完。與 line-webhook 同一個寫法，
 // 在這裡宣告是為了 Deno 的型別檢查。
@@ -22,6 +24,8 @@ const DESTINATION_CONFIG = {
   liffUrl: Deno.env.get("LIFF_URL") ?? null,
 };
 
+const IMAGES_BASE_URL = Deno.env.get("R2_PUBLIC_IMAGES_BASE_URL") ?? null;
+
 /**
  * 記錄一次開啟。跑在 `EdgeRuntime.waitUntil` 裡，也就是回應送出之後 —— 所以它自己
  * try/catch：背景任務的 rejection 沒有人會接。
@@ -29,12 +33,13 @@ const DESTINATION_CONFIG = {
 async function recordOpen(
   client: SupabaseClient,
   code: string,
+  surface: Surface,
   userAgent: string | null,
 ): Promise<void> {
   try {
     const { error } = await client.from("link_events").insert({
       code,
-      source: detectSurface(userAgent),
+      source: surface,
       platform: platformFromUserAgent(userAgent),
       channel: channelFromUserAgent(userAgent),
     });
@@ -44,6 +49,11 @@ async function recordOpen(
   } catch (err) {
     console.error("short-links: failed to record open:", err);
   }
+}
+
+interface StoreRow {
+  name: string | null;
+  logo_path: string | null;
 }
 
 /** 一律 no-store —— 每次呼叫都會記一筆開啟事件，所以呼叫端不能對這支端點加快取。 */
@@ -74,7 +84,7 @@ Deno.serve(async (req) => {
     const adminClient = getAdminClient();
     const { data: link, error } = await adminClient
       .from("short_links")
-      .select("code, store_id, open_with")
+      .select("code, store_id, open_with, store_profiles!inner(name, logo_path)")
       .eq("code", code)
       .eq("is_active", true)
       .maybeSingle();
@@ -102,11 +112,27 @@ Deno.serve(async (req) => {
 
     // 掃碼的人不需要等事件寫完才被導走。實測這次寫入約佔熱路徑回應時間的一半
     // （~0.45s，第二次 PostgREST 往返），而它對使用者沒有任何價值。
-    const record = recordOpen(adminClient, link.code, req.headers.get("User-Agent"));
+    // 巢狀關聯在 to-one 時回物件，但視 PostgREST 版本也可能是單元素陣列。
+    const embedded = link.store_profiles as unknown as StoreRow | StoreRow[] | null;
+    const store = Array.isArray(embedded) ? embedded[0] ?? null : embedded;
+
+    const userAgent = req.headers.get("User-Agent");
+    const surface = detectSurface(userAgent);
+
+    const record = recordOpen(adminClient, link.code, surface, userAgent);
     if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(record);
     else await record;
 
-    return noStore(json({ url }));
+    return noStore(json({
+      url,
+      delivery: deliveryFor(link.open_with, surface),
+      store: {
+        name: store?.name ?? null,
+        logoUrl: store?.logo_path && IMAGES_BASE_URL
+          ? publicImageUrl(IMAGES_BASE_URL, store.logo_path)
+          : null,
+      },
+    }));
   } catch (err) {
     console.error("short-links handler error:", err);
     return noStore(jsonError("Internal server error", "INTERNAL_ERROR", 500));
