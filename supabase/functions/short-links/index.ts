@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getAdminClient } from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import {
@@ -9,6 +10,10 @@ import {
 } from "./surface.ts";
 import { buildStoreDestination, isOpenWith } from "./destination.ts";
 
+// EdgeRuntime.waitUntil 讓寫入在回應送出之後才跑完。與 line-webhook 同一個寫法，
+// 在這裡宣告是為了 Deno 的型別檢查。
+declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void } | undefined;
+
 /**
  * 各開啟方式所需的設定。刻意不在啟動時檢查：缺 LIFF_URL 只該讓 liff 型的連結失敗，
  * 而不是讓整支函式失效 —— 之後 web 型的連結不需要這項設定也要能運作。
@@ -16,6 +21,30 @@ import { buildStoreDestination, isOpenWith } from "./destination.ts";
 const DESTINATION_CONFIG = {
   liffUrl: Deno.env.get("LIFF_URL") ?? null,
 };
+
+/**
+ * 記錄一次開啟。跑在 `EdgeRuntime.waitUntil` 裡，也就是回應送出之後 —— 所以它自己
+ * try/catch：背景任務的 rejection 沒有人會接。
+ */
+async function recordOpen(
+  client: SupabaseClient,
+  code: string,
+  userAgent: string | null,
+): Promise<void> {
+  try {
+    const { error } = await client.from("link_events").insert({
+      code,
+      source: detectSurface(userAgent),
+      platform: platformFromUserAgent(userAgent),
+      channel: channelFromUserAgent(userAgent),
+    });
+    if (error) {
+      console.error("short-links: failed to record open:", error);
+    }
+  } catch (err) {
+    console.error("short-links: failed to record open:", err);
+  }
+}
 
 /** 一律 no-store —— 每次呼叫都會記一筆開啟事件，所以呼叫端不能對這支端點加快取。 */
 function noStore(response: Response): Response {
@@ -71,18 +100,11 @@ Deno.serve(async (req) => {
       return noStore(jsonError("Server misconfigured", "INTERNAL_ERROR", 500));
     }
 
-    const userAgent = req.headers.get("User-Agent");
-
-    // 記錄失敗絕不阻擋回應 —— 掃碼的人在等，log 可以再補。
-    const { error: insertError } = await adminClient.from("link_events").insert({
-      code: link.code,
-      source: detectSurface(userAgent),
-      platform: platformFromUserAgent(userAgent),
-      channel: channelFromUserAgent(userAgent),
-    });
-    if (insertError) {
-      console.error("short-links: failed to record open:", insertError);
-    }
+    // 掃碼的人不需要等事件寫完才被導走。實測這次寫入約佔熱路徑回應時間的一半
+    // （~0.45s，第二次 PostgREST 往返），而它對使用者沒有任何價值。
+    const record = recordOpen(adminClient, link.code, req.headers.get("User-Agent"));
+    if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(record);
+    else await record;
 
     return noStore(json({ url }));
   } catch (err) {
