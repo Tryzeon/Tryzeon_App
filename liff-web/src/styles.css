@@ -524,6 +524,30 @@ button { font-family: inherit; }
   color: var(--muted);
 }
 
+/* ── Missing photo ─────────────────────────────────────────────────────── */
+/* A product with no image still belongs in the catalog — the slot keeps the
+   grid's rhythm and says what is missing, rather than a bare grey box. */
+.card__img--empty,
+.gallery__img--empty {
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.gallery__img--empty { width: 100%; aspect-ratio: auto; }
+
+.sheet__note {
+  margin: 20px 0 0;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: var(--r-btn);
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 /* ── Skeleton ──────────────────────────────────────────────────────────── */
 .sk {
   background: linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%);

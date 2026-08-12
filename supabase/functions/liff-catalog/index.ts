@@ -65,9 +65,7 @@ Deno.serve(async (req) => {
     const fetched = Array.isArray(products.data) ? products.data : [];
     const hasMore = fetched.length > DEFAULT_LIMIT;
     const rows = hasMore ? fetched.slice(0, DEFAULT_LIMIT) : fetched;
-    const items = rows
-      .map((r) => buildCatalogItem(r, baseUrl))
-      .filter((x) => x !== null);
+    const items = rows.map((r) => buildCatalogItem(r, baseUrl));
 
     return cors.wrap(json({
       items,

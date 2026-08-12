@@ -10,15 +10,18 @@ export interface CatalogItem {
 }
 
 /**
- * Maps a list_shop_products jsonb row to a catalog item, or null when the
- * product has no image to use as a garment reference.
+ * Maps a list_shop_products jsonb row to a catalog item.
+ *
+ * A product with no usable image still becomes an item, with `imageUrls` empty.
+ * Dropping it here made `items.length` disagree with the row count the paging
+ * arithmetic is built on, and hid the product from the store's own catalog
+ * instead of showing that its photo is missing.
  */
-export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem | null {
+export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
   const r = (row ?? {}) as Record<string, unknown>;
   const keys = Array.isArray(r.image_paths)
     ? r.image_paths.filter((k): k is string => typeof k === "string" && k.length > 0)
     : [];
-  if (keys.length === 0) return null;
 
   const store = (r.store_profiles ?? null) as Record<string, unknown> | null;
   const link = r.purchase_link;

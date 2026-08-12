@@ -14,6 +14,7 @@ interface Props {
 export function ProductSheet({ item, tryon, onClose, onTryon, onPickAvatar }: Props) {
   const needAvatar = tryon.phase === "needAvatar" || tryon.phase === "uploading";
   const buyUrl = item.purchaseLink && isExternalUrl(item.purchaseLink) ? item.purchaseLink : null;
+  const hasPhotos = item.imageUrls.length > 0;
 
   return (
     <div className="sheet" role="dialog" aria-modal="true" aria-label={item.name}>
@@ -24,9 +25,11 @@ export function ProductSheet({ item, tryon, onClose, onTryon, onPickAvatar }: Pr
         </button>
 
         <div className="gallery">
-          {item.imageUrls.map((url) => (
-            <img key={url} className="gallery__img" src={url} alt="" />
-          ))}
+          {hasPhotos
+            ? item.imageUrls.map((url) => (
+              <img key={url} className="gallery__img" src={url} alt="" />
+            ))
+            : <div className="gallery__img gallery__img--empty">暫無照片</div>}
         </div>
 
         <div className="sheet__body">
@@ -36,7 +39,9 @@ export function ProductSheet({ item, tryon, onClose, onTryon, onPickAvatar }: Pr
 
           {tryon.phase === "error" && <div className="errorcard">{tryon.message}</div>}
 
-          {needAvatar
+          {!hasPhotos
+            ? <p className="sheet__note">這件商品還沒有照片，無法試穿。</p>
+            : needAvatar
             ? <AvatarUploadPrompt busy={tryon.phase === "uploading"} onPick={onPickAvatar} />
             : <button type="button" className="cta" onClick={onTryon}>開始試穿</button>}
 
