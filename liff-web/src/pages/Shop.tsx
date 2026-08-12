@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { CatalogItem } from "../api/catalog";
+import { CatalogSkeleton } from "../components/CatalogSkeleton";
 import { Header } from "../components/Header";
 import { ProductGrid } from "../components/ProductGrid";
 import { ProductSheet } from "../components/ProductSheet";
@@ -83,11 +84,7 @@ export function Shop() {
           onSortChange={catalog.setSort}
         />
 
-        {catalog.status === "loading" && (
-          <div className="grid">
-            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="sk sk--card" />)}
-          </div>
-        )}
+        {catalog.status === "loading" && <CatalogSkeleton />}
 
         {catalog.status === "error" && (
           <>

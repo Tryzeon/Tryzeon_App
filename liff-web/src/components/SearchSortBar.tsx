@@ -11,9 +11,10 @@ interface Props {
   sort: SortOption;
   onSearch(q: string): void;
   onSortChange(sort: SortOption): void;
+  disabled?: boolean;
 }
 
-export function SearchSortBar({ sort, onSearch, onSortChange }: Props) {
+export function SearchSortBar({ sort, onSearch, onSortChange, disabled = false }: Props) {
   // Uncommitted text. Nothing is fetched until the form is submitted, so
   // typing never fires a request and no debounce is needed.
   const [draft, setDraft] = useState("");
@@ -32,9 +33,10 @@ export function SearchSortBar({ sort, onSearch, onSortChange }: Props) {
           type="search"
           value={draft}
           placeholder="搜尋商品"
+          disabled={disabled}
           onChange={(e) => setDraft(e.target.value)}
         />
-        <button className="searchbar__submit" type="submit">搜尋</button>
+        <button className="searchbar__submit" type="submit" disabled={disabled}>搜尋</button>
       </form>
       <div className="chiprow">
         {SORTS.map((option) => (
@@ -43,6 +45,7 @@ export function SearchSortBar({ sort, onSearch, onSortChange }: Props) {
             type="button"
             className={`sortchip${sort === option.value ? " is-active" : ""}`}
             aria-pressed={sort === option.value}
+            disabled={disabled}
             onClick={() => onSortChange(option.value)}
           >
             {option.label}

@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { initAndLogin } from "./lib/liff";
+import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
+import { SearchSortBar } from "./components/SearchSortBar";
 import { Shop } from "./pages/Shop";
 import { Onboard } from "./pages/Onboard";
+
+const noop = () => {};
 
 // Initializes LIFF once for the whole app, then renders the matched route.
 // Child screens can assume LIFF is ready and the user is logged in.
@@ -17,8 +21,18 @@ function LiffGate() {
     );
   }, []);
 
+  // The same chrome the catalog renders while it fetches, so opening the gate
+  // swaps the placeholders for products without the page jumping.
   if (state === "loading") {
-    return <div className="app"><Header /></div>;
+    return (
+      <div className="app">
+        <Header />
+        <main className="main">
+          <SearchSortBar sort="latest" disabled onSearch={noop} onSortChange={noop} />
+          <CatalogSkeleton />
+        </main>
+      </div>
+    );
   }
   if (state === "error") {
     return (

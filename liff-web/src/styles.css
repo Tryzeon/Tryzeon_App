@@ -191,6 +191,7 @@ button { font-family: inherit; }
   -webkit-appearance: none;
 }
 .searchbar__input::placeholder { color: var(--muted); }
+.searchbar__input:disabled { color: var(--muted); -webkit-text-fill-color: var(--muted); }
 .searchbar__submit {
   padding: 11px 18px;
   background: var(--ink);
@@ -201,6 +202,7 @@ button { font-family: inherit; }
   letter-spacing: 0.02em;
   cursor: pointer;
 }
+.searchbar__submit:disabled { background: var(--surface-2); color: var(--muted); cursor: default; }
 
 .chiprow {
   display: flex;
@@ -223,6 +225,7 @@ button { font-family: inherit; }
   border-color: var(--ink);
   color: var(--ink);
 }
+.sortchip:disabled { cursor: default; }
 
 /* ── Card store line ───────────────────────────────────────────────────── */
 .card__store {
