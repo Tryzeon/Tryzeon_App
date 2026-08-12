@@ -97,7 +97,7 @@ button { font-family: inherit; }
   margin: 0;
 }
 
-.main { flex: 1; padding: 20px; }
+.main { flex: 1; padding: 16px; }
 
 .eyebrow {
   font-size: 11px;
@@ -108,10 +108,13 @@ button { font-family: inherit; }
 }
 
 /* ── Catalog grid ──────────────────────────────────────────────────────── */
+/* Bleeds past the page padding to an 8px gutter, matching the app's grid —
+   the width goes to the photos, not to the margins. */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 8px;
+  margin: 0 -8px;
 }
 
 .card {
@@ -137,7 +140,7 @@ button { font-family: inherit; }
 }
 /* Block, not inline: an inline box drops its padding around the block-level
    lines inside it, which pushed the text into the card's rounded corners. */
-.card__meta { display: block; padding: 12px 14px 14px; }
+.card__meta { display: block; padding: 12px; }
 .card__name {
   font-size: 13px;
   line-height: 1.35;
