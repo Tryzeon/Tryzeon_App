@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -37,6 +38,18 @@ class ShopPage extends HookConsumerWidget {
     );
 
     final adsAsync = ref.watch(shopAdsProvider);
+
+    // 再次點擊「試衣間」分頁時捲回頂部
+    final scrollController = useScrollController();
+    ref.listen(personalTabReselectSignalProvider, (final _, final next) {
+      if (next?.tab != PersonalTab.shop) return;
+      if (!scrollController.hasClients || scrollController.offset <= 0) return;
+      scrollController.animateTo(
+        0,
+        duration: AppDuration.slow,
+        curve: AppCurves.emphasized,
+      );
+    });
 
     // 篩選/排序狀態
     final filterState = ref.watch(shopFilterProvider);
@@ -218,6 +231,7 @@ class ShopPage extends HookConsumerWidget {
               return false;
             },
             child: CustomScrollView(
+              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(

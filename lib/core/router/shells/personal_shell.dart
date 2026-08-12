@@ -1,28 +1,13 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
-
-class PersonalTabDestination {
-  const PersonalTabDestination({required this.label, required this.icon});
-
-  final String label;
-  final IconData icon;
-}
-
-const personalTabDestinations = [
-  PersonalTabDestination(label: '首頁', icon: Icons.home_outlined),
-  PersonalTabDestination(label: '試衣間', icon: Icons.shopping_cart_outlined),
-  PersonalTabDestination(label: '聊天', icon: Icons.chat_outlined),
-  PersonalTabDestination(label: '衣櫃', icon: Icons.checkroom_outlined),
-  PersonalTabDestination(label: '我的', icon: Icons.person_outline),
-];
 
 class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
@@ -49,7 +34,7 @@ class PersonalShell extends HookConsumerWidget {
 
     void onItemTapped(final int index) {
       const doubleTapThreshold = Duration(milliseconds: 400);
-      final lastTabIndex = personalTabDestinations.length - 1;
+      final lastTabIndex = PersonalTab.values.length - 1;
 
       if (index == lastTabIndex) {
         final now = DateTime.now();
@@ -62,10 +47,13 @@ class PersonalShell extends HookConsumerWidget {
         lastTabTapTime.value = now;
       }
 
-      navigationShell.goBranch(
-        index,
-        initialLocation: index == navigationShell.currentIndex,
-      );
+      final isReselect = index == navigationShell.currentIndex;
+      navigationShell.goBranch(index, initialLocation: isReselect);
+      if (isReselect) {
+        ref
+            .read(personalTabReselectSignalProvider.notifier)
+            .emit(PersonalTab.values[index]);
+      }
     }
 
     final mediaQuery = MediaQuery.of(context);
@@ -79,11 +67,11 @@ class PersonalShell extends HookConsumerWidget {
           selectedIndex: navigationShell.currentIndex,
           onTap: onItemTapped,
           useNativeBottomBar: true,
-          items: personalTabDestinations
+          items: PersonalTab.values
               .map(
-                (final destination) => AdaptiveNavigationDestination(
-                  icon: _adaptiveIcon(destination),
-                  label: destination.label,
+                (final tab) => AdaptiveNavigationDestination(
+                  icon: _adaptiveIcon(tab),
+                  label: tab.label,
                 ),
               )
               .toList(),
@@ -93,28 +81,26 @@ class PersonalShell extends HookConsumerWidget {
   }
 }
 
-Object _adaptiveIcon(final PersonalTabDestination destination) {
+Object _adaptiveIcon(final PersonalTab tab) {
   if (PlatformInfo.isIOS26OrHigher()) {
-    return switch (destination.label) {
-      '首頁' => 'house',
-      '試衣間' => 'cart',
-      '聊天' => 'message',
-      '衣櫃' => 'hanger',
-      '我的' => 'person',
-      _ => 'circle',
+    return switch (tab) {
+      PersonalTab.home => 'house',
+      PersonalTab.shop => 'cart',
+      PersonalTab.chat => 'message',
+      PersonalTab.wardrobe => 'hanger',
+      PersonalTab.account => 'person',
     };
   }
 
   if (PlatformInfo.isIOS) {
-    return switch (destination.label) {
-      '首頁' => CupertinoIcons.house,
-      '試衣間' => CupertinoIcons.cart,
-      '聊天' => CupertinoIcons.chat_bubble,
-      '衣櫃' => CupertinoIcons.collections,
-      '我的' => CupertinoIcons.person,
-      _ => CupertinoIcons.circle,
+    return switch (tab) {
+      PersonalTab.home => CupertinoIcons.house,
+      PersonalTab.shop => CupertinoIcons.cart,
+      PersonalTab.chat => CupertinoIcons.chat_bubble,
+      PersonalTab.wardrobe => CupertinoIcons.collections,
+      PersonalTab.account => CupertinoIcons.person,
     };
   }
 
-  return destination.icon;
+  return tab.icon;
 }
