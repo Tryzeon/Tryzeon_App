@@ -8,7 +8,7 @@ export async function initAndLogin(): Promise<void> {
     initialized = true;
   }
   if (!liff.isLoggedIn()) {
-    liff.login();
+    liff.login({ redirectUri: window.location.href });
     // login() redirects; this promise effectively never resolves further.
     await new Promise(() => {});
   }
