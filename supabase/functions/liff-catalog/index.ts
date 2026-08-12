@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         p_search_query: query.searchQuery,
         p_sort_column: query.sortColumn,
         p_sort_ascending: query.sortAscending,
-        p_limit: DEFAULT_LIMIT,
+        p_limit: DEFAULT_LIMIT + 1,
         p_offset: query.offset,
       }),
       fetchStore(admin, query.storeId),
@@ -62,7 +62,9 @@ Deno.serve(async (req) => {
       throw new Error(`list_shop_products failed: ${products.error.message}`);
     }
 
-    const rows = Array.isArray(products.data) ? products.data : [];
+    const fetched = Array.isArray(products.data) ? products.data : [];
+    const hasMore = fetched.length > DEFAULT_LIMIT;
+    const rows = hasMore ? fetched.slice(0, DEFAULT_LIMIT) : fetched;
     const items = rows
       .map((r) => buildCatalogItem(r, baseUrl))
       .filter((x) => x !== null);
@@ -71,7 +73,7 @@ Deno.serve(async (req) => {
       items,
       store,
       nextOffset: query.offset + rows.length,
-      hasMore: rows.length === DEFAULT_LIMIT,
+      hasMore,
     }));
   } catch (err) {
     const info = classifyCoreError(err);

@@ -173,6 +173,9 @@ button { font-family: inherit; }
 }
 .loadmore:disabled { color: var(--muted); cursor: default; }
 
+/* Trigger for the next page; also the slot its spinner lands in. */
+.sentinel { display: grid; place-items: center; height: 48px; margin-top: 16px; }
+
 .empty { color: var(--muted); font-size: 14px; padding: 32px 0; text-align: center; }
 
 /* ── Search + sort ─────────────────────────────────────────────────────────── */
@@ -341,6 +344,7 @@ button { font-family: inherit; }
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
+.spinner--ink { border-color: var(--line); border-top-color: var(--ink); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .cta__hint { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; letter-spacing: 0.04em; }
 

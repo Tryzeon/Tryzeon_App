@@ -9,6 +9,7 @@ import { SearchSortBar } from "../components/SearchSortBar";
 import { FittingScreen } from "../components/FittingScreen";
 import { ResultScreen } from "../components/ResultScreen";
 import { useCatalog } from "../hooks/useCatalog";
+import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useTryon } from "../hooks/useTryon";
 
 export function Shop() {
@@ -28,6 +29,12 @@ export function Shop() {
   // True while the sheet's own history entry is on the stack, so closing pops
   // it instead of stacking a second entry. LINE's back button pops it directly.
   const pushed = useRef(false);
+
+  const sentinel = useRef<HTMLDivElement>(null);
+  useInfiniteScroll(sentinel, catalog.loadMore, {
+    enabled: catalog.status === "ready" && catalog.hasMore && !catalog.loadMoreFailed,
+    itemCount: catalog.items.length,
+  });
   const resetTryon = tryon.reset;
   useEffect(() => {
     if (openId === null) {
@@ -98,9 +105,13 @@ export function Shop() {
           : <ProductGrid items={catalog.items} onOpen={openSheet} />)}
 
         {catalog.status === "ready" && catalog.hasMore && (
-          <button className="loadmore" disabled={catalog.loadingMore} onClick={catalog.loadMore}>
-            {catalog.loadingMore ? "載入中…" : "載入更多"}
-          </button>
+          catalog.loadMoreFailed
+            ? <button className="loadmore" onClick={catalog.loadMore}>載入失敗，點此重試</button>
+            : (
+              <div ref={sentinel} className="sentinel">
+                {catalog.loadingMore && <span className="spinner spinner--ink" aria-hidden="true" />}
+              </div>
+            )
         )}
       </main>
 
