@@ -7,7 +7,6 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscriptio
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/restore_purchases.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/watch_app_subscription_entitlement.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
@@ -36,11 +35,6 @@ LogInRevenueCat logInRevenueCatUseCase(final Ref ref) {
 @riverpod
 LogOutRevenueCat logOutRevenueCatUseCase(final Ref ref) {
   return LogOutRevenueCat(ref.watch(revenueCatRepositoryProvider));
-}
-
-@riverpod
-RestorePurchases restorePurchasesUseCase(final Ref ref) {
-  return RestorePurchases(ref.watch(revenueCatRepositoryProvider));
 }
 
 /// App-wide source of truth for the customer's plan.

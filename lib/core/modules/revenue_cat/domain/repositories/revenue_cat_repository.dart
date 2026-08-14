@@ -21,7 +21,4 @@ abstract interface class RevenueCatRepository {
 
   /// Logs out of RevenueCat (call after Supabase sign-out / account deletion).
   Future<Result<void, Failure>> logOut();
-
-  /// Restores previous purchases.
-  Future<Result<AppSubscriptionEntitlement, Failure>> restorePurchases();
 }

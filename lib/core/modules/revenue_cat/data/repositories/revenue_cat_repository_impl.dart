@@ -67,17 +67,6 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     }
   }
 
-  @override
-  Future<Result<AppSubscriptionEntitlement, Failure>> restorePurchases() async {
-    try {
-      final customerInfo = await Purchases.restorePurchases();
-      return Ok(_mapToEntitlement(customerInfo));
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to restore RevenueCat purchases', e, stackTrace);
-      return Err(UnknownFailure(e.toString()));
-    }
-  }
-
   AppSubscriptionEntitlement _mapToEntitlement(final CustomerInfo customerInfo) {
     final activeEntitlements = customerInfo.entitlements.active;
     final tier = _resolveTier(activeEntitlements);

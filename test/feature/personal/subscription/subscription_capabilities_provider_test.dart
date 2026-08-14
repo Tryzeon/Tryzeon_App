@@ -37,16 +37,6 @@ class _FakeRevenueCatRepository implements RevenueCatRepository {
 
   @override
   Future<Result<void, Failure>> logOut() async => const Ok(null);
-
-  @override
-  Future<Result<AppSubscriptionEntitlement, Failure>> restorePurchases() async =>
-      const Ok(
-        AppSubscriptionEntitlement(
-          tier: AppSubscriptionTier.free,
-          expirationDate: null,
-          productIdentifier: null,
-        ),
-      );
 }
 
 /// The tier → limits table, without Supabase or Isar.
