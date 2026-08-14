@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
@@ -26,7 +27,10 @@ class TryonController extends _$TryonController {
   static const _uuid = Uuid();
 
   @override
-  TryonOutcome? build() => null;
+  TryonOutcome? build() {
+    ref.watch(isAuthenticatedProvider);
+    return null;
+  }
 
   /// One-shot event lane: two identical outcomes in a row (e.g. two consecutive
   /// successes, which Dart canonicalizes to the same `const` instance) must both
