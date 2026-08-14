@@ -27,6 +27,7 @@ export function ResultScreen({ item, imageUrl, onBack }: Props) {
         {status === "error" && <p className="result__failed">圖片載入失敗，請再試一次</p>}
       </div>
       <p className="result__caption">試穿 <b>{item.name}</b></p>
+      <p className="result__disclaimer">AI 生成試穿結果，實際商品以賣場為準</p>
       {buyUrl && (
         <button
           type="button"

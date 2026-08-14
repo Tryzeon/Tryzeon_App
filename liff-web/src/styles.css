@@ -458,10 +458,17 @@ button { font-family: inherit; }
   font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--muted);
-  margin: 14px 0 18px;
+  margin: 14px 0 6px;
   text-align: center;
 }
 .result__caption b { color: var(--ink); font-weight: 600; }
+.result__disclaimer {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 18px;
+  text-align: center;
+}
 
 @keyframes reveal {
   from { opacity: 0; transform: translateY(10px); }
