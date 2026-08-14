@@ -15,6 +15,7 @@ import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
+import 'package:tryzeon/core/presentation/widgets/app_keyboard_dismisser.dart';
 import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -105,8 +106,9 @@ class Tryzeon extends HookConsumerWidget {
       title: 'TryZeon',
       theme: AppTheme.lightTheme,
       routerConfig: router,
-      builder: (final context, final child) =>
-          AppUpgradeAlert(upgrader: upgrader, navigatorKey: navigatorKey, child: child),
+      builder: (final context, final child) => AppKeyboardDismisser(
+        child: AppUpgradeAlert(upgrader: upgrader, navigatorKey: navigatorKey, child: child),
+      ),
     );
   }
 }
