@@ -4,6 +4,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 
 Future<void> shareProduct(final ShopProduct product) {
   return SharePlus.instance.share(
-    ShareParams(text: '${AppConstants.webBaseUrl}/product/${product.id}'),
+    ShareParams(text: AppConstants.productWebUrl(product.id)),
   );
 }

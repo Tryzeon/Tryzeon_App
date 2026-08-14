@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 
@@ -14,6 +15,7 @@ class OrderMessageBuilder {
       '商品：${product.name}',
       '尺寸：${_sizeLine(fitResult)}',
       '數量：1',
+      AppConstants.productWebUrl(product.id),
     ];
     return lines.join('\n');
   }
