@@ -75,6 +75,8 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('Supabase logout failed (ignored)', e, stackTrace);
       }
 
+      await _signOutProviderSdks();
+
       // Clear API cache
       try {
         await _cacheService.clearCache();
@@ -179,6 +181,8 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
+      await _signOutProviderSdks();
+
       try {
         await _cacheService.clearCache();
       } catch (e, stackTrace) {
@@ -195,6 +199,24 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e, stackTrace) {
       AppLogger.error('Unexpected error during account deletion', e, stackTrace);
       return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  /// Ends the sessions the provider SDKs keep outside Supabase. Without this
+  /// the next sign-in silently reuses the same account and the user can never
+  /// switch. Which provider was used isn't recorded, so both run and the one
+  /// that wasn't used simply fails or no-ops. Apple has no logout API.
+  Future<void> _signOutProviderSdks() async {
+    try {
+      await _remoteDataSource.signOutGoogle();
+    } catch (e, stackTrace) {
+      AppLogger.error('Google sign-out failed (ignored)', e, stackTrace);
+    }
+
+    try {
+      await _remoteDataSource.signOutLine();
+    } catch (e, stackTrace) {
+      AppLogger.error('LINE sign-out failed (ignored)', e, stackTrace);
     }
   }
 }

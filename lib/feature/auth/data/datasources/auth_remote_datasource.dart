@@ -165,6 +165,18 @@ class AuthRemoteDataSource {
     await _supabase.auth.signOut();
   }
 
+  /// Clears the Google credential state so the next sign-in offers the account
+  /// picker instead of silently reusing the previous account.
+  Future<void> signOutGoogle() async {
+    await GoogleSignIn.instance.signOut();
+  }
+
+  /// Revokes the tokens the LINE SDK holds. Throws when there is no LINE
+  /// session, which is the normal case for a user who signed in another way.
+  Future<void> signOutLine() async {
+    await LineSDK.instance.logout();
+  }
+
   User? getCurrentUser() {
     return _supabase.auth.currentSession?.user;
   }
