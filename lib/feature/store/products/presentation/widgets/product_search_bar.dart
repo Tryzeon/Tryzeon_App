@@ -43,6 +43,7 @@ class ProductSearchBar extends HookConsumerWidget {
     return TextField(
       controller: searchController,
       style: textTheme.bodyMedium,
+      textInputAction: TextInputAction.search,
       onChanged: onSearchChanged,
       decoration: InputDecoration(
         hintText: '搜尋商品名稱…',

@@ -116,6 +116,7 @@ class TryonStyleSheet extends HookConsumerWidget {
             TextField(
               controller: sceneController,
               decoration: const InputDecoration(hintText: '例如：純白攝影棚'),
+              textInputAction: TextInputAction.done,
               maxLines: 2,
               minLines: 1,
             ),
@@ -148,6 +149,7 @@ class TryonStyleSheet extends HookConsumerWidget {
               TextField(
                 controller: transitionController,
                 decoration: const InputDecoration(hintText: '例如：一鏡到底'),
+                textInputAction: TextInputAction.done,
                 maxLines: 2,
                 minLines: 1,
               ),

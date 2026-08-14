@@ -104,7 +104,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             TextFormField(
               controller: nameController,
-              textInputAction: TextInputAction.next,
+              textInputAction: TextInputAction.done,
               validator: AppValidators.validateUserName,
               decoration: const InputDecoration(labelText: '姓名'),
             ),

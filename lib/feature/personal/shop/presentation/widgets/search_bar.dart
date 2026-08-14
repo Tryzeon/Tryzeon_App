@@ -36,6 +36,7 @@ class ShopSearchBar extends HookConsumerWidget {
                       },
                     ),
             ),
+            textInputAction: TextInputAction.search,
             onSubmitted: onSearch,
           ),
         ),

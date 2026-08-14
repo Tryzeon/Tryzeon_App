@@ -78,6 +78,7 @@ class ProductStyleSheet extends HookWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: TextField(
               controller: searchController,
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: '搜尋風格...',
                 prefixIcon: Icon(
