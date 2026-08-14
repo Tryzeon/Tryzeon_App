@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dar
 import 'package:tryzeon/feature/auth/domain/entities/login_provider.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/domain/repositories/auth_repository.dart';
+import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -18,14 +19,17 @@ class AuthRepositoryImpl implements AuthRepository {
     required final AuthLocalDataSource localDataSource,
     required final CacheService cacheService,
     required final AnalyticsEventQueueService analyticsEventQueueService,
+    required final SettingsRepository settingsRepository,
   }) : _remoteDataSource = remoteDataSource,
        _localDataSource = localDataSource,
        _cacheService = cacheService,
-       _analyticsEventQueueService = analyticsEventQueueService;
+       _analyticsEventQueueService = analyticsEventQueueService,
+       _settingsRepository = settingsRepository;
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
   final CacheService _cacheService;
   final AnalyticsEventQueueService _analyticsEventQueueService;
+  final SettingsRepository _settingsRepository;
 
   @override
   Future<Result<void, Failure>> signInWithProvider({
@@ -90,6 +94,8 @@ class AuthRepositoryImpl implements AuthRepository {
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
       }
+
+      await _clearDevicePreferences();
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -195,10 +201,27 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
       }
 
+      await _clearDevicePreferences();
+
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Unexpected error during account deletion', e, stackTrace);
       return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  /// Clears the account-scoped settings that live in SharedPreferences, which
+  /// `_localDataSource.clearAll()` can't reach — it only wipes Isar. Anything
+  /// added there that belongs to the user, rather than to the device, has to be
+  /// cleared here too.
+  Future<void> _clearDevicePreferences() async {
+    final result = await _settingsRepository.clearTryonPromptConfig();
+    if (result.isFailure) {
+      AppLogger.error(
+        'Failed to clear device preferences (ignored)',
+        result.getError()!,
+        StackTrace.current,
+      );
     }
   }
 

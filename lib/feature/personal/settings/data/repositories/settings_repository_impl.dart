@@ -42,6 +42,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
   }
 
+  @override
+  Future<Result<void, Failure>> clearTryonPromptConfig() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(AppConstants.keyTryonScenePrompt);
+      await prefs.remove(AppConstants.keyTryonTransitionPrompt);
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to clear tryon prompt config', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
   Future<void> _write(
     final SharedPreferences prefs,
     final String key,

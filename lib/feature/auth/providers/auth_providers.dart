@@ -12,6 +12,7 @@ import 'package:tryzeon/feature/auth/domain/usecases/set_last_login_type.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/sign_in_with_provider.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/sign_out.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/verify_email_otp.dart';
+import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 
 part 'auth_providers.g.dart';
 
@@ -58,12 +59,14 @@ AuthRepository authRepository(final Ref ref) {
 
   final cacheService = ref.watch(cacheServiceProvider);
   final analyticsEventQueueService = ref.watch(analyticsEventQueueServiceProvider);
+  final settingsRepository = ref.watch(settingsRepositoryProvider);
 
   return AuthRepositoryImpl(
     remoteDataSource: remoteDataSource,
     localDataSource: localDataSource,
     cacheService: cacheService,
     analyticsEventQueueService: analyticsEventQueueService,
+    settingsRepository: settingsRepository,
   );
 }
 
