@@ -6,7 +6,6 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 /// A recommended shop product as its own chat bubble: image, name, price and a
@@ -78,12 +77,6 @@ class _ShopInfo extends ConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final theme = Theme.of(context);
 
-    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-    final hasVideoAccess = capabilitiesAsync.maybeWhen(
-      data: (final capabilities) => capabilities.hasVideoAccess,
-      orElse: () => false,
-    );
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -110,7 +103,6 @@ class _ShopInfo extends ConsumerWidget {
                 context,
                 ref,
                 product,
-                hasVideoAccess: hasVideoAccess,
               ),
             ),
           ],

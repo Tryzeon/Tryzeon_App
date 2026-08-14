@@ -5,11 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/modules/revenue_cat/data/repositories/revenue_cat_repository_impl.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/invalidate_entitlement_cache.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/restore_purchases.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/watch_app_subscription_entitlement.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -25,8 +24,8 @@ RevenueCatRepository revenueCatRepository(final Ref ref) {
 // ── Use Case Providers ───────────────────────────────────────────────────────
 
 @riverpod
-GetAppSubscriptionEntitlement getAppSubscriptionEntitlementUseCase(final Ref ref) {
-  return GetAppSubscriptionEntitlement(ref.watch(revenueCatRepositoryProvider));
+WatchAppSubscriptionEntitlement watchAppSubscriptionEntitlementUseCase(final Ref ref) {
+  return WatchAppSubscriptionEntitlement(ref.watch(revenueCatRepositoryProvider));
 }
 
 @riverpod
@@ -44,21 +43,15 @@ RestorePurchases restorePurchasesUseCase(final Ref ref) {
   return RestorePurchases(ref.watch(revenueCatRepositoryProvider));
 }
 
-@riverpod
-InvalidateEntitlementCache invalidateEntitlementCacheUseCase(final Ref ref) {
-  return InvalidateEntitlementCache(ref.watch(revenueCatRepositoryProvider));
-}
-
-@riverpod
-Future<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) async {
-  final useCase = ref.watch(getAppSubscriptionEntitlementUseCaseProvider);
-  final result = await useCase();
-
-  if (result.isFailure) {
-    throw result.getError()!;
-  }
-
-  return result.get()!;
+/// App-wide source of truth for the customer's plan.
+///
+/// Kept alive so a single RevenueCat listener backs the whole app: every screen
+/// reads the same entitlement, and a change (identity link at startup, purchase,
+/// renewal, cross-device upgrade) re-emits to all of them at once instead of
+/// leaving each screen holding whatever was true when it first mounted.
+@Riverpod(keepAlive: true)
+Stream<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) {
+  return ref.watch(watchAppSubscriptionEntitlementUseCaseProvider)();
 }
 
 // ── Identity Sync ─────────────────────────────────────────────────────────────

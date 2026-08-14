@@ -11,7 +11,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -27,12 +26,6 @@ class ProductCard extends HookConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     final hasLoggedView = useState(false);
-
-    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-    final hasVideoAccess = capabilitiesAsync.maybeWhen(
-      data: (final capabilities) => capabilities.hasVideoAccess,
-      orElse: () => false,
-    );
 
     void onVisibilityChanged(final VisibilityInfo info) {
       if (product.id.startsWith('skeleton_')) return;
@@ -102,7 +95,6 @@ class ProductCard extends HookConsumerWidget {
                               context,
                               ref,
                               product,
-                              hasVideoAccess: hasVideoAccess,
                             ),
                           ),
                         ),

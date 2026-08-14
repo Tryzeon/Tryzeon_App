@@ -4,38 +4,38 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_style_sheet.dart';
 
-class TryonModeSheet extends StatelessWidget {
-  const TryonModeSheet({
-    super.key,
-    required this.hasVideoAccess,
-    required this.onModeSelected,
-  });
+class TryonModeSheet extends ConsumerWidget {
+  const TryonModeSheet({super.key, required this.onModeSelected});
 
-  final bool hasVideoAccess;
   final ValueChanged<TryonMode> onModeSelected;
 
   /// Show the bottom sheet. Returns the selected TryonMode or null if dismissed.
   static Future<void> show({
     required final BuildContext context,
-    required final bool hasVideoAccess,
     required final ValueChanged<TryonMode> onModeSelected,
   }) {
     return showModalBottomSheet(
       context: context,
       useRootNavigator: true,
       showDragHandle: true,
-      builder: (final context) =>
-          TryonModeSheet(hasVideoAccess: hasVideoAccess, onModeSelected: onModeSelected),
+      builder: (final context) => TryonModeSheet(onModeSelected: onModeSelected),
     );
   }
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final isVideoLocked = ref.watch(
+      subscriptionCapabilitiesProvider.select(
+        (final async) => async.value?.hasVideoAccess == false,
+      ),
+    );
 
     return SafeArea(
       bottom: true,
@@ -60,7 +60,7 @@ class TryonModeSheet extends StatelessWidget {
                   const SizedBox(width: AppSpacing.smMd),
                   Text('選擇試穿方式', style: textTheme.titleLarge),
                   const Spacer(),
-                  _StyleEntryButton(hasVideoAccess: hasVideoAccess),
+                  const _StyleEntryButton(),
                 ],
               ),
             ),
@@ -87,7 +87,7 @@ class TryonModeSheet extends StatelessWidget {
               icon: Icons.videocam_outlined,
               title: '影片試穿',
               subtitle: '生成你的走秀影片',
-              isLocked: !hasVideoAccess,
+              isLocked: isVideoLocked,
               isNew: true,
               onTap: () {
                 Navigator.pop(context);
@@ -106,9 +106,7 @@ class TryonModeSheet extends StatelessWidget {
 /// Style customisation entry. Lives in the title row rather than on a card so
 /// it can never be mistaken for the card's "start generating" tap target.
 class _StyleEntryButton extends ConsumerWidget {
-  const _StyleEntryButton({required this.hasVideoAccess});
-
-  final bool hasVideoAccess;
+  const _StyleEntryButton();
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -123,7 +121,7 @@ class _StyleEntryButton extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.tune_rounded),
           tooltip: '自訂試穿風格',
-          onPressed: () => TryonStyleSheet.show(context, hasVideoAccess: hasVideoAccess),
+          onPressed: () => TryonStyleSheet.show(context),
         ),
         if (hasCustomStyle)
           Positioned(

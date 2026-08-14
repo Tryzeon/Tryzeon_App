@@ -9,13 +9,11 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 void triggerWardrobeItemTryon(
   final BuildContext context,
   final WidgetRef ref,
-  final WardrobeItem item, {
-  required final bool hasVideoAccess,
-}) {
+  final WardrobeItem item,
+) {
   HapticFeedback.mediumImpact();
   TryonModeSheet.show(
     context: context,
-    hasVideoAccess: hasVideoAccess,
     onModeSelected: (final mode) => ref
         .read(tryonCoordinatorProvider)
         .tryonFromStoragePaths([item.imagePath], mode: mode),

@@ -7,7 +7,6 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/trigger_wardrobe_item_tryon.dart';
@@ -69,12 +68,6 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final imageFileAsync = ref.watch(wardrobeItemImageProvider(item.imagePath));
-
-    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-    final hasVideoAccess = capabilitiesAsync.maybeWhen(
-      data: (final capabilities) => capabilities.hasVideoAccess,
-      orElse: () => false,
-    );
 
     Future<void> handleDelete() async {
       final confirmResult = await showAppOkCancelDialog(
@@ -221,7 +214,6 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                         context,
                         ref,
                         item,
-                        hasVideoAccess: hasVideoAccess,
                       ),
                     ),
                   ),

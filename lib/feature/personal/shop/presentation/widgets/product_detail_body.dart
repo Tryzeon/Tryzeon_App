@@ -17,7 +17,6 @@ import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 class ProductDetailBody extends HookConsumerWidget {
@@ -103,12 +102,6 @@ class _ProductDetailContent extends HookConsumerWidget {
 
     final canPurchase = productHasPurchaseOptions(product);
 
-    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-    final hasVideoAccess = capabilitiesAsync.maybeWhen(
-      data: (final capabilities) => capabilities.hasVideoAccess,
-      orElse: () => false,
-    );
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +121,6 @@ class _ProductDetailContent extends HookConsumerWidget {
                       context,
                       ref,
                       product,
-                      hasVideoAccess: hasVideoAccess,
                     ),
                   ),
                 ),

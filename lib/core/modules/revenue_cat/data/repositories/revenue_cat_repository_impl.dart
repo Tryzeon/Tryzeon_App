@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -8,15 +10,39 @@ import 'package:typed_result/typed_result.dart';
 
 class RevenueCatRepositoryImpl implements RevenueCatRepository {
   @override
-  Future<Result<AppSubscriptionEntitlement, Failure>>
-  getAppSubscriptionEntitlement() async {
-    try {
-      final customerInfo = await Purchases.getCustomerInfo();
-      return Ok(_mapToEntitlement(customerInfo));
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to get RevenueCat subscription entitlement', e, stackTrace);
-      return Err(UnknownFailure(e.toString()));
+  Stream<AppSubscriptionEntitlement> watchAppSubscriptionEntitlement() {
+    final controller = StreamController<AppSubscriptionEntitlement>();
+
+    void emit(final CustomerInfo customerInfo) {
+      if (!controller.isClosed) controller.add(_mapToEntitlement(customerInfo));
     }
+
+    controller
+      ..onListen = () {
+        Purchases.addCustomerInfoUpdateListener(emit);
+
+        unawaited(
+          Purchases.getCustomerInfo().then(emit).catchError((
+            final Object e,
+            final StackTrace stackTrace,
+          ) {
+            AppLogger.error(
+              'Failed to get RevenueCat subscription entitlement',
+              e,
+              stackTrace,
+            );
+            if (!controller.isClosed) {
+              controller.addError(UnknownFailure(e.toString()), stackTrace);
+            }
+          }),
+        );
+      }
+      ..onCancel = () {
+        Purchases.removeCustomerInfoUpdateListener(emit);
+        return controller.close();
+      };
+
+    return controller.stream.distinct();
   }
 
   @override
@@ -48,21 +74,6 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
       return Ok(_mapToEntitlement(customerInfo));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to restore RevenueCat purchases', e, stackTrace);
-      return Err(UnknownFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> invalidateEntitlementCache() async {
-    try {
-      await Purchases.invalidateCustomerInfoCache();
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Failed to invalidate RevenueCat customer info cache',
-        e,
-        stackTrace,
-      );
       return Err(UnknownFailure(e.toString()));
     }
   }

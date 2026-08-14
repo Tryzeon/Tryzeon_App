@@ -2,7 +2,6 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
@@ -14,27 +13,19 @@ import 'package:typed_result/typed_result.dart';
 class SubscriptionCapabilitiesRepositoryImpl
     implements SubscriptionCapabilitiesRepository {
   SubscriptionCapabilitiesRepositoryImpl({
-    required final RevenueCatRepository revenueCatRepository,
     required final SubscriptionCapabilitiesRemoteDataSource remoteDataSource,
     required final SubscriptionCapabilitiesLocalDataSource localDataSource,
-  }) : _revenueCatRepository = revenueCatRepository,
-       _remoteDataSource = remoteDataSource,
+  }) : _remoteDataSource = remoteDataSource,
        _localDataSource = localDataSource;
 
-  final RevenueCatRepository _revenueCatRepository;
   final SubscriptionCapabilitiesRemoteDataSource _remoteDataSource;
   final SubscriptionCapabilitiesLocalDataSource _localDataSource;
 
   @override
-  Future<Result<SubscriptionCapabilities, Failure>>
-  getCurrentSubscriptionCapabilities() async {
-    final entitlementResult = await _revenueCatRepository.getAppSubscriptionEntitlement();
-    if (entitlementResult.isFailure) {
-      return Err(entitlementResult.getError()!);
-    }
-
-    final entitlement = entitlementResult.get()!;
-    final capabilityTier = _resolveCapabilityTier(entitlement);
+  Future<Result<SubscriptionCapabilities, Failure>> getCapabilitiesForTier(
+    final AppSubscriptionTier tier,
+  ) async {
+    final capabilityTier = _resolveCapabilityTier(tier);
 
     try {
       // 1. Try local cache
@@ -82,8 +73,8 @@ class SubscriptionCapabilitiesRepositoryImpl
     }
   }
 
-  String _resolveCapabilityTier(final AppSubscriptionEntitlement entitlement) {
-    return switch (entitlement.tier) {
+  String _resolveCapabilityTier(final AppSubscriptionTier tier) {
+    return switch (tier) {
       AppSubscriptionTier.max => AppConstants.entitlementMaxId,
       AppSubscriptionTier.pro => AppConstants.entitlementProId,
       AppSubscriptionTier.free => AppConstants.entitlementFreeId,

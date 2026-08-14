@@ -3,10 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
-import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 
 class PaywallPage extends HookConsumerWidget {
   const PaywallPage({super.key});
@@ -27,14 +25,10 @@ class PaywallPage extends HookConsumerWidget {
         child: PaywallView(
           onPurchaseCompleted: (final customerInfo, final storeTransaction) {
             AppLogger.info('Purchase completed: ${storeTransaction.productIdentifier}');
-            ref.invalidate(appSubscriptionEntitlementProvider);
-            ref.invalidate(subscriptionCapabilitiesProvider);
             safePop();
           },
           onRestoreCompleted: (final customerInfo) {
             AppLogger.info('Restore completed');
-            ref.invalidate(appSubscriptionEntitlementProvider);
-            ref.invalidate(subscriptionCapabilitiesProvider);
             safePop();
           },
           onPurchaseError: (final error) {

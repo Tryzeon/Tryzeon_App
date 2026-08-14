@@ -32,7 +32,6 @@ SubscriptionCapabilitiesLocalDataSource subscriptionCapabilitiesLocalDataSource(
 @riverpod
 SubscriptionCapabilitiesRepository subscriptionCapabilitiesRepository(final Ref ref) {
   return SubscriptionCapabilitiesRepositoryImpl(
-    revenueCatRepository: ref.watch(revenueCatRepositoryProvider),
     remoteDataSource: ref.watch(subscriptionCapabilitiesRemoteDataSourceProvider),
     localDataSource: ref.watch(subscriptionCapabilitiesLocalDataSourceProvider),
   );
@@ -45,10 +44,17 @@ GetSubscriptionCapabilities getSubscriptionCapabilitiesUseCase(final Ref ref) {
   );
 }
 
-@riverpod
+/// Capabilities of the tier the customer is on *right now*.
+///
+/// Derived from [appSubscriptionEntitlementProvider] rather than resolved once,
+/// so a tier change re-runs this automatically. Kept alive alongside it so every
+/// screen shares one answer.
+@Riverpod(keepAlive: true)
 Future<SubscriptionCapabilities> subscriptionCapabilities(final Ref ref) async {
+  final entitlement = await ref.watch(appSubscriptionEntitlementProvider.future);
+
   final useCase = ref.watch(getSubscriptionCapabilitiesUseCaseProvider);
-  final result = await useCase();
+  final result = await useCase(entitlement.tier);
 
   if (result.isFailure) {
     throw result.getError()!;

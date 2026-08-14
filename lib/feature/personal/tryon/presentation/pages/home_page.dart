@@ -14,7 +14,6 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
@@ -43,12 +42,6 @@ class HomePage extends HookConsumerWidget {
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
-    final hasVideoAccess = ref
-        .watch(subscriptionCapabilitiesProvider)
-        .maybeWhen(
-          data: (final capabilities) => capabilities.hasVideoAccess,
-          orElse: () => false,
-        );
     final pageController = usePageController(initialPage: 0);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -130,11 +123,7 @@ class HomePage extends HookConsumerWidget {
 
     void startTryon() {
       HapticFeedback.mediumImpact();
-      TryonModeSheet.show(
-        context: context,
-        hasVideoAccess: hasVideoAccess,
-        onModeSelected: tryonFromLocal,
-      );
+      TryonModeSheet.show(context: context, onModeSelected: tryonFromLocal);
     }
 
     final bottomOffset =

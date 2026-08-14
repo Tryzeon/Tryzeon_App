@@ -11,13 +11,11 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 void triggerProductTryon(
   final BuildContext context,
   final WidgetRef ref,
-  final ShopProduct product, {
-  required final bool hasVideoAccess,
-}) {
+  final ShopProduct product,
+) {
   HapticFeedback.mediumImpact();
   TryonModeSheet.show(
     context: context,
-    hasVideoAccess: hasVideoAccess,
     onModeSelected: (final mode) => _startTryon(ref, product, mode),
   );
 }

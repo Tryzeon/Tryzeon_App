@@ -198,7 +198,7 @@ class _PrimaryCta extends ConsumerWidget {
           if (isFree) {
             RevenueCatUiUtils.presentPaywall(context);
           } else {
-            RevenueCatUiUtils.presentCustomerCenter(context, ref);
+            RevenueCatUiUtils.presentCustomerCenter(context);
           }
         },
         child: Text(label),

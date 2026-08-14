@@ -4,26 +4,22 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 
 class TryonStyleSheet extends HookConsumerWidget {
-  const TryonStyleSheet({super.key, required this.hasVideoAccess});
-
-  final bool hasVideoAccess;
+  const TryonStyleSheet({super.key});
 
   static const List<String> scenePresets = ['純白攝影棚', '都會街頭', '柔焦自然風景'];
 
   static const List<String> transitionPresets = ['一鏡到底', '動態跳剪', '柔和淡入淡出'];
 
-  static Future<void> show(
-    final BuildContext context, {
-    required final bool hasVideoAccess,
-  }) {
+  static Future<void> show(final BuildContext context) {
     return showModalBottomSheet(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (final context) => TryonStyleSheet(hasVideoAccess: hasVideoAccess),
+      builder: (final context) => const TryonStyleSheet(),
     );
   }
 
@@ -33,6 +29,11 @@ class TryonStyleSheet extends HookConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     final configAsync = ref.watch(tryonPromptConfigProvider);
+    final hasVideoAccess = ref.watch(
+      subscriptionCapabilitiesProvider.select(
+        (final async) => async.value?.hasVideoAccess ?? false,
+      ),
+    );
     final sceneController = useTextEditingController();
     final transitionController = useTextEditingController();
     final isSaving = useState(false);
