@@ -22,6 +22,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_disclaimer.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery_actions.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_indicator.dart';
@@ -198,14 +199,25 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 4. Bottom Left — Indicator (white floating lines)
+            // 4. Bottom Left — Indicator (white floating lines) with the AI
+            // disclaimer as the last element on the page, so it reads as a
+            // footnote rather than a caption for the indicator. The group hangs
+            // from a lower anchor to leave the indicator where it was.
             if (!isAvatarPage)
               Positioned(
-                bottom: bottomOffset + AppSpacing.xl,
+                bottom: bottomOffset + AppSpacing.smMd,
                 left: AppSpacing.xxl,
-                child: TryonIndicator(
-                  currentTryonIndex: galleryState.currentIndex,
-                  tryonImagesCount: galleryState.entries.length,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TryonIndicator(
+                      currentTryonIndex: galleryState.currentIndex,
+                      tryonImagesCount: galleryState.entries.length,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const TryonDisclaimer(),
+                  ],
                 ),
               ),
 
