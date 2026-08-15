@@ -1,4 +1,5 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { runChatAgent } from "./run.ts";
 import { ValidationError } from "../validation.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
@@ -6,7 +7,6 @@ import type {
   AgentRequest,
   AgentRunner,
   AnswerHydrator,
-  ChatClients,
   ChatEvent,
   ChatMessage,
   ChatParams,
@@ -23,9 +23,10 @@ const USAGE: DailyUsage = {
   video_count: 0,
 };
 
-// The clients are opaque to the run now that every stage goes through a port:
-// nothing in these tests reaches Supabase, so an empty object is honest.
-const clients = { admin: {} } as unknown as ChatClients;
+// The run never reaches Supabase in these tests — quota, grounding, the agent
+// and hydration all go through ports — so an empty object is an honest stand-in
+// for the one client it now takes.
+const client = {} as unknown as SupabaseClient;
 
 // Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
 // rejects anything else.
@@ -85,7 +86,7 @@ const hydrator = (
 
 Deno.test("assembles blocks in the model's order and appends the answer turn", async () => {
   const quota = fakeQuota();
-  const result = await runChatAgent(clients, params, {
+  const result = await runChatAgent(client, params, {
     quota: quota.factory,
     loadContext: context,
     runAgent: fakeAgent({
@@ -123,7 +124,7 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
       content: [{ type: "tool_result", tool_use_id: "t0", content: { items: [] } }],
     },
   ];
-  const result = await runChatAgent(clients, params, {
+  const result = await runChatAgent(client, params, {
     quota: fakeQuota().factory,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] }, rounds })
@@ -141,7 +142,7 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
 
 Deno.test("an unusable model output falls back to text and keeps quota spent", async () => {
   const quota = fakeQuota();
-  const result = await runChatAgent(clients, params, {
+  const result = await runChatAgent(client, params, {
     quota: quota.factory,
     loadContext: context,
     runAgent: fakeAgent({ output: null }).runner,
@@ -154,7 +155,7 @@ Deno.test("an unusable model output falls back to text and keeps quota spent", a
 });
 
 Deno.test("an answer whose rows have all vanished falls back to text", async () => {
-  const result = await runChatAgent(clients, params, {
+  const result = await runChatAgent(client, params, {
     quota: fakeQuota().factory,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [{ type: "product", id: "gone" }] } })
@@ -169,7 +170,7 @@ Deno.test("an answer whose rows have all vanished falls back to text", async () 
 Deno.test("passes the loaded grounding through to the agent", async () => {
   const agent = fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] } });
   const events: ChatEvent[] = [];
-  await runChatAgent(clients, { ...params, onEvent: (ev) => events.push(ev) }, {
+  await runChatAgent(client, { ...params, onEvent: (ev) => events.push(ev) }, {
     quota: fakeQuota().factory,
     loadContext: context,
     runAgent: agent.runner,
@@ -189,7 +190,7 @@ Deno.test("rejects over quota without running the agent", async () => {
   let agentCalled = false;
   await assertRejects(
     () =>
-      runChatAgent(clients, params, {
+      runChatAgent(client, params, {
         quota: quota.factory,
         loadContext: context,
         runAgent: () => {
@@ -208,7 +209,7 @@ Deno.test("refunds when the agent loop throws, and rethrows the original error",
   const quota = fakeQuota();
   const boom = new Error("vertex exploded");
   const err = await assertRejects(() =>
-    runChatAgent(clients, params, {
+    runChatAgent(client, params, {
       quota: quota.factory,
       loadContext: context,
       runAgent: () => Promise.reject(boom),
@@ -223,7 +224,7 @@ Deno.test("refunds when hydration fails — a lost row is not a graceful answer"
   const quota = fakeQuota();
   await assertRejects(
     () =>
-      runChatAgent(clients, params, {
+      runChatAgent(client, params, {
         quota: quota.factory,
         loadContext: context,
         runAgent: fakeAgent({ output: { blocks: [{ type: "product", id: PRODUCT_ID }] } })
@@ -239,7 +240,7 @@ Deno.test("refunds when hydration fails — a lost row is not a graceful answer"
 Deno.test("refunds when grounding fails", async () => {
   const quota = fakeQuota();
   await assertRejects(() =>
-    runChatAgent(clients, params, {
+    runChatAgent(client, params, {
       quota: quota.factory,
       loadContext: () => Promise.reject(new Error("no categories")),
       runAgent: fakeAgent({ output: null }).runner,
@@ -252,7 +253,7 @@ Deno.test("refunds when grounding fails", async () => {
 Deno.test("a refund that itself fails does not mask the original error", async () => {
   const boom = new Error("vertex exploded");
   const err = await assertRejects(() =>
-    runChatAgent(clients, params, {
+    runChatAgent(client, params, {
       quota: () => ({
         charge: () => Promise.resolve({ allowed: true, usage: USAGE }),
         refund: () => Promise.reject(new Error("refund exploded")),
@@ -269,7 +270,7 @@ Deno.test("validates before charging anything", async () => {
   const quota = fakeQuota();
   await assertRejects(
     () =>
-      runChatAgent(clients, { userId: "u1", messages: [] }, {
+      runChatAgent(client, { userId: "u1", messages: [] }, {
         quota: quota.factory,
         loadContext: context,
         runAgent: fakeAgent({ output: null }).runner,

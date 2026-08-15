@@ -20,7 +20,7 @@ type SearchProductsResult = {
 };
 
 async function runSearchProducts(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   args: Record<string, any>,
   categoryIdByName: Map<string, string>,
 ): Promise<SearchProductsResult> {
@@ -29,17 +29,19 @@ async function runSearchProducts(
     return { items: [], error: category.error };
   }
   const params = mapSearchProductsArgs(args, { categoryIds: category.categoryIds });
-  const { data, error } = await admin.rpc("list_shop_products", params);
+  const { data, error } = await client.rpc("list_shop_products", params);
   if (error) throw error;
   return { items: ((data ?? []) as Record<string, any>[]).map(toSearchResultItem) };
 }
 
+// The `.eq("user_id", …)` is the filter, not the guard: with a user-scoped `client`
+// the wardrobe RLS policy refuses another user's rows independently of it.
 async function runSearchWardrobe(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
   args: Record<string, any>,
 ): Promise<Record<string, any>[]> {
-  let q = admin
+  let q = client
     .from("wardrobe_items")
     .select(WARDROBE_SELECT)
     .eq("user_id", userId)
@@ -111,23 +113,23 @@ export const answerSchema = z.object({
 });
 
 export function buildTools(deps: {
-  admin: SupabaseClient;
+  client: SupabaseClient;
   userId: string;
   categoryIdByName: Map<string, string>;
 }) {
-  const { admin, userId, categoryIdByName } = deps;
+  const { client, userId, categoryIdByName } = deps;
   return {
     search_products: tool({
       description:
         "搜尋商店真實上架商品。使用者提到任何想找、想買的商品時一律呼叫本工具查證，不可憑印象或常識回答有沒有；回傳的 id 之後用於最終回覆的 product block。除 query 與 category_name 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
       inputSchema: SEARCH_PRODUCTS_SCHEMA,
-      execute: (args) => runSearchProducts(admin, args, categoryIdByName),
+      execute: (args) => runSearchProducts(client, args, categoryIdByName),
     }),
     search_wardrobe: tool({
       description: "搜尋使用者衣櫃既有衣物；想用既有單品搭配時優先呼叫。",
       inputSchema: SEARCH_WARDROBE_SCHEMA,
       execute: async (args) => ({
-        items: await runSearchWardrobe(admin, userId, args),
+        items: await runSearchWardrobe(client, userId, args),
       }),
     }),
   };

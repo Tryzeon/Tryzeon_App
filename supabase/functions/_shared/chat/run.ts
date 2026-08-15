@@ -1,14 +1,13 @@
+import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { QuotaExceededError } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { supabaseAnswerRows } from "./hydrate.ts";
 import { assembleAnswerBlocks, parseAnswerRefs } from "./logic.ts";
-import { supabaseChatQuota } from "./quota.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
   AgentRunner,
   AnswerHydrator,
-  ChatClients,
   ChatMessage,
   ChatParams,
   ChatQuotaFactory,
@@ -20,10 +19,15 @@ import type {
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
 
 export interface RunChatAgentDeps {
+  /**
+   * The one required port: its implementation needs a service-role client, and
+   * which one is the adapter's to say — the LINE path already holds its own.
+   * `supabaseChatQuota(adminClient)` builds it.
+   */
+  quota: ChatQuotaFactory;
   loadContext?: ContextLoader;
   runAgent?: AgentRunner;
   hydrate?: AnswerHydrator;
-  quota?: ChatQuotaFactory;
 }
 
 /**
@@ -35,6 +39,12 @@ export interface RunChatAgentDeps {
  * edge, a LINE adapter, …) gets the same accounting, the same grounding and the
  * same transcript rules for free.
  *
+ * One client, and it is the caller's own: grounding, the tool searches and
+ * hydration all go through it, so an adapter with a session (the app) has RLS
+ * bounding what a turn can read. An adapter without one (LINE) passes its admin
+ * client, and on that path the `.eq("user_id", …)` filters in `tools.ts` and
+ * `hydrate.ts` are the only thing scoping a wardrobe read.
+ *
  * Quota is charged up front and refunded if anything after it throws. An
  * unusable structured output is not a throw — the model ran, so quota stays
  * spent and the answer degrades to a single fallback text block. A failure to
@@ -42,9 +52,9 @@ export interface RunChatAgentDeps {
  * as "I couldn't find anything" would charge the caller for a lie.
  */
 export async function runChatAgent(
-  clients: ChatClients,
+  client: SupabaseClient,
   params: ChatParams,
-  deps: RunChatAgentDeps = {},
+  deps: RunChatAgentDeps,
 ): Promise<ChatResult> {
   // Everything below runs on `turn`, never on the raw `params`: the guard is
   // also the normalizer, so the run cannot read a message the guard did not see.
@@ -53,20 +63,18 @@ export async function runChatAgent(
   const loadContext = deps.loadContext ?? buildChatContext;
   const runAgent = deps.runAgent ?? runVertexAgent;
   const hydrate = deps.hydrate ?? supabaseAnswerRows;
-  const openQuota = deps.quota ?? supabaseChatQuota;
 
-  const { admin } = clients;
-  const quota = openQuota(admin, turn.userId);
+  const quota = deps.quota(turn.userId);
   const { allowed, usage } = await quota.charge();
   if (!allowed) {
     throw new QuotaExceededError(usage);
   }
 
   try {
-    const context = await loadContext(admin, turn.userId);
+    const context = await loadContext(client, turn.userId);
 
     const { output, rounds } = await runAgent({
-      admin,
+      client,
       userId: turn.userId,
       context,
       messages: turn.messages,
@@ -76,7 +84,7 @@ export async function runChatAgent(
     let blocks: ContentBlock[] = [];
     if (output) {
       const refs = parseAnswerRefs(output);
-      blocks = assembleAnswerBlocks(refs, await hydrate(admin, turn.userId, refs));
+      blocks = assembleAnswerBlocks(refs, await hydrate(client, turn.userId, refs));
     }
     if (blocks.length === 0) {
       blocks = [{ type: "text", text: FALLBACK_TEXT }];

@@ -1,6 +1,10 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-user.ts";
-import { classifyTryonError, runTryonJob } from "../_shared/tryon/index.ts";
+import {
+  classifyTryonError,
+  runTryonJob,
+  supabaseQuota,
+} from "../_shared/tryon/index.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
@@ -89,16 +93,17 @@ async function runTryon(
 ): Promise<TryonOutcome> {
   const runJob = deps.runJob ?? runTryonJob;
   try {
-    // `materials: admin` is safe here and stated explicitly: the avatar is
-    // resolved by the core from the user's own profile, and a garment is inline
-    // base64, a product id, or a wardrobe item id — the core resolves both id
-    // forms itself, binding the wardrobe one to `job.userId`, so this adapter
-    // never forwards a client-supplied path.
-    const result = await runJob({ admin: deps.admin, materials: deps.admin }, {
-      userId: params.userId,
-      garments: [params.garment],
-      mode: "image",
-    });
+    // Running the job on `admin` is safe here and stated explicitly: a LINE
+    // event carries no Supabase session, the avatar is resolved by the core from
+    // the user's own profile, and a garment is inline base64, a product id, or a
+    // wardrobe item id — the core resolves both id forms itself, binding the
+    // wardrobe one to `job.userId`, so this adapter never forwards a
+    // client-supplied path.
+    const result = await runJob(
+      deps.admin,
+      { userId: params.userId, garments: [params.garment], mode: "image" },
+      { quota: supabaseQuota(deps.admin) },
+    );
     return { ok: true, imageUrl: result.imageUrl };
   } catch (err) {
     const kind = tryonFailureKind(err);

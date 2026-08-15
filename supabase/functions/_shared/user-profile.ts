@@ -37,10 +37,10 @@ export interface UserProfile {
  * is normalized to null so callers have a single "not onboarded yet" check.
  */
 export async function getAvatarPath(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
 ): Promise<string | null> {
-  const { data, error } = await admin
+  const { data, error } = await client
     .from(USER_PROFILES_TABLE)
     .select(AVATAR_PATH_COLUMN)
     .eq("user_id", userId)
@@ -58,10 +58,10 @@ export async function getAvatarPath(
  * connection fault, so whether to degrade or fail stays its decision to make.
  */
 export async function getUserProfile(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
 ): Promise<UserProfile | null> {
-  const { data, error } = await admin
+  const { data, error } = await client
     .from(USER_PROFILES_TABLE)
     .select(PROFILE_COLUMNS)
     .eq("user_id", userId)
@@ -83,11 +83,11 @@ export async function getUserProfile(
 
 /** Points the user's profile at a newly uploaded model photo. */
 export async function setAvatarPath(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
   path: string,
 ): Promise<void> {
-  const { error } = await admin
+  const { error } = await client
     .from(USER_PROFILES_TABLE)
     .update({ [AVATAR_PATH_COLUMN]: path })
     .eq("user_id", userId);

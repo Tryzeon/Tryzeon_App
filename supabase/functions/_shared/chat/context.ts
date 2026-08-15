@@ -18,15 +18,15 @@ const AGE_RANGE_LABELS: Record<string, string> = {
  * accepts), then bakes both into the system prompt. Throws if the category
  * fetch fails (the run can't be grounded).
  */
-export const buildChatContext: ContextLoader = async (admin, userId) => {
+export const buildChatContext: ContextLoader = async (client, userId) => {
   // Two independent lookups, so they are issued together: grounding sits on the
   // critical path before the model call, and neither reads the other's result.
   const [profile, { data: categories, error: catErr }] = await Promise.all([
-    getUserProfile(admin, userId).catch((err) => {
+    getUserProfile(client, userId).catch((err) => {
       console.error("chat: user profile lookup failed:", err);
       return null;
     }),
-    admin.from("product_categories").select("id, name"),
+    client.from("product_categories").select("id, name"),
   ]);
 
   const userName = profile?.name ?? null;

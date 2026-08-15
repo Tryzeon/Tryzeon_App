@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { tryonErrorResponse } from "../_shared/tryon/http.ts";
-import { runTryonJob } from "../_shared/tryon/index.ts";
+import { runTryonJob, supabaseQuota } from "../_shared/tryon/index.ts";
 import { parseTryonParams } from "./request.ts";
 
 Deno.serve(async (req) => {
@@ -15,12 +15,12 @@ Deno.serve(async (req) => {
     // the core's own failures and yields one 400.
     const params = parseTryonParams(await req.text(), user!.id);
 
-    // `materials` is the caller's own client, so RLS bounds which storage
-    // objects a client-supplied path can reach.
-    const result = await runTryonJob(
-      { admin: getAdminClient(), materials: userClient! },
-      params,
-    );
+    // The job runs on the requester's own client, so RLS bounds every row and
+    // storage object it can reach. The service-role key goes no further than the
+    // quota counter bound here.
+    const result = await runTryonJob(userClient!, params, {
+      quota: supabaseQuota(getAdminClient()),
+    });
 
     return result.kind === "video"
       ? json({ videoUrl: result.videoUrl, usage: result.usage })

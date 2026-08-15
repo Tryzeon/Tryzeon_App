@@ -28,7 +28,7 @@ const MAX_AGENT_STEPS = 10;
 
 export const runVertexAgent: AgentRunner = async (req) => {
   const tools = buildTools({
-    admin: req.admin,
+    client: req.client,
     userId: req.userId,
     categoryIdByName: req.context.categoryIdByName,
   });

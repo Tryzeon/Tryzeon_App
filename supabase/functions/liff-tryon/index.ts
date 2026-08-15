@@ -7,7 +7,7 @@ import { parseLiffTryonBody } from "./request.ts";
 import { LineAuthError, verifyLineIdToken } from "../_shared/line-identity.ts";
 import { getOrCreateUserId } from "../_shared/line-user.ts";
 import { tryonErrorResponse } from "../_shared/tryon/http.ts";
-import { runTryonJob } from "../_shared/tryon/index.ts";
+import { runTryonJob, supabaseQuota } from "../_shared/tryon/index.ts";
 
 const cors = makeCors({ methods: "POST" });
 
@@ -26,11 +26,14 @@ Deno.serve(async (req) => {
     const admin = getAdminClient();
     const userId = await getOrCreateUserId(admin, profile);
 
-    const result = await runTryonJob({ admin, materials: admin }, {
-      userId,
-      garments: [{ productId: body.productId }],
-      mode: "image",
-    });
+    // No Supabase session on this path — the caller proved a LINE identity, not
+    // a JWT — so the job runs on the admin client and the resolvers' own
+    // ownership checks are the only bound on what it reads.
+    const result = await runTryonJob(
+      admin,
+      { userId, garments: [{ productId: body.productId }], mode: "image" },
+      { quota: supabaseQuota(admin) },
+    );
     return cors.wrap(json({ imageUrl: result.imageUrl, usage: result.usage }));
   } catch (err) {
     if (err instanceof LineAuthError) {

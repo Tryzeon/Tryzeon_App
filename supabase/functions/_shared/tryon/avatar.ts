@@ -11,10 +11,10 @@ import type { ImageSource } from "./types.ts";
  * wire — a client copy of the path is a copy of the truth, and it goes stale.
  */
 export async function resolveStoredAvatar(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
 ): Promise<ImageSource> {
-  const path = await getAvatarPath(admin, userId);
+  const path = await getAvatarPath(client, userId);
   if (!path) throw new MissingAvatarError("no avatar on profile");
   return { path };
 }

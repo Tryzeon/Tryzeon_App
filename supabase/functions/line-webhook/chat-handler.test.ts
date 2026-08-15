@@ -53,7 +53,7 @@ function fakeChat(
   outcome: { blocks: ContentBlock[]; messages?: ChatMessage[] } | { throws: unknown },
 ) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
-  const runChat: typeof runChatAgent = (_clients, params, deps = {}) => {
+  const runChat: typeof runChatAgent = (_client, params, deps) => {
     seen.push({ params, deps });
     if ("throws" in outcome) return Promise.reject(outcome.throws);
     return Promise.resolve({
@@ -116,7 +116,7 @@ Deno.test("runs one turn for the incoming message and replies with the answer", 
   assertEquals(replied, [[{ type: "text", text: "為你找到" }]]);
 });
 
-Deno.test("substitutes this channel's hydrator and nothing else", async () => {
+Deno.test("supplies the quota port, substitutes this channel's hydrator, and nothing else", async () => {
   const chat = fakeChat({ blocks: [{ type: "text", text: "好" }] });
 
   await handleTextMessage(deps({ runChat: chat.runChat }), {
@@ -125,7 +125,11 @@ Deno.test("substitutes this channel's hydrator and nothing else", async () => {
     text: "找白襯衫",
   });
 
-  assertEquals(Object.keys(chat.seen[0].deps), ["hydrate"]);
+  // `quota` is not a substitution — it is required, because the core holds no
+  // credential able to charge. `hydrate` is the one thing this channel genuinely
+  // renders differently. Anything else appearing here would be a default the
+  // adapter had started second-guessing.
+  assertEquals(Object.keys(chat.seen[0].deps), ["quota", "hydrate"]);
 });
 
 Deno.test("rejects an over-long message before charging anything", async () => {

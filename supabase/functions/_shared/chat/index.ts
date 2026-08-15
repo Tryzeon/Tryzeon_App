@@ -10,8 +10,7 @@
  * What belongs here is what a caller needs in order to run a turn, describe its
  * inputs and outputs, and classify its failures — nothing more. The pieces the
  * core wires up for itself (`validateChatParams`, `buildChatContext`,
- * `buildTools`, `runVertexAgent`, `supabaseAnswerRows`, `supabaseChatQuota`,
- * `toModelMessages`) are reachable by their own modules, and are left out so
+ * `buildTools`, `runVertexAgent`, `supabaseAnswerRows`, `toModelMessages`) are reachable by their own modules, and are left out so
  * that "public surface" stays a claim about this file rather than a description
  * of the folder.
  *
@@ -24,6 +23,9 @@
 // Running a turn. The ports come along because `RunChatAgentDeps` is part of
 // `runChatAgent`'s signature and its members would otherwise be unnameable.
 export { runChatAgent, type RunChatAgentDeps } from "./run.ts";
+// `supabaseChatQuota` is public surface, not an internal default: `quota` is a
+// required port precisely because only an adapter holds the credential it needs.
+export { supabaseChatQuota } from "./quota.ts";
 export type {
   AgentAnswer,
   AgentRequest,
@@ -39,7 +41,6 @@ export type {
 export { LIMITS } from "./types.ts";
 export type {
   AnswerRef,
-  ChatClients,
   ChatContext,
   ChatEvent,
   ChatMessage,

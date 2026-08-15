@@ -36,20 +36,6 @@ export type ChatEvent =
   | { type: "tool_use"; id: string; name: string; input: unknown }
   | { type: "tool_result"; tool_use_id: string; content: unknown };
 
-export interface ChatClients {
-  /**
-   * Privileged client for the quota RPC, grounding queries, tool searches and
-   * answer hydration.
-   *
-   * The only member, and unlike try-on's `materials` there is no second one:
-   * no chat input names a storage object or a row directly, so every query the
-   * core runs is server-composed and already scoped by `userId`. A client-
-   * supplied identifier that needed RLS to bound it would go here as its own
-   * field, the way try-on's does.
-   */
-  admin: SupabaseClient;
-}
-
 export interface ChatParams {
   userId: string;
   /** Full prior conversation in the shared wire shape (user/assistant blocks). */
@@ -104,11 +90,13 @@ export const LIMITS = {
  * (or a test double) is a substitution rather than an edit to the orchestrator.
  */
 
-/** Opens the quota counter for one user. */
-export type ChatQuotaFactory = (
-  admin: SupabaseClient,
-  userId: string,
-) => UsageCounter;
+/**
+ * Opens the quota counter for one user. Takes no client, for the reason
+ * `_shared/tryon/types.ts` sets out under its own `QuotaFactory`: the quota RPCs
+ * are granted to `service_role` alone, so the adapter binds that credential in
+ * (see `supabaseChatQuota`) and the core is handed a capability instead.
+ */
+export type ChatQuotaFactory = (userId: string) => UsageCounter;
 
 /** The per-request grounding a turn runs against. */
 export interface ChatContext {
@@ -120,7 +108,7 @@ export interface ChatContext {
 
 /** Loads the grounding for one turn. */
 export type ContextLoader = (
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
 ) => Promise<ChatContext>;
 
@@ -133,7 +121,7 @@ export type ContextLoader = (
  * give them room to disagree.
  */
 export interface AgentRequest {
-  admin: SupabaseClient;
+  client: SupabaseClient;
   userId: string;
   context: ChatContext;
   messages: ChatMessage[];
@@ -172,7 +160,7 @@ export interface AnswerRows {
  * four fields — stays the implementation's choice.
  */
 export type AnswerHydrator = (
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
   refs: AnswerRef[],
 ) => Promise<AnswerRows>;

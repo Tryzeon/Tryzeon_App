@@ -5,6 +5,7 @@ import {
   classifyCoreError,
   LIMITS,
   runChatAgent,
+  supabaseChatQuota,
 } from "../_shared/chat/index.ts";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import { renderAnswer } from "./chat-render.ts";
@@ -104,10 +105,16 @@ export async function handleTextMessage(
   const transcript = [...prior, userMessage];
 
   try {
+    // Running the turn on `admin` is stated explicitly: a LINE event carries no
+    // Supabase session, so there is no user-scoped client to bound these reads.
+    // Every query the core runs here is server-composed and scoped by `userId`.
     const { blocks, messages } = await runChat(
-      { admin: deps.admin },
+      deps.admin,
       { userId, messages: transcript },
-      { hydrate: makeLineAnswerRows(deps.imagesBaseUrl) },
+      {
+        quota: supabaseChatQuota(deps.admin),
+        hydrate: makeLineAnswerRows(deps.imagesBaseUrl),
+      },
     );
 
     await deliver(deps, event, renderAnswer(blocks));

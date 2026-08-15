@@ -45,9 +45,9 @@ export function buildWardrobeGarmentDetail(
  * user it belongs to.
  *
  * The ownership filter is why this lives in the core and not in each adapter:
- * `runTryonJob` resolves refs on the privileged `admin` client, so an adapter
- * with no RLS beneath it — the LINE webhook is one — would otherwise have to
- * remember the check on every path, forever.
+ * the client it is handed is whatever the adapter passed to `runTryonJob`, and
+ * an adapter with no RLS beneath it — the LINE webhook is one — would otherwise
+ * have to remember the check on every path, forever.
  *
  * A row that is gone and a row belonging to someone else raise the SAME error,
  * word for word. Telling them apart would make this an oracle for probing
@@ -55,7 +55,7 @@ export function buildWardrobeGarmentDetail(
  * read from the database.
  */
 export async function resolveWardrobeGarment(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
   wardrobeItemId: string,
 ): Promise<ResolvedGarment> {
@@ -65,7 +65,7 @@ export async function resolveWardrobeGarment(
     throw new ValidationError(`invalid wardrobeItemId: ${wardrobeItemId}`);
   }
 
-  const { data, error } = await admin
+  const { data, error } = await client
     .from("wardrobe_items")
     .select("image_path, category, tags")
     .eq("id", wardrobeItemId)

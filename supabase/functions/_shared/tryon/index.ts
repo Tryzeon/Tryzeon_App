@@ -14,7 +14,7 @@
  * What belongs here is what a caller needs in order to run a job, describe its
  * inputs and outputs, and classify its failures — nothing more. The pieces the
  * core wires up for itself (`validateTryonParams`, `resolveProductGarment`,
- * `resolveWardrobeGarment`, `supabaseQuota`, `buildProductGarmentDetail`,
+ * `resolveWardrobeGarment`, `buildProductGarmentDetail`,
  * `buildWardrobeGarmentDetail`, `isProductRef`, `isWardrobeRef`)
  * are reachable by their own modules, and are left out so that "public
  * surface" stays a claim about this file rather than a description of the
@@ -26,6 +26,9 @@
 // Running a job. The ports come along because `RunTryonJobDeps` is part of
 // `runTryonJob`'s signature and its members would otherwise be unnameable.
 export { runTryonJob, type RunTryonJobDeps } from "./run.ts";
+// `supabaseQuota` is public surface, not an internal default: `quota` is a
+// required port precisely because only an adapter holds the credential it needs.
+export { supabaseQuota } from "./quota.ts";
 export type {
   AvatarResolver,
   ImageGenerator,
@@ -48,7 +51,6 @@ export type {
   WardrobeRef,
   ImageSource,
   ResolvedGarment,
-  TryonClients,
   TryonMode,
   TryonParams,
   TryonResult,

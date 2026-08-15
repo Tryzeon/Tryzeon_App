@@ -2,12 +2,8 @@ import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { runTryonJob } from "./run.ts";
 import { GenerationFailedError, MissingAvatarError } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
-import type {
-  QuotaFactory,
-  TryonClients,
-  TryonMode,
-  TryonParams,
-} from "./types.ts";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import type { QuotaFactory, TryonMode, TryonParams } from "./types.ts";
 
 const USAGE: DailyUsage = {
   user_id: "u1",
@@ -17,12 +13,10 @@ const USAGE: DailyUsage = {
   video_count: 0,
 };
 
-// The clients are opaque to the job now that quota goes through a port: nothing
-// in these tests reaches Supabase, so an empty object is an honest stand-in.
-const clients = {
-  admin: {},
-  materials: {},
-} as unknown as TryonClients;
+// The job never reaches Supabase in these tests — quota and every resolver go
+// through a port — so an empty object is an honest stand-in for the one client
+// it now takes.
+const client = {} as unknown as SupabaseClient;
 
 /**
  * Fake `UsageCounter` recording the charge/refund sequence and the mode it was
@@ -31,7 +25,7 @@ const clients = {
 function fakeQuota(allowed = true) {
   const calls: string[] = [];
   const modes: TryonMode[] = [];
-  const factory: QuotaFactory = (_admin, _userId, mode) => {
+  const factory: QuotaFactory = (_userId, mode) => {
     modes.push(mode);
     return {
       charge() {
@@ -58,7 +52,7 @@ Deno.test("image mode uploads the generated image and does not call video", asyn
   const quota = fakeQuota();
   let videoCalled = false;
   let uploadedKey = "";
-  const result = await runTryonJob(clients, imageParams, {
+  const result = await runTryonJob(client, imageParams, {
     quota: quota.factory,
     generate: () => Promise.resolve("GENERATEDB64"),
     upload: (_bytes, fileName) => {
@@ -88,7 +82,7 @@ Deno.test("video mode uploads the generated video bytes, not an image", async ()
   let uploadedKey = "";
   let uploadedBytes: number[] = [];
   const result = await runTryonJob(
-    clients,
+    client,
     { ...imageParams, mode: "video", transitionPrompt: "spin" },
     {
       quota: quota.factory,
@@ -118,7 +112,7 @@ Deno.test("video mode uploads the generated video bytes, not an image", async ()
 
 Deno.test("video mode opens the quota counter for the video feature", async () => {
   const quota = fakeQuota();
-  await runTryonJob(clients, { ...imageParams, mode: "video" }, {
+  await runTryonJob(client, { ...imageParams, mode: "video" }, {
     quota: quota.factory,
     generate: () => Promise.resolve("GENERATEDB64"),
     generateVideo: () => Promise.resolve(new Uint8Array([1])),
@@ -132,7 +126,7 @@ Deno.test("video mode passes the transition prompt to the generator", async () =
   const quota = fakeQuota();
   let seenPrompt: string | undefined;
   await runTryonJob(
-    clients,
+    client,
     { ...imageParams, mode: "video", transitionPrompt: "spin" },
     {
       quota: quota.factory,
@@ -152,7 +146,7 @@ Deno.test("the job runs on validated params, not the raw input", async () => {
   const quota = fakeQuota();
   let seenAvatar = "";
   await runTryonJob(
-    clients,
+    client,
     {
       ...imageParams,
       // A blank second key survives the wire but must not reach the loader.
@@ -175,7 +169,7 @@ Deno.test("invalid params are rejected before quota is charged", async () => {
   const quota = fakeQuota();
   await assertRejects(
     () =>
-      runTryonJob(clients, { ...imageParams, garments: [] }, {
+      runTryonJob(client, { ...imageParams, garments: [] }, {
         quota: quota.factory,
       }),
     Error,
@@ -186,7 +180,7 @@ Deno.test("invalid params are rejected before quota is charged", async () => {
 Deno.test("quota rejection throws QuotaExceededError with usage", async () => {
   const quota = fakeQuota(false);
   const err = await assertRejects(
-    () => runTryonJob(clients, imageParams, { quota: quota.factory }),
+    () => runTryonJob(client, imageParams, { quota: quota.factory }),
     QuotaExceededError,
   );
   assertEquals(err.usage, USAGE);
@@ -196,7 +190,7 @@ Deno.test("null generation throws GenerationFailedError and refunds quota", asyn
   const quota = fakeQuota();
   await assertRejects(
     () =>
-      runTryonJob(clients, imageParams, {
+      runTryonJob(client, imageParams, {
         quota: quota.factory,
         generate: () => Promise.resolve(null),
       }),
@@ -215,7 +209,7 @@ Deno.test("a failed refund does not mask the original error", async () => {
 
   const err = await assertRejects(
     () =>
-      runTryonJob(clients, imageParams, {
+      runTryonJob(client, imageParams, {
         quota,
         generate: () => Promise.resolve(null),
       }),
@@ -228,7 +222,7 @@ Deno.test("an omitted avatar is resolved from the user's profile", async () => {
   const quota = fakeQuota();
   const resolvedFor: string[] = [];
   let seenAvatar = "";
-  await runTryonJob(clients, { ...imageParams, avatar: undefined }, {
+  await runTryonJob(client, { ...imageParams, avatar: undefined }, {
     quota: quota.factory,
     resolveAvatar: (_admin, userId) => {
       resolvedFor.push(userId);
@@ -251,7 +245,7 @@ Deno.test("an inline avatar override skips profile resolution", async () => {
   const quota = fakeQuota();
   let resolverCalled = false;
   let seenAvatar = "";
-  await runTryonJob(clients, imageParams, {
+  await runTryonJob(client, imageParams, {
     quota: quota.factory,
     resolveAvatar: () => {
       resolverCalled = true;
@@ -272,7 +266,7 @@ Deno.test("a user with no stored avatar is never charged", async () => {
   const quota = fakeQuota();
   await assertRejects(
     () =>
-      runTryonJob(clients, { ...imageParams, avatar: undefined }, {
+      runTryonJob(client, { ...imageParams, avatar: undefined }, {
         quota: quota.factory,
         resolveAvatar: () => Promise.reject(new MissingAvatarError("none")),
         generate: () => Promise.resolve("GENERATEDB64"),
@@ -288,7 +282,7 @@ Deno.test("product-ref garments are resolved before loading", async () => {
   const quota = fakeQuota();
   const seenGarmentB64: string[] = [];
   const result = await runTryonJob(
-    clients,
+    client,
     {
       userId: "u1",
       avatar: { base64: "AVATAR" },
@@ -315,7 +309,7 @@ Deno.test("resolved product detail reaches the generator", async () => {
   const quota = fakeQuota();
   let seenDetails: (string | undefined)[] | undefined;
   await runTryonJob(
-    clients,
+    client,
     {
       userId: "u1",
       avatar: { base64: "AVATAR" },
@@ -342,7 +336,7 @@ Deno.test("product resolution failure refunds quota", async () => {
   await assertRejects(
     () =>
       runTryonJob(
-        clients,
+        client,
         {
           userId: "u1",
           avatar: { base64: "AVATAR" },
@@ -364,7 +358,7 @@ Deno.test("a wardrobe ref is resolved with the job's own user id", async () => {
   const seen: Array<[string, string]> = [];
   const seenGarmentB64: string[] = [];
   await runTryonJob(
-    clients,
+    client,
     {
       userId: "u1",
       avatar: { base64: "AVATAR" },
@@ -401,7 +395,7 @@ Deno.test("each garment kind reaches its own resolver", async () => {
   let wardrobeCalls = 0;
   const seenGarmentB64: string[] = [];
   await runTryonJob(
-    clients,
+    client,
     {
       userId: "u1",
       avatar: { base64: "AVATAR" },

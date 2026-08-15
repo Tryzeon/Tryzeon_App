@@ -5,7 +5,11 @@
  * The RPC pair behind that port belongs to `_shared/quota.ts`; what is try-on's
  * is only the mapping below, which is the whole reason the factory is a
  * per-feature module at all.
+ *
+ * An adapter binds its service-role client here and hands the result to
+ * `runTryonJob`; that binding is the only place the two meet.
  */
+import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { type FeatureName, supabaseUsageCounter } from "../quota.ts";
 import type { QuotaFactory, TryonMode } from "./types.ts";
 
@@ -19,5 +23,5 @@ const FEATURE_BY_MODE: Record<TryonMode, FeatureName> = {
   video: "tryon_video",
 };
 
-export const supabaseQuota: QuotaFactory = (admin, userId, mode) =>
-  supabaseUsageCounter(admin, userId, FEATURE_BY_MODE[mode]);
+export const supabaseQuota = (admin: SupabaseClient): QuotaFactory =>
+(userId, mode) => supabaseUsageCounter(admin, userId, FEATURE_BY_MODE[mode]);

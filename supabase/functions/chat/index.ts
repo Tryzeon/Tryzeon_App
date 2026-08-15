@@ -9,18 +9,25 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { coreErrorResponse, jsonError } from "../_shared/http.ts";
-import { classifyCoreError, runChatAgent } from "../_shared/chat/index.ts";
+import {
+  classifyCoreError,
+  runChatAgent,
+  supabaseChatQuota,
+} from "../_shared/chat/index.ts";
 import { parseChatParams } from "./request.ts";
 import { encodeEvent, errorEvent } from "./stream.ts";
 
 Deno.serve(async (req) => {
   try {
     // Auth: Verify JWT and get user securely
-    const { user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
     const params = parseChatParams(await req.text(), user!.id);
-    const admin = getAdminClient();
+    // The turn runs on the requester's own client, so RLS bounds what its
+    // grounding, searches and hydration can read. The service-role key goes no
+    // further than the quota counter bound here.
+    const quota = supabaseChatQuota(getAdminClient());
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -29,8 +36,9 @@ Deno.serve(async (req) => {
           // `result.messages` is not sent: this client rebuilds the turn from
           // the events it already receives.
           const { blocks, usage } = await runChatAgent(
-            { admin },
+            userClient!,
             { ...params, onEvent: send },
+            { quota },
           );
           send({
             type: "done",

@@ -113,22 +113,6 @@ export type TryonResultFor<M extends TryonMode> = M extends "image"
   ? TryonImageResult
   : TryonVideoResult;
 
-export interface TryonClients {
-  /** Privileged client for the quota RPC and catalog lookups. */
-  admin: SupabaseClient;
-  /**
-   * Client used to read `path` sources — garment images, and the
-   * server-resolved avatar. Required — and required explicitly rather than
-   * defaulted — because it is the only thing bounding which storage objects a
-   * request can reach. An adapter that forwards client-supplied paths (the
-   * app) MUST pass its user-scoped client so RLS applies; an adapter whose
-   * paths are all server-derived (LINE) passes `admin` as a deliberate,
-   * visible choice. Avatar paths are always produced by `resolveStoredAvatar`,
-   * never by a caller.
-   */
-  materials: SupabaseClient;
-}
-
 export const LIMITS = {
   MAX_GARMENTS: 3,
   MAX_IMAGES_PER_GARMENT: 3,
@@ -144,14 +128,23 @@ export const LIMITS = {
  */
 
 /**
- * Opens the quota counter for one user + mode. Takes the mode rather than a
- * feature name so the backend's vocabulary (`tryon` vs `tryon_video`) stays on
- * the implementation side of the port. The port it returns belongs to
- * `_shared/quota.ts` — the charge/refund contract is the counter's, not
- * try-on's, and chat opens the same one.
+ * Opens the quota counter for one user + mode.
+ *
+ * Takes no client, and this is the one place that fact is explained. The quota
+ * RPCs are `SECURITY DEFINER` and granted to `service_role` alone — `refund`
+ * especially, since a user able to call it has unlimited quota — so charging
+ * cannot run on the client a job reads with. Binding the service-role key into
+ * the factory (see `supabaseQuota`) keeps that credential in the adapter and
+ * hands the core a capability instead. It is not a wall: `getAdminClient()` is
+ * one import away for anything under `_shared/`. It makes the privileged step
+ * the visible exception rather than an ambient possibility.
+ *
+ * Takes the mode rather than a feature name so the backend's vocabulary
+ * (`tryon` vs `tryon_video`) stays on the implementation side of the port. The
+ * port it returns belongs to `_shared/quota.ts` — the charge/refund contract is
+ * the counter's, not try-on's, and chat opens the same one.
  */
 export type QuotaFactory = (
-  admin: SupabaseClient,
   userId: string,
   mode: TryonMode,
 ) => UsageCounter;
@@ -189,23 +182,25 @@ export type VideoUploader = (
 
 /** Resolves a catalog product reference to trusted garment material. */
 export type ProductResolver = (
-  admin: SupabaseClient,
+  client: SupabaseClient,
   productId: string,
 ) => Promise<ResolvedGarment>;
 
 /**
  * Resolves a wardrobe item reference to trusted garment material. Takes the
  * owner as well as the id: unlike the catalog, which is public, a wardrobe read
- * is only correct when it is bound to whose wardrobe it is.
+ * is only correct when it is bound to whose wardrobe it is — and the binding is
+ * written out here rather than left to RLS, because the LINE adapter passes a
+ * client with no policy beneath it.
  */
 export type WardrobeResolver = (
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
   wardrobeItemId: string,
 ) => Promise<ResolvedGarment>;
 
 /** Resolves the user's stored model photo into a loadable source. */
 export type AvatarResolver = (
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
 ) => Promise<ImageSource>;

@@ -50,17 +50,17 @@ export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] =>
   refs.filter((r): r is ItemRef => r.type === type).map((r) => r.id);
 
 export const supabaseAnswerRows: AnswerHydrator = async (
-  admin: SupabaseClient,
+  client: SupabaseClient,
   userId: string,
   refs: AnswerRef[],
 ) => {
   const [products, wardrobe] = await Promise.all([
     fetchRowsByIds(
-      admin.from("products").select(PRODUCT_SELECT),
+      client.from("products").select(PRODUCT_SELECT),
       idsOf(refs, "product"),
     ),
     fetchRowsByIds(
-      admin.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", userId),
+      client.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", userId),
       idsOf(refs, "wardrobe"),
     ),
   ]);
