@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { getAdminClient } from "../_shared/supabase.ts";
+import { getAnonClient } from "../_shared/supabase.ts";
 import { publicImageUrl } from "../_shared/storage.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import {
@@ -81,8 +81,11 @@ Deno.serve(async (req) => {
       return noStore(jsonError("Malformed code", "NOT_FOUND", 404));
     }
 
-    const adminClient = getAdminClient();
-    const { data: link, error } = await adminClient
+    // anon 就夠了：`short_links` 的 select policy 只放行 is_active 的列，
+    // `store_profiles` 本來就公開可讀，`link_events` 有一條匿名 insert policy。
+    // 這是一支誰都能呼叫的端點，沒有理由讓它握著 service role key。
+    const client = getAnonClient();
+    const { data: link, error } = await client
       .from("short_links")
       .select("code, store_id, open_with, store_profiles!inner(name, logo_path)")
       .eq("code", code)
@@ -119,7 +122,7 @@ Deno.serve(async (req) => {
     const userAgent = req.headers.get("User-Agent");
     const surface = detectSurface(userAgent);
 
-    const record = recordOpen(adminClient, link.code, surface, userAgent);
+    const record = recordOpen(client, link.code, surface, userAgent);
     if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(record);
     else await record;
 
