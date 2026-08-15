@@ -44,11 +44,11 @@ export function buildProductGarmentDetail(
 /**
  * Resolves a client-supplied productId to trusted garment material by reading
  * the product from the catalog. The client never supplies a path, so it cannot
- * fetch arbitrary objects — only a real product's first image, plus a
+ * fetch arbitrary objects — only a real product's images, plus a
  * server-built detail. Shared by every try-on adapter via the core.
  */
 export async function resolveProductGarment(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   productId: string,
 ): Promise<ResolvedGarment> {
   // Reject non-UUID ids up front so garbage yields a clean validation error
@@ -57,7 +57,7 @@ export async function resolveProductGarment(
     throw new ValidationError(`invalid productId: ${productId}`);
   }
 
-  const { data, error } = await admin
+  const { data, error } = await client
     .from("products")
     .select("image_paths, name, material, fit, elasticity, thickness")
     .eq("id", productId)
