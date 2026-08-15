@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { json } from "../_shared/http.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
@@ -13,7 +14,7 @@ class AppError extends Error {
 
 // --- Storage Cleanup Service ---
 class StorageCleanupService {
-  constructor(private supabase: any) { }
+  constructor(private supabase: SupabaseClient) { }
 
   private async listFilesRecursively(bucket: string, path: string): Promise<string[]> {
     let allFiles: string[] = [];
@@ -71,6 +72,12 @@ class StorageCleanupService {
   }
 
   /**
+   * Runs on the caller's own client. Both buckets are laid out `userId/…` and
+   * their policies key on `(storage.foldername(name))[1] = auth.uid()`, so the
+   * account being deleted already has list and delete rights over exactly the
+   * objects this sweeps — and RLS, rather than a `startsWith` check nobody
+   * would notice going missing, is what keeps it off everyone else's.
+   *
    * Only the user-scoped Supabase buckets. Store logos and product images used
    * to be swept from here too, but they live in R2 under `stores/` now (see
    * `_shared/storage.ts`, written by `store-images`), so that branch was naming
@@ -101,24 +108,23 @@ class StorageCleanupService {
 Deno.serve(async (req) => {
   try {
     // 1. Authentication
-    const { user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
-    // 2. Admin client for database and storage operations
-    const adminClient = getAdminClient();
-
-    // 3. Clean up user storage files
-    const storageService = new StorageCleanupService(adminClient);
+    // 2. Clean up user storage files, on the caller's own client.
+    const storageService = new StorageCleanupService(userClient!);
     await storageService.cleanupUserStorage(user!.id);
 
-    // 4. Delete auth user (triggers cascade delete for all DB records)
-    const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(user!.id);
+    // 3. Delete auth user (triggers cascade delete for all DB records). The one
+    //    step that genuinely needs the service role — and it comes last, so the
+    //    key is held only after every RLS-bounded operation is done.
+    const { error: deleteAuthError } = await getAdminClient().auth.admin.deleteUser(user!.id);
     if (deleteAuthError) {
       console.error("Failed to delete auth user:", deleteAuthError);
       throw new AppError("Failed to delete authentication account", 500);
     }
 
-    // 5. Success response
+    // 4. Success response
     return json({ message: "Account deleted successfully" });
   } catch (err) {
     console.error(err);
