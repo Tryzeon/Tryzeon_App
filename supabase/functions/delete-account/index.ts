@@ -82,8 +82,7 @@ class StorageCleanupService {
    * to be swept from here too, but they live in R2 under `stores/` now (see
    * `_shared/storage.ts`, written by `store-images`), so that branch was naming
    * buckets nothing writes to — and swallowing the resulting error. Deleting the
-   * auth user orphans those R2 keys, which `store-images-cleanup` is what
-   * collects.
+   * auth user orphans those R2 keys; nothing collects them today.
    */
   async cleanupUserStorage(userId: string): Promise<void> {
     const userBuckets = [USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET];
