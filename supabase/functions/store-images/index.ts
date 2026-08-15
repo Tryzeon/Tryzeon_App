@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { deletePublicImagesFromR2, generatePresignedPutUrl } from "../_shared/r2.ts";
 import { json } from "../_shared/http.ts";
 
@@ -22,8 +23,6 @@ function validateContentLength(value: unknown): Response | number {
   return value;
 }
 
-type AdminClient = ReturnType<typeof getAdminClient>;
-
 function logoKey(storeId: string, contentType: string): string {
   const ext = MIME_TO_EXT[contentType];
   return `stores/${storeId}/logo/${crypto.randomUUID()}.${ext}`;
@@ -38,12 +37,15 @@ function isUuid(s: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 }
 
+// Reads through the caller's own client: `store_profiles` is world-readable, so
+// naming the owner is not a privileged question — deciding on the answer is, and
+// that happens here.
 async function assertStoreOwner(
-  adminClient: AdminClient,
+  client: SupabaseClient,
   userId: string,
   storeId: string,
 ): Promise<Response | null> {
-  const { data, error } = await adminClient
+  const { data, error } = await client
     .from("store_profiles")
     .select("owner_id")
     .eq("id", storeId)
@@ -58,22 +60,21 @@ async function assertStoreOwner(
 }
 
 Deno.serve(async (req) => {
-  const { user, errorResponse } = await getAuthenticatedUserClient(req);
+  const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
   if (errorResponse) return errorResponse;
-  const adminClient = getAdminClient();
 
   const url = new URL(req.url);
   const sub = url.pathname.replace(/^.*\/store-images\/?/, "").replace(/\/$/, "");
 
   try {
     if (req.method === "POST" && sub === "presign-logo") {
-      return await handlePresignLogo(req, adminClient, user!.id);
+      return await handlePresignLogo(req, userClient!, user!.id);
     }
     if (req.method === "POST" && sub === "presign-products") {
-      return await handlePresignProducts(req, adminClient, user!.id);
+      return await handlePresignProducts(req, userClient!, user!.id);
     }
     if (req.method === "POST" && sub === "delete") {
-      return await handleDelete(req, adminClient, user!.id);
+      return await handleDelete(req, userClient!, user!.id);
     }
     return json({ error: "Not found", code: "NOT_FOUND" }, 404);
   } catch (err) {
@@ -84,7 +85,7 @@ Deno.serve(async (req) => {
 
 async function handlePresignLogo(
   req: Request,
-  adminClient: AdminClient,
+  client: SupabaseClient,
   userId: string,
 ): Promise<Response> {
   const body = await req.json().catch(() => null);
@@ -101,7 +102,7 @@ async function handlePresignLogo(
   const contentLength = validateContentLength(body?.contentLength);
   if (contentLength instanceof Response) return contentLength;
 
-  const ownerErr = await assertStoreOwner(adminClient, userId, storeId);
+  const ownerErr = await assertStoreOwner(client, userId, storeId);
   if (ownerErr) return ownerErr;
 
   const key = logoKey(storeId, contentType);
@@ -111,7 +112,7 @@ async function handlePresignLogo(
 
 async function handlePresignProducts(
   req: Request,
-  adminClient: AdminClient,
+  client: SupabaseClient,
   userId: string,
 ): Promise<Response> {
   const body = await req.json().catch(() => null);
@@ -136,7 +137,7 @@ async function handlePresignProducts(
     if (lenOrErr instanceof Response) return lenOrErr;
   }
 
-  const ownerErr = await assertStoreOwner(adminClient, userId, storeId);
+  const ownerErr = await assertStoreOwner(client, userId, storeId);
   if (ownerErr) return ownerErr;
 
   const items = await Promise.all(
@@ -155,7 +156,7 @@ async function handlePresignProducts(
 
 async function handleDelete(
   req: Request,
-  adminClient: AdminClient,
+  client: SupabaseClient,
   userId: string,
 ): Promise<Response> {
   const body = await req.json().catch(() => null);
@@ -178,7 +179,7 @@ async function handleDelete(
     }
   }
 
-  const ownerErr = await assertStoreOwner(adminClient, userId, storeId);
+  const ownerErr = await assertStoreOwner(client, userId, storeId);
   if (ownerErr) return ownerErr;
 
   await deletePublicImagesFromR2(keys as string[]);

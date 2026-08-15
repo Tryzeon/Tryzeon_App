@@ -1,6 +1,6 @@
 // supabase/functions/analyze-product-image/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import {
   analyzeImage,
   checkImageAnalysisRateLimit,
@@ -11,7 +11,7 @@ import { buildPrompt, buildSchema, toResponse } from "./analysis.ts";
 
 Deno.serve(async (req) => {
   try {
-    const { user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
     const body = await req.json().catch(() => null);
@@ -23,8 +23,9 @@ Deno.serve(async (req) => {
     if (limited) return limited;
 
     // Load global categories and build a name -> ids map (server-side mapping).
-    const admin = getAdminClient();
-    const { data: categories, error: categoriesError } = await admin
+    // The caller's own client: `product_categories` is world-readable, so this
+    // read needs no privilege the caller does not already have.
+    const { data: categories, error: categoriesError } = await userClient!
       .from("product_categories")
       .select("id, name");
     if (categoriesError) {

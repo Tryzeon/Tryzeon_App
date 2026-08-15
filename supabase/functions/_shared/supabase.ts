@@ -61,7 +61,18 @@ export const getAuthenticatedUserClient = async (
 };
 
 /**
- * Creates and returns an admin-level (Service Role) Supabaseclient. 
+ * Unauthenticated client, bound by whatever the `anon` role is granted.
+ *
+ * For endpoints that have no caller session and only read data anon may already
+ * read (the public catalog). The service-role key buys nothing there and only
+ * widens what a bug on that path can reach.
+ */
+export const getAnonClient = (): SupabaseClient => {
+    return createClient(supabaseUrl(), supabaseAnonKey());
+};
+
+/**
+ * Creates and returns an admin-level (Service Role) Supabaseclient.
  * Use with caution to bypass Row Level Security.
  */
 export const getAdminClient = (): SupabaseClient => {

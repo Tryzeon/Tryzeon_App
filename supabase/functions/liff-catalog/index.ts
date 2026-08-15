@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { getAdminClient } from "../_shared/supabase.ts";
+import { getAnonClient } from "../_shared/supabase.ts";
 import { json, jsonError, coreErrorResponse } from "../_shared/http.ts";
 import { classifyCoreError } from "../_shared/errors.ts";
 import { makeCors } from "../_shared/cors.ts";
@@ -18,12 +18,12 @@ const cors = makeCors({ methods: "GET" });
  * 沒有結果的搜尋就會讓店名消失。
  */
 async function fetchStore(
-  admin: SupabaseClient,
+  client: SupabaseClient,
   storeId: string | null,
 ): Promise<{ id: string; name: string } | null> {
   if (storeId === null) return null;
 
-  const { data, error } = await admin
+  const { data, error } = await client
     .from("store_profiles")
     .select("id, name")
     .eq("id", storeId)
@@ -45,10 +45,10 @@ Deno.serve(async (req) => {
 
     const query = parseCatalogQuery(new URL(req.url));
 
-    const admin = getAdminClient();
+    const client = getAnonClient();
     // 兩筆查詢互不相依,並行才不會讓店家查詢多疊一次往返到目錄的延遲上。
     const [products, store] = await Promise.all([
-      admin.rpc("list_shop_products", {
+      client.rpc("list_shop_products", {
         p_store_id: query.storeId,
         p_search_query: query.searchQuery,
         p_sort_column: query.sortColumn,
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         p_limit: DEFAULT_LIMIT + 1,
         p_offset: query.offset,
       }),
-      fetchStore(admin, query.storeId),
+      fetchStore(client, query.storeId),
     ]);
     if (products.error) {
       throw new Error(`list_shop_products failed: ${products.error.message}`);
