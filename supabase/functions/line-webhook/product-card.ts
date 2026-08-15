@@ -91,9 +91,15 @@ export function fetchProductRows(
 
 /**
  * One product's text fields, or null when the id names nothing that can be
- * acted on — the row is gone, or it has no image. A failed lookup throws
- * instead: a missing product is something the user can be told about, a broken
- * query is ours to fix.
+ * acted on — the row is unlisted or gone, or it has no image. A failed lookup
+ * throws instead: a missing product is something the user can be told about, a
+ * broken query is ours to fix.
+ *
+ * Unlisted counts as "nothing that can be acted on" for the same reason the
+ * other two do: `handleProductTryon` runs this before charging quota, so
+ * whatever the core would later reject has to be rejected here too — otherwise
+ * the tap costs the user a try-on and returns a generic error. A card can sit
+ * in a LINE thread long after the store took the product down.
  *
  * No image url, and so no `imagesBaseUrl`: this serves the try-on path, whose
  * result card's hero is the generated image. The catalog image was carried here
@@ -107,6 +113,7 @@ export async function fetchProductInfo(
     .from("products")
     .select(PRODUCT_CARD_SELECT)
     .eq("id", productId)
+    .eq("status", "active")
     .maybeSingle();
 
   if (error) throw new Error(`product lookup failed: ${error.message}`);

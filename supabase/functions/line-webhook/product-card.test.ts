@@ -33,26 +33,30 @@ const product = (over: Partial<LineProduct> = {}): LineProduct => ({
   ...over,
 });
 
-/** Fake client answering one `.maybeSingle()` lookup. */
+/**
+ * Fake client answering one `.maybeSingle()` lookup. `filters` records every
+ * chained predicate; `queried` keeps only the ids, which is what most tests
+ * care about.
+ */
 // deno-lint-ignore no-explicit-any
 function fakeAdmin(result: { data: any; error: any }) {
   const queried: string[] = [];
-  const client = {
-    from() {
-      return {
-        select() {
-          return {
-            eq(_column: string, id: string) {
-              queried.push(id);
-              return { maybeSingle: () => Promise.resolve(result) };
-            },
-          };
-        },
-      };
+  const filters: Array<[string, unknown]> = [];
+  const builder = {
+    eq(column: string, value: unknown) {
+      filters.push([column, value]);
+      if (column === "id") queried.push(value as string);
+      return builder;
     },
+    is(column: string, value: unknown) {
+      filters.push([column, value]);
+      return builder;
+    },
+    maybeSingle: () => Promise.resolve(result),
   };
+  const client = { from: () => ({ select: () => builder }) };
   // deno-lint-ignore no-explicit-any
-  return { admin: client as any, queried };
+  return { admin: client as any, queried, filters };
 }
 
 /** Fake client answering one `.in()` batch lookup. */
@@ -164,6 +168,15 @@ Deno.test("fetchProductRows queries nothing for an empty id list", async () => {
 Deno.test("fetchProductRows throws when the lookup itself failed", async () => {
   const { admin } = fakeBatchAdmin({ data: null, error: { message: "boom" } });
   await assertRejects(() => fetchProductRows(admin, ["p1"], BASE));
+});
+
+Deno.test("fetchProductInfo will not act on an unlisted product", async () => {
+  // The try-on tap is charged after this returns, so a card left in a thread
+  // after the store unlisted the product has to fail here, not in the core.
+  const { admin, filters } = fakeAdmin({ data: row(), error: null });
+  await fetchProductInfo(admin, "p1");
+
+  assertEquals(filters, [["id", "p1"], ["status", "active"]]);
 });
 
 Deno.test("purchaseAction is offered only for an absolute http link", () => {

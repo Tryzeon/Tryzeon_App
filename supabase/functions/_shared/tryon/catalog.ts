@@ -132,6 +132,7 @@ export async function resolveProductGarment(
     .from(PRODUCTS_TABLE)
     .select("image_paths, name, material, fit, elasticity, thickness")
     .eq("id", productId)
+    .eq("status", "active")
     .maybeSingle();
 
   if (error) {
