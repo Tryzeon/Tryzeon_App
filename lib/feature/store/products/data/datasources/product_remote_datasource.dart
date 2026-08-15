@@ -65,10 +65,6 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productsTable).delete().eq('id', productId);
   }
 
-  Future<void> deleteProductSizes(final String productId) async {
-    await _supabaseClient.from(_productSizesTable).delete().eq('product_id', productId);
-  }
-
   Future<void> deleteProductSize(final String sizeId) async {
     await _supabaseClient.from(_productSizesTable).delete().eq('id', sizeId);
   }

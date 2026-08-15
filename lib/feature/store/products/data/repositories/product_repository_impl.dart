@@ -309,7 +309,6 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<void, Failure>> deleteProduct(final Product product) async {
     try {
       await _remoteDataSource.deleteProduct(product.id);
-      await _remoteDataSource.deleteProductSizes(product.id);
 
       if (product.imagePaths.isNotEmpty) {
         _localDataSource.deleteProductImages(product.imagePaths).ignore();
