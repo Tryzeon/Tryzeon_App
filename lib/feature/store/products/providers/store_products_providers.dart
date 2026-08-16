@@ -7,6 +7,7 @@ import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
@@ -24,6 +25,7 @@ import 'package:tryzeon/feature/store/products/domain/usecases/create_product.da
 import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/get_product.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/list_products.dart';
+import 'package:tryzeon/feature/store/products/domain/usecases/set_product_status.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/size_item.dart';
@@ -74,6 +76,11 @@ UpdateProduct updateProductUseCase(final Ref ref) {
 }
 
 @riverpod
+SetProductStatus setProductStatusUseCase(final Ref ref) {
+  return SetProductStatus(ref.watch(productRepositoryProvider));
+}
+
+@riverpod
 DeleteProduct deleteProductUseCase(final Ref ref) {
   return DeleteProduct(ref.watch(productRepositoryProvider));
 }
@@ -95,6 +102,10 @@ class ProductQuery extends _$ProductQuery {
 
   void updateSort(final SortCondition sort) {
     state = state.copyWith(sort: sort);
+  }
+
+  void updateStatus(final ProductStatus status) {
+    state = state.copyWith(status: status);
   }
 
   void reset() => state = const ProductQueryState();
@@ -263,6 +274,20 @@ class ProductEditNotifier extends _$ProductEditNotifier {
       // The cached product is the original the next edit diffs against, so a
       // stale one would silently narrow that edit's changes.
       refreshedProductId: productId,
+    );
+  }
+
+  Future<Result<void, Failure>> setStatus({
+    required final Product product,
+    required final ProductStatus status,
+  }) {
+    return _write(
+      ProductMutation.update,
+      () => ref.read(setProductStatusUseCaseProvider)(
+        product: product,
+        status: status,
+      ),
+      refreshedProductId: product.id,
     );
   }
 

@@ -10,6 +10,19 @@ enum ProductGender {
       ProductGender.values.where((final e) => e.value == value).firstOrNull;
 }
 
+/// Whether a product is listed to shoppers. Deleting is a separate,
+/// irreversible action — not a value here.
+enum ProductStatus {
+  active('active'),
+  archived('archived');
+
+  const ProductStatus(this.value);
+  final String value;
+
+  static ProductStatus? tryFromString(final String? value) =>
+      ProductStatus.values.where((final e) => e.value == value).firstOrNull;
+}
+
 enum ProductFit {
   slim('slim'),
   regular('regular'),

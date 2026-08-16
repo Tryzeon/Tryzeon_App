@@ -4,6 +4,7 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
@@ -301,6 +302,24 @@ class ProductRepositoryImpl implements ProductRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Fail to update product', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> setProductStatus({
+    required final Product product,
+    required final ProductStatus status,
+  }) async {
+    try {
+      await _remoteDataSource.updateProduct(product.id, {'status': status.value});
+
+      final model = await _remoteDataSource.getProduct(product.id);
+      await _localDataSource.saveProduct(model);
+
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error('Fail to set product status', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

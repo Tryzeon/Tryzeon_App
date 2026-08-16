@@ -17,6 +17,7 @@ class ProductModel {
     required this.id,
     required this.createdAt,
     required this.updatedAt,
+    this.status,
     this.gender,
     this.purchaseLink,
     this.material,
@@ -39,6 +40,7 @@ class ProductModel {
   @JsonKey(includeToJson: false)
   final List<String> imageUrls;
   final String id;
+  final String? status;
   final String? gender;
   final String? purchaseLink;
   final String? material;

@@ -31,6 +31,7 @@ import 'store_mappr.auto_mappr.dart';
     // Product mappings (String ↔ Enum conversion only at Model ↔ Entity boundary)
     MapType<ProductModel, Product>(
       fields: [
+        Field('status', custom: StoreMapprHelper.stringToStatus),
         Field('gender', custom: StoreMapprHelper.stringToGender),
         Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
         Field('fit', custom: StoreMapprHelper.stringToFit),
@@ -41,6 +42,7 @@ import 'store_mappr.auto_mappr.dart';
     ),
     MapType<Product, ProductModel>(
       fields: [
+        Field('status', custom: StoreMapprHelper.statusToString),
         Field('gender', custom: StoreMapprHelper.genderToString),
         Field('elasticity', custom: StoreMapprHelper.elasticityToString),
         Field('fit', custom: StoreMapprHelper.fitToString),
@@ -87,6 +89,9 @@ class StoreMappr extends $StoreMappr {
 
 class StoreMapprHelper {
   // String to Enum conversions
+  static ProductStatus stringToStatus(final ProductModel source) =>
+      ProductStatus.tryFromString(source.status) ?? ProductStatus.active;
+
   static ProductGender stringToGender(final ProductModel source) =>
       ProductGender.tryFromString(source.gender) ?? ProductGender.unisex;
 
@@ -106,6 +111,8 @@ class StoreMapprHelper {
       ProductSeason.listFromStrings(source.seasons)?.toSet();
 
   // Enum to String conversions
+  static String statusToString(final Product source) => source.status.value;
+
   static String genderToString(final Product source) => source.gender.value;
 
   static String? elasticityToString(final Product source) => source.elasticity?.value;

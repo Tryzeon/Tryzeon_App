@@ -58,6 +58,7 @@ sealed class Product with _$Product {
     required final List<String> imagePaths,
     required final List<String> imageUrls,
     required final String id,
+    @Default(ProductStatus.active) final ProductStatus status,
     @Default(ProductGender.unisex) final ProductGender gender,
     final String? purchaseLink,
     final String? material,
