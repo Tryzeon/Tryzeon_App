@@ -41,8 +41,11 @@ function imagePart(base64: string) {
 export async function generateTryonImage(
   avatarImage: string,
   garmentGroups: string[][],
-  scenePrompt?: string,
-  garmentDetails?: (string | undefined)[],
+  opts: {
+    scenePrompt?: string;
+    garmentDetails?: (string | undefined)[];
+    garmentFits?: (string | undefined)[];
+  } = {},
 ): Promise<string | null> {
   const { files, finishReason } = await generateText({
     model: vertexModel(tryonImageModel()),
@@ -50,7 +53,10 @@ export async function generateTryonImage(
     messages: [{
       role: "user",
       content: [
-        { type: "text", text: buildTaskPrompt(garmentGroups, garmentDetails, scenePrompt) },
+        {
+          type: "text",
+          text: buildTaskPrompt(garmentGroups, opts),
+        },
         imagePart(avatarImage),
         ...garmentGroups.flat().map(imagePart),
       ],

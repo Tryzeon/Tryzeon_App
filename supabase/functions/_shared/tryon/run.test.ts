@@ -150,7 +150,10 @@ Deno.test("the job runs on validated params, not the raw input", async () => {
     {
       ...imageParams,
       // A blank second key survives the wire but must not reach the loader.
-      avatar: { base64: "AVATAR", path: "" } as unknown as TryonParams["avatar"],
+      avatar: {
+        base64: "AVATAR",
+        path: "",
+      } as unknown as TryonParams["avatar"],
     },
     {
       quota: quota.factory,
@@ -292,7 +295,10 @@ Deno.test("product-ref garments are resolved before loading", async () => {
     {
       quota: quota.factory,
       resolveProduct: () =>
-        Promise.resolve({ images: [{ base64: "PRODUCTB64" }], detail: "Product: X" }),
+        Promise.resolve({
+          images: [{ base64: "PRODUCTB64" }],
+          detail: "Product: X",
+        }),
       generate: (_avatar, garmentGroups) => {
         seenGarmentB64.push(...garmentGroups.flat());
         return Promise.resolve("GENERATEDB64");
@@ -320,8 +326,8 @@ Deno.test("resolved product detail reaches the generator", async () => {
       quota: quota.factory,
       resolveProduct: () =>
         Promise.resolve({ images: [{ base64: "P" }], detail: "Product: X" }),
-      generate: (_avatar, _groups, _scene, garmentDetails) => {
-        seenDetails = garmentDetails;
+      generate: (_avatar, _groups, opts) => {
+        seenDetails = opts?.garmentDetails;
         return Promise.resolve("GENERATEDB64");
       },
       upload: () => Promise.resolve("https://img/result.png"),
@@ -428,4 +434,124 @@ Deno.test("each garment kind reaches its own resolver", async () => {
   assertEquals([productCalls, wardrobeCalls], [1, 1]);
   // Order preserved, and caller-supplied material still passes through untouched.
   assertEquals(seenGarmentB64, ["PRODUCTB64", "WARDROBEB64", "RAWB64"]);
+});
+
+Deno.test("runTryonJob does not read measurements when no garment names a size", async () => {
+  const quota = fakeQuota();
+  let bodyReads = 0;
+
+  await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [{ productId: "p1" }],
+    mode: "image",
+  }, {
+    quota: quota.factory,
+    resolveBody: () => {
+      bodyReads++;
+      return Promise.resolve(null);
+    },
+    resolveProduct: () => Promise.resolve({ images: [{ base64: "G" }] }),
+    generate: () => Promise.resolve("GENERATEDB64"),
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(bodyReads, 0);
+});
+
+Deno.test("runTryonJob reads measurements once for several sized garments", async () => {
+  const quota = fakeQuota();
+  let bodyReads = 0;
+
+  await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [
+      { productId: "p1", sizeId: "s1" },
+      { productId: "p2", sizeId: "s2" },
+    ],
+    mode: "image",
+  }, {
+    quota: quota.factory,
+    resolveBody: () => {
+      bodyReads++;
+      return Promise.resolve({ chest: 92 });
+    },
+    resolveProduct: () => Promise.resolve({ images: [{ base64: "G" }] }),
+    generate: () => Promise.resolve("GENERATEDB64"),
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(bodyReads, 1);
+});
+
+Deno.test("runTryonJob hands the resolver the whole ref, size included", async () => {
+  const quota = fakeQuota();
+  let seenRef: unknown;
+
+  await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [{ productId: "p1", sizeId: "s1" }],
+    mode: "image",
+  }, {
+    quota: quota.factory,
+    resolveBody: () => Promise.resolve({ chest: 92 }),
+    resolveProduct: (_admin, ref) => {
+      seenRef = ref;
+      return Promise.resolve({ images: [{ base64: "G" }] });
+    },
+    generate: () => Promise.resolve("GENERATEDB64"),
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenRef, { productId: "p1", sizeId: "s1" });
+});
+
+Deno.test("runTryonJob passes each garment's fit through to the generator", async () => {
+  const quota = fakeQuota();
+  let seenFits: (string | undefined)[] | undefined;
+
+  await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [{ productId: "p1", sizeId: "s1" }],
+    mode: "image",
+  }, {
+    quota: quota.factory,
+    resolveBody: () => Promise.resolve({ chest: 92 }),
+    resolveProduct: () =>
+      Promise.resolve({
+        images: [{ base64: "G" }],
+        fit: "size M: chest 104cm",
+      }),
+    generate: (_avatar, _groups, opts) => {
+      seenFits = opts?.garmentFits;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenFits, ["size M: chest 104cm"]);
+});
+
+Deno.test("runTryonJob reports an undefined fit for a garment without one", async () => {
+  const quota = fakeQuota();
+  let seenFits: (string | undefined)[] | undefined;
+
+  await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [{ images: [{ base64: "GARMENT" }] }],
+    mode: "image",
+  }, {
+    quota: quota.factory,
+    generate: (_avatar, _groups, opts) => {
+      seenFits = opts?.garmentFits;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenFits, [undefined]);
 });

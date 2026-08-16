@@ -15,6 +15,7 @@ import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
 import type {
   AvatarOverride,
   GarmentInput,
+  GarmentRef,
   ImageSource,
   TryonParams,
 } from "./types.ts";
@@ -85,7 +86,13 @@ function validateGarment(garment: GarmentInput): GarmentInput {
     throw new ValidationError("each garment must be an object");
   }
   if (isProductRef(garment)) {
-    return { productId: requireString(garment.productId, "garment productId") };
+    const ref: GarmentRef = {
+      productId: requireString(garment.productId, "garment productId"),
+    };
+    if (garment.sizeId !== undefined) {
+      ref.sizeId = requireString(garment.sizeId, "garment sizeId");
+    }
+    return ref;
   }
   if (isWardrobeRef(garment)) {
     return {
@@ -142,8 +149,8 @@ export function validateTryonParams(params: TryonParams): TryonParams {
   }
 
   assertOptionalText(
-    params.scenePrompt, 
-    "scenePrompt", 
+    params.scenePrompt,
+    "scenePrompt",
     LIMITS.MAX_PROMPT_LENGTH,
   );
   assertOptionalText(

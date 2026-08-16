@@ -14,10 +14,12 @@ import { loadGarments, makeSourceLoader } from "./sources.ts";
 import { validateTryonParams } from "./validate.ts";
 import { GenerationFailedError } from "./errors.ts";
 import { QuotaExceededError } from "../quota.ts";
+import { getBodyMeasurements } from "../user-profile.ts";
 import {
   isProductRef,
   isWardrobeRef,
   type AvatarResolver,
+  type BodyResolver,
   type ImageGenerator,
   type ImageUploader,
   type ProductResolver,
@@ -46,6 +48,7 @@ export interface RunTryonJobDeps {
   resolveProduct?: ProductResolver;
   resolveWardrobe?: WardrobeResolver;
   resolveAvatar?: AvatarResolver;
+  resolveBody?: BodyResolver;
   now?: () => number;
 }
 
@@ -80,6 +83,7 @@ export async function runTryonJob<M extends TryonMode>(
   const uploadVideo = deps.uploadVideo ?? uploadTryonVideoToR2;
   const resolveProduct = deps.resolveProduct ?? resolveProductGarment;
   const resolveWardrobe = deps.resolveWardrobe ?? resolveWardrobeGarment;
+  const resolveBody = deps.resolveBody ?? getBodyMeasurements;
   const now = deps.now ?? Date.now;
 
   const resolveAvatar = deps.resolveAvatar ?? resolveStoredAvatar;
@@ -92,6 +96,13 @@ export async function runTryonJob<M extends TryonMode>(
   }
 
   try {
+    // Read once, and only when something will actually use it: a job with no
+    // sized garment must not pay for a profile lookup.
+    const needsBody = job.garments.some(
+      (g) => isProductRef(g) && g.sizeId !== undefined,
+    );
+    const body = needsBody ? await resolveBody(client, job.userId) : null;
+
     // Stage 1: resolve product and wardrobe refs to concrete garment material.
     // resolveProductGarment is the gatekeeper for the catalog, and
     // resolveWardrobeGarment binds the read to job.userId, so a client can only
@@ -103,7 +114,7 @@ export async function runTryonJob<M extends TryonMode>(
     const materialGarments: ResolvedGarment[] = await Promise.all(
       job.garments.map((g) =>
         isProductRef(g)
-          ? resolveProduct(client, g.productId)
+          ? resolveProduct(client, g, body)
           : isWardrobeRef(g)
           ? resolveWardrobe(client, job.userId, g.wardrobeItemId)
           : g
@@ -122,13 +133,13 @@ export async function runTryonJob<M extends TryonMode>(
     ]);
 
     const garmentDetails = materialGarments.map((g) => g.detail);
+    const garmentFits = materialGarments.map((g) => g.fit);
 
-    const generated = await generate(
-      avatarBase64,
-      garmentGroups,
-      job.scenePrompt,
+    const generated = await generate(avatarBase64, garmentGroups, {
+      scenePrompt: job.scenePrompt,
       garmentDetails,
-    );
+      garmentFits,
+    });
 
     if (!generated) {
       throw new GenerationFailedError("image generation returned null");

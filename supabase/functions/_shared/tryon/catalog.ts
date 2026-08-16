@@ -1,8 +1,13 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { isUuid } from "../text.ts";
+import type { BodyMeasurements } from "../user-profile.ts";
+import { buildGarmentFitDetail, type SizeMeasurements } from "./fit.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
-import type { ResolvedGarment } from "./types.ts";
+import type { GarmentRef, ResolvedGarment } from "./types.ts";
+
+const PRODUCTS_TABLE = "products";
+const PRODUCT_SIZES_TABLE = "product_sizes";
 
 /** Raw product columns needed to build a try-on garment. */
 export interface ProductGarmentRow {
@@ -42,6 +47,53 @@ export function buildProductGarmentDetail(
 }
 
 /**
+ * The fit description for one published size, or undefined when there is
+ * nothing trustworthy to say.
+ *
+ * Bound by BOTH `id` and `product_id`, so a client-supplied sizeId can only
+ * ever name a size of the product it is trying on.
+ *
+ * A well-formed id that matches no row is NOT an error: a store owner may have
+ * deleted the size between the client reading the catalog and sending the
+ * request, and failing a generation that has already been charged over a
+ * deleted row would be the wrong trade. A malformed id is a caller bug and does
+ * raise, exactly as a malformed productId does.
+ */
+async function resolveSizeFit(
+  client: SupabaseClient,
+  productId: string,
+  sizeId: string,
+  body: BodyMeasurements,
+): Promise<string | undefined> {
+  if (!isUuid(sizeId)) {
+    throw new ValidationError(`invalid sizeId: ${sizeId}`);
+  }
+
+  const { data, error } = await client
+    .from(PRODUCT_SIZES_TABLE)
+    .select("name, measurements")
+    .eq("id", sizeId)
+    .eq("product_id", productId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`product size lookup failed: ${error.message}`);
+  }
+  if (!data) {
+    console.warn(
+      `no ${PRODUCT_SIZES_TABLE} row for sizeId ${sizeId} on product ${productId}; skipping fit detail`,
+    );
+    return undefined;
+  }
+
+  return buildGarmentFitDetail(
+    typeof data.name === "string" ? data.name : "",
+    (data.measurements as SizeMeasurements | null) ?? null,
+    body,
+  );
+}
+
+/**
  * Resolves a client-supplied productId to trusted garment material by reading
  * the product from the catalog. The client never supplies a path, so it cannot
  * fetch arbitrary objects — only a real product's images, plus a
@@ -49,8 +101,10 @@ export function buildProductGarmentDetail(
  */
 export async function resolveProductGarment(
   client: SupabaseClient,
-  productId: string,
+  ref: GarmentRef,
+  body: BodyMeasurements | null,
 ): Promise<ResolvedGarment> {
+  const { productId } = ref;
   // Reject non-UUID ids up front so garbage yields a clean validation error
   // instead of a Postgres "invalid input syntax for type uuid".
   if (!isUuid(productId)) {
@@ -58,7 +112,7 @@ export async function resolveProductGarment(
   }
 
   const { data, error } = await client
-    .from("products")
+    .from(PRODUCTS_TABLE)
     .select("image_paths, name, material, fit, elasticity, thickness")
     .eq("id", productId)
     .maybeSingle();
@@ -85,5 +139,12 @@ export async function resolveProductGarment(
     .map((path) => ({ path }));
 
   const detail = buildProductGarmentDetail(data as ProductGarmentRow);
-  return detail === undefined ? { images } : { images, detail };
+  const fit = ref.sizeId && body
+    ? await resolveSizeFit(client, productId, ref.sizeId, body)
+    : undefined;
+
+  const garment: ResolvedGarment = { images };
+  if (detail !== undefined) garment.detail = detail;
+  if (fit !== undefined) garment.fit = fit;
+  return garment;
 }

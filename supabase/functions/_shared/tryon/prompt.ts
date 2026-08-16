@@ -51,11 +51,49 @@ The notes below describe physical properties of the garment(s) to help you rende
 ${lines.join("\n")}`;
 }
 
+/**
+ * Kept apart from `buildGarmentDetailsSection` because the two carry different
+ * risks. Garment details describe the garment, so their only guard is "images
+ * win". These lines quote the WEARER's measurements, and the wearer is a hard
+ * invariant — without an explicit prohibition the model will happily resize the
+ * person to match a number.
+ */
+function buildGarmentFitSection(garmentFits?: (string | undefined)[]): string {
+  if (!garmentFits) return "";
+  const lines: string[] = [];
+  garmentFits.forEach((fit, i) => {
+    const text = fit?.trim();
+    if (text) lines.push(`   - Garment ${i + 1}, ${text}`);
+  });
+  if (lines.length === 0) return "";
+
+  return `
+GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY (TEXT, SECONDARY TO IMAGES)
+These lines compare the published measurements of the size being worn against the wearer's own measurements. Use them ONLY to judge how loosely or tightly the fabric sits, where the garment ends, and how it drapes.
+- NEVER resize, reshape, or re-proportion the person to match these numbers. The person's body in the first image is a HARD INVARIANT.
+- NEVER change the garment's design, color, pattern, or construction from this text — the reference images remain the only source of truth for appearance.
+- If a number disagrees with what the images show, the images win.
+${lines.join("\n")}`;
+}
+
+/**
+ * Optional inputs to {@link buildTaskPrompt}, named rather than positional:
+ * `garmentDetails` and `garmentFits` are both `(string | undefined)[]`, so two
+ * positional parameters of the same shape would let a caller transpose them
+ * and still type-check. See `types.ts`'s `ImageGenerator` for the matching
+ * shape on the generator side of the same bridge.
+ */
+export interface TaskPromptOptions {
+  garmentDetails?: (string | undefined)[];
+  scenePrompt?: string;
+  garmentFits?: (string | undefined)[];
+}
+
 export function buildTaskPrompt(
   garmentGroups: string[][],
-  garmentDetails?: (string | undefined)[],
-  scenePrompt?: string,
+  opts: TaskPromptOptions = {},
 ): string {
+  const { garmentDetails, scenePrompt, garmentFits } = opts;
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt = `You will receive ${
     totalGarmentImages + 1
@@ -131,6 +169,7 @@ OUTPUT
 - Sharp garment detail, accurate color reproduction, fashion photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
+  prompt += buildGarmentFitSection(garmentFits);
 
   if (scenePrompt) {
     prompt += `

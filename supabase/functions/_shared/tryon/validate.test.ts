@@ -1,7 +1,7 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
 import { requireImageSource, validateTryonParams } from "./validate.ts";
 import { ValidationError } from "./errors.ts";
-import { LIMITS, type ImageSource, type TryonParams } from "./types.ts";
+import { type ImageSource, LIMITS, type TryonParams } from "./types.ts";
 
 const validParams: TryonParams = {
   userId: "u1",
@@ -43,7 +43,9 @@ Deno.test("validateTryonParams rejects too many images in a garment", () => {
       validateTryonParams({
         ...validParams,
         garments: [{
-          images: [{ base64: "1" }, { base64: "2" }, { base64: "3" }, { base64: "4" }],
+          images: [{ base64: "1" }, { base64: "2" }, { base64: "3" }, {
+            base64: "4",
+          }],
         }],
       }),
     ValidationError,
@@ -62,7 +64,10 @@ Deno.test("validateTryonParams rejects a garment image with both path and base64
 });
 
 Deno.test("validateTryonParams keeps an inline avatar override", () => {
-  const job = validateTryonParams({ ...validParams, avatar: { base64: "AAAA" } });
+  const job = validateTryonParams({
+    ...validParams,
+    avatar: { base64: "AAAA" },
+  });
   assertEquals(job.avatar, { base64: "AAAA" });
 });
 
@@ -157,7 +162,8 @@ Deno.test("validateTryonParams accepts a product-ref garment", () => {
 
 Deno.test("validateTryonParams rejects an empty productId", () => {
   assertThrows(
-    () => validateTryonParams({ ...validParams, garments: [{ productId: "" }] }),
+    () =>
+      validateTryonParams({ ...validParams, garments: [{ productId: "" }] }),
     ValidationError,
   );
 });
@@ -243,7 +249,9 @@ Deno.test("validateTryonParams returns a product-ref garment as just its id", ()
 });
 
 Deno.test("requireImageSource keeps exactly the one usable key", () => {
-  assertEquals(requireImageSource({ path: "a.jpg" }, "avatar"), { path: "a.jpg" });
+  assertEquals(requireImageSource({ path: "a.jpg" }, "avatar"), {
+    path: "a.jpg",
+  });
   assertEquals(requireImageSource({ base64: "AAA", path: "" }, "avatar"), {
     base64: "AAA",
   });
@@ -276,5 +284,43 @@ Deno.test("validateTryonParams rejects an empty wardrobeItemId", () => {
       }),
     ValidationError,
     "wardrobeItemId",
+  );
+});
+
+Deno.test("validateTryonParams keeps a garment's sizeId", () => {
+  const params = validateTryonParams({
+    userId: "u1",
+    garments: [{ productId: "p1", sizeId: "s1" }],
+    mode: "image",
+  });
+
+  assertEquals(params.garments[0], { productId: "p1", sizeId: "s1" });
+});
+
+Deno.test("validateTryonParams omits sizeId when the caller sent none", () => {
+  const params = validateTryonParams({
+    userId: "u1",
+    garments: [{ productId: "p1" }],
+    mode: "image",
+  });
+
+  assertEquals(params.garments[0], { productId: "p1" });
+});
+
+Deno.test("validateTryonParams rejects a non-string sizeId", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        userId: "u1",
+        garments: [
+          {
+            productId: "p1",
+            sizeId: 7,
+          } as unknown as TryonParams["garments"][number],
+        ],
+        mode: "image",
+      }),
+    ValidationError,
+    "garment sizeId",
   );
 });

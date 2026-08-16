@@ -31,6 +31,7 @@ export { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 export { supabaseQuota } from "./quota.ts";
 export type {
   AvatarResolver,
+  BodyResolver,
   ImageGenerator,
   ImageUploader,
   ProductResolver,

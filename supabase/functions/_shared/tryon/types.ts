@@ -1,5 +1,6 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { DailyUsage, UsageCounter } from "../quota.ts";
+import type { BodyMeasurements } from "../user-profile.ts";
 
 export type { UsageCounter };
 
@@ -20,9 +21,17 @@ export type ImageSource = { path: string } | { base64: string };
  */
 export type AvatarOverride = { base64: string };
 
-/** Try-on a catalog product by reference; the core resolves it to material. */
+/**
+ * Try-on a catalog product by reference; the core resolves it to material.
+ *
+ * `sizeId` names which published size is being worn. Optional because most
+ * callers have no size to name: the LIFF page and the LINE chat flow have no
+ * fit calculation of their own, and a shopper with no recorded measurements has
+ * no recommended size. Absent means "describe the garment, not its fit".
+ */
 export interface GarmentRef {
   productId: string;
+  sizeId?: string;
 }
 
 /**
@@ -49,6 +58,7 @@ export interface GarmentMaterial {
  */
 export interface ResolvedGarment extends GarmentMaterial {
   detail?: string;
+  fit?: string;
 }
 
 /**
@@ -117,6 +127,7 @@ export const LIMITS = {
   MAX_GARMENTS: 3,
   MAX_IMAGES_PER_GARMENT: 3,
   MAX_GARMENT_DETAIL_LENGTH: 500,
+  MAX_GARMENT_FIT_LENGTH: 600,
   MAX_PROMPT_LENGTH: 1000,
 } as const;
 
@@ -153,12 +164,23 @@ export type QuotaFactory = (
  * Generates a try-on image; resolves to clean base64 image data (no data-URI
  * prefix — stripping any provider preamble is the implementation's job), or
  * null when the model returned no image.
+ *
+ * `scenePrompt`, `garmentDetails`, and `garmentFits` are grouped into one
+ * options object rather than left as separate positional parameters:
+ * `garmentDetails` and `garmentFits` are both `(string | undefined)[]`, so two
+ * positionals of the same shape would let a caller transpose them and still
+ * type-check — putting the wearer's body measurements under the garment's
+ * appearance notes, or vice versa. A named object makes that transposition a
+ * compile error instead of a silent prompt bug.
  */
 export type ImageGenerator = (
   avatarBase64: string,
   garmentGroups: string[][],
-  scenePrompt?: string,
-  garmentDetails?: (string | undefined)[],
+  opts?: {
+    scenePrompt?: string;
+    garmentDetails?: (string | undefined)[];
+    garmentFits?: (string | undefined)[];
+  },
 ) => Promise<string | null>;
 
 /** Animates a generated try-on image; resolves to raw video bytes. */
@@ -180,10 +202,17 @@ export type VideoUploader = (
   fileName: string,
 ) => Promise<string>;
 
-/** Resolves a catalog product reference to trusted garment material. */
+/**
+ * Resolves a catalog product reference to trusted garment material. Takes the
+ * whole ref rather than just an id, because the reference now also names which
+ * size is worn, and the wearer's measurements, because describing that size's
+ * fit needs a body to compare against. `null` body means "describe the garment,
+ * not its fit".
+ */
 export type ProductResolver = (
   client: SupabaseClient,
-  productId: string,
+  ref: GarmentRef,
+  body: BodyMeasurements | null,
 ) => Promise<ResolvedGarment>;
 
 /**
@@ -204,3 +233,9 @@ export type AvatarResolver = (
   client: SupabaseClient,
   userId: string,
 ) => Promise<ImageSource>;
+
+/** Resolves the wearer's recorded body dimensions, or null when they have none. */
+export type BodyResolver = (
+  client: SupabaseClient,
+  userId: string,
+) => Promise<BodyMeasurements | null>;
