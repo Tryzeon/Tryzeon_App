@@ -1,6 +1,7 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { DailyUsage, UsageCounter } from "../quota.ts";
 import type { BodyMeasurements } from "../user-profile.ts";
+import type { TaskPromptOptions } from "./prompt.ts";
 
 export type { UsageCounter };
 
@@ -172,15 +173,17 @@ export type QuotaFactory = (
  * type-check — putting the wearer's body measurements under the garment's
  * appearance notes, or vice versa. A named object makes that transposition a
  * compile error instead of a silent prompt bug.
+ *
+ * The shape is `TaskPromptOptions` itself rather than a copy of it. A copy
+ * would be structurally compatible while the two agreed, and — because every
+ * field is optional — would stay compatible after one side renamed a field,
+ * silently dropping that input on its way to the prompt. Sharing the
+ * declaration makes a rename one edit instead of a convention.
  */
 export type ImageGenerator = (
   avatarBase64: string,
   garmentGroups: string[][],
-  opts?: {
-    scenePrompt?: string;
-    garmentDetails?: (string | undefined)[];
-    garmentFits?: (string | undefined)[];
-  },
+  opts?: TaskPromptOptions,
 ) => Promise<string | null>;
 
 /** Animates a generated try-on image; resolves to raw video bytes. */

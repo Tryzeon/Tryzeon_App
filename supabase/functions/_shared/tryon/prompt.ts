@@ -80,8 +80,14 @@ ${lines.join("\n")}`;
  * Optional inputs to {@link buildTaskPrompt}, named rather than positional:
  * `garmentDetails` and `garmentFits` are both `(string | undefined)[]`, so two
  * positional parameters of the same shape would let a caller transpose them
- * and still type-check. See `types.ts`'s `ImageGenerator` for the matching
- * shape on the generator side of the same bridge.
+ * and still type-check.
+ *
+ * `types.ts`'s `ImageGenerator` and `vertex.ts`'s `generateTryonImage` both
+ * take THIS type rather than a copy of its shape. That matters more than it
+ * looks: every field here is optional, so two independent declarations stay
+ * mutually assignable even after one of them renames a field — the compiler
+ * accepts the drift, and the renamed input is silently dropped on its way to
+ * the prompt.
  */
 export interface TaskPromptOptions {
   garmentDetails?: (string | undefined)[];

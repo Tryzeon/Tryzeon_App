@@ -16,6 +16,7 @@ import {
   buildTaskPrompt,
   buildVideoPrompt,
   SYSTEM_INSTRUCTION,
+  type TaskPromptOptions,
 } from "./prompt.ts";
 
 /**
@@ -41,11 +42,7 @@ function imagePart(base64: string) {
 export async function generateTryonImage(
   avatarImage: string,
   garmentGroups: string[][],
-  opts: {
-    scenePrompt?: string;
-    garmentDetails?: (string | undefined)[];
-    garmentFits?: (string | undefined)[];
-  } = {},
+  opts: TaskPromptOptions = {},
 ): Promise<string | null> {
   const { files, finishReason } = await generateText({
     model: vertexModel(tryonImageModel()),
