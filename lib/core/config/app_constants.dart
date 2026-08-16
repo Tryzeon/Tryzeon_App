@@ -79,6 +79,7 @@ class AppConstants {
   static const String paramTransitionPrompt = 'transitionPrompt';
   static const String paramGarmentImages = 'images';
   static const String paramProductId = 'productId';
+  static const String paramSizeId = 'sizeId';
 
   // Shared Preferences Keys
   // Stored names keep their `video_` prefix from when scene was video-only —

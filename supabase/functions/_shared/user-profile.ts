@@ -18,7 +18,24 @@ import { nonEmptyStr } from "./text.ts";
 
 export const USER_PROFILES_TABLE = "user_profiles";
 
+/**
+ * The shopper's own body dimensions, as stored in `user_profiles.measurements`.
+ * Every field is optional — the profile form lets a shopper fill in as few as
+ * they like. Lengths and circumferences are centimeters; `weight` is kilograms.
+ */
+export interface BodyMeasurements {
+  height?: number;
+  weight?: number;
+  shoulder?: number;
+  chest?: number;
+  waist?: number;
+  hips?: number;
+  thigh?: number;
+}
+
 const AVATAR_PATH_COLUMN = "avatar_path";
+
+const MEASUREMENTS_COLUMN = "measurements";
 
 /** Columns `getUserProfile` projects; kept beside the mapping that reads them. */
 const PROFILE_COLUMNS = "name, gender, age_range, style_preferences";
@@ -49,6 +66,31 @@ export async function getAvatarPath(
     throw new Error(`${AVATAR_PATH_COLUMN} lookup failed: ${error.message}`);
   }
   return nonEmptyStr(data?.[AVATAR_PATH_COLUMN]);
+}
+
+/**
+ * The shopper's recorded body dimensions, or null when they have none.
+ *
+ * Deliberately separate from `getUserProfile`: chat projects that row on every
+ * message and has no use for measurements, so this column stays out of
+ * `PROFILE_COLUMNS`. Raises on a lookup failure rather than reporting it as
+ * "no measurements" — degrading is the caller's decision, not this module's.
+ */
+export async function getBodyMeasurements(
+  client: SupabaseClient,
+  userId: string,
+): Promise<BodyMeasurements | null> {
+  const { data, error } = await client
+    .from(USER_PROFILES_TABLE)
+    .select(MEASUREMENTS_COLUMN)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`${MEASUREMENTS_COLUMN} lookup failed: ${error.message}`);
+  }
+  const raw = data?.[MEASUREMENTS_COLUMN];
+  if (typeof raw !== "object" || raw === null) return null;
+  return raw as BodyMeasurements;
 }
 
 /**

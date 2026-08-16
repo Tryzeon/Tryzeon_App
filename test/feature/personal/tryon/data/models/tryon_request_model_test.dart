@@ -30,4 +30,28 @@ void main() {
 
     expect(body['avatar'], {'base64': 'AAAA'});
   });
+
+  test('sends a product garment with its size when one is known', () {
+    final body = TryonRequestModel.fromDomain(
+      const TryonRequest(
+        requestId: 'r1',
+        garments: [TryonGarment.product(productId: 'p1', sizeId: 's1')],
+        mode: TryonMode.image,
+      ),
+    ).toJson();
+
+    expect(body['garments'], [
+      {'productId': 'p1', 'sizeId': 's1'},
+    ]);
+  });
+
+  test('omits the sizeId key entirely when no size is known', () {
+    final body = TryonRequestModel.fromDomain(
+      const TryonRequest(requestId: 'r1', garments: garments, mode: TryonMode.image),
+    ).toJson();
+
+    expect(body['garments'], [
+      {'productId': 'p1'},
+    ]);
+  });
 }

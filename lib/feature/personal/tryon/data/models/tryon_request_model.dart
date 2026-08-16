@@ -69,7 +69,10 @@ class TryonRequestModel {
 
   static Map<String, Object> _garmentToJson(final TryonGarment garment) {
     return switch (garment) {
-      TryonGarmentProduct(:final productId) => {AppConstants.paramProductId: productId},
+      TryonGarmentProduct(:final productId, :final sizeId) => {
+        AppConstants.paramProductId: productId,
+        AppConstants.paramSizeId: ?sizeId,
+      },
       TryonGarmentImages(:final images) => {
         AppConstants.paramGarmentImages: images.map(_sourceToJson).toList(),
       },

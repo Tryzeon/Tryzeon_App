@@ -55,11 +55,12 @@ class TryonCoordinator {
   /// Starts a try-on for a catalog product by id (backend resolves the garment).
   Future<void> tryonFromProduct(
     final String productId, {
+    final String? sizeId,
     final TryonMode mode = TryonMode.image,
   }) async {
     _navigateToHome?.call();
     await _ref
         .read(tryonControllerProvider.notifier)
-        .tryonFromProduct(productId, mode: mode);
+        .tryonFromProduct(productId, sizeId: sizeId, mode: mode);
   }
 }

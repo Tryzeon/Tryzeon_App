@@ -182,5 +182,32 @@ void main() {
       expect(result.recommendedSize, 'M');
       expect(result.matchedTypes, [BodyMeasurementType.thigh]);
     });
+
+    test('reports the recommended size by id as well as by name', () {
+      final result = _calc(const BodyMeasurements(chest: 92), [
+        _size('S', const GarmentMeasurements(chestCircumference: 94)),
+        _size('M', const GarmentMeasurements(chestCircumference: 103)),
+      ]);
+
+      expect(result.recommendedSize, 'M');
+      expect(result.recommendedSizeId, 'M');
+    });
+
+    test('reports the size id even when the best size carries caveats', () {
+      final result = _calc(const BodyMeasurements(chest: 92), [
+        _size('XL', const GarmentMeasurements(chestCircumference: 112)),
+      ]);
+
+      expect(result.displayState, FitDisplayState.caveats);
+      expect(result.recommendedSizeId, 'XL');
+    });
+
+    test('has no recommended size id when the shopper has no measurements', () {
+      final result = _calc(null, [
+        _size('M', const GarmentMeasurements(chestCircumference: 103)),
+      ]);
+
+      expect(result.recommendedSizeId, isNull);
+    });
   });
 }

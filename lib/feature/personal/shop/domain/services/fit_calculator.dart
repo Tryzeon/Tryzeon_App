@@ -55,6 +55,7 @@ class FitCalculator {
       final alternative = cleanMatches.length > 1 ? cleanMatches[1] : null;
       return FitResult(
         recommendedSize: best.size.name,
+        recommendedSizeId: best.size.id,
         matchedTypes: best.matchedTypes,
         alternativeSize: alternative?.size.name,
       );
@@ -77,6 +78,7 @@ class FitCalculator {
     final best = recommendable.first;
     return FitResult(
       recommendedSize: best.size.name,
+      recommendedSizeId: best.size.id,
       caveats: best.caveats,
       matchedTypes: best.matchedTypes,
     );

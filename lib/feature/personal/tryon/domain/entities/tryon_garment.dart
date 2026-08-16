@@ -10,6 +10,12 @@ sealed class TryonGarment with _$TryonGarment {
   const factory TryonGarment.images({required final List<TryonImageSource> images}) =
       TryonGarmentImages;
 
-  const factory TryonGarment.product({required final String productId}) =
-      TryonGarmentProduct;
+  /// [sizeId] names which published size is being worn, so the backend can
+  /// describe how that size sits on this shopper. Null when there is no
+  /// recommendation to make — most often because the shopper has recorded no
+  /// body measurements.
+  const factory TryonGarment.product({
+    required final String productId,
+    final String? sizeId,
+  }) = TryonGarmentProduct;
 }

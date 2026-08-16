@@ -76,13 +76,15 @@ class TryonController extends _$TryonController {
   }
 
   /// Runs a try-on for a catalog product; the backend resolves its garment
-  /// image and prompt detail from the product id.
+  /// image and prompt detail from the product id. [sizeId] names the size being
+  /// worn, when the shopper's measurements yielded a recommendation.
   Future<void> tryonFromProduct(
     final String productId, {
+    final String? sizeId,
     final TryonMode mode = TryonMode.image,
   }) {
     return _runTryon(
-      garments: [TryonGarment.product(productId: productId)],
+      garments: [TryonGarment.product(productId: productId, sizeId: sizeId)],
       mode: mode,
     );
   }
