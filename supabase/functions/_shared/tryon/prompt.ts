@@ -22,14 +22,18 @@ function buildGarmentManifest(garmentGroups: string[][]): string {
   garmentGroups.forEach((group, i) => {
     const start = cursor;
     const end = cursor + group.length - 1;
-    const range = group.length === 1 ? `image ${start}` : `images ${start}-${end}`;
+    const range = group.length === 1
+      ? `image ${start}`
+      : `images ${start}-${end}`;
     lines.push(`   - Garment ${i + 1}: ${range}`);
     cursor = end + 1;
   });
   return lines.join("\n");
 }
 
-function buildGarmentDetailsSection(garmentDetails?: (string | undefined)[]): string {
+function buildGarmentDetailsSection(
+  garmentDetails?: (string | undefined)[],
+): string {
   if (!garmentDetails) return "";
   const lines: string[] = [];
   garmentDetails.forEach((detail, i) => {
@@ -53,8 +57,9 @@ export function buildTaskPrompt(
   scenePrompt?: string,
 ): string {
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
-  let prompt =
-    `You will receive ${totalGarmentImages + 1} images after this message:
+  let prompt = `You will receive ${
+    totalGarmentImages + 1
+  } images after this message:
 1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
 ${buildGarmentManifest(garmentGroups)}
@@ -67,7 +72,9 @@ HARD INVARIANTS — DO NOT CHANGE THESE
 - Person's face, expression, hair (color, length, style), skin tone, age, and body shape must be identical to the first image.
 - Pose, camera angle, and body proportions must match the first image exactly.
 - Do not add, remove, or alter tattoos, jewelry, accessories, hands, or fingers.
-- Do not change the background from the first image${scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""}.
+- Do not change the background from the first image${
+    scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""
+  }.
 
 GARMENT SCOPE — IDENTIFY WHAT TO REPLACE (DO THIS FIRST)
 Before generating, classify the reference garment(s) into ONE of these categories:
@@ -146,7 +153,8 @@ export function buildVideoPrompt(transitionPrompt?: string): string {
     return DEFAULT_VIDEO_PROMPT;
   }
 
-  let prompt = "The person is wearing the new outfit and showing the fit of the clothing.";
+  let prompt =
+    "The person is wearing the new outfit and showing the fit of the clothing.";
   prompt += ` Camera and transition style: ${transitionPrompt}.`;
   prompt += " Natural movement, professional fashion video style.";
 

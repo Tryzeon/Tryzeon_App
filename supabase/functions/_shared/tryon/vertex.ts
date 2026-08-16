@@ -12,7 +12,11 @@ import { base64ToUint8Array } from "../image-utils.ts";
 import { tryonImageModel, tryonVideoModel } from "../vertex/config.ts";
 import { rethrowAsBusy } from "../vertex/errors.ts";
 import { vertexModel, vertexVideoModel } from "../vertex/provider.ts";
-import { buildTaskPrompt, buildVideoPrompt, SYSTEM_INSTRUCTION } from "./prompt.ts";
+import {
+  buildTaskPrompt,
+  buildVideoPrompt,
+  SYSTEM_INSTRUCTION,
+} from "./prompt.ts";
 
 /**
  * An `image` part rather than a `file` one so the SDK settles the media type: it
@@ -91,7 +95,10 @@ export async function generateTryonVideo(
 ): Promise<Uint8Array> {
   const { video } = await experimental_generateVideo({
     model: vertexVideoModel(tryonVideoModel()),
-    prompt: { image: tryonImageBase64, text: buildVideoPrompt(transitionPrompt) },
+    prompt: {
+      image: tryonImageBase64,
+      text: buildVideoPrompt(transitionPrompt),
+    },
     aspectRatio: "9:16",
     generateAudio: false,
     providerOptions: { vertex: { pollIntervalMs: POLL_INTERVAL_MS } },

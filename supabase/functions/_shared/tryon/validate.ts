@@ -24,7 +24,10 @@ import type {
  * Raises when it has neither or both — an image addressed two ways is a caller
  * bug, not something to silently pick a winner for.
  */
-export function requireImageSource(source: unknown, label: string): ImageSource {
+export function requireImageSource(
+  source: unknown,
+  label: string,
+): ImageSource {
   if (typeof source !== "object" || source === null) {
     throw new ValidationError(`${label} must be an object`);
   }
@@ -33,7 +36,9 @@ export function requireImageSource(source: unknown, label: string): ImageSource 
     (k) => typeof s[k] === "string" && (s[k] as string).length > 0,
   );
   if (keys.length !== 1) {
-    throw new ValidationError(`${label} must have exactly one of path | base64`);
+    throw new ValidationError(
+      `${label} must have exactly one of path | base64`,
+    );
   }
   return { [keys[0]]: s[keys[0]] } as ImageSource;
 }
@@ -91,7 +96,9 @@ function validateGarment(garment: GarmentInput): GarmentInput {
     };
   }
   if (!Array.isArray(garment.images) || garment.images.length === 0) {
-    throw new ValidationError("each garment must have a non-empty images array");
+    throw new ValidationError(
+      "each garment must have a non-empty images array",
+    );
   }
   if (garment.images.length > LIMITS.MAX_IMAGES_PER_GARMENT) {
     throw new ValidationError(
@@ -102,7 +109,9 @@ function validateGarment(garment: GarmentInput): GarmentInput {
   // job carries is the text a resolver attaches after this guard has run,
   // which is capped where it is built.
   return {
-    images: garment.images.map((img) => requireImageSource(img, "garment image")),
+    images: garment.images.map((img) =>
+      requireImageSource(img, "garment image")
+    ),
   };
 }
 
@@ -135,7 +144,7 @@ export function validateTryonParams(params: TryonParams): TryonParams {
   assertOptionalText(
     params.scenePrompt, 
     "scenePrompt", 
-    LIMITS.MAX_PROMPT_LENGTH
+    LIMITS.MAX_PROMPT_LENGTH,
   );
   assertOptionalText(
     params.transitionPrompt,
