@@ -7,6 +7,8 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/presentation/actions/toggle_product_status.dart';
+import 'package:tryzeon/feature/store/products/presentation/sheets/product_actions_sheet.dart';
 
 class StoreProductCard extends HookConsumerWidget {
   const StoreProductCard({super.key, required this.product});
@@ -55,7 +57,12 @@ class StoreProductCard extends HookConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.smMd),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.smMd,
+                AppSpacing.smMd,
+                AppSpacing.smMd,
+                0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -81,14 +88,44 @@ class StoreProductCard extends HookConsumerWidget {
                     '\$${product.price.toStringAsFixed(0)}',
                     style: textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
                   ),
-                  const SizedBox(height: AppSpacing.smMd),
-                  _AnalyticsRow(productId: product.id),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: AppSpacing.smMd),
+              child: Row(
+                children: [
+                  Expanded(child: _AnalyticsRow(productId: product.id)),
+                  _ProductCardMenuButton(product: product),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProductCardMenuButton extends ConsumerWidget {
+  const _ProductCardMenuButton({required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    return IconButton(
+      icon: const Icon(Icons.more_horiz, size: 18),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      tooltip: '更多操作',
+      onPressed: () async {
+        final confirmed = await ProductActionsSheet.show(context, product);
+        if (confirmed != true || !context.mounted) return;
+
+        await toggleProductStatus(context, ref, product);
+      },
     );
   }
 }
