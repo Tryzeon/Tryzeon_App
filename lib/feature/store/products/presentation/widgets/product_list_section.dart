@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_card.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
@@ -32,7 +33,12 @@ class ProductListSection extends HookConsumerWidget {
 
     Widget buildProductGrid(final List<Product> products) {
       if (products.isEmpty) {
-        return centeredFill(_EmptyState(hasQuery: query.searchQuery.isNotEmpty));
+        return centeredFill(
+          _EmptyState(
+            hasQuery: query.searchQuery.isNotEmpty,
+            status: query.status,
+          ),
+        );
       }
 
       final bottomInset =
@@ -41,6 +47,7 @@ class ProductListSection extends HookConsumerWidget {
           (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0);
 
       return GridView.builder(
+        key: PageStorageKey(query.status),
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(AppSpacing.sm, 0, AppSpacing.sm, bottomInset),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -71,15 +78,23 @@ class ProductListSection extends HookConsumerWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.hasQuery});
+  const _EmptyState({required this.hasQuery, required this.status});
 
   final bool hasQuery;
+  final ProductStatus status;
+
+  (String, String) get _titleAndBody => switch ((hasQuery, status)) {
+    (true, _) => ('沒有符合條件的商品', '試試清除搜尋關鍵字'),
+    (false, ProductStatus.active) => ('還沒有商品', '點擊右下角按鈕新增商品'),
+    (false, ProductStatus.archived) => ('沒有下架中的商品', '下架後商品會移到這裡，隨時可以重新上架'),
+  };
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
+    final (title, body) = _titleAndBody;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -88,10 +103,11 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.inventory_2_outlined, size: 32, color: colorScheme.onSurfaceVariant),
           const SizedBox(height: AppSpacing.md),
-          Text(hasQuery ? '沒有符合條件的商品' : '還沒有商品', style: textTheme.titleSmall),
+          Text(title, style: textTheme.titleSmall),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            hasQuery ? '試試清除搜尋關鍵字' : '點擊右下角按鈕新增商品',
+            body,
+            textAlign: TextAlign.center,
             style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ],

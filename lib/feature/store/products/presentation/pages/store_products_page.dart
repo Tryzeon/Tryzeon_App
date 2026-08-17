@@ -4,6 +4,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/products/presentation/sheets/product_sort_sheet.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_search_bar.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_status_tabs.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/store_add_product_fab.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 
@@ -44,22 +45,7 @@ class StoreProductsPage extends HookConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('我的商品', style: textTheme.headlineMedium),
-                            const SizedBox(width: AppSpacing.sm),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
-                              child: Text(
-                                '${ref.watch(productsProvider.select((final async) => async.value?.length ?? 0))} 件商品',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        Text('我的商品', style: textTheme.headlineMedium),
                       ],
                     ),
                     Positioned(
@@ -88,6 +74,8 @@ class StoreProductsPage extends HookConsumerWidget {
                 ),
               ),
             ),
+            const ProductStatusTabs(),
+            const SizedBox(height: AppSpacing.md),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.smMd),
               child: ProductSearchBar(),
