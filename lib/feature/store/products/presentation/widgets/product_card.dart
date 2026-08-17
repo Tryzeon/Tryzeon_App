@@ -107,13 +107,13 @@ class StoreProductCard extends HookConsumerWidget {
   }
 }
 
-class _ProductCardMenuButton extends ConsumerWidget {
+class _ProductCardMenuButton extends StatelessWidget {
   const _ProductCardMenuButton({required this.product});
 
   final Product product;
 
   @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
+  Widget build(final BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.more_horiz, size: 18),
       padding: EdgeInsets.zero,
@@ -124,7 +124,7 @@ class _ProductCardMenuButton extends ConsumerWidget {
         final confirmed = await ProductActionsSheet.show(context, product);
         if (confirmed != true || !context.mounted) return;
 
-        await toggleProductStatus(context, ref, product);
+        await toggleProductStatus(context, product);
       },
     );
   }
