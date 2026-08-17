@@ -55,7 +55,7 @@ class FitCalculator {
       final alternative = cleanMatches.length > 1 ? cleanMatches[1] : null;
       return FitResult(
         recommendedSize: best.size.name,
-        recommendedSizeId: best.size.id,
+        tryonSizeId: best.size.id,
         matchedTypes: best.matchedTypes,
         alternativeSize: alternative?.size.name,
       );
@@ -66,19 +66,21 @@ class FitCalculator {
     // not after: the lowest total miss can still be one nobody would wear
     // (a single huge miss beats several small ones on a sum), and rejecting it
     // afterwards would discard the sizes that were actually wearable.
+    evaluated.sort((final a, final b) => a.deviationScore.compareTo(b.deviationScore));
     final recommendable = evaluated
         .where((final e) => e.maxDeviation <= EaseTable.maxRecommendableDeviation)
         .toList();
     // Nothing close enough — the product does not stock this shopper's size.
-    if (recommendable.isEmpty) return const FitResult(outOfRange: true);
+    // The closest one still goes to the try-on: the banner says there is no
+    // size for them, and the render is what shows them why.
+    if (recommendable.isEmpty) {
+      return FitResult(outOfRange: true, tryonSizeId: evaluated.first.size.id);
+    }
 
-    recommendable.sort(
-      (final a, final b) => a.deviationScore.compareTo(b.deviationScore),
-    );
     final best = recommendable.first;
     return FitResult(
       recommendedSize: best.size.name,
-      recommendedSizeId: best.size.id,
+      tryonSizeId: best.size.id,
       caveats: best.caveats,
       matchedTypes: best.matchedTypes,
     );

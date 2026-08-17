@@ -20,7 +20,7 @@ sealed class MeasurementCaveat with _$MeasurementCaveat {
 sealed class FitResult with _$FitResult {
   const factory FitResult({
     final String? recommendedSize,
-    final String? recommendedSizeId,
+    final String? tryonSizeId,
     @Default(<MeasurementCaveat>[]) final List<MeasurementCaveat> caveats,
 
     /// Measurements present on both sides that fell inside the size range.

@@ -31,7 +31,7 @@ Future<void> _startTryon(
       .call(productId: product.id, storeId: product.storeInfo.id)
       .ignore();
 
-  final sizeId = ref.read(productFitResolverProvider).resolve(product).recommendedSizeId;
+  final sizeId = ref.read(productFitResolverProvider).resolve(product).tryonSizeId;
 
   await ref
       .read(tryonCoordinatorProvider)

@@ -106,6 +106,8 @@ void main() {
 
       expect(result.displayState, FitDisplayState.outOfRange);
       expect(result.recommendedSize, isNull);
+      // Nothing to recommend, but the only stocked size still gets tried on.
+      expect(result.tryonSizeId, 'M');
     });
 
     test('lets a stretchy fabric accept low ease as a clean fit', () {
@@ -170,6 +172,8 @@ void main() {
 
       expect(result.displayState, FitDisplayState.outOfRange);
       expect(result.recommendedSize, isNull);
+      // Still try-on-able: 'L' misses by 9cm, 'S' by 8cm, so 'S' is closest.
+      expect(result.tryonSizeId, 'S');
     });
 
     test('compares thigh and matches within the recalibrated band', () {
@@ -190,7 +194,7 @@ void main() {
       ]);
 
       expect(result.recommendedSize, 'M');
-      expect(result.recommendedSizeId, 'M');
+      expect(result.tryonSizeId, 'M');
     });
 
     test('reports the size id even when the best size carries caveats', () {
@@ -199,7 +203,7 @@ void main() {
       ]);
 
       expect(result.displayState, FitDisplayState.caveats);
-      expect(result.recommendedSizeId, 'XL');
+      expect(result.tryonSizeId, 'XL');
     });
 
     test('has no recommended size id when the shopper has no measurements', () {
@@ -207,7 +211,7 @@ void main() {
         _size('M', const GarmentMeasurements(chestCircumference: 103)),
       ]);
 
-      expect(result.recommendedSizeId, isNull);
+      expect(result.tryonSizeId, isNull);
     });
   });
 }
