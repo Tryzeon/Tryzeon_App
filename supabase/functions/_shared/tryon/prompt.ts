@@ -14,7 +14,7 @@ CORE TASK: Replace ONLY the clothing categories shown in the reference garment(s
 1. IDENTIFY SCOPE: Determine which clothing category the reference covers (top / bottom / full-body / outerwear)
 2. REMOVE & REPLACE: Within that scope ONLY, erase the original clothing and apply the new garment. Outside that scope, keep the person's original clothing EXACTLY as it appears in the first image.
 
-You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image. You must NEVER hallucinate or replace clothing in categories the reference does not cover (e.g., do NOT generate new pants when the reference only shows a top). You must NEVER leave remnants of the original clothing visible WITHIN the replaced scope.`;
+You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image, or clothing in a category the reference does not cover (e.g., do NOT generate new pants when the reference only shows a top). You must NEVER leave remnants of the original clothing visible WITHIN the replaced scope.`;
 
 function buildGarmentManifest(garmentGroups: string[][]): string {
   const lines: string[] = [];
@@ -44,10 +44,9 @@ function buildGarmentDetailsSection(
 
   return `
 GARMENT DETAILS — AUXILIARY MATERIAL/FIT NOTES (TEXT, SECONDARY TO IMAGES)
-The notes below describe physical properties of the garment(s) to help you render fabric behavior and fit realistically. They are STRICTLY secondary to the reference images.
+The notes below describe physical properties of the garment(s) to help you render fabric behavior and fit realistically.
 - The reference IMAGES are the ONLY source of truth for appearance — color, pattern, print, silhouette, and every visible design element. NEVER let this text override, recolor, or add anything not visible in the images.
 - Use these notes ONLY to inform how the fabric drapes and behaves (sheen, stiffness, weight), how much it stretches or clings, and how loose or fitted it sits on the body.
-- If a note ever conflicts with what the images show, the images win.
 ${lines.join("\n")}`;
 }
 
@@ -72,7 +71,6 @@ GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY (TEXT, SECONDARY TO IMAGES)
 These lines compare the published measurements of the size being worn against the wearer's own measurements. Use them ONLY to judge how loosely or tightly the fabric sits, where the garment ends, and how it drapes.
 - NEVER resize, reshape, or re-proportion the person to match these numbers. The person's body in the first image is a HARD INVARIANT.
 - NEVER change the garment's design, color, pattern, or construction from this text — the reference images remain the only source of truth for appearance.
-- If a number disagrees with what the images show, the images win.
 ${lines.join("\n")}`;
 }
 
@@ -107,7 +105,7 @@ export function buildTaskPrompt(
 1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
 ${buildGarmentManifest(garmentGroups)}
-First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously. Each garment replaces ONLY its own category scope; any category not covered by ANY garment is a HARD INVARIANT — copy it pixel-faithfully from the person photo.
+First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously.
 
 GOAL
 Create a photorealistic photo of the person from the first image wearing the garment from the reference images.
@@ -120,8 +118,7 @@ HARD INVARIANTS — DO NOT CHANGE THESE
     scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""
   }.
 
-GARMENT SCOPE — IDENTIFY WHAT TO REPLACE (DO THIS FIRST)
-Before generating, classify the reference garment(s) into ONE of these categories:
+GARMENT SCOPE — THE CATEGORIES
 - TOP: shirt, blouse, t-shirt, tank top, sweater, hoodie (covers upper body only)
 - BOTTOM: pants, jeans, shorts, skirt, leggings (covers lower body only)
 - FULL-BODY: dress, jumpsuit, overall, robe, gown (covers both upper and lower body)
@@ -146,17 +143,8 @@ GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
 CRITICAL: ORIGINAL CLOTHING REMOVAL — WITHIN REPLACEMENT SCOPE ONLY
 Apply the rules below ONLY to the clothing category being replaced. Clothing in OTHER categories must remain UNTOUCHED.
 - Within the replaced scope, COMPLETELY REMOVE all traces of the person's original clothing from the first image.
-- If the new garment has shorter sleeves (e.g., sleeveless, short sleeves) than the original, the person's arms MUST be fully visible with natural skin — NO remnants of original sleeves.
-- If the new garment has a different neckline (e.g., lower cut, wider), the person's chest/shoulders MUST show natural skin — NO remnants of original collar or fabric.
-- If the new garment is shorter in length, the person's torso/legs MUST be visible with natural skin — NO remnants of original hem (unless the original lower garment must remain because it's outside scope — in that case, show the original lower garment cleanly tucked or layered).
+- Wherever the new garment covers less than the original (shorter sleeves, lower or wider neckline, shorter hem), the skin underneath MUST be fully visible and natural — NO remnants of the original sleeves, collar, or hem. The exception is a garment that stays because it is outside scope: show it cleanly tucked or layered.
 - The boundary between the new garment and exposed skin (or preserved original clothing) must be clean, natural, and seamless with proper shadows and skin texture.
-
-EXAMPLE SCENARIOS
-- Reference: sleeveless top (TOP scope) → Replace ONLY the upper body. The person's original jeans/skirt/shorts MUST stay exactly as in the first image. Show bare arms with natural skin.
-- Reference: a pair of pants (BOTTOM scope) → Replace ONLY the lower body. The person's original shirt/blouse MUST stay exactly as in the first image, including its color, pattern, and how it sits.
-- Reference: a short dress (FULL-BODY scope) → Replace BOTH upper and lower body with the dress; show natural legs below the hem.
-- Reference: a jacket (OUTERWEAR scope) → Add or swap the jacket only; the original inner top and original pants/skirt MUST remain visible and unchanged where the jacket does not cover them.
-- The key principle: treat any clothing category NOT shown in the reference as a HARD INVARIANT — copy it pixel-faithfully from the first image.
 
 SOURCE IMAGE ISOLATION
 - Treat the garment reference images as product references ONLY.
@@ -170,7 +158,6 @@ LIGHTING & REALISM
 
 OUTPUT
 - Return ONE image in PORTRAIT orientation with 9:16 aspect ratio (vertical/portrait format, NOT square or landscape).
-- The image MUST be taller than it is wide (portrait orientation).
 - Sharp garment detail, accurate color reproduction, fashion photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
@@ -182,8 +169,7 @@ OUTPUT
 SCENE CONTEXT — BACKGROUND ONLY
 Place the person in this scene: ${scenePrompt}
 - Change ONLY the background and adjust lighting to match the new environment.
-- DO NOT change the person's identity, face, body, hair, pose, or any garment details.
-- The garment must remain exactly as specified above.`;
+- The person and the garment stay exactly as specified above.`;
   }
 
   return prompt;

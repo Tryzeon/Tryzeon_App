@@ -95,10 +95,6 @@ Deno.test("buildTaskPrompt guards the body against the fit numbers", () => {
     prompt,
     "NEVER resize, reshape, or re-proportion the person to match these numbers",
   );
-  assertStringIncludes(
-    prompt,
-    "If a number disagrees with what the images show, the images win.",
-  );
 });
 
 Deno.test("buildTaskPrompt keeps details, fit, and scene in that order", () => {
