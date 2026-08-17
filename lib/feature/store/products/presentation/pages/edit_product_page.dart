@@ -72,8 +72,10 @@ class _EditProductContent extends HookConsumerWidget {
       final dialogResult = await showAppOkCancelDialog(
         context: context,
         title: '刪除商品',
-        message: '確定要刪除「${product.name}」嗎?\n此操作無法復原。',
-        okLabel: '刪除',
+        message:
+            '確定要永久刪除「${product.name}」嗎?\n'
+            '刪除後無法復原，商品將永久消失。',
+        okLabel: '永久刪除',
         cancelLabel: '取消',
         isDestructiveAction: true,
       );
