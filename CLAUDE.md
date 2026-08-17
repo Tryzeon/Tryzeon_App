@@ -27,6 +27,25 @@ Code generation is required after editing any annotated file (`@riverpod`, `@fre
 
 `Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all four keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
 
+## graphify dependency graph
+
+`graphify-out/` holds an AST dependency graph of `lib/` + `supabase/`. It is a local artifact (gitignored) built by the Orca worktree setup script. Rebuild with `graphify update .` — ~5s, pure AST, never calls an LLM. Re-run it after editing files you are about to analyze.
+
+Two commands are worth using; for anything else use Grep:
+
+```bash
+graphify affected "<symbol>" --depth 3   # impact analysis: who breaks if this changes
+graphify explain "<symbol>"              # a symbol's callers and callees, with line numbers
+```
+
+`affected` is the one Grep cannot replace — it walks indirect dependencies and catches `inherits`/`imports_from` edges across test files.
+
+Known limits, do not over-trust the graph:
+
+- Edges exist only within a single language. Dart↔TypeScript has **0** edges, SQL↔Dart has 4 (cross-runtime calls go over HTTP/RPC, which AST cannot see). "Not connected in the graph" never means "unrelated".
+- Riverpod `@riverpod` providers are defined in gitignored `*.g.dart`, so their definitions are missing — they appear as `none_*` ghost nodes (47 of them). Only the reference side is queryable.
+- Do not use `graphify query` for fuzzy search; generic tokens match unrelated symbols.
+
 ## Architecture
 
 ### Architecture rules

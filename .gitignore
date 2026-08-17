@@ -79,3 +79,6 @@ app.*.map.json
 
 # Git worktrees
 .worktrees/
+
+# graphify dependency graph (local build artifact, ~15MB)
+graphify-out/
