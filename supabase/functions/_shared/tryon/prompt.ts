@@ -37,28 +37,18 @@ function buildGarmentDetailsSection(
   if (lines.length === 0) return "";
 
   return `
-GARMENT DETAILS — AUXILIARY MATERIAL NOTES (TEXT, SECONDARY TO IMAGES)
-The notes below describe physical properties of the garment(s) to help you render fabric behavior realistically.
-- The reference IMAGES are the ONLY source of truth for appearance — color, pattern, print, cut, and every visible design element. NEVER let this text override, recolor, or add anything not visible in the images.
-- Use these notes ONLY to inform how the fabric behaves: how it drapes (sheen, stiffness, weight) and how much it stretches.
-- A "Cut" note names how the garment was DESIGNED to hang on a generic body. It does NOT say how it sits on THIS wearer — a cut designed loose still reads as tight on a body large enough to fill it. Derive the actual tightness from this person's body, not from this word.
+GARMENT DETAILS — MATERIAL NOTES
+The store's own notes on each garment's material, cut, elasticity, and thickness. Use them to render how the fabric behaves: how it drapes and how much it stretches.
 ${lines.join("\n")}`;
 }
 
 /**
- * Kept apart from `buildGarmentDetailsSection` because the two carry different
- * risks — and, more importantly, different authority.
+ * Kept apart from `buildGarmentDetailsSection` because the two have different
+ * sources: details describe the garment as the store published it, these lines
+ * are computed against one wearer's measurements.
  *
- * Garment details describe the garment, so "images win" governs them outright.
- * These lines cannot defer to the images: the reference photos show the garment
- * flat or on a different body, so they physically cannot depict how it sits on
- * THIS wearer. A loose-cut top on a large enough chest is a tight top, and only
- * the numbers know that. So appearance stays with the images while tightness
- * moves here, and the split has to be stated or the model falls back on the
- * silhouette it can see.
- *
- * The wearer stays a hard invariant either way — without an explicit
- * prohibition the model will happily resize the person to match a number.
+ * The wearer stays a hard invariant — without an explicit prohibition the model
+ * will happily resize the person to match a number.
  */
 function buildGarmentFitSection(garmentFits?: (string | undefined)[]): string {
   if (!garmentFits) return "";
@@ -70,12 +60,10 @@ function buildGarmentFitSection(garmentFits?: (string | undefined)[]): string {
   if (lines.length === 0) return "";
 
   return `
-GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY (AUTHORITATIVE FOR TIGHTNESS)
-These lines compare the published measurements of the size being worn against the wearer's own measurements.
-- These numbers are the ONLY source of truth for how tightly the garment sits on this wearer, where it ends, and how it drapes. The reference images CANNOT show this — they show the garment flat, or on a different body. Where the images suggest one tightness and these numbers another, THE NUMBERS WIN.
-- Negative ease is not an error: it means this body fills the garment past its measured size, so the fabric stretches and pulls taut, with visible tension lines. How far it can stretch is governed by the elasticity noted in GARMENT DETAILS.
+GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY
+The published measurements of the size being worn, next to the wearer's own measurements. Use them to judge how tightly the garment sits on this person.
+- Negative ease means this body fills the garment past its measured size, so the fabric stretches and pulls taut, with visible tension lines. How far it can stretch is governed by the elasticity noted in GARMENT DETAILS.
 - NEVER resize, reshape, or re-proportion the person to match these numbers — the garment changes, the body does not.
-- Appearance still belongs to the reference images; only tightness belongs here.
 ${lines.join("\n")}`;
 }
 
@@ -113,7 +101,7 @@ ${buildGarmentManifest(garmentGroups)}
 First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously.
 
 HARD INVARIANTS — DO NOT CHANGE THESE
-- Person's face, expression, hair (color, length, style), skin tone, age, body shape, pose, and camera angle must be identical to the first image.
+- Person's face, expression, hair (color, length, style), skin tone, age, body shape, pose, camera angle, and framing must be identical to the first image.
 - Do not add, remove, or alter tattoos, jewelry, accessories, hands, or fingers.
 - Do not change the background from the first image${
     scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""
@@ -139,23 +127,22 @@ GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
 
 CRITICAL: ORIGINAL CLOTHING REMOVAL
 - Within the replaced category, COMPLETELY REMOVE all traces of the person's original clothing from the first image.
-- Wherever the new garment covers less than the original (shorter sleeves, lower or wider neckline, shorter hem), the skin underneath MUST be fully visible and natural — NO remnants of the original sleeves, collar, or hem. The exception is a garment that stays because it is outside scope: show it cleanly tucked or layered.
+- Wherever the new garment covers less than the original (shorter sleeves, lower or wider neckline, shorter hem), whatever lies underneath — the person's bare skin, or a preserved out-of-scope garment — MUST be fully visible and natural. NO remnants of the original sleeves, collar, or hem.
 - The boundary between the new garment and exposed skin (or preserved original clothing) must be clean, natural, and seamless, with correct skin texture.
 
 SOURCE IMAGE ISOLATION
 - Treat the garment reference images as product references ONLY.
 - Ignore any model, mannequin, body, background, props, or lighting visible in the garment photos.
-- This includes how the garment FITS in those photos. A reference body is not this person's body, so do NOT carry over its looseness or tightness.
+- This includes how the garment FITS in those photos. A reference body is not this person's body, so do NOT carry over how loosely or tightly it sat there.
 - Extract and transfer ONLY the garment itself.
 
 LIGHTING & REALISM
 - Match lighting direction, intensity, and color temperature from the person photo.
 - Generate realistic shadows where fabric contacts the body.
-- Soft diffused lighting, natural skin rendering, no artifacts, no warping, no halos, no double edges.
+- Natural skin rendering, no artifacts, no warping, no halos, no double edges.
 
 OUTPUT
-- Return ONE photorealistic image in 9:16 portrait orientation — taller than it is wide, never square or landscape.
-- Sharp garment detail, accurate color reproduction, fashion photography quality.`;
+- Return ONE photorealistic image with sharp garment detail, accurate color reproduction, and fashion photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
   prompt += buildGarmentFitSection(garmentFits);
