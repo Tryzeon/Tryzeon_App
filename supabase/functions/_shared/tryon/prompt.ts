@@ -8,9 +8,7 @@
 export const SYSTEM_INSTRUCTION =
   `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly.
 
-CORE TASK: Replace ONLY the clothing categories shown in the reference garment(s). Think of this as a scoped two-step process:
-1. IDENTIFY SCOPE: Determine which clothing category the reference covers (top / bottom / full-body / outerwear)
-2. REMOVE & REPLACE: Within that scope ONLY, erase the original clothing and apply the new garment. Outside that scope, keep the person's original clothing EXACTLY as it appears in the first image.`;
+CORE TASK: Replace ONLY the clothing categories shown in the reference garment(s). Within that scope, erase the original clothing and apply the new garment. Outside that scope, keep the person's original clothing EXACTLY as it appears in the first image.`;
 
 function buildGarmentManifest(garmentGroups: string[][]): string {
   const lines: string[] = [];
@@ -115,8 +113,7 @@ ${buildGarmentManifest(garmentGroups)}
 First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously.
 
 HARD INVARIANTS — DO NOT CHANGE THESE
-- Person's face, expression, hair (color, length, style), skin tone, age, and body shape must be identical to the first image.
-- Pose, camera angle, and body proportions must match the first image exactly.
+- Person's face, expression, hair (color, length, style), skin tone, age, body shape, pose, and camera angle must be identical to the first image.
 - Do not add, remove, or alter tattoos, jewelry, accessories, hands, or fingers.
 - Do not change the background from the first image${
     scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""
@@ -140,10 +137,10 @@ GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
 - Maintain material properties: sheen, thickness, texture, translucency.
 - Fit the garment naturally to this person's body: realistic drape, wrinkles, and tension points for their specific body and pose.
 
-CRITICAL: ORIGINAL CLOTHING REMOVAL — WITHIN REPLACEMENT SCOPE ONLY
+CRITICAL: ORIGINAL CLOTHING REMOVAL
 - Within the replaced category, COMPLETELY REMOVE all traces of the person's original clothing from the first image.
 - Wherever the new garment covers less than the original (shorter sleeves, lower or wider neckline, shorter hem), the skin underneath MUST be fully visible and natural — NO remnants of the original sleeves, collar, or hem. The exception is a garment that stays because it is outside scope: show it cleanly tucked or layered.
-- The boundary between the new garment and exposed skin (or preserved original clothing) must be clean, natural, and seamless with proper shadows and skin texture.
+- The boundary between the new garment and exposed skin (or preserved original clothing) must be clean, natural, and seamless, with correct skin texture.
 
 SOURCE IMAGE ISOLATION
 - Treat the garment reference images as product references ONLY.
@@ -157,7 +154,7 @@ LIGHTING & REALISM
 - Soft diffused lighting, natural skin rendering, no artifacts, no warping, no halos, no double edges.
 
 OUTPUT
-- Return ONE photorealistic image in PORTRAIT orientation with 9:16 aspect ratio (vertical/portrait format, NOT square or landscape).
+- Return ONE photorealistic image in 9:16 portrait orientation — taller than it is wide, never square or landscape.
 - Sharp garment detail, accurate color reproduction, fashion photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
