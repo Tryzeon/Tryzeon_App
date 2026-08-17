@@ -107,7 +107,7 @@ export function buildTaskPrompt(
 1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
 ${buildGarmentManifest(garmentGroups)}
-First classify each garment's category (top / bottom / full-body / outerwear / footwear / accessory) using the rules below, then apply ALL garments to the person simultaneously. Each garment replaces ONLY its own category scope; any category not covered by ANY garment is a HARD INVARIANT — copy it pixel-faithfully from the person photo.
+First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously. Each garment replaces ONLY its own category scope; any category not covered by ANY garment is a HARD INVARIANT — copy it pixel-faithfully from the person photo.
 
 GOAL
 Create a photorealistic photo of the person from the first image wearing the garment from the reference images.
@@ -126,7 +126,6 @@ Before generating, classify the reference garment(s) into ONE of these categorie
 - BOTTOM: pants, jeans, shorts, skirt, leggings (covers lower body only)
 - FULL-BODY: dress, jumpsuit, overall, robe, gown (covers both upper and lower body)
 - OUTERWEAR: jacket, coat, cardigan, blazer, vest (worn OVER existing clothing)
-- FOOTWEAR / ACCESSORY: shoes, hats, bags, etc.
 
 REPLACEMENT SCOPE RULES — STRICT
 - Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person MUST be preserved EXACTLY from the first image — same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked).
