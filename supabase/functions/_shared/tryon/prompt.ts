@@ -6,9 +6,7 @@
  */
 
 export const SYSTEM_INSTRUCTION =
-  `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly.
-
-CORE TASK: Replace ONLY the clothing categories shown in the reference garment(s). Within that scope, erase the original clothing and apply the new garment. Outside that scope, keep the person's original clothing EXACTLY as it appears in the first image.`;
+  `You are a photorealistic virtual try-on image editor. Preserve the target person's identity and follow only the garment-replacement and optional scene-edit instructions explicitly authorized by the task. Do not alter anything else.`;
 
 function buildGarmentManifest(garmentGroups: string[][]): string {
   const lines: string[] = [];
