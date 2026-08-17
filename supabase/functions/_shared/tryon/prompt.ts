@@ -8,13 +8,9 @@
 export const SYSTEM_INSTRUCTION =
   `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly.
 
-CRITICAL: ALL generated images MUST be in PORTRAIT orientation with 9:16 aspect ratio (vertical format, taller than wide). NEVER generate square or landscape images.
-
 CORE TASK: Replace ONLY the clothing categories shown in the reference garment(s). Think of this as a scoped two-step process:
 1. IDENTIFY SCOPE: Determine which clothing category the reference covers (top / bottom / full-body / outerwear)
-2. REMOVE & REPLACE: Within that scope ONLY, erase the original clothing and apply the new garment. Outside that scope, keep the person's original clothing EXACTLY as it appears in the first image.
-
-You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image, or clothing in a category the reference does not cover (e.g., do NOT generate new pants when the reference only shows a top). You must NEVER leave remnants of the original clothing visible WITHIN the replaced scope.`;
+2. REMOVE & REPLACE: Within that scope ONLY, erase the original clothing and apply the new garment. Outside that scope, keep the person's original clothing EXACTLY as it appears in the first image.`;
 
 function buildGarmentManifest(garmentGroups: string[][]): string {
   const lines: string[] = [];
@@ -113,13 +109,10 @@ export function buildTaskPrompt(
   let prompt = `You will receive ${
     totalGarmentImages + 1
   } images after this message:
-1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
+1) FIRST image: the PERSON photo — this is the target person.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
 ${buildGarmentManifest(garmentGroups)}
 First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously.
-
-GOAL
-Create a photorealistic photo of the person from the first image wearing the garment from the reference images.
 
 HARD INVARIANTS — DO NOT CHANGE THESE
 - Person's face, expression, hair (color, length, style), skin tone, age, and body shape must be identical to the first image.
@@ -136,25 +129,20 @@ GARMENT SCOPE — THE CATEGORIES
 - OUTERWEAR: jacket, coat, cardigan, blazer, vest (worn OVER existing clothing)
 
 REPLACEMENT SCOPE RULES — STRICT
-- Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person MUST be preserved EXACTLY from the first image — same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked).
-- TOP reference → swap the upper-body garment ONLY. KEEP the original pants/skirt/shorts/footwear unchanged.
-- BOTTOM reference → swap the lower-body garment ONLY. KEEP the original top/outerwear/footwear unchanged.
+- Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person — including footwear — MUST be preserved EXACTLY from the first image: same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked).
 - FULL-BODY reference → replaces both upper and lower body (the dress/jumpsuit covers everything).
 - OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.
-- If multiple references are provided, treat them as the SAME garment from different angles UNLESS they clearly show different categories (e.g., a top + a bottom set) — in which case replace each respective category.
-- NEVER invent, generate, or substitute clothing in a category the reference does not show. If the reference is a top, do NOT change, redesign, or recolor the original pants. If the reference is pants, do NOT alter the original top.
+- NEVER invent, generate, or substitute clothing in a category the reference does not show (e.g., do NOT change, redesign, or recolor the original pants when the reference is a top).
 - If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
 
 GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
 - Copy the garment precisely: cut and construction — neckline shape, sleeve length, hem length, seams, stitching, closures (buttons/zippers), pockets — and any logos or text.
-- "Cut" here means the garment's shape as an object. It does NOT mean how tightly it sat on whoever or whatever wore it in the reference photo — that is decided by this wearer's body, not by the reference.
 - Preserve print/pattern scale, placement, and color exactly — do not simplify or genericize.
 - Maintain material properties: sheen, thickness, texture, translucency.
 - Fit the garment naturally to this person's body: realistic drape, wrinkles, and tension points for their specific body and pose.
 
 CRITICAL: ORIGINAL CLOTHING REMOVAL — WITHIN REPLACEMENT SCOPE ONLY
-Apply the rules below ONLY to the clothing category being replaced. Clothing in OTHER categories must remain UNTOUCHED.
-- Within the replaced scope, COMPLETELY REMOVE all traces of the person's original clothing from the first image.
+- Within the replaced category, COMPLETELY REMOVE all traces of the person's original clothing from the first image. Clothing in OTHER categories must remain UNTOUCHED.
 - Wherever the new garment covers less than the original (shorter sleeves, lower or wider neckline, shorter hem), the skin underneath MUST be fully visible and natural — NO remnants of the original sleeves, collar, or hem. The exception is a garment that stays because it is outside scope: show it cleanly tucked or layered.
 - The boundary between the new garment and exposed skin (or preserved original clothing) must be clean, natural, and seamless with proper shadows and skin texture.
 
@@ -170,7 +158,7 @@ LIGHTING & REALISM
 - Soft diffused lighting, natural skin rendering, no artifacts, no warping, no halos, no double edges.
 
 OUTPUT
-- Return ONE image in PORTRAIT orientation with 9:16 aspect ratio (vertical/portrait format, NOT square or landscape).
+- Return ONE photorealistic image in PORTRAIT orientation with 9:16 aspect ratio (vertical/portrait format, NOT square or landscape).
 - Sharp garment detail, accurate color reproduction, fashion photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
