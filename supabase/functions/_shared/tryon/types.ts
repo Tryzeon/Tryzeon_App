@@ -30,7 +30,7 @@ export type AvatarOverride = { base64: string };
  * fit calculation of their own, and a shopper with no recorded measurements has
  * no recommended size. Absent means "describe the garment, not its fit".
  */
-export interface GarmentRef {
+export interface ProductRef {
   productId: string;
   sizeId?: string;
 }
@@ -67,10 +67,10 @@ export interface ResolvedGarment extends GarmentMaterial {
  * material they supplied directly. Both reference kinds are resolved
  * server-side; only the third carries bytes or paths from a caller.
  */
-export type GarmentInput = GarmentRef | WardrobeRef | GarmentMaterial;
+export type GarmentInput = ProductRef | WardrobeRef | GarmentMaterial;
 
 /** True when a garment names a catalog product. */
-export function isProductRef(garment: GarmentInput): garment is GarmentRef {
+export function isProductRef(garment: GarmentInput): garment is ProductRef {
   return "productId" in garment;
 }
 
@@ -214,7 +214,7 @@ export type VideoUploader = (
  */
 export type ProductResolver = (
   client: SupabaseClient,
-  ref: GarmentRef,
+  ref: ProductRef,
   body: BodyMeasurements | null,
 ) => Promise<ResolvedGarment>;
 

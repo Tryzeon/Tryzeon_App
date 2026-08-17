@@ -48,7 +48,7 @@ export type {
   AvatarOverride,
   GarmentInput,
   GarmentMaterial,
-  GarmentRef,
+  ProductRef,
   WardrobeRef,
   ImageSource,
   ResolvedGarment,

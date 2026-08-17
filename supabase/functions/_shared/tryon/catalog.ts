@@ -4,7 +4,7 @@ import type { BodyMeasurements } from "../user-profile.ts";
 import { buildGarmentFitDetail, type SizeMeasurements } from "./fit.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
-import type { GarmentRef, ResolvedGarment } from "./types.ts";
+import type { ProductRef, ResolvedGarment } from "./types.ts";
 
 const PRODUCTS_TABLE = "products";
 const PRODUCT_SIZES_TABLE = "product_sizes";
@@ -100,7 +100,7 @@ async function resolveSizeFit(
  */
 export async function resolveProductGarment(
   client: SupabaseClient,
-  ref: GarmentRef,
+  ref: ProductRef,
   body: BodyMeasurements | null,
 ): Promise<ResolvedGarment> {
   const { productId } = ref;

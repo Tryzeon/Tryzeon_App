@@ -15,7 +15,7 @@ import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
 import type {
   AvatarOverride,
   GarmentInput,
-  GarmentRef,
+  ProductRef,
   ImageSource,
   TryonParams,
 } from "./types.ts";
@@ -86,7 +86,7 @@ function validateGarment(garment: GarmentInput): GarmentInput {
     throw new ValidationError("each garment must be an object");
   }
   if (isProductRef(garment)) {
-    const ref: GarmentRef = {
+    const ref: ProductRef = {
       productId: requireString(garment.productId, "garment productId"),
     };
     if (garment.sizeId !== undefined) {
