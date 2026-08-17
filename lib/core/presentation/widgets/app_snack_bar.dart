@@ -6,14 +6,36 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 /// safe area, plus the in-app nav bar on iOS 26+ which the framework's safe
 /// area padding doesn't account for. Failures should use `TopNotification`.
 class AppSnackBar {
-  static void show(final BuildContext context, {required final String message}) {
-    final navBarOffset = PlatformInfo.isIOS26OrHigher()
+  /// Pass [actionLabel] and [onAction] together to offer a single follow-up —
+  /// an undo, typically. Both or neither.
+  static void show(
+    final BuildContext context, {
+    required final String message,
+    final String? actionLabel,
+    final VoidCallback? onAction,
+  }) {
+    final liftsItself =
+        Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
+
+    final navBarOffset = PlatformInfo.isIOS26OrHigher() && !liftsItself
         ? AppSpacing.iosTabBarHeight
         : 0.0;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    final hasAction = actionLabel != null && onAction != null;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         content: Text(message),
+        action: hasAction
+            ? SnackBarAction(label: actionLabel, onPressed: onAction)
+            : null,
+
+        persist: false,
+        duration: hasAction
+            ? const Duration(seconds: 6)
+            : const Duration(seconds: 4),
         margin: EdgeInsets.only(
           left: AppSpacing.md,
           right: AppSpacing.md,
