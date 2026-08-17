@@ -53,11 +53,11 @@ export function buildProductGarmentDetail(
  * Bound by BOTH `id` and `product_id`, so a client-supplied sizeId can only
  * ever name a size of the product it is trying on.
  *
- * A well-formed id that matches no row is NOT an error: a store owner may have
- * deleted the size between the client reading the catalog and sending the
- * request, and failing a generation that has already been charged over a
- * deleted row would be the wrong trade. A malformed id is a caller bug and does
- * raise, exactly as a malformed productId does.
+ * Neither a missing row nor a failed read is an error: the size may have been
+ * deleted between the client reading the catalog and sending the request, and
+ * the fit sentence is a prompt enhancement — failing a generation that has
+ * already been charged over either would be the wrong trade. A malformed id is
+ * a caller bug and does raise, exactly as a malformed productId does.
  */
 async function resolveSizeFit(
   client: SupabaseClient,
@@ -77,7 +77,10 @@ async function resolveSizeFit(
     .maybeSingle();
 
   if (error) {
-    throw new Error(`product size lookup failed: ${error.message}`);
+    console.warn(
+      `${PRODUCT_SIZES_TABLE} lookup failed for sizeId ${sizeId}; skipping fit detail: ${error.message}`,
+    );
+    return undefined;
   }
   if (!data) {
     console.warn(

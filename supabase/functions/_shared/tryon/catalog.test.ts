@@ -155,6 +155,24 @@ Deno.test("resolveProductGarment skips the fit description for a sizeId that mat
   assertEquals("fit" in garment, false);
 });
 
+Deno.test("resolveProductGarment survives a failed product_sizes lookup", async () => {
+  // The fit sentence is a prompt enhancement; a transient read failure must not
+  // fail a generation that has already been charged.
+  const { admin } = fakeAdmin({
+    products: { row: PRODUCT_ROW },
+    product_sizes: { row: null, error: { message: "connection reset" } },
+  });
+
+  const garment = await resolveProductGarment(
+    admin,
+    { productId: PRODUCT_ID, sizeId: SIZE_ID },
+    { chest: 90 },
+  );
+
+  assertEquals("fit" in garment, false);
+  assertEquals(garment.images.length, 1);
+});
+
 Deno.test("resolveProductGarment attaches the fit description for a matching sizeId", async () => {
   const { admin } = fakeAdmin({
     products: { row: PRODUCT_ROW },

@@ -485,6 +485,33 @@ Deno.test("runTryonJob reads measurements once for several sized garments", asyn
   assertEquals(bodyReads, 1);
 });
 
+Deno.test("runTryonJob still generates when the measurements read fails", async () => {
+  // Optional data: the same request without a sizeId would have succeeded, so a
+  // profile read fault must degrade to no body rather than fail the job.
+  const quota = fakeQuota();
+  let seenBody: unknown = "unset";
+
+  const result = await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [{ productId: "p1", sizeId: "s1" }],
+    mode: "image",
+  }, {
+    quota: quota.factory,
+    resolveBody: () => Promise.reject(new Error("connection reset")),
+    resolveProduct: (_admin, _ref, body) => {
+      seenBody = body;
+      return Promise.resolve({ images: [{ base64: "G" }] });
+    },
+    generate: () => Promise.resolve("GENERATEDB64"),
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenBody, null);
+  assertEquals(result.kind, "image");
+  assertEquals(quota.calls, ["charge"]);
+});
+
 Deno.test("runTryonJob hands the resolver the whole ref, size included", async () => {
   const quota = fakeQuota();
   let seenRef: unknown;

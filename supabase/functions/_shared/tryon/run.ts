@@ -101,7 +101,15 @@ export async function runTryonJob<M extends TryonMode>(
     const needsBody = job.garments.some(
       (g) => isProductRef(g) && g.sizeId !== undefined,
     );
-    const body = needsBody ? await resolveBody(client, job.userId) : null;
+    // Optional data: a profile read that fails must not fail a job that would
+    // have succeeded without a sizeId. Degrading is the caller's call, and this
+    // is the caller.
+    const body = needsBody
+      ? await resolveBody(client, job.userId).catch((err) => {
+        console.warn("body measurements lookup failed; skipping fit:", err);
+        return null;
+      })
+      : null;
 
     // Stage 1: resolve product and wardrobe refs to concrete garment material.
     // resolveProductGarment is the gatekeeper for the catalog, and
