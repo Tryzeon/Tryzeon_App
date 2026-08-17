@@ -76,8 +76,8 @@ GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY (AUTHORITATIVE FOR TIGHTNESS)
 These lines compare the published measurements of the size being worn against the wearer's own measurements.
 - These numbers are the ONLY source of truth for how tightly the garment sits on this wearer, where it ends, and how it drapes. The reference images CANNOT show this — they show the garment flat, or on a different body. Where the images suggest one tightness and these numbers another, THE NUMBERS WIN.
 - Negative ease is not an error: it means this body fills the garment past its measured size, so the fabric stretches and pulls taut, with visible tension lines. How far it can stretch is governed by the elasticity noted in GARMENT DETAILS.
-- NEVER resize, reshape, or re-proportion the person to match these numbers. The person's body in the first image is a HARD INVARIANT — the garment changes, the body does not.
-- NEVER change the garment's design, color, pattern, or construction from this text. Appearance still belongs to the reference images; only tightness belongs here.
+- NEVER resize, reshape, or re-proportion the person to match these numbers — the garment changes, the body does not.
+- Appearance still belongs to the reference images; only tightness belongs here.
 ${lines.join("\n")}`;
 }
 
@@ -129,10 +129,9 @@ GARMENT SCOPE — THE CATEGORIES
 - OUTERWEAR: jacket, coat, cardigan, blazer, vest (worn OVER existing clothing)
 
 REPLACEMENT SCOPE RULES — STRICT
-- Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person — including footwear — MUST be preserved EXACTLY from the first image: same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked).
+- Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person — including footwear — MUST be preserved EXACTLY from the first image: same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked). Never redesign or recolor it — e.g., do NOT touch the original pants when the reference is a top.
 - FULL-BODY reference → replaces both upper and lower body (the dress/jumpsuit covers everything).
 - OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.
-- NEVER invent, generate, or substitute clothing in a category the reference does not show (e.g., do NOT change, redesign, or recolor the original pants when the reference is a top).
 - If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
 
 GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
@@ -142,14 +141,14 @@ GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
 - Fit the garment naturally to this person's body: realistic drape, wrinkles, and tension points for their specific body and pose.
 
 CRITICAL: ORIGINAL CLOTHING REMOVAL — WITHIN REPLACEMENT SCOPE ONLY
-- Within the replaced category, COMPLETELY REMOVE all traces of the person's original clothing from the first image. Clothing in OTHER categories must remain UNTOUCHED.
+- Within the replaced category, COMPLETELY REMOVE all traces of the person's original clothing from the first image.
 - Wherever the new garment covers less than the original (shorter sleeves, lower or wider neckline, shorter hem), the skin underneath MUST be fully visible and natural — NO remnants of the original sleeves, collar, or hem. The exception is a garment that stays because it is outside scope: show it cleanly tucked or layered.
 - The boundary between the new garment and exposed skin (or preserved original clothing) must be clean, natural, and seamless with proper shadows and skin texture.
 
 SOURCE IMAGE ISOLATION
 - Treat the garment reference images as product references ONLY.
 - Ignore any model, mannequin, body, background, props, or lighting visible in the garment photos.
-- This includes how the garment FITS in those photos. A reference body is not this person's body, so do NOT carry over its looseness or tightness — re-derive the fit from this person's body.
+- This includes how the garment FITS in those photos. A reference body is not this person's body, so do NOT carry over its looseness or tightness.
 - Extract and transfer ONLY the garment itself.
 
 LIGHTING & REALISM
