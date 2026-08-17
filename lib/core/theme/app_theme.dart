@@ -445,12 +445,37 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           color: colorScheme.onInverseSurface,
         ),
+        actionTextColor: colorScheme.onInverseSurface,
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
         elevation: 0,
         insetPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
+        ),
+      ),
+
+      // ── Tab Bar ──────────────────────────────────────────────────────────
+      // Spec: flat, charcoal active, thin underline indicator — the same
+      // treatment §5 gives the nav bar, and for the same reason: M3's default
+      // 3px indicator and ripple are heavier than this UI's flat surfaces.
+      tabBarTheme: TabBarThemeData(
+        labelColor: colorScheme.onSurface,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
+        indicator: UnderlineTabIndicator(
+          borderSide: BorderSide(
+            color: colorScheme.onSurface,
+            width: AppStroke.medium,
+          ),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: colorScheme.outline,
+        dividerHeight: AppStroke.thin,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        labelStyle: GoogleFonts.notoSansTc(fontSize: 14, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.notoSansTc(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
         ),
       ),
 
