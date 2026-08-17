@@ -235,3 +235,20 @@ Deno.test("resolveProductGarment rejects a malformed sizeId", async () => {
     "invalid sizeId",
   );
 });
+
+Deno.test("resolveProductGarment rejects a malformed sizeId even with no body", async () => {
+  // Same caller bug, shopper with no measurements: validation must not depend
+  // on user state, or the bug goes unreported for half the population.
+  const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
+
+  await assertRejects(
+    () =>
+      resolveProductGarment(
+        admin,
+        { productId: PRODUCT_ID, sizeId: "not-a-uuid" },
+        null,
+      ),
+    ValidationError,
+    "invalid sizeId",
+  );
+});

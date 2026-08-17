@@ -57,7 +57,7 @@ export function buildProductGarmentDetail(
  * deleted between the client reading the catalog and sending the request, and
  * the fit sentence is a prompt enhancement — failing a generation that has
  * already been charged over either would be the wrong trade. A malformed id is
- * a caller bug and does raise, exactly as a malformed productId does.
+ * a caller bug and does raise, from `resolveProductGarment`.
  */
 async function resolveSizeFit(
   client: SupabaseClient,
@@ -65,10 +65,6 @@ async function resolveSizeFit(
   sizeId: string,
   body: BodyMeasurements,
 ): Promise<string | undefined> {
-  if (!isUuid(sizeId)) {
-    throw new ValidationError(`invalid sizeId: ${sizeId}`);
-  }
-
   const { data, error } = await client
     .from(PRODUCT_SIZES_TABLE)
     .select("name, measurements")
@@ -112,6 +108,12 @@ export async function resolveProductGarment(
   // instead of a Postgres "invalid input syntax for type uuid".
   if (!isUuid(productId)) {
     throw new ValidationError(`invalid productId: ${productId}`);
+  }
+  // Checked here rather than where it is used: gating this on whether the
+  // shopper happens to have measurements would report the caller bug to some
+  // users and swallow it for the rest.
+  if (ref.sizeId !== undefined && !isUuid(ref.sizeId)) {
+    throw new ValidationError(`invalid sizeId: ${ref.sizeId}`);
   }
 
   const { data, error } = await client
