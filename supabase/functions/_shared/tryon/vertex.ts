@@ -44,6 +44,10 @@ export async function generateTryonImage(
   garmentGroups: string[][],
   opts: TaskPromptOptions = {},
 ): Promise<string | null> {
+  const taskPrompt = buildTaskPrompt(garmentGroups, opts);
+  console.log("[tryon] system instruction:\n" + SYSTEM_INSTRUCTION);
+  console.log("[tryon] task prompt:\n" + taskPrompt);
+
   const { files, finishReason } = await generateText({
     model: vertexModel(tryonImageModel()),
     system: SYSTEM_INSTRUCTION,
@@ -52,7 +56,7 @@ export async function generateTryonImage(
       content: [
         {
           type: "text",
-          text: buildTaskPrompt(garmentGroups, opts),
+          text: taskPrompt,
         },
         imagePart(avatarImage),
         ...garmentGroups.flat().map(imagePart),
