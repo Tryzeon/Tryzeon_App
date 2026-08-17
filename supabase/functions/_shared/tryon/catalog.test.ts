@@ -59,6 +59,7 @@ function fakeAdmin(stubs: Record<string, LookupStub>) {
 
 const PRODUCT_ROW = {
   id: PRODUCT_ID,
+  status: "active",
   image_paths: ["stores/a.jpg"],
   name: "Shirt",
   material: null,
@@ -142,6 +143,21 @@ Deno.test("SECURITY: a sizeId belonging to a different product does not attach a
   );
 
   assertEquals("fit" in garment, false);
+});
+
+Deno.test("SECURITY: an unlisted product does not resolve", async () => {
+  // An archived product keeps its row, so it is there to be read — only
+  // `.eq("status", "active")` keeps it out of a try-on. This is the test that
+  // must fail if that filter is ever dropped.
+  const { admin } = fakeAdmin({
+    products: { row: { ...PRODUCT_ROW, status: "archived" } },
+  });
+
+  await assertRejects(
+    () => resolveProductGarment(admin, { productId: PRODUCT_ID }, null),
+    ValidationError,
+    "no product for productId",
+  );
 });
 
 Deno.test("resolveProductGarment skips the fit description for a sizeId that matches no row", async () => {
