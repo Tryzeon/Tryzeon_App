@@ -1,4 +1,8 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert";
+import {
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "jsr:@std/assert";
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { buildProductGarmentDetail, resolveProductGarment } from "./catalog.ts";
 import { LIMITS } from "./types.ts";
@@ -74,7 +78,7 @@ Deno.test("buildProductGarmentDetail joins present fields in fixed order", () =>
   });
   assertEquals(
     detail,
-    "Product: Linen Shirt. Material: 100% Linen. Fit: regular. Elasticity: low. Thickness: medium",
+    "Product: Linen Shirt. Material: 100% Linen. Cut: regular. Elasticity: low. Thickness: medium",
   );
 });
 
@@ -196,6 +200,33 @@ Deno.test("resolveProductGarment attaches the fit description for a matching siz
     garment.fit,
     "size M: chest 104cm on a 90cm chest (+14cm — fitted, follows the body with a little room)",
   );
+});
+
+Deno.test("resolveProductGarment ships the cut label alongside real fit numbers", async () => {
+  const { admin } = fakeAdmin({
+    products: { row: { ...PRODUCT_ROW, fit: "oversize" } },
+    product_sizes: {
+      row: {
+        id: SIZE_ID,
+        product_id: PRODUCT_ID,
+        name: "M",
+        measurements: { chest_circumference: 88 },
+      },
+    },
+  });
+
+  const garment = await resolveProductGarment(
+    admin,
+    { productId: PRODUCT_ID, sizeId: SIZE_ID },
+    { chest: 110 },
+  );
+
+  // An oversize cut on a body big enough to fill it — the case the fit
+  // numbers exist for. Both reach the model: the cut is product information,
+  // the numbers say what that cut does here, and the prompt names which one
+  // governs tightness.
+  assertEquals(garment.detail, "Product: Shirt. Cut: oversize");
+  assertStringIncludes(garment.fit ?? "", "-22cm — compression");
 });
 
 Deno.test("resolveProductGarment skips the product_sizes lookup entirely when there is no body", async () => {

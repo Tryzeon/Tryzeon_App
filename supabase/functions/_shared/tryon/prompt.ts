@@ -43,19 +43,28 @@ function buildGarmentDetailsSection(
   if (lines.length === 0) return "";
 
   return `
-GARMENT DETAILS — AUXILIARY MATERIAL/FIT NOTES (TEXT, SECONDARY TO IMAGES)
-The notes below describe physical properties of the garment(s) to help you render fabric behavior and fit realistically.
-- The reference IMAGES are the ONLY source of truth for appearance — color, pattern, print, silhouette, and every visible design element. NEVER let this text override, recolor, or add anything not visible in the images.
-- Use these notes ONLY to inform how the fabric drapes and behaves (sheen, stiffness, weight), how much it stretches or clings, and how loose or fitted it sits on the body.
+GARMENT DETAILS — AUXILIARY MATERIAL NOTES (TEXT, SECONDARY TO IMAGES)
+The notes below describe physical properties of the garment(s) to help you render fabric behavior realistically.
+- The reference IMAGES are the ONLY source of truth for appearance — color, pattern, print, cut, and every visible design element. NEVER let this text override, recolor, or add anything not visible in the images.
+- Use these notes ONLY to inform how the fabric behaves: how it drapes (sheen, stiffness, weight) and how much it stretches.
+- A "Cut" note names how the garment was DESIGNED to hang on a generic body. It does NOT say how it sits on THIS wearer — a cut designed loose still reads as tight on a body large enough to fill it. Derive the actual tightness from this person's body, not from this word.
 ${lines.join("\n")}`;
 }
 
 /**
  * Kept apart from `buildGarmentDetailsSection` because the two carry different
- * risks. Garment details describe the garment, so their only guard is "images
- * win". These lines quote the WEARER's measurements, and the wearer is a hard
- * invariant — without an explicit prohibition the model will happily resize the
- * person to match a number.
+ * risks — and, more importantly, different authority.
+ *
+ * Garment details describe the garment, so "images win" governs them outright.
+ * These lines cannot defer to the images: the reference photos show the garment
+ * flat or on a different body, so they physically cannot depict how it sits on
+ * THIS wearer. A loose-cut top on a large enough chest is a tight top, and only
+ * the numbers know that. So appearance stays with the images while tightness
+ * moves here, and the split has to be stated or the model falls back on the
+ * silhouette it can see.
+ *
+ * The wearer stays a hard invariant either way — without an explicit
+ * prohibition the model will happily resize the person to match a number.
  */
 function buildGarmentFitSection(garmentFits?: (string | undefined)[]): string {
   if (!garmentFits) return "";
@@ -67,10 +76,12 @@ function buildGarmentFitSection(garmentFits?: (string | undefined)[]): string {
   if (lines.length === 0) return "";
 
   return `
-GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY (TEXT, SECONDARY TO IMAGES)
-These lines compare the published measurements of the size being worn against the wearer's own measurements. Use them ONLY to judge how loosely or tightly the fabric sits, where the garment ends, and how it drapes.
-- NEVER resize, reshape, or re-proportion the person to match these numbers. The person's body in the first image is a HARD INVARIANT.
-- NEVER change the garment's design, color, pattern, or construction from this text — the reference images remain the only source of truth for appearance.
+GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY (AUTHORITATIVE FOR TIGHTNESS)
+These lines compare the published measurements of the size being worn against the wearer's own measurements.
+- These numbers are the ONLY source of truth for how tightly the garment sits on this wearer, where it ends, and how it drapes. The reference images CANNOT show this — they show the garment flat, or on a different body. Where the images suggest one tightness and these numbers another, THE NUMBERS WIN.
+- Negative ease is not an error: it means this body fills the garment past its measured size, so the fabric stretches and pulls taut, with visible tension lines. How far it can stretch is governed by the elasticity noted in GARMENT DETAILS.
+- NEVER resize, reshape, or re-proportion the person to match these numbers. The person's body in the first image is a HARD INVARIANT — the garment changes, the body does not.
+- NEVER change the garment's design, color, pattern, or construction from this text. Appearance still belongs to the reference images; only tightness belongs here.
 ${lines.join("\n")}`;
 }
 
@@ -135,10 +146,11 @@ REPLACEMENT SCOPE RULES — STRICT
 - If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
 
 GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
-- Copy the garment precisely: silhouette, neckline shape, sleeve length, hem length, seams, stitching, closures (buttons/zippers), pockets, and any logos or text.
+- Copy the garment precisely: cut and construction — neckline shape, sleeve length, hem length, seams, stitching, closures (buttons/zippers), pockets — and any logos or text.
+- "Cut" here means the garment's shape as an object. It does NOT mean how tightly it sat on whoever or whatever wore it in the reference photo — that is decided by this wearer's body, not by the reference.
 - Preserve print/pattern scale, placement, and color exactly — do not simplify or genericize.
 - Maintain material properties: sheen, thickness, texture, translucency.
-- Fit the garment naturally to this person's body: realistic drape, wrinkles, and tension points for their specific pose.
+- Fit the garment naturally to this person's body: realistic drape, wrinkles, and tension points for their specific body and pose.
 
 CRITICAL: ORIGINAL CLOTHING REMOVAL — WITHIN REPLACEMENT SCOPE ONLY
 Apply the rules below ONLY to the clothing category being replaced. Clothing in OTHER categories must remain UNTOUCHED.
@@ -149,6 +161,7 @@ Apply the rules below ONLY to the clothing category being replaced. Clothing in 
 SOURCE IMAGE ISOLATION
 - Treat the garment reference images as product references ONLY.
 - Ignore any model, mannequin, body, background, props, or lighting visible in the garment photos.
+- This includes how the garment FITS in those photos. A reference body is not this person's body, so do NOT carry over its looseness or tightness — re-derive the fit from this person's body.
 - Extract and transfer ONLY the garment itself.
 
 LIGHTING & REALISM

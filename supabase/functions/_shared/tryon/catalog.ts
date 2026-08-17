@@ -27,6 +27,18 @@ function trimmedString(value: unknown): string {
  * Model-facing garment description built from a product row. Mirrors the
  * retired client `toTryonPromptDetail()` so every surface produces the same
  * prompt. DB text already equals the enum values, so no remapping.
+ *
+ * `products.fit` is emitted as `Cut:`, not `Fit:`, because that is what it
+ * actually is: a label derived from the product photo (see
+ * `analyze-product-image`), describing the garment's design silhouette on a
+ * generic body. It says nothing about this wearer.
+ *
+ * It ships even when `buildGarmentFitDetail` also has real ease numbers. The
+ * two are not rivals: the cut is product information the shopper is buying,
+ * the numbers are what that cut does on this body. "Oversize" and "-15cm,
+ * pulled taut" are both true of a large enough wearer, and the prompt names
+ * which one governs tightness — so the model reconciles them rather than
+ * having one hidden from it.
  */
 export function buildProductGarmentDetail(
   row: ProductGarmentRow,
@@ -36,8 +48,8 @@ export function buildProductGarmentDetail(
   if (name) parts.push(`Product: ${name}`);
   const material = trimmedString(row.material);
   if (material) parts.push(`Material: ${material}`);
-  const fit = trimmedString(row.fit);
-  if (fit) parts.push(`Fit: ${fit}`);
+  const cut = trimmedString(row.fit);
+  if (cut) parts.push(`Cut: ${cut}`);
   const elasticity = trimmedString(row.elasticity);
   if (elasticity) parts.push(`Elasticity: ${elasticity}`);
   const thickness = trimmedString(row.thickness);
