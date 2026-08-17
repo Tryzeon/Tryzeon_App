@@ -117,7 +117,7 @@ REPLACEMENT SCOPE RULES — STRICT
 - OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.
 - If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
 
-GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
+GARMENT TRANSFER
 - Copy the garment precisely: cut and construction — neckline shape, sleeve length, hem length, seams, stitching, closures (buttons/zippers), pockets — and any logos or text.
 - Preserve print/pattern scale, placement, and color exactly — do not simplify or genericize.
 - Maintain material properties: sheen, thickness, texture, translucency.
