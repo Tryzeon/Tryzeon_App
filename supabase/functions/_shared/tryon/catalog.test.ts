@@ -160,6 +160,24 @@ Deno.test("SECURITY: an unlisted product does not resolve", async () => {
   );
 });
 
+Deno.test("resolveProductGarment sends only the product's first image", async () => {
+  // Stores publish a main shot followed by detail macros (a washed-out label, a
+  // blurry hem). Passed off as "the same garment from another angle" they only
+  // dilute the person photo, so the main shot is the whole reference.
+  const { admin } = fakeAdmin({
+    products: {
+      row: {
+        ...PRODUCT_ROW,
+        image_paths: ["stores/main.jpg", "stores/label.jpg", "stores/hem.jpg"],
+      },
+    },
+  });
+
+  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID }, null);
+
+  assertEquals(garment.images, [{ path: "stores/main.jpg" }]);
+});
+
 Deno.test("resolveProductGarment skips the fit description for a sizeId that matches no row", async () => {
   const { admin } = fakeAdmin({
     products: { row: PRODUCT_ROW },

@@ -149,12 +149,10 @@ export async function resolveProductGarment(
     );
   }
 
-  // Every image the limit allows, not just the first: the prompt treats a
-  // garment's images as one group showing the same piece from several angles,
-  // and a catalog product is the source most likely to actually have them.
-  const images = paths
-    .slice(0, LIMITS.MAX_IMAGES_PER_GARMENT)
-    .map((path) => ({ path }));
+  // The main shot only. A store's later images are detail macros — a washed-out
+  // label, a blurry hem — carrying no garment silhouette, and passing them off
+  // as extra angles dilutes the person photo instead of describing the garment.
+  const images = [{ path: paths[0] }];
 
   const detail = buildProductGarmentDetail(data as ProductGarmentRow);
   const fit = ref.sizeId && body
