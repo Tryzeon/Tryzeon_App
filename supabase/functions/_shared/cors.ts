@@ -16,8 +16,12 @@ import { jsonError } from "./http.ts";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-/** Request headers a client may send unless the caller names its own set. */
-const DEFAULT_ALLOW_HEADERS = ["Content-Type", "Authorization"] as const;
+const DEFAULT_ALLOW_HEADERS = [
+  "Content-Type",
+  "Authorization",
+  "apikey",
+  "x-client-info",
+] as const;
 
 /** How long a browser may cache the preflight result. */
 const MAX_AGE_SECONDS = 86400;
@@ -29,8 +33,8 @@ export interface CorsOptions {
    */
   methods: HttpMethod | readonly HttpMethod[];
   /**
-   * Overrides the request headers a client may send. Defaults to
-   * `Content-Type, Authorization`, which covers a JSON body and a bearer token.
+   * Overrides the request headers a client may send. The default covers a JSON
+   * body, a bearer token, and the two headers supabase-js adds of its own.
    */
   allowHeaders?: readonly string[];
 }
