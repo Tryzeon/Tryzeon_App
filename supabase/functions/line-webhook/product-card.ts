@@ -99,7 +99,10 @@ export function fetchProductRows(
  * other two do: `handleProductTryon` runs this before charging quota, so
  * whatever the core would later reject has to be rejected here too — otherwise
  * the tap costs the user a try-on and returns a generic error. A card can sit
- * in a LINE thread long after the store took the product down.
+ * in a LINE thread long after the store took the product down. The unlisted
+ * check is `get_shop_product`'s rather than this function's: it is the same
+ * rule the try-on core reads through, and this path runs on the service-role
+ * client, where an RLS policy would not apply.
  *
  * No image url, and so no `imagesBaseUrl`: this serves the try-on path, whose
  * result card's hero is the generated image. The catalog image was carried here
@@ -109,12 +112,9 @@ export async function fetchProductInfo(
   admin: SupabaseClient,
   productId: string,
 ): Promise<ProductInfo | null> {
-  const { data, error } = await admin
-    .from("products")
-    .select(PRODUCT_CARD_SELECT)
-    .eq("id", productId)
-    .eq("status", "active")
-    .maybeSingle();
+  const { data, error } = await admin.rpc("get_shop_product", {
+    p_id: productId,
+  });
 
   if (error) throw new Error(`product lookup failed: ${error.message}`);
   return data ? toProductInfo(data) : null;

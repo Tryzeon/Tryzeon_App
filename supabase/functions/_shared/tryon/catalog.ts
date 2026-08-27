@@ -6,7 +6,6 @@ import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
 
-const PRODUCTS_TABLE = "products";
 const PRODUCT_SIZES_TABLE = "product_sizes";
 
 /** Raw product columns needed to build a try-on garment. */
@@ -128,12 +127,9 @@ export async function resolveProductGarment(
     throw new ValidationError(`invalid sizeId: ${ref.sizeId}`);
   }
 
-  const { data, error } = await client
-    .from(PRODUCTS_TABLE)
-    .select("image_paths, name, material, fit, elasticity, thickness")
-    .eq("id", productId)
-    .eq("status", "active")
-    .maybeSingle();
+  const { data, error } = await client.rpc("get_shop_product", {
+    p_id: productId,
+  });
 
   if (error) {
     throw new Error(`product lookup failed: ${error.message}`);
@@ -142,7 +138,8 @@ export async function resolveProductGarment(
     throw new ValidationError(`no product for productId: ${productId}`);
   }
 
-  const paths = (data.image_paths as string[] | null) ?? [];
+  const row = data as ProductGarmentRow;
+  const paths = (row.image_paths as string[] | null) ?? [];
   if (paths.length === 0) {
     throw new ValidationError(
       `no usable garment image for productId: ${productId}`,
@@ -154,7 +151,7 @@ export async function resolveProductGarment(
   // as extra angles dilutes the person photo instead of describing the garment.
   const images = [{ path: paths[0] }];
 
-  const detail = buildProductGarmentDetail(data as ProductGarmentRow);
+  const detail = buildProductGarmentDetail(row);
   const fit = ref.sizeId && body
     ? await resolveSizeFit(client, productId, ref.sizeId, body)
     : undefined;

@@ -17,18 +17,42 @@ interface LookupStub {
 }
 
 /**
- * Fake client recording every `.eq()` applied per table (keyed by table name,
- * since `resolveProductGarment` queries both `products` and `product_sizes`),
- * so a test can prove a filter actually reached the query rather than merely
- * trusting the code. `maybeSingle()` re-checks the recorded filters against the
- * row instead of just recording them — without that, deleting a filter would
- * leave a security test still passing. Same property as `wardrobe.test.ts`'s
- * `fakeAdmin`, generalized to more than one table.
+ * Fake client for the two reads `resolveProductGarment` makes.
+ *
+ * `products` is served through `.rpc()` because the shopper-visible product
+ * lookup is `get_shop_product` now — and `.from("products")` throws, so a
+ * regression to a direct, unfiltered table read fails the suite instead of
+ * silently widening what a try-on can reach.
+ *
+ * The rpc arm re-checks `p_id` and `status` against the stub row rather than
+ * just handing it back: it models what the SQL function does, so the security
+ * test below still describes a real outcome and not merely a recorded call.
+ * `product_sizes` keeps the `.from()` chain and the same filter re-check as
+ * before — proving a filter reached the query, the way `wardrobe.test.ts`'s
+ * `fakeAdmin` does.
  */
 function fakeAdmin(stubs: Record<string, LookupStub>) {
   const filters: Record<string, Array<[string, string]>> = {};
+  const rpcCalls: Array<[string, Record<string, unknown>]> = [];
   const admin = {
+    rpc: (name: string, params: Record<string, unknown>) => {
+      rpcCalls.push([name, params]);
+      const stub = stubs.products;
+      const row = stub?.row ?? null;
+      const visible = row !== null &&
+        row.id === params.p_id &&
+        row.status === "active";
+      return Promise.resolve({
+        data: visible ? row : null,
+        error: stub?.error ?? null,
+      });
+    },
     from: (table: string) => {
+      if (table === "products") {
+        throw new Error(
+          "fakeAdmin: the product lookup must go through get_shop_product",
+        );
+      }
       const tableFilters: Array<[string, string]> = [];
       filters[table] = tableFilters;
       return {
@@ -54,7 +78,7 @@ function fakeAdmin(stubs: Record<string, LookupStub>) {
       };
     },
   } as unknown as SupabaseClient;
-  return { admin, filters };
+  return { admin, filters, rpcCalls };
 }
 
 const PRODUCT_ROW = {
@@ -145,10 +169,18 @@ Deno.test("SECURITY: a sizeId belonging to a different product does not attach a
   assertEquals("fit" in garment, false);
 });
 
+Deno.test("resolveProductGarment looks the product up through get_shop_product", async () => {
+  const { admin, rpcCalls } = fakeAdmin({ products: { row: PRODUCT_ROW } });
+  await resolveProductGarment(admin, { productId: PRODUCT_ID }, null);
+
+  assertEquals(rpcCalls, [["get_shop_product", { p_id: PRODUCT_ID }]]);
+});
+
 Deno.test("SECURITY: an unlisted product does not resolve", async () => {
-  // An archived product keeps its row, so it is there to be read — only
-  // `.eq("status", "active")` keeps it out of a try-on. This is the test that
-  // must fail if that filter is ever dropped.
+  // An archived product keeps its row, so it is there to be read. What keeps
+  // it out of a try-on is `get_shop_product`'s `status = 'active'`, which the
+  // fake models — and `fakeAdmin.from("products")` throws, so going back to a
+  // direct table read fails here rather than quietly widening the door.
   const { admin } = fakeAdmin({
     products: { row: { ...PRODUCT_ROW, status: "archived" } },
   });

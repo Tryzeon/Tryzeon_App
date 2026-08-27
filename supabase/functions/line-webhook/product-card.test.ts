@@ -34,29 +34,29 @@ const product = (over: Partial<LineProduct> = {}): LineProduct => ({
 });
 
 /**
- * Fake client answering one `.maybeSingle()` lookup. `filters` records every
- * chained predicate; `queried` keeps only the ids, which is what most tests
- * care about.
+ * Fake client answering one `.rpc()` call. `queried` keeps the ids asked for;
+ * `calls` keeps the full (name, params) pairs. `.from()` throws: the
+ * unlisted-product filter lives in `get_shop_product` now, so a direct
+ * `products` read is a regression, not an alternative.
  */
 // deno-lint-ignore no-explicit-any
 function fakeAdmin(result: { data: any; error: any }) {
   const queried: string[] = [];
-  const filters: Array<[string, unknown]> = [];
-  const builder = {
-    eq(column: string, value: unknown) {
-      filters.push([column, value]);
-      if (column === "id") queried.push(value as string);
-      return builder;
+  const calls: Array<[string, Record<string, unknown>]> = [];
+  const client = {
+    rpc(name: string, params: Record<string, unknown>) {
+      calls.push([name, params]);
+      queried.push(params.p_id as string);
+      return Promise.resolve(result);
     },
-    is(column: string, value: unknown) {
-      filters.push([column, value]);
-      return builder;
+    from() {
+      throw new Error(
+        "fakeAdmin: fetchProductInfo must go through get_shop_product",
+      );
     },
-    maybeSingle: () => Promise.resolve(result),
   };
-  const client = { from: () => ({ select: () => builder }) };
   // deno-lint-ignore no-explicit-any
-  return { admin: client as any, queried, filters };
+  return { admin: client as any, queried, calls };
 }
 
 /** Fake client answering one `.in()` batch lookup. */
@@ -173,10 +173,14 @@ Deno.test("fetchProductRows throws when the lookup itself failed", async () => {
 Deno.test("fetchProductInfo will not act on an unlisted product", async () => {
   // The try-on tap is charged after this returns, so a card left in a thread
   // after the store unlisted the product has to fail here, not in the core.
-  const { admin, filters } = fakeAdmin({ data: row(), error: null });
+  // The filter itself is `get_shop_product`'s; what this proves is that the
+  // read goes through it — `fakeAdmin.from()` throws, so a regression to a
+  // direct `products` select fails instead of silently widening what a stale
+  // card can act on.
+  const { admin, calls } = fakeAdmin({ data: row(), error: null });
   await fetchProductInfo(admin, "p1");
 
-  assertEquals(filters, [["id", "p1"], ["status", "active"]]);
+  assertEquals(calls, [["get_shop_product", { p_id: "p1" }]]);
 });
 
 Deno.test("purchaseAction is offered only for an absolute http link", () => {
