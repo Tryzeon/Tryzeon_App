@@ -1,10 +1,11 @@
 /**
- * The app's wire format for the `tryon` function.
+ * The wire format for the `tryon` function.
  *
- * Request parsing is an adapter concern: this JSON body is what the Flutter
- * client speaks, and no other try-on caller speaks it (LIFF has its own body in
- * `liff-tryon/request.ts`; line-webhook has no body at all). It lives here for
- * the same reason theirs lives there.
+ * Request parsing is an adapter concern, and this is the adapter: both HTTP
+ * callers speak this body — the Flutter app and the LIFF web app, which used to
+ * have its own in `liff-tryon/request.ts` and now sends `garments` like
+ * everyone else. line-webhook has no body at all and builds its params
+ * directly.
  *
  * Structural narrowing and trimming only — every domain invariant (non-empty
  * garments, count limits, length caps, usable image sources) is enforced by

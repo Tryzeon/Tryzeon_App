@@ -4,7 +4,7 @@ import { MissingAvatarError } from "./errors.ts";
 import { ServiceBusyError } from "../errors.ts";
 
 Deno.test("tryonErrorResponse renders a missing avatar as 400 NO_AVATAR", async () => {
-  // The exact body liff-tryon returned before the rule moved into the core.
+  // The exact body the LIFF endpoint returned before the rule moved into the core.
   const res = tryonErrorResponse(new MissingAvatarError("no avatar on profile"))!;
   assertEquals(res.status, 400);
   assertEquals(await res.json(), {
