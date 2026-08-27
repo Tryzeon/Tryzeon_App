@@ -11,6 +11,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { useCatalog } from "../hooks/useCatalog";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useTryon } from "../hooks/useTryon";
+import { isOnboarded } from "../lib/onboarding";
 
 export function Shop() {
   // /store/:storeId 進來時篩選成單一店家；首頁沒有這個參數就是全站商品。
@@ -127,6 +128,7 @@ export function Shop() {
           onClose={closeSheet}
           onTryon={() => tryon.generate(openItem)}
           onPickAvatar={(file) => tryon.uploadAvatarAndGenerate(openItem, file)}
+          needAvatar={!isOnboarded()}
         />
       )}
     </div>

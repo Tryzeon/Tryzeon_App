@@ -300,8 +300,6 @@ button { font-family: inherit; }
    leaving a gap. */
 .gallery__img:only-child { width: 100%; aspect-ratio: auto; }
 
-.avatarprompt { margin-top: 20px; }
-.avatarprompt .cta { margin-top: 14px; }
 
 .result__buy { margin-bottom: 10px; }
 
@@ -490,6 +488,8 @@ button { font-family: inherit; }
 }
 
 /* ── Tip (photo guidance) ──────────────────────────────────────────────── */
+.avatarprompt { margin-top: 20px; }
+.avatarprompt .cta { margin-top: 14px; }
 .tipcard {
   display: flex;
   gap: 10px;

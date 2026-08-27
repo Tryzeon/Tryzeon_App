@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { initAndLogin } from "./lib/liff";
 import { ensureSession } from "./lib/auth";
+import { fetchAvatarPath } from "./api/profile";
+import { setOnboarded } from "./lib/onboarding";
 import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
 import { SearchSortBar } from "./components/SearchSortBar";
@@ -10,16 +12,20 @@ import { Onboard } from "./pages/Onboard";
 
 const noop = () => {};
 
-// Initializes LIFF and opens a Supabase session once for the whole app, then
-// renders the matched route. Child screens can assume both are ready.
+// Initializes LIFF, opens a Supabase session and learns whether this user has a
+// model photo — once, for the whole app — then renders the matched route.
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     initAndLogin()
       .then(ensureSession)
+      .then(fetchAvatarPath)
       .then(
-        () => setState("ready"),
+        (path) => {
+          setOnboarded(path !== null);
+          setState("ready");
+        },
         () => setState("error"),
       );
   }, []);

@@ -1,12 +1,12 @@
 import { useCallback, useRef, useState } from "react";
-import { setAvatar } from "../api/avatar";
 import { ApiError } from "../api/errors";
 import { callTryon } from "../api/tryon";
+import { setAvatar } from "../api/avatar";
+import { setOnboarded } from "../lib/onboarding";
 import type { CatalogItem } from "../api/catalog";
 
 export type TryonState =
   | { phase: "idle" }
-  | { phase: "needAvatar"; item: CatalogItem }
   | { phase: "uploading"; item: CatalogItem }
   | { phase: "generating"; item: CatalogItem }
   | { phase: "done"; item: CatalogItem; imageUrl: string }
@@ -47,12 +47,15 @@ export function useTryon() {
     }
   }, []);
 
+  // 上傳完直接接著試穿剛剛選的那件,使用者不必再點一次,也不會回到目錄後找不到
+  // 原本看的商品。
   const uploadAvatarAndGenerate = useCallback(
     async (item: CatalogItem, file: File) => {
       const mine = ++token.current;
       setState({ phase: "uploading", item });
       try {
         await setAvatar(file);
+        setOnboarded(true);
       } catch {
         if (mine !== token.current) return;
         setState({

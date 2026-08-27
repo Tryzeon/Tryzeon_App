@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { setAvatar } from "../api/avatar";
+import { setOnboarded } from "../lib/onboarding";
 import { Header } from "../components/Header";
 
 // LIFF is already initialized + logged in by <LiffGate> before this renders.
@@ -39,6 +40,7 @@ export function Onboard() {
     setMessage("");
     try {
       await setAvatar(file);
+      setOnboarded(true);
       setPhase("done");
     } catch {
       // Keep the preview — the photo stays on screen next to the error.

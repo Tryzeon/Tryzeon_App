@@ -9,10 +9,13 @@ interface Props {
   onClose(): void;
   onTryon(): void;
   onPickAvatar(file: File): void;
+  /** 這個人還沒有 model 照,先請他上傳,上傳完直接接著試穿。 */
+  needAvatar: boolean;
 }
 
-export function ProductSheet({ item, tryon, onClose, onTryon, onPickAvatar }: Props) {
-  const needAvatar = tryon.phase === "needAvatar" || tryon.phase === "uploading";
+export function ProductSheet(
+  { item, tryon, onClose, onTryon, onPickAvatar, needAvatar }: Props,
+) {
   const buyUrl = item.purchaseLink && isExternalUrl(item.purchaseLink) ? item.purchaseLink : null;
   const hasPhotos = item.imageUrls.length > 0;
 
@@ -41,7 +44,7 @@ export function ProductSheet({ item, tryon, onClose, onTryon, onPickAvatar }: Pr
 
           {!hasPhotos
             ? <p className="sheet__note">這件商品還沒有照片，無法試穿。</p>
-            : needAvatar
+            : needAvatar || tryon.phase === "uploading"
             ? <AvatarUploadPrompt busy={tryon.phase === "uploading"} onPick={onPickAvatar} />
             : <button type="button" className="cta" onClick={onTryon}>開始試穿</button>}
 
