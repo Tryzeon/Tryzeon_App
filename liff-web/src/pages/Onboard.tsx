@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getIdToken } from "../lib/liff";
-import { fileToBase64 } from "../lib/image";
 import { setAvatar } from "../api/avatar";
 import { Header } from "../components/Header";
 
@@ -40,8 +38,7 @@ export function Onboard() {
     setPhase("saving");
     setMessage("");
     try {
-      const avatarBase64 = await fileToBase64(file, 1024);
-      await setAvatar(getIdToken(), avatarBase64);
+      await setAvatar(file);
       setPhase("done");
     } catch {
       // Keep the preview — the photo stays on screen next to the error.

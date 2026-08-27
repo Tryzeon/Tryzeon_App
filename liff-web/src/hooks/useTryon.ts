@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 import { getIdToken } from "../lib/liff";
-import { fileToBase64 } from "../lib/image";
 import { setAvatar } from "../api/avatar";
 import { ApiError } from "../api/errors";
 import { callTryon, NO_AVATAR } from "../api/tryon";
@@ -56,7 +55,7 @@ export function useTryon() {
       const mine = ++token.current;
       setState({ phase: "uploading", item });
       try {
-        await setAvatar(getIdToken(), await fileToBase64(file, 1024));
+        await setAvatar(file);
       } catch {
         if (mine !== token.current) return;
         setState({
