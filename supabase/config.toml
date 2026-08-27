@@ -4,6 +4,13 @@ verify_jwt = false
 [functions.short-links]
 verify_jwt = false
 
+# The CORS preflight carries no Authorization header, so gateway-level JWT
+# verification would reject it before the function runs. The real check is
+# `getAuthenticatedUserClient()`'s `auth.getUser()`, which 401s without a valid
+# token — same as every other browser-reachable function here.
+[functions.tryon]
+verify_jwt = false
+
 [functions.liff-tryon]
 verify_jwt = false
 

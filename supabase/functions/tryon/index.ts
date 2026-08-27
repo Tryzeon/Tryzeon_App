@@ -1,14 +1,22 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
+import { makeCors } from "../_shared/cors.ts";
 import { tryonErrorResponse } from "../_shared/tryon/http.ts";
 import { runTryonJob, supabaseQuota } from "../_shared/tryon/index.ts";
 import { parseTryonParams } from "./request.ts";
 
+// Two clients call this now: the Flutter app, which needs no CORS, and the
+// LIFF web app, which does.
+const cors = makeCors({ methods: "POST" });
+
 Deno.serve(async (req) => {
+  const guarded = cors.guard(req);
+  if (guarded) return guarded;
+
   try {
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
-    if (errorResponse) return errorResponse;
+    if (errorResponse) return cors.wrap(errorResponse);
 
     // Every bad body — unparseable JSON included — raises a ValidationError, so
     // decoding needs no special case: it reaches tryonErrorResponse alongside
@@ -22,13 +30,15 @@ Deno.serve(async (req) => {
       quota: supabaseQuota(getAdminClient()),
     });
 
-    return result.kind === "video"
-      ? json({ videoUrl: result.videoUrl, usage: result.usage })
-      : json({ imageUrl: result.imageUrl, usage: result.usage });
+    return cors.wrap(
+      result.kind === "video"
+        ? json({ videoUrl: result.videoUrl, usage: result.usage })
+        : json({ imageUrl: result.imageUrl, usage: result.usage }),
+    );
   } catch (err) {
     const response = tryonErrorResponse(err);
-    if (response) return response;
+    if (response) return cors.wrap(response);
     console.error("Unexpected error:", err);
-    return jsonError("Internal server error", "INTERNAL_ERROR", 500);
+    return cors.wrap(jsonError("Internal server error", "INTERNAL_ERROR", 500));
   }
 });
