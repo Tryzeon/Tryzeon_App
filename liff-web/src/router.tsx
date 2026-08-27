@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { initAndLogin } from "./lib/liff";
+import { ensureSession } from "./lib/auth";
 import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
 import { SearchSortBar } from "./components/SearchSortBar";
@@ -9,16 +10,18 @@ import { Onboard } from "./pages/Onboard";
 
 const noop = () => {};
 
-// Initializes LIFF once for the whole app, then renders the matched route.
-// Child screens can assume LIFF is ready and the user is logged in.
+// Initializes LIFF and opens a Supabase session once for the whole app, then
+// renders the matched route. Child screens can assume both are ready.
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
-    initAndLogin().then(
-      () => setState("ready"),
-      () => setState("error"),
-    );
+    initAndLogin()
+      .then(ensureSession)
+      .then(
+        () => setState("ready"),
+        () => setState("error"),
+      );
   }, []);
 
   // The same chrome the catalog renders while it fetches, so opening the gate
