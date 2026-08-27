@@ -14,6 +14,7 @@ export async function initAndLogin(): Promise<void> {
   }
 }
 
+/** LINE id_token。唯一的讀者是 `ensureSession()` —— 換 Supabase session 用。 */
 export function getIdToken(): string {
   const token = liff.getIDToken();
   if (!token) throw new Error("no LINE id token (is `openid` scope enabled?)");

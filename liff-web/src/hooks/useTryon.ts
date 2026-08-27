@@ -1,8 +1,7 @@
 import { useCallback, useRef, useState } from "react";
-import { getIdToken } from "../lib/liff";
 import { setAvatar } from "../api/avatar";
 import { ApiError } from "../api/errors";
-import { callTryon, NO_AVATAR } from "../api/tryon";
+import { callTryon } from "../api/tryon";
 import type { CatalogItem } from "../api/catalog";
 
 export type TryonState =
@@ -22,9 +21,11 @@ function failureMessage(err: unknown): string {
 }
 
 /**
- * The try-on state machine. The client never pre-checks whether the user has a
- * model photo: it calls the endpoint and lets a NO_AVATAR reply open the upload
- * branch, so there is one source of truth for "is this user onboarded".
+ * 試衣的狀態機。
+ *
+ * 沒有 model 照這件事不再由回應告訴我們 —— `toApiError` 只取 status,而每一種
+ * 要分開講的失敗(429 額度、422 生成失敗)光看 status 就夠了。補照片的分支在
+ * Task 8 由路由層的強制 onboarding 取代。
  */
 export function useTryon() {
   const [state, setState] = useState<TryonState>({ phase: "idle" });
@@ -37,15 +38,11 @@ export function useTryon() {
     const mine = ++token.current;
     setState({ phase: "generating", item });
     try {
-      const imageUrl = await callTryon(getIdToken(), item.productId);
+      const imageUrl = await callTryon(item.productId);
       if (mine !== token.current) return;
       setState({ phase: "done", item, imageUrl });
     } catch (err) {
       if (mine !== token.current) return;
-      if (err instanceof ApiError && err.code === NO_AVATAR) {
-        setState({ phase: "needAvatar", item });
-        return;
-      }
       setState({ phase: "error", item, message: failureMessage(err) });
     }
   }, []);
