@@ -26,7 +26,10 @@ function LiffGate() {
           setOnboarded(path !== null);
           setState("ready");
         },
-        () => setState("error"),
+        (err) => {
+          console.error("[liff-gate] bootstrap failed:", err);
+          setState("error");
+        },
       );
   }, []);
 
@@ -48,7 +51,10 @@ function LiffGate() {
       <div className="app">
         <Header />
         <main className="main">
-          <div className="errorcard">請從 LINE 開啟此頁面</div>
+          <div className="errorcard">載入失敗,請稍後再試。</div>
+          <button className="loadmore" onClick={() => window.location.reload()}>
+            重新載入
+          </button>
         </main>
       </div>
     );
