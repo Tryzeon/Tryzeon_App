@@ -123,18 +123,3 @@ export async function getUserProfile(
       : [],
   };
 }
-
-/** Points the user's profile at a newly uploaded model photo. */
-export async function setAvatarPath(
-  client: SupabaseClient,
-  userId: string,
-  path: string,
-): Promise<void> {
-  const { error } = await client
-    .from(USER_PROFILES_TABLE)
-    .update({ [AVATAR_PATH_COLUMN]: path })
-    .eq("user_id", userId);
-  if (error) {
-    throw new Error(`${AVATAR_PATH_COLUMN} update failed: ${error.message}`);
-  }
-}
