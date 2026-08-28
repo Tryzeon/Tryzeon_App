@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/feature/store/account/presentation/state/unlist_reminder.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
-import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
+import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 
 part 'unlist_reminder_providers.g.dart';
 

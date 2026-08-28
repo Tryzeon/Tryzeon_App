@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
+import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 
 class ProductCategoryFilter extends StatelessWidget {
   const ProductCategoryFilter({

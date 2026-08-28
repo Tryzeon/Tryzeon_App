@@ -8,7 +8,7 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/account/presentation/state/unlist_reminder.dart';
 import 'package:tryzeon/feature/store/account/providers/unlist_reminder_providers.dart';
-import 'package:tryzeon/feature/store/products/presentation/actions/toggle_product_status.dart';
+import 'package:tryzeon/feature/store/product/presentation/actions/toggle_product_status.dart';
 
 /// Products someone clicked through to buy, so the owner can check the stock
 /// and unlist what has sold out.

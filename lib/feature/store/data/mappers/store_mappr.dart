@@ -11,9 +11,9 @@ import '../../../../feature/common/product_size/data/mappers/garment_measurement
 import '../../analytics/data/collections/product_analytics_cache.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
-import '../../products/data/collections/product_cache.dart';
-import '../../products/data/models/product_model.dart';
-import '../../products/domain/entities/product.dart';
+import '../../product/data/collections/product_cache.dart';
+import '../../product/data/models/product_model.dart';
+import '../../product/domain/entities/product.dart';
 import '../../profile/data/collections/store_profile_cache.dart';
 import '../../profile/data/models/store_profile_model.dart';
 import '../../profile/domain/entities/store_profile.dart';

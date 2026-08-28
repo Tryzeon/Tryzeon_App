@@ -6,7 +6,7 @@ import '../../../../feature/common/clothing_style/domain/entities/clothing_style
 import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../../../feature/common/product_size/domain/entities/product_size.dart';
-import '../../../../feature/store/products/data/models/product_model.dart';
+import '../../../../feature/store/product/data/models/product_model.dart';
 import '../../../common/store/data/models/store_order_contact_model.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../../common/store/domain/entities/store_order_contact.dart';

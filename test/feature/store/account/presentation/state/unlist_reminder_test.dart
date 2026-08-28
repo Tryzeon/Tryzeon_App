@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/account/presentation/state/unlist_reminder.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
 Product product(final String name, {final ProductStatus status = ProductStatus.active}) {
   final now = DateTime(2026, 8, 18);

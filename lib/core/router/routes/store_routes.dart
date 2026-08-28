@@ -3,9 +3,9 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/store_shell.dart';
 import 'package:tryzeon/feature/store/account/presentation/pages/store_account_page.dart';
 import 'package:tryzeon/feature/store/onboarding/presentation/pages/store_onboarding_page.dart';
-import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
-import 'package:tryzeon/feature/store/products/presentation/pages/edit_product_page.dart';
-import 'package:tryzeon/feature/store/products/presentation/pages/store_products_page.dart';
+import 'package:tryzeon/feature/store/product/presentation/pages/add_product_page.dart';
+import 'package:tryzeon/feature/store/product/presentation/pages/edit_product_page.dart';
+import 'package:tryzeon/feature/store/product/presentation/pages/store_products_page.dart';
 import 'package:tryzeon/feature/store/settings/presentation/pages/profile_settings_page.dart';
 import 'package:tryzeon/feature/store/settings/presentation/pages/settings_page.dart';
 

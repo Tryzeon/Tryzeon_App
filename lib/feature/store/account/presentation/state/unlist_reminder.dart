@@ -1,5 +1,5 @@
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
 typedef UnlistReminder = ({Product product, int clicks});
 

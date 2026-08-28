@@ -36,7 +36,10 @@ abstract final class AppRoutes {
   static const String dashboardProductAdd = '/dashboard/products/add';
   static const String dashboardProductDetail = '/dashboard/products/:id';
 
-  // Deep link content routes (top-level, redirect to feature routes)
+  // Deep link content routes (top-level, redirect to feature routes).
+  // Singular on purpose: tryzeon.com/products is the marketing section
+  // (/products/virtual-try-on), and the AASA file declares /product/* and
+  // /store/*. Pluralising these would collide and break live Universal Links.
   static const String deepLinkProduct = '/product/:productId';
   static const String deepLinkStore = '/store/:storeId';
 

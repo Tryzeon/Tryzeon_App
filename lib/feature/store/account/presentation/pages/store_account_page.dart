@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/store/account/presentation/widgets/unlist_remind
 import 'package:tryzeon/feature/store/analytics/presentation/widgets/month_filter_widget.dart';
 import 'package:tryzeon/feature/store/analytics/presentation/widgets/store_traffic_dashboard.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/store_add_product_fab.dart';
+import 'package:tryzeon/feature/store/product/presentation/widgets/store_add_product_fab.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 
 class StoreAccountPage extends HookConsumerWidget {

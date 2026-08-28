@@ -1,6 +1,6 @@
-import 'package:tryzeon/feature/common/measurements/domain/entities/measurement_quantity.dart';
+import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_quantity.dart';
 
-export 'package:tryzeon/feature/common/measurements/domain/entities/measurement_quantity.dart';
+export 'package:tryzeon/feature/common/measurement/domain/entities/measurement_quantity.dart';
 
 /// The dimensions of a *person* the shopper can record.
 ///

@@ -5,7 +5,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
+import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_category_measurements.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
