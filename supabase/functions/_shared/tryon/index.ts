@@ -46,6 +46,7 @@ export type {
 export { LIMITS } from "./types.ts";
 export type {
   AvatarOverride,
+  BaseImage,
   GarmentInput,
   GarmentMaterial,
   ProductRef,

@@ -23,6 +23,13 @@ export type ImageSource = { path: string } | { base64: string };
 export type AvatarOverride = { base64: string };
 
 /**
+ * Inline bytes only: a finished result lives in the R2 try-on bucket, which
+ * `fetchImageAsBase64` does not route, so `{ path }` would be an option that
+ * always fails.
+ */
+export type BaseImage = { base64: string };
+
+/**
  * Try-on a catalog product by reference; the core resolves it to material.
  *
  * `sizeId` names which published size is being worn. Optional because most
@@ -88,6 +95,8 @@ export interface TryonParams {
   mode: TryonMode;
   scenePrompt?: string;
   transitionPrompt?: string;
+  /** Only valid with `mode: "video"`. */
+  baseImage?: BaseImage;
 }
 
 /*
@@ -130,6 +139,7 @@ export const LIMITS = {
   MAX_GARMENT_DETAIL_LENGTH: 500,
   MAX_GARMENT_FIT_LENGTH: 600,
   MAX_PROMPT_LENGTH: 1000,
+  MAX_BASE64_LENGTH: 8 * 1024 * 1024,
 } as const;
 
 /*

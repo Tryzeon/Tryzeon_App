@@ -14,6 +14,7 @@ import { requireString, ValidationError } from "../validation.ts";
 import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
 import type {
   AvatarOverride,
+  BaseImage,
   GarmentInput,
   ProductRef,
   ImageSource,
@@ -65,6 +66,26 @@ function optionalAvatarOverride(source: unknown): AvatarOverride | undefined {
   }
   if (typeof base64 !== "string" || base64.length === 0) {
     throw new ValidationError("avatar base64 must be a non-empty string");
+  }
+  return { base64 };
+}
+
+function optionalBaseImage(source: unknown): BaseImage | undefined {
+  if (source === undefined || source === null) return undefined;
+  if (typeof source !== "object") {
+    throw new ValidationError("baseImage must be an object");
+  }
+  const base64 = (source as Record<string, unknown>).base64;
+  if (typeof base64 !== "string" || base64.length === 0) {
+    throw new ValidationError("baseImage must have a non-empty base64");
+  }
+  // The entry point reads the whole body into memory before this guard runs, so
+  // without a ceiling an authenticated caller could spend a function's memory —
+  // and a quota charge — on something Veo was going to reject anyway.
+  if (base64.length > LIMITS.MAX_BASE64_LENGTH) {
+    throw new ValidationError(
+      `baseImage too large (max ${LIMITS.MAX_BASE64_LENGTH} base64 chars)`,
+    );
   }
   return { base64 };
 }
@@ -134,16 +155,6 @@ function validateGarment(garment: GarmentInput): GarmentInput {
 export function validateTryonParams(params: TryonParams): TryonParams {
   requireString(params.userId, "userId");
 
-  const avatar = optionalAvatarOverride(params.avatar);
-
-  if (!Array.isArray(params.garments) || params.garments.length === 0) {
-    throw new ValidationError("garments must be a non-empty array");
-  }
-  if (params.garments.length > LIMITS.MAX_GARMENTS) {
-    throw new ValidationError(`too many garments (max ${LIMITS.MAX_GARMENTS})`);
-  }
-  const garments = params.garments.map(validateGarment);
-
   if (params.mode !== "image" && params.mode !== "video") {
     throw new ValidationError("mode must be 'image' or 'video'");
   }
@@ -159,5 +170,43 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     LIMITS.MAX_PROMPT_LENGTH,
   );
 
-  return { ...params, avatar, garments };
+  const baseImage = optionalBaseImage(params.baseImage);
+  if (baseImage) {
+    // A garment, an avatar or a non-video mode alongside a finished picture is
+    // a contradiction the server must not resolve by guessing — an animate job
+    // always spends video quota, so the body it charges for has to be the body
+    // the caller meant.
+    if (params.mode !== "video") {
+      throw new ValidationError("baseImage requires mode 'video'");
+    }
+    if (Array.isArray(params.garments) && params.garments.length > 0) {
+      throw new ValidationError("baseImage cannot be combined with garments");
+    }
+    if (params.avatar !== undefined && params.avatar !== null) {
+      throw new ValidationError("baseImage cannot be combined with an avatar");
+    }
+    // A scene prompt is not a contradiction, just inapplicable: it is ambient
+    // user config rather than something the caller attached to this request, so
+    // a client that sends it uniformly is tolerated. Dropped here so the job
+    // runs on params that say what will actually happen.
+    return {
+      ...params,
+      avatar: undefined,
+      garments: [],
+      scenePrompt: undefined,
+      baseImage,
+    };
+  }
+
+  const avatar = optionalAvatarOverride(params.avatar);
+
+  if (!Array.isArray(params.garments) || params.garments.length === 0) {
+    throw new ValidationError("garments must be a non-empty array");
+  }
+  if (params.garments.length > LIMITS.MAX_GARMENTS) {
+    throw new ValidationError(`too many garments (max ${LIMITS.MAX_GARMENTS})`);
+  }
+  const garments = params.garments.map(validateGarment);
+
+  return { ...params, avatar, garments, baseImage: undefined };
 }

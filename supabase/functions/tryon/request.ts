@@ -42,14 +42,17 @@ import type {
 export function parseTryonParams(rawBody: string, userId: string): TryonParams {
   const b = parseJsonObject(rawBody);
 
-  if (!Array.isArray(b.garments)) {
+  // Absent is legal: an animate request names a finished picture instead of
+  // garments. Present-but-not-an-array is still undecodable, so it still stops
+  // here.
+  if (b.garments !== undefined && !Array.isArray(b.garments)) {
     throw new ValidationError("garments must be an array");
   }
 
   return {
     userId,
     avatar: b.avatar as TryonParams["avatar"],
-    garments: b.garments as GarmentInput[],
+    garments: (b.garments ?? []) as GarmentInput[],
     // Omitting `mode` means the default; naming an unknown one is an error, and
     // the core raises it. Mapping every unrecognised value onto "image" would
     // charge the image quota for a request that asked for something else, and
@@ -57,5 +60,6 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
     mode: (b.mode ?? "image") as TryonParams["mode"],
     scenePrompt: normalizeText(b.scenePrompt),
     transitionPrompt: normalizeText(b.transitionPrompt),
+    baseImage: b.baseImage as TryonParams["baseImage"],
   };
 }

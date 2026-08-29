@@ -324,3 +324,107 @@ Deno.test("validateTryonParams rejects a non-string sizeId", () => {
     "garment sizeId",
   );
 });
+
+const animateParams: TryonParams = {
+  userId: "u1",
+  garments: [],
+  mode: "video",
+  baseImage: { base64: "FINISHED" },
+};
+
+Deno.test("validateTryonParams accepts an animate job with no garments", () => {
+  const out = validateTryonParams(animateParams);
+  assertEquals(out.baseImage, { base64: "FINISHED" });
+  assertEquals(out.garments, []);
+  assertEquals(out.avatar, undefined);
+});
+
+Deno.test("validateTryonParams rejects baseImage in image mode", () => {
+  assertThrows(
+    () => validateTryonParams({ ...animateParams, mode: "image" }),
+    ValidationError,
+    "baseImage requires mode 'video'",
+  );
+});
+
+Deno.test("validateTryonParams rejects baseImage combined with garments", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...animateParams,
+        garments: [{ images: [{ base64: "G" }] }],
+      }),
+    ValidationError,
+    "garments",
+  );
+});
+
+Deno.test("validateTryonParams rejects baseImage combined with an avatar", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({ ...animateParams, avatar: { base64: "A" } }),
+    ValidationError,
+    "avatar",
+  );
+});
+
+Deno.test("validateTryonParams accepts a scenePrompt with baseImage and drops it", () => {
+  // Inapplicable rather than contradictory: the picture is already made, so a
+  // client that attaches its prompt config uniformly is not an error.
+  const out = validateTryonParams({ ...animateParams, scenePrompt: "studio" });
+  assertEquals(out.scenePrompt, undefined);
+  assertEquals(out.baseImage, { base64: "FINISHED" });
+});
+
+Deno.test("validateTryonParams keeps the transitionPrompt with baseImage", () => {
+  const out = validateTryonParams({ ...animateParams, transitionPrompt: "spin" });
+  assertEquals(out.transitionPrompt, "spin");
+});
+
+Deno.test("validateTryonParams rejects an empty baseImage base64", () => {
+  assertThrows(
+    () => validateTryonParams({ ...animateParams, baseImage: { base64: "" } }),
+    ValidationError,
+    "baseImage",
+  );
+});
+
+Deno.test("validateTryonParams rejects an oversized baseImage", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...animateParams,
+        baseImage: { base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH + 1) },
+      }),
+    ValidationError,
+    "too large",
+  );
+});
+
+Deno.test("validateTryonParams accepts a baseImage exactly at the limit", () => {
+  const out = validateTryonParams({
+    ...animateParams,
+    baseImage: { base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH) },
+  });
+  assertEquals(out.baseImage?.base64.length, LIMITS.MAX_BASE64_LENGTH);
+});
+
+Deno.test("validateTryonParams rejects a non-object baseImage", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...animateParams,
+        baseImage: "nope" as unknown as TryonParams["baseImage"],
+      }),
+    ValidationError,
+    "baseImage",
+  );
+});
+
+Deno.test("validateTryonParams still requires garments without a baseImage", () => {
+  assertThrows(
+    () => validateTryonParams({ ...animateParams, baseImage: undefined }),
+    ValidationError,
+    "garments",
+  );
+});

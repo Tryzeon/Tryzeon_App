@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
 import { runTryonJob } from "./run.ts";
-import { GenerationFailedError, MissingAvatarError } from "./errors.ts";
+import { GenerationFailedError, MissingAvatarError, ValidationError } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { QuotaFactory, TryonMode, TryonParams } from "./types.ts";
@@ -581,4 +581,121 @@ Deno.test("runTryonJob reports an undefined fit for a garment without one", asyn
   });
 
   assertEquals(seenFits, [undefined]);
+});
+
+const animateParams: TryonParams = {
+  userId: "u1",
+  garments: [],
+  mode: "video",
+  baseImage: { base64: "FINISHED" },
+};
+
+Deno.test("a baseImage job animates that image without generating one", async () => {
+  const quota = fakeQuota();
+  let generateCalled = false;
+  let animatedImage = "";
+  const result = await runTryonJob(client, animateParams, {
+    quota: quota.factory,
+    generate: () => {
+      generateCalled = true;
+      return Promise.resolve("SHOULD-NOT-HAPPEN");
+    },
+    generateVideo: (image) => {
+      animatedImage = image;
+      return Promise.resolve(new Uint8Array([9]));
+    },
+    uploadVideo: () => Promise.resolve("https://vid/animated.mp4"),
+    now: () => 789,
+  });
+  assertEquals(generateCalled, false);
+  assertEquals(animatedImage, "FINISHED");
+  assertEquals(result, {
+    kind: "video",
+    videoUrl: "https://vid/animated.mp4",
+    usage: USAGE,
+  });
+});
+
+Deno.test("a baseImage job never resolves an avatar", async () => {
+  const quota = fakeQuota();
+  let avatarResolved = false;
+  await runTryonJob(client, animateParams, {
+    quota: quota.factory,
+    resolveAvatar: () => {
+      avatarResolved = true;
+      return Promise.reject(new MissingAvatarError("none"));
+    },
+    generateVideo: () => Promise.resolve(new Uint8Array([1])),
+    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+    now: () => 1,
+  });
+  assertEquals(avatarResolved, false);
+});
+
+Deno.test("a baseImage job resolves no garment and reads no measurements", async () => {
+  const quota = fakeQuota();
+  let productResolved = false;
+  let wardrobeResolved = false;
+  let bodyRead = false;
+  await runTryonJob(client, animateParams, {
+    quota: quota.factory,
+    resolveProduct: () => {
+      productResolved = true;
+      return Promise.reject(new Error("should not happen"));
+    },
+    resolveWardrobe: () => {
+      wardrobeResolved = true;
+      return Promise.reject(new Error("should not happen"));
+    },
+    resolveBody: () => {
+      bodyRead = true;
+      return Promise.reject(new Error("should not happen"));
+    },
+    generateVideo: () => Promise.resolve(new Uint8Array([1])),
+    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+    now: () => 1,
+  });
+  assertEquals(productResolved, false);
+  assertEquals(wardrobeResolved, false);
+  assertEquals(bodyRead, false);
+});
+
+Deno.test("a baseImage job charges the video quota", async () => {
+  const quota = fakeQuota();
+  await runTryonJob(client, animateParams, {
+    quota: quota.factory,
+    generateVideo: () => Promise.resolve(new Uint8Array([1])),
+    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+    now: () => 1,
+  });
+  assertEquals(quota.modes, ["video"]);
+  assertEquals(quota.calls, ["charge"]);
+});
+
+Deno.test("a baseImage job refunds when animation fails", async () => {
+  const quota = fakeQuota();
+  await assertRejects(
+    () =>
+      runTryonJob(client, animateParams, {
+        quota: quota.factory,
+        generateVideo: () => Promise.reject(new Error("vertex exploded")),
+        uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+        now: () => 1,
+      }),
+    Error,
+    "vertex exploded",
+  );
+  assertEquals(quota.calls, ["charge", "refund"]);
+});
+
+Deno.test("a baseImage job is rejected before quota when the mode is image", async () => {
+  const quota = fakeQuota();
+  await assertRejects(
+    () =>
+      runTryonJob(client, { ...animateParams, mode: "image" }, {
+        quota: quota.factory,
+      }),
+    ValidationError,
+  );
+  assertEquals(quota.calls, []);
 });

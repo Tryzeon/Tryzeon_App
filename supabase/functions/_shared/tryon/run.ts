@@ -21,6 +21,7 @@ import {
   type AvatarResolver,
   type BodyResolver,
   type ImageGenerator,
+  type ImageSource,
   type ImageUploader,
   type ProductResolver,
   type WardrobeResolver,
@@ -32,6 +33,14 @@ import {
   type VideoGenerator,
   type VideoUploader,
 } from "./types.ts";
+
+/**
+ * A tagged union rather than two optional locals, so the branch inside the job
+ * narrows instead of asserting.
+ */
+type TryonSource =
+  | { kind: "animate"; base64: string }
+  | { kind: "generate"; avatar: ImageSource };
 
 export interface RunTryonJobDeps {
   /**
@@ -87,7 +96,16 @@ export async function runTryonJob<M extends TryonMode>(
   const now = deps.now ?? Date.now;
 
   const resolveAvatar = deps.resolveAvatar ?? resolveStoredAvatar;
-  const avatar = job.avatar ?? await resolveAvatar(client, job.userId);
+
+  // An animate job resolves no avatar: looking one up would fail a user with no
+  // stored photo for a job that never needed it. Stays above the quota charge
+  // either way, so a missing avatar is still reported before anyone is billed.
+  const source: TryonSource = job.baseImage
+    ? { kind: "animate", base64: job.baseImage.base64 }
+    : {
+      kind: "generate",
+      avatar: job.avatar ?? await resolveAvatar(client, job.userId),
+    };
 
   const quota = deps.quota(job.userId, job.mode);
   const { allowed, usage } = await quota.charge();
@@ -96,58 +114,60 @@ export async function runTryonJob<M extends TryonMode>(
   }
 
   try {
-    // Read once, and only when something will actually use it: a job with no
-    // sized garment must not pay for a profile lookup.
-    const needsBody = job.garments.some(
-      (g) => isProductRef(g) && g.sizeId !== undefined,
-    );
-    // Optional data: a profile read that fails must not fail a job that would
-    // have succeeded without a sizeId. Degrading is the caller's call, and this
-    // is the caller.
-    const body = needsBody
-      ? await resolveBody(client, job.userId).catch((err) => {
-        console.warn("body measurements lookup failed; skipping fit:", err);
-        return null;
-      })
-      : null;
+    let generated: string | null;
+    if (source.kind === "animate") {
+      generated = source.base64;
+    } else {
+      // Read once, and only when something will actually use it: a job with no
+      // sized garment must not pay for a profile lookup.
+      const needsBody = job.garments.some(
+        (g) => isProductRef(g) && g.sizeId !== undefined,
+      );
+      // Optional data: a profile read that fails must not fail a job that would
+      // have succeeded without a sizeId. Degrading is the caller's call, and this
+      // is the caller.
+      const body = needsBody
+        ? await resolveBody(client, job.userId).catch((err) => {
+          console.warn("body measurements lookup failed; skipping fit:", err);
+          return null;
+        })
+        : null;
 
-    // Stage 1: resolve product and wardrobe refs to concrete garment material.
-    // resolveProductGarment is the gatekeeper for the catalog, and
-    // resolveWardrobeGarment binds the read to job.userId, so a client can only
-    // reach a real product's image or its own wardrobe item, never an arbitrary
-    // object — those checks hold whether or not RLS sits beneath `client`.
-    // User-supplied material passes through untouched, which is also why this
-    // is the only stage that can attach a `detail`: the description reaching
-    // the model is built here or not at all.
-    const materialGarments: ResolvedGarment[] = await Promise.all(
-      job.garments.map((g) =>
-        isProductRef(g)
-          ? resolveProduct(client, g, body)
-          : isWardrobeRef(g)
-          ? resolveWardrobe(client, job.userId, g.wardrobeItemId)
-          : g
-      ),
-    );
+      // Stage 1: resolve product and wardrobe refs to concrete garment material.
+      // resolveProductGarment is the gatekeeper for the catalog, and
+      // resolveWardrobeGarment binds the read to job.userId, so a client can only
+      // reach a real product's image or its own wardrobe item, never an arbitrary
+      // object — those checks hold whether or not RLS sits beneath `client`.
+      // User-supplied material passes through untouched, which is also why this
+      // is the only stage that can attach a `detail`: the description reaching
+      // the model is built here or not at all.
+      const materialGarments: ResolvedGarment[] = await Promise.all(
+        job.garments.map((g) =>
+          isProductRef(g)
+            ? resolveProduct(client, g, body)
+            : isWardrobeRef(g)
+            ? resolveWardrobe(client, job.userId, g.wardrobeItemId)
+            : g
+        ),
+      );
 
-    // Stage 2: load avatar + garment images as base64.
-    const loadAvatar = makeSourceLoader(client, USER_AVATARS_BUCKET);
-    const loadGarment = makeSourceLoader(
-      client,
-      WARDROBE_IMAGES_BUCKET,
-    );
-    const [avatarBase64, garmentGroups] = await Promise.all([
-      loadAvatar(avatar),
-      loadGarments(materialGarments, loadGarment),
-    ]);
+      // Stage 2: load avatar + garment images as base64.
+      const loadAvatar = makeSourceLoader(client, USER_AVATARS_BUCKET);
+      const loadGarment = makeSourceLoader(client, WARDROBE_IMAGES_BUCKET);
+      const [avatarBase64, garmentGroups] = await Promise.all([
+        loadAvatar(source.avatar),
+        loadGarments(materialGarments, loadGarment),
+      ]);
 
-    const garmentDetails = materialGarments.map((g) => g.detail);
-    const garmentFits = materialGarments.map((g) => g.fit);
+      const garmentDetails = materialGarments.map((g) => g.detail);
+      const garmentFits = materialGarments.map((g) => g.fit);
 
-    const generated = await generate(avatarBase64, garmentGroups, {
-      scenePrompt: job.scenePrompt,
-      garmentDetails,
-      garmentFits,
-    });
+      generated = await generate(avatarBase64, garmentGroups, {
+        scenePrompt: job.scenePrompt,
+        garmentDetails,
+        garmentFits,
+      });
+    }
 
     if (!generated) {
       throw new GenerationFailedError("image generation returned null");
