@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dar
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
@@ -89,6 +90,49 @@ class TryonController extends _$TryonController {
     );
   }
 
+  /// The video lands as a new gallery entry, leaving the original photo there
+  /// to download or set as the model. Image generation is skipped entirely, so
+  /// the scene prompt has nothing left to influence and only the transition
+  /// style is sent.
+  Future<void> animate(final TryonResult source) async {
+    final imageUrl = source.imageUrl;
+    if (source.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
+      state = const TryonFailed(ValidationFailure());
+      return;
+    }
+
+    final TryonPromptConfig promptConfig;
+    try {
+      promptConfig = await ref.read(tryonPromptConfigProvider.future);
+    } catch (e, stackTrace) {
+      AppLogger.error('Animate setup failed', e, stackTrace);
+      state = TryonFailed(mapExceptionToFailure(e));
+      return;
+    }
+
+    final id = _uuid.v4();
+    ref
+        .read(tryonGalleryProvider.notifier)
+        .addPending(id: id, mode: TryonMode.video);
+
+    await _run(
+      id: id,
+      mode: TryonMode.video,
+      buildRequest: () async {
+        final image = await ref.read(loadImageAsBase64UseCaseProvider)(imageUrl);
+        if (image.isFailure) return Err(image.getError()!);
+
+        return Ok(
+          TryonRequest.animate(
+            requestId: id,
+            baseImageBase64: image.get()!,
+            transitionPrompt: promptConfig.transitionPrompt,
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _runTryon({
     required final List<TryonGarment> garments,
     required final TryonMode mode,
@@ -123,28 +167,56 @@ class TryonController extends _$TryonController {
 
     galleryNotifier.addPending(id: id, mode: mode);
 
-   try {
-      final customAvatarBase64 = await ref.read(loadCustomAvatarUseCaseProvider)(
-        customAvatarUrl,
-      );
-      if (customAvatarBase64.isFailure) {
+    await _run(
+      id: id,
+      mode: mode,
+      buildRequest: () async {
+        // Sending none makes the backend fall back to the profile photo.
+        String? avatarBase64;
+        if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
+          final loaded = await ref.read(loadImageAsBase64UseCaseProvider)(
+            customAvatarUrl,
+          );
+          if (loaded.isFailure) return Err(loaded.getError()!);
+          avatarBase64 = loaded.get();
+        }
+
+        return Ok(
+          TryonRequest.generate(
+            requestId: id,
+            garments: garments,
+            mode: mode,
+            avatarBase64: avatarBase64,
+            scenePrompt: promptConfig.scenePrompt,
+            transitionPrompt: mode == TryonMode.video
+                ? promptConfig.transitionPrompt
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Shared by both entry points so their cancel and quota semantics cannot
+  /// drift apart. [buildRequest] is fallible because each path fetches
+  /// something before it can name its request, and a failure there must drop
+  /// the placeholder rather than reach the backend.
+  Future<void> _run({
+    required final String id,
+    required final TryonMode mode,
+    required final Future<Result<TryonRequest, Failure>> Function() buildRequest,
+  }) async {
+    final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
+
+    try {
+      final request = await buildRequest();
+      if (request.isFailure) {
         if (!galleryNotifier.removeById(id)) return;
-        state = TryonFailed(customAvatarBase64.getError()!);
+        state = TryonFailed(request.getError()!);
         return;
       }
 
-      final result = await ref.read(tryonUseCaseProvider)(
-        TryonRequest(
-          requestId: id,
-          garments: garments,
-          mode: mode,
-          avatarBase64: customAvatarBase64.get(),
-          scenePrompt: promptConfig.scenePrompt,
-          transitionPrompt: mode == TryonMode.video
-              ? promptConfig.transitionPrompt
-              : null,
-        ),
-      );
+      final result = await ref.read(tryonUseCaseProvider)(request.get()!);
 
       // Usage syncs even for a cancelled run — the generation was still spent.
       final usageCache = ref.read(dailyUsageTodayProvider.notifier);

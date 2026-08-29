@@ -4,12 +4,14 @@ import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 
 /// The action button floating over the gallery. Replacing the model photo is
-/// offered on every page; a finished try-on adds share / download /
+/// offered on every page; a finished try-on adds share / download / animate /
 /// set-as-avatar / delete on top, and one still generating offers to cancel.
 ///
 /// Owns its own handlers so the home page stays a layout — the only action it
@@ -48,6 +50,21 @@ class TryonGalleryActions extends ConsumerWidget {
           message: result.mode == TryonMode.video ? '影片已儲存到相簿' : '照片已儲存到相簿',
         );
       }
+    }
+
+    // `!= false` so a still-loading capability keeps the action visible: a slow
+    // cache must not hide a feature the user has paid for. The backend rejects
+    // the request anyway if the entitlement turns out to be missing.
+    final hasVideoAccess = ref.watch(
+      subscriptionCapabilitiesProvider.select(
+        (final async) => async.value?.hasVideoAccess != false,
+      ),
+    );
+
+    Future<void> animateToVideo() async {
+      if (result == null) return;
+
+      await ref.read(tryonControllerProvider.notifier).animate(result);
     }
 
     final targetId = gallery.currentId;
@@ -118,6 +135,13 @@ class TryonGalleryActions extends ConsumerWidget {
           subtitle: '儲存到相簿',
           onTap: downloadMedia,
         ),
+        if (result?.mode == TryonMode.image && hasVideoAccess)
+          AppMenuAction(
+            icon: Icons.movie_creation_outlined,
+            title: '轉成影片',
+            subtitle: '讓這張試穿動起來',
+            onTap: animateToVideo,
+          ),
         if (result?.mode == TryonMode.image)
           AppMenuAction(
             icon: isCurrentTheAvatar
