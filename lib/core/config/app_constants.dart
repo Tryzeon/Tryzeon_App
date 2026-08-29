@@ -77,6 +77,7 @@ class AppConstants {
   static const String modeVideo = 'video';
   static const String paramScenePrompt = 'scenePrompt';
   static const String paramTransitionPrompt = 'transitionPrompt';
+  static const String paramBaseImage = 'baseImage';
   static const String paramGarmentImages = 'images';
   static const String paramProductId = 'productId';
   static const String paramSizeId = 'sizeId';

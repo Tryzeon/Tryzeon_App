@@ -4,17 +4,31 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 part 'tryon_request.freezed.dart';
 
-/// A try-on request. [avatarBase64] is an override for the gallery's custom
-/// avatar; when null the backend uses the model photo on the user's profile,
-/// which is the only authoritative copy of it.
 @freezed
 sealed class TryonRequest with _$TryonRequest {
-  const factory TryonRequest({
+  /// A null [avatarBase64] means the backend uses the model photo on the user's
+  /// profile, which is the only authoritative copy of it.
+  const factory TryonRequest.generate({
     required final String requestId,
     required final List<TryonGarment> garments,
     required final TryonMode mode,
     final String? avatarBase64,
     final String? scenePrompt,
     final String? transitionPrompt,
-  }) = _TryonRequest;
+  }) = TryonGenerateRequest;
+
+  /// No mode field because video is the only thing a finished picture can
+  /// become, and no scene prompt because the scene is already in the picture.
+  const factory TryonRequest.animate({
+    required final String requestId,
+    required final String baseImageBase64,
+    final String? transitionPrompt,
+  }) = TryonAnimateRequest;
+
+  const TryonRequest._();
+
+  TryonMode get mode => switch (this) {
+    TryonGenerateRequest(:final mode) => mode,
+    TryonAnimateRequest() => TryonMode.video,
+  };
 }

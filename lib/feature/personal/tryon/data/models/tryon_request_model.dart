@@ -9,31 +9,52 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 /// Owns the domain → wire serialization (built once via [TryonRequestModel.fromDomain])
 /// so the datasource stays pure transport and never imports domain entities.
 /// Hand-written rather than json_serializable because the body omits empty
-/// prompts and an absent avatar, and encodes garment image sources as
-/// `{path}` / `{base64}`.
+/// prompts, an absent avatar and an absent garment list, and encodes garment
+/// image sources as `{path}` / `{base64}`.
 class TryonRequestModel {
   const TryonRequestModel({
     required this.garments,
     required this.mode,
     required this.isVideo,
     this.avatarBase64,
+    this.baseImageBase64,
     this.scenePrompt,
     this.transitionPrompt,
   });
 
   /// Maps a domain [request] into the wire model.
   factory TryonRequestModel.fromDomain(final TryonRequest request) {
-    return TryonRequestModel(
-      avatarBase64: request.avatarBase64,
-      garments: request.garments.map(_garmentToJson).toList(),
-      mode: request.mode.name,
-      isVideo: request.mode == TryonMode.video,
-      scenePrompt: request.scenePrompt,
-      transitionPrompt: request.transitionPrompt,
-    );
+    return switch (request) {
+      TryonGenerateRequest(
+        :final garments,
+        :final mode,
+        :final avatarBase64,
+        :final scenePrompt,
+        :final transitionPrompt,
+      ) =>
+        TryonRequestModel(
+          avatarBase64: avatarBase64,
+          garments: garments.map(_garmentToJson).toList(),
+          mode: mode.name,
+          isVideo: mode == TryonMode.video,
+          scenePrompt: scenePrompt,
+          transitionPrompt: transitionPrompt,
+        ),
+      // The backend rejects an animate body carrying garments, an avatar or a
+      // scene prompt, so none of them are ever set here.
+      TryonAnimateRequest(:final baseImageBase64, :final transitionPrompt) =>
+        TryonRequestModel(
+          garments: const [],
+          mode: AppConstants.modeVideo,
+          isVideo: true,
+          baseImageBase64: baseImageBase64,
+          transitionPrompt: transitionPrompt,
+        ),
+    };
   }
 
   final String? avatarBase64;
+  final String? baseImageBase64;
   final List<Map<String, Object>> garments;
   final String mode;
   final bool isVideo;
@@ -41,10 +62,14 @@ class TryonRequestModel {
   final String? transitionPrompt;
 
   Map<String, dynamic> toJson() {
-    final body = <String, dynamic>{
-      'garments': garments,
-      AppConstants.paramMode: mode,
-    };
+    final body = <String, dynamic>{AppConstants.paramMode: mode};
+    if (garments.isNotEmpty) {
+      body['garments'] = garments;
+    }
+    final baseImage = baseImageBase64;
+    if (baseImage != null && baseImage.isNotEmpty) {
+      body[AppConstants.paramBaseImage] = {'base64': baseImage};
+    }
     final avatar = avatarBase64;
     if (avatar != null && avatar.isNotEmpty) {
       body['avatar'] = {'base64': avatar};
