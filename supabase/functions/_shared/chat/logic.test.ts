@@ -4,7 +4,6 @@ import {
   mapSearchProductsArgs,
   parseAnswerRefs,
   resolveCategoryFilter,
-  resolveWardrobeCategory,
   SEARCH_LIMIT,
   toModelMessages,
   toSearchResultItem,
@@ -320,15 +319,4 @@ Deno.test("validateVocabularyFilters rejects a filter mixing valid and invalid v
   assertEquals(r.ok, false);
   if (r.ok) throw new Error("expected a rejection");
   assertStringIncludes(r.error, "tight");
-});
-
-Deno.test("resolveWardrobeCategory accepts a category in the enum and reports one that is not", () => {
-  assertEquals(resolveWardrobeCategory("top"), { ok: true, category: "top" });
-  assertEquals(resolveWardrobeCategory(" "), { ok: true });
-
-  const r = resolveWardrobeCategory("hats");
-  assertEquals(r.ok, false);
-  if (r.ok) throw new Error("expected a rejection");
-  assertStringIncludes(r.error, "category");
-  assertStringIncludes(r.error, "hats");
 });

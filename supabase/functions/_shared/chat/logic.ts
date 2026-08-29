@@ -8,7 +8,6 @@ import {
   GENDER_VALUES,
   SEASON_VALUES,
   THICKNESS_VALUES,
-  WARDROBE_CATEGORY_VALUES,
 } from "../vocabularies.ts";
 import type { Database } from "../database.types.ts";
 import type {
@@ -116,21 +115,6 @@ export function validateVocabularyFilters(args: Record<string, unknown>): Vocabu
       gender: hasGender ? gender : undefined,
     },
   };
-}
-
-// The wardrobe category column is an enum too, so it gets the same treatment as
-// the product filters above rather than reaching the query as a bare string.
-export type WardrobeCategoryFilter =
-  | { ok: true; category?: Enums["wardrobe_category"] }
-  | { ok: false; error: string };
-
-export function resolveWardrobeCategory(raw: unknown): WardrobeCategoryFilter {
-  const name = nonEmptyStr(raw);
-  if (name === null) return { ok: true };
-  if (!isInVocabulary(name, WARDROBE_CATEGORY_VALUES)) {
-    return { ok: false, error: vocabularyError("category", name, WARDROBE_CATEGORY_VALUES) };
-  }
-  return { ok: true, category: name };
 }
 
 // Resolve the model's category_name into the id filter the RPC takes. An absent

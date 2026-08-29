@@ -3,7 +3,6 @@ import { z } from "npm:zod@^4.4.3";
 import {
   mapSearchProductsArgs,
   resolveCategoryFilter,
-  resolveWardrobeCategory,
   SEARCH_LIMIT,
   toSearchResultItem,
   validateVocabularyFilters,
@@ -59,17 +58,13 @@ async function runSearchWardrobe(
   userId: string,
   args: Record<string, any>,
 ): Promise<SearchResult> {
-  const category = resolveWardrobeCategory(args.category);
-  if (!category.ok) {
-    return { items: [], error: category.error };
-  }
   let q = client
     .from("wardrobe_items")
     .select(WARDROBE_SELECT)
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(SEARCH_LIMIT);
-  if (category.category) q = q.eq("category", category.category);
+  if (args.category) q = q.eq("category", args.category);
   if (Array.isArray(args.tags) && args.tags.length > 0) {
     q = q.contains("tags", args.tags);
   }
