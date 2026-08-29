@@ -19,6 +19,7 @@ class TryonGallery extends HookWidget {
     required this.entries,
     required this.avatarFile,
     required this.isAvatarBusy,
+    required this.onReplaceAvatar,
   });
 
   final PageController pageController;
@@ -28,6 +29,8 @@ class TryonGallery extends HookWidget {
 
   /// True while the model photo is downloading or a replacement is uploading.
   final bool isAvatarBusy;
+
+  final VoidCallback onReplaceAvatar;
 
   @override
   Widget build(final BuildContext context) {
@@ -47,8 +50,7 @@ class TryonGallery extends HookWidget {
                   ? FileImage(avatarFile!)
                   : const AssetImage(AppConstants.defaultProfileImage);
               return GestureDetector(
-                onTap: () =>
-                    TryonFullscreenViewer.open(context, imageProvider: imageProvider),
+                onTap: onReplaceAvatar,
                 child: _AvatarImageItem(
                   imageProvider: imageProvider,
                   isBusy: isAvatarBusy,

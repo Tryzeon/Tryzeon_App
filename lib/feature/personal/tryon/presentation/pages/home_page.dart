@@ -160,6 +160,7 @@ class HomePage extends HookConsumerWidget {
                         entries: galleryState.entries,
                         avatarFile: avatarAsync.value,
                         isAvatarBusy: avatarAsync.isLoading || isUploadingAvatar,
+                        onReplaceAvatar: uploadAvatar,
                       ),
               ),
             ),
