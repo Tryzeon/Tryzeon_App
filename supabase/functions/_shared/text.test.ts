@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
-import { isUuid, nonEmptyStr } from "./text.ts";
+import { isUuid, nonEmptyStr, textArrayValues } from "./text.ts";
 
 Deno.test("nonEmptyStr trims, and rejects blanks and non-strings", () => {
   assertEquals(nonEmptyStr("  白襯衫 "), "白襯衫");
@@ -7,6 +7,15 @@ Deno.test("nonEmptyStr trims, and rejects blanks and non-strings", () => {
   assertEquals(nonEmptyStr(""), null);
   assertEquals(nonEmptyStr(42), null);
   assertEquals(nonEmptyStr(null), null);
+});
+
+Deno.test("textArrayValues drops the elements a text[] column can hold but its type denies", () => {
+  // `supabase gen types` emits `string[]` for a `text[]` column; Postgres lets
+  // that array hold NULLs, so this is the gap between the two.
+  assertEquals(textArrayValues(["a", null, 7, "b"]), ["a", "b"]);
+  assertEquals(textArrayValues([]), []);
+  assertEquals(textArrayValues(null), []);
+  assertEquals(textArrayValues(undefined), []);
 });
 
 Deno.test("isUuid accepts a canonical uuid in either case", () => {
