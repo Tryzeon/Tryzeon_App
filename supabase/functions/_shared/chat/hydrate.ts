@@ -10,9 +10,19 @@
  * a port: a platform whose card needs four fields substitutes a hydrator that
  * selects four columns, and how the rows become an answer is unaffected.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
-import type { AnswerHydrator, AnswerRef, ContentBlock } from "./types.ts";
+import type { AnswerHydrator, AnswerRef } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
+
+/**
+ * The one thing this needs of a PostgREST query builder: `.in("id", …)`, then
+ * awaited. Structural rather than the real builder type so callers keep the row
+ * shape their `.select()` inferred without this signature naming the five
+ * schema type parameters that would otherwise erase it.
+ */
+interface IdInFilter<Row> {
+  in(column: "id", values: string[]): PromiseLike<{ data: Row[] | null; error: unknown }>;
+}
 
 /**
  * Run the caller's prepared query with an `.in("id", ids)` filter and key the
@@ -26,20 +36,20 @@ import type { AnswerHydrator, AnswerRef, ContentBlock } from "./types.ts";
  * restating it: which of these rules holds is what `assembleAnswerBlocks`
  * depends on, not incidental query code.
  */
-export async function fetchRowsByIds(
-  // deno-lint-ignore no-explicit-any
-  query: any,
+export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
+  query: IdInFilter<Row>,
   ids: string[],
-  // deno-lint-ignore no-explicit-any
-  toBlock: (row: Record<string, any>) => ContentBlock | null = (row) => row,
-): Promise<Map<string, ContentBlock>> {
-  const map = new Map<string, ContentBlock>();
+  // The identity default is why `Block` defaults to `Row`; the two are only
+  // unrelated to the compiler inside this body, hence the one assertion.
+  toBlock: (row: Row) => Block | null = (row) => row as unknown as Block,
+): Promise<Map<string, Block>> {
+  const map = new Map<string, Block>();
   if (ids.length === 0) return map;
   const { data, error } = await query.in("id", ids);
   if (error) throw error;
   for (const row of data ?? []) {
     const block = toBlock(row);
-    if (block) map.set(String(row.id), block);
+    if (block) map.set(row.id, block);
   }
   return map;
 }
@@ -50,7 +60,7 @@ export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] =>
   refs.filter((r): r is ItemRef => r.type === type).map((r) => r.id);
 
 export const supabaseAnswerRows: AnswerHydrator = async (
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
   refs: AnswerRef[],
 ) => {

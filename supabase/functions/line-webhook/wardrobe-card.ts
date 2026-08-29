@@ -6,19 +6,29 @@
  * category, the tags, and a fixed "你的衣櫃" — which is also what tells the two
  * kinds of card apart when they sit in one carousel.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
+import { textArrayValues } from "../_shared/text.ts";
 import type { ContentBlock } from "../_shared/chat/index.ts";
 import { WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
+import type { Enums, Tables } from "../_shared/database.types.ts";
+import type { DbClient } from "../_shared/supabase.ts";
 
 export const WARDROBE_CARD_SELECT = "id, image_path, category, tags";
 
+/** The columns `WARDROBE_CARD_SELECT` reads, as the schema declares them. */
+export type WardrobeCardRow = Pick<
+  Tables<"wardrobe_items">,
+  "id" | "image_path" | "category" | "tags"
+>;
+
 /**
- * Labels for the `wardrobe_category` enum. Its current value set was fixed in
- * `20260616120000_remap_wardrobe_category_enum.sql`.
+ * Labels for the `wardrobe_category` enum. Keyed by the generated enum so a
+ * migration that adds a value fails the build here. The `?? code` fallback
+ * below survives it anyway: a deployed function can be reading a schema newer
+ * than the types it was built against.
  */
-const CATEGORY_LABEL: Record<string, string> = {
+const CATEGORY_LABEL: Record<Enums<"wardrobe_category">, string> = {
   top: "上衣",
   bottoms: "下身",
   outerwear: "外套",
@@ -54,19 +64,11 @@ export interface LineWardrobeItem extends WardrobeItemInfo {
  * `toLineWardrobeItem` because the try-on path needs the words without needing
  * a picture.
  */
-export function toWardrobeItemInfo(
-  // deno-lint-ignore no-explicit-any
-  row: Record<string, any>,
-): WardrobeItemInfo {
-  const category = String(row.category ?? "");
-  const tags = Array.isArray(row.tags) ? row.tags : [];
-
+export function toWardrobeItemInfo(row: WardrobeCardRow): WardrobeItemInfo {
   return {
-    id: String(row.id),
-    categoryLabel: CATEGORY_LABEL[category] ?? category,
-    tags: tags
-      .filter((t: unknown): t is string => typeof t === "string" && t.length > 0)
-      .slice(0, MAX_TAGS),
+    id: row.id,
+    categoryLabel: CATEGORY_LABEL[row.category] ?? row.category,
+    tags: textArrayValues(row.tags).filter((t) => t.length > 0).slice(0, MAX_TAGS),
   };
 }
 
@@ -76,8 +78,7 @@ export function toWardrobeItemInfo(
  * rule `toLineProduct` applies to a product with no image.
  */
 export function toLineWardrobeItem(
-  // deno-lint-ignore no-explicit-any
-  row: Record<string, any>,
+  row: WardrobeCardRow,
   signedUrl: string | undefined,
 ): LineWardrobeItem | null {
   if (!signedUrl) return null;
@@ -174,7 +175,7 @@ const SIGNED_URL_TTL_SECONDS = 604800;
  * a missing item.
  */
 async function signImageUrls(
-  admin: SupabaseClient,
+  admin: DbClient,
   paths: string[],
 ): Promise<Map<string, string>> {
   const urls = new Map<string, string>();
@@ -204,21 +205,18 @@ async function signImageUrls(
  * Two round trips, both batched: the rows, then every image signed at once.
  */
 export async function fetchWardrobeRows(
-  admin: SupabaseClient,
+  admin: DbClient,
   userId: string,
   ids: string[],
 ): Promise<Map<string, ContentBlock>> {
-  // deno-lint-ignore no-explicit-any
-  const raw: Map<string, Record<string, any>> = await fetchRowsByIds(
+  const raw = await fetchRowsByIds(
     admin.from("wardrobe_items").select(WARDROBE_CARD_SELECT).eq("user_id", userId),
     ids,
   );
 
   const urls = await signImageUrls(
     admin,
-    [...raw.values()]
-      .map((r) => r.image_path)
-      .filter((p): p is string => typeof p === "string" && p.length > 0),
+    [...raw.values()].map((r) => r.image_path).filter((p) => p.length > 0),
   );
 
   const rows = new Map<string, ContentBlock>();
@@ -245,7 +243,7 @@ export async function fetchWardrobeRows(
  * `handleProductTryon` reads its product up front.
  */
 export async function fetchWardrobeItemInfo(
-  admin: SupabaseClient,
+  admin: DbClient,
   userId: string,
   wardrobeItemId: string,
 ): Promise<WardrobeItemInfo | null> {

@@ -7,14 +7,17 @@ import {
   tagLine,
   toLineWardrobeItem,
   toWardrobeItemInfo,
+  type WardrobeCardRow,
   type WardrobeItemInfo,
   wardrobeInfoContents,
 } from "./wardrobe-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
+import { WARDROBE_CATEGORY_VALUES } from "../_shared/vocabularies.ts";
+import type { Enums } from "../_shared/database.types.ts";
 
 const URL = "https://sig.example/w1.png?token=abc";
 
-const row = (over: Record<string, unknown> = {}) => ({
+const row = (over: Partial<WardrobeCardRow> = {}): WardrobeCardRow => ({
   id: "w1",
   image_path: "u1/top/w1.png",
   category: "top",
@@ -40,28 +43,44 @@ Deno.test("toLineWardrobeItem maps the row onto the card's fields", () => {
 });
 
 Deno.test("every wardrobe_category code has a label", () => {
-  const labels = ["top", "bottoms", "outerwear", "sets", "others"].map(
+  // The vocabulary comes from the generated Constants, so a migration that adds
+  // a value fails here as well as at the map's own declaration.
+  const labels = WARDROBE_CATEGORY_VALUES.map(
     (c) => toLineWardrobeItem(row({ category: c }), URL)?.categoryLabel,
   );
   assertEquals(labels, ["上衣", "下身", "外套", "套裝", "其他"]);
 });
 
 Deno.test("an unknown category shows its own code rather than dropping the card", () => {
-  // The column is an enum, so an unknown code means the enum grew and this map
-  // did not — easier to spot on a card than as a silently missing item.
-  assertEquals(toLineWardrobeItem(row({ category: "hats" }), URL)?.categoryLabel, "hats");
+  // Unreachable through the types — the cast stands in for a deployed function
+  // reading a schema newer than the types it was built against, which is the
+  // only way this happens now.
+  const grown = "hats" as Enums<"wardrobe_category">;
+  assertEquals(toLineWardrobeItem(row({ category: grown }), URL)?.categoryLabel, "hats");
 });
 
 Deno.test("toLineWardrobeItem drops an item whose image could not be signed", () => {
   assertEquals(toLineWardrobeItem(row(), undefined), null);
 });
 
-Deno.test("toLineWardrobeItem keeps at most three tags and ignores non-strings", () => {
+Deno.test("toLineWardrobeItem keeps at most three tags and ignores blank ones", () => {
   const got = toLineWardrobeItem(
-    row({ tags: ["a", 7, "b", null, "c", "d"] }),
+    row({ tags: ["a", "", "b", "c", "d"] }),
     URL,
   );
   assertEquals(got?.tags, ["a", "b", "c"]);
+});
+
+Deno.test("a NULL tag drops that tag rather than the whole hydration", () => {
+  // `tags` is `text[]` with no element constraint: the generated `string[]`
+  // cannot say an element may be NULL, and a row written through PostgREST can
+  // carry one. Reading it as a string would throw here and take every card in
+  // the carousel with it.
+  const got = toLineWardrobeItem(
+    row({ tags: ["a", null, "b"] as unknown as string[] }),
+    URL,
+  );
+  assertEquals(got?.tags, ["a", "b"]);
 });
 
 Deno.test("toLineWardrobeItem tolerates a row with no tags", () => {

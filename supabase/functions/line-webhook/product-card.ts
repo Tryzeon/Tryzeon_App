@@ -8,11 +8,11 @@
  * card the user pointed at by id — text only, since that path shows the
  * generated image rather than the catalog one.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import type { ContentBlock } from "../_shared/chat/index.ts";
 import { publicImageUrl } from "../_shared/storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
+import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
 
 export const PRODUCT_CARD_SELECT =
   "id, name, price, image_paths, purchase_link, store_profiles!products_store_id_fkey(name)";
@@ -78,7 +78,7 @@ export function toLineProduct(
  * is simply absent, and the assembler drops its block.
  */
 export function fetchProductRows(
-  admin: SupabaseClient,
+  admin: DbClient,
   ids: string[],
   imagesBaseUrl: string,
 ): Promise<Map<string, ContentBlock>> {
@@ -109,7 +109,7 @@ export function fetchProductRows(
  * for years and never read.
  */
 export async function fetchProductInfo(
-  admin: SupabaseClient,
+  admin: DbClient,
   productId: string,
 ): Promise<ProductInfo | null> {
   const { data, error } = await admin.rpc("get_shop_product", {
@@ -117,7 +117,8 @@ export async function fetchProductInfo(
   });
 
   if (error) throw new Error(`product lookup failed: ${error.message}`);
-  return data ? toProductInfo(data) : null;
+  const row = asJsonObject<Record<string, any>>(data);
+  return row ? toProductInfo(row) : null;
 }
 
 /**
