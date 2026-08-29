@@ -16,6 +16,7 @@ Deno.test("textArrayValues drops the elements a text[] column can hold but its t
   assertEquals(textArrayValues([]), []);
   assertEquals(textArrayValues(null), []);
   assertEquals(textArrayValues(undefined), []);
+  assertEquals(textArrayValues("a" as unknown as readonly unknown[]), []);
 });
 
 Deno.test("isUuid accepts a canonical uuid in either case", () => {

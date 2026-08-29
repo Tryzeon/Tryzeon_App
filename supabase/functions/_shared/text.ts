@@ -17,7 +17,7 @@ export function nonEmptyStr(value: unknown): string | null {
  * the whole request instead of dropping one element.
  */
 export function textArrayValues(value: readonly unknown[] | null | undefined): string[] {
-  return (value ?? []).filter((v): v is string => typeof v === "string");
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
 }
 
 const UUID_RE =

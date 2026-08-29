@@ -216,7 +216,7 @@ export async function fetchWardrobeRows(
 
   const urls = await signImageUrls(
     admin,
-    [...raw.values()].map((r) => r.image_path).filter((p) => p.length > 0),
+    [...raw.values()].map((r) => r.image_path).filter((p) => typeof p === "string" && p.length > 0),
   );
 
   const rows = new Map<string, ContentBlock>();
