@@ -124,18 +124,33 @@ Deno.test("buildTaskPrompt omits the styling section when no styling is given", 
   assertEquals(prompt.includes("STYLING"), false);
 });
 
-Deno.test("buildTaskPrompt adds the styling section and its preservation caveat", () => {
+Deno.test("buildTaskPrompt states the styling as a required property of the output", () => {
   const prompt = buildTaskPrompt([["a"]], {
     stylingPrompt: "tucked into the waistband",
   });
   assertStringIncludes(prompt, "STYLING — HOW THE GARMENT IS WORN");
   assertStringIncludes(
     prompt,
-    "Wear the replaced garment this way: tucked into the waistband",
+    "In the output image the replaced garment MUST be worn this way: tucked into the waistband",
   );
   assertStringIncludes(
     prompt,
+    "Render it even when the first image shows that garment worn differently.",
+  );
+});
+
+Deno.test("buildTaskPrompt lifts both preservation rules that styling contradicts", () => {
+  const prompt = buildTaskPrompt([["a"]], { stylingPrompt: "hem tucked in" });
+  // The attribute list and the concrete "do NOT touch the original pants"
+  // example are two separate prohibitions; leaving either un-caveated lets the
+  // model prefer it over the override.
+  assertStringIncludes(
+    prompt,
     "except where STYLING below changes how the replaced garment sits against them",
+  );
+  assertStringIncludes(
+    prompt,
+    "unless STYLING below requires it",
   );
 });
 
@@ -143,7 +158,7 @@ Deno.test("buildTaskPrompt keeps the styling override scoped to the replaced gar
   const prompt = buildTaskPrompt([["a"]], { stylingPrompt: "hem tucked in" });
   assertStringIncludes(
     prompt,
-    "This authorizes ONE deviation: the styling of the garment(s) you replaced.",
+    "Redraw whatever this reveals or hides on a preserved garment",
   );
   assertStringIncludes(
     prompt,

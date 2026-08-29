@@ -117,7 +117,9 @@ REPLACEMENT SCOPE RULES — STRICT
     stylingPrompt
       ? " — except where STYLING below changes how the replaced garment sits against them"
       : ""
-  }. Never redesign or recolor it — e.g., do NOT touch the original pants when the reference is a top.
+  }. Never redesign or recolor it — e.g., do NOT touch the original pants when the reference is a top${
+    stylingPrompt ? ", unless STYLING below requires it" : ""
+  }.
 - FULL-BODY reference → replaces both upper and lower body (the dress/jumpsuit covers everything).
 - OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.
 - If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
@@ -154,10 +156,10 @@ OUTPUT
     prompt += `
 
 STYLING — HOW THE GARMENT IS WORN
-Wear the replaced garment this way: ${stylingPrompt}
-- This authorizes ONE deviation: the styling of the garment(s) you replaced. It licenses no other change.
-- Where it needs the replaced garment to interact with a preserved one (a hem tucked behind a waistband), render that interaction; the preserved garment's own color, pattern, cut, and length still must not change.
-- If it cannot apply to the garment being replaced, ignore it rather than inventing a change.`;
+In the output image the replaced garment MUST be worn this way: ${stylingPrompt}
+- This is a required property of the output, not an option. Render it even when the first image shows that garment worn differently.
+- Redraw whatever this reveals or hides on a preserved garment — tucking a hem exposes the waistband beneath it, and that waistband must be drawn. Reconstructing a preserved garment this way is required here and is not the redesign forbidden above; the preserved garment's own color, pattern, cut, and length still must not change.
+- Everything in HARD INVARIANTS still holds: same face, hair, body, pose, framing, and background.`;
   }
 
   if (scenePrompt) {
