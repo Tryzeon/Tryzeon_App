@@ -37,57 +37,62 @@ Future<void> showAppActionSheet(
     context: context,
     useRootNavigator: true,
     showDragHandle: true,
+    isScrollControlled: true,
     builder: (final context) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (title != null) ...[
-            Text(title, style: theme.textTheme.headlineMedium),
-            const SizedBox(height: AppSpacing.mdLg),
-          ],
-          if (hint != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.lightbulb_outline_rounded,
-                    size: 18,
-                    color: colorScheme.onSurface,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      hint,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurface,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (title != null) ...[
+              Text(title, style: theme.textTheme.headlineMedium),
+              const SizedBox(height: AppSpacing.mdLg),
+            ],
+            if (hint != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      size: 18,
+                      color: colorScheme.onSurface,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        hint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+            for (final action in actions)
+              ListTile(
+                leading: Icon(
+                  action.icon,
+                  color: action.isDestructive ? colorScheme.error : null,
+                ),
+                title: Text(
+                  action.title,
+                  style: action.isDestructive
+                      ? TextStyle(color: colorScheme.error)
+                      : null,
+                ),
+                subtitle: action.subtitle != null ? Text(action.subtitle!) : null,
+                onTap: () {
+                  Navigator.pop(context);
+                  action.onTap();
+                },
+              ),
+            const SizedBox(height: AppSpacing.md),
           ],
-          for (final action in actions)
-            ListTile(
-              leading: Icon(
-                action.icon,
-                color: action.isDestructive ? colorScheme.error : null,
-              ),
-              title: Text(
-                action.title,
-                style: action.isDestructive ? TextStyle(color: colorScheme.error) : null,
-              ),
-              subtitle: action.subtitle != null ? Text(action.subtitle!) : null,
-              onTap: () {
-                Navigator.pop(context);
-                action.onTap();
-              },
-            ),
-          const SizedBox(height: AppSpacing.md),
-        ],
+        ),
       ),
     ),
   );
