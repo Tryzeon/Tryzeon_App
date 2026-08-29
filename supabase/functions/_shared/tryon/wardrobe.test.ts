@@ -1,8 +1,8 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { buildWardrobeGarmentDetail, resolveWardrobeGarment } from "./wardrobe.ts";
 import { LIMITS } from "./types.ts";
 import { ValidationError } from "./errors.ts";
+import type { DbClient } from "../supabase.ts";
 
 const ID = "44444444-4444-4444-4444-444444444444";
 
@@ -42,7 +42,7 @@ function fakeAdmin(stub: LookupStub) {
         return chain;
       },
     }),
-  } as unknown as SupabaseClient;
+  } as unknown as DbClient;
   return { admin, filters };
 }
 
@@ -66,30 +66,28 @@ Deno.test("buildWardrobeGarmentDetail passes the enum code through untranslated"
   );
 });
 
-Deno.test("buildWardrobeGarmentDetail omits an absent part rather than leaving it blank", () => {
-  assertEquals(
-    buildWardrobeGarmentDetail({ image_path: "p", category: "", tags: ["寬鬆"] }),
-    "Tags: 寬鬆",
-  );
+Deno.test("buildWardrobeGarmentDetail omits the tags part rather than leaving it blank", () => {
+  // The category always has one: the column is a NOT NULL enum, so only the
+  // tags half can be absent.
   assertEquals(
     buildWardrobeGarmentDetail({ image_path: "p", category: "bottoms", tags: null }),
     "Category: bottoms",
   );
-});
-
-Deno.test("buildWardrobeGarmentDetail returns undefined when nothing is known", () => {
   assertEquals(
-    buildWardrobeGarmentDetail({ image_path: "p", category: null, tags: [] }),
-    undefined,
+    buildWardrobeGarmentDetail({ image_path: "p", category: "bottoms", tags: [] }),
+    "Category: bottoms",
   );
 });
 
-Deno.test("buildWardrobeGarmentDetail ignores non-string and blank tags", () => {
+Deno.test("buildWardrobeGarmentDetail ignores blank and non-string tags", () => {
+  // `tags` is `text[]` with no element constraint, so a row can hold a NULL the
+  // generated `string[]` says is impossible. Dropping the element beats a
+  // `.trim()` on null turning one bad tag into a 500.
   assertEquals(
     buildWardrobeGarmentDetail({
       image_path: "p",
       category: "top",
-      tags: ["a", 7, "", null, "  ", "b"],
+      tags: ["a", 7, "", null, "  ", "b"] as unknown as string[],
     }),
     "Category: top. Tags: a, b",
   );
@@ -98,10 +96,10 @@ Deno.test("buildWardrobeGarmentDetail ignores non-string and blank tags", () => 
 Deno.test("buildWardrobeGarmentDetail caps overlong detail at the limit", () => {
   const detail = buildWardrobeGarmentDetail({
     image_path: "p",
-    category: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 200),
-    tags: [],
+    category: "top",
+    tags: ["x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 200)],
   });
-  assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+  assertEquals(detail.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 });
 
 Deno.test("resolveWardrobeGarment rejects an id that cannot name a row", async () => {
@@ -140,14 +138,16 @@ Deno.test("resolveWardrobeGarment yields one image source and the detail", async
   });
 });
 
-Deno.test("resolveWardrobeGarment omits detail when the row says nothing", async () => {
+Deno.test("resolveWardrobeGarment still describes a row with no tags", async () => {
   const { admin } = fakeAdmin({
-    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", category: null, tags: [] },
+    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", category: "top", tags: [] },
   });
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
-  assertEquals(garment, { images: [{ path: "u1/top/a.png" }] });
-  assertEquals("detail" in garment, false);
+  assertEquals(garment, {
+    images: [{ path: "u1/top/a.png" }],
+    detail: "Category: top",
+  });
 });
 
 Deno.test("SECURITY: another user's item is indistinguishable from one that does not exist", async () => {

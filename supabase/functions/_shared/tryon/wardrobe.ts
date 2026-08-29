@@ -1,15 +1,15 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { isUuid } from "../text.ts";
+import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
 import type { ResolvedGarment } from "./types.ts";
+import type { Tables } from "../database.types.ts";
+import type { DbClient } from "../supabase.ts";
 
-/** Raw wardrobe columns needed to build a try-on garment. */
-export interface WardrobeGarmentRow {
-  image_path: unknown;
-  category: unknown;
-  tags: unknown;
-}
+/** Wardrobe columns needed to build a try-on garment, as the schema types them. */
+export type WardrobeGarmentRow = Pick<
+  Tables<"wardrobe_items">,
+  "image_path" | "category" | "tags"
+>;
 
 function trimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -23,20 +23,12 @@ function trimmedString(value: unknown): string {
  * copy here would be one more thing to keep in step, and
  * `buildProductGarmentDetail` passes DB text through for the same reason.
  */
-export function buildWardrobeGarmentDetail(
-  row: WardrobeGarmentRow,
-): string | undefined {
-  const parts: string[] = [];
+export function buildWardrobeGarmentDetail(row: WardrobeGarmentRow): string {
+  const parts = [`Category: ${row.category}`];
 
-  const category = trimmedString(row.category);
-  if (category) parts.push(`Category: ${category}`);
-
-  const tags = Array.isArray(row.tags)
-    ? row.tags.map(trimmedString).filter((t) => t.length > 0)
-    : [];
+  const tags = textArrayValues(row.tags).map((t) => t.trim()).filter((t) => t.length > 0);
   if (tags.length > 0) parts.push(`Tags: ${tags.join(", ")}`);
 
-  if (parts.length === 0) return undefined;
   return parts.join(". ").slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 }
 
@@ -55,7 +47,7 @@ export function buildWardrobeGarmentDetail(
  * read from the database.
  */
 export async function resolveWardrobeGarment(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
   wardrobeItemId: string,
 ): Promise<ResolvedGarment> {
@@ -80,19 +72,17 @@ export async function resolveWardrobeGarment(
   // path is blank, a row whose path points outside the owner's folder —
   // because all four mean the same thing to a caller and separating them is
   // what would leak.
-  const path = trimmedString(data?.image_path);
+  //
   // The row is the caller's, but `image_path` is client-written free text, so
   // owning the row is not owning the object. Same folder rule the storage
   // policy enforces, restated here because the LINE adapter reads through a
   // client that has no policy beneath it.
-  if (!path || !path.startsWith(`${userId}/`)) {
+  const path = trimmedString(data?.image_path);
+  if (!data || !path || !path.startsWith(`${userId}/`)) {
     throw new ValidationError(
       `no wardrobe item for wardrobeItemId: ${wardrobeItemId}`,
     );
   }
 
-  const detail = buildWardrobeGarmentDetail(data as WardrobeGarmentRow);
-  return detail === undefined
-    ? { images: [{ path }] }
-    : { images: [{ path }], detail };
+  return { images: [{ path }], detail: buildWardrobeGarmentDetail(data) };
 }

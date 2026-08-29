@@ -1,10 +1,10 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { isUuid } from "../text.ts";
 import type { BodyMeasurements } from "../user-profile.ts";
 import { buildGarmentFitDetail, type SizeMeasurements } from "./fit.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
+import { asJsonObject, type DbClient } from "../supabase.ts";
 
 const PRODUCT_SIZES_TABLE = "product_sizes";
 
@@ -71,7 +71,7 @@ export function buildProductGarmentDetail(
  * a caller bug and does raise, from `resolveProductGarment`.
  */
 async function resolveSizeFit(
-  client: SupabaseClient,
+  client: DbClient,
   productId: string,
   sizeId: string,
   body: BodyMeasurements,
@@ -110,7 +110,7 @@ async function resolveSizeFit(
  * server-built detail. Shared by every try-on adapter via the core.
  */
 export async function resolveProductGarment(
-  client: SupabaseClient,
+  client: DbClient,
   ref: ProductRef,
   body: BodyMeasurements | null,
 ): Promise<ResolvedGarment> {
@@ -134,11 +134,11 @@ export async function resolveProductGarment(
   if (error) {
     throw new Error(`product lookup failed: ${error.message}`);
   }
-  if (!data) {
+  const row = asJsonObject<ProductGarmentRow>(data);
+  if (!row) {
     throw new ValidationError(`no product for productId: ${productId}`);
   }
 
-  const row = data as ProductGarmentRow;
   const paths = (row.image_paths as string[] | null) ?? [];
   if (paths.length === 0) {
     throw new ValidationError(

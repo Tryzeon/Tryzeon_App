@@ -1,4 +1,5 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import type { Tables } from "./database.types.ts";
+import { asJsonObject, type DbClient } from "./supabase.ts";
 
 export type FeatureName = "chat" | "tryon" | "tryon_video";
 
@@ -7,14 +8,10 @@ export type FeatureName = "chat" | "tryon" | "tryon_video";
  * Any charge returns the whole set and clients sync a single usage cache from
  * it, so this travels to them verbatim: it is the shape this module publishes,
  * which is why it is no longer named after the table it happens to be stored in.
+ * It is still that table's row, though, so the columns come from the generated
+ * schema rather than being restated here.
  */
-export interface DailyUsage {
-  user_id: string;
-  usage_date: string;
-  tryon_count: number;
-  chat_count: number;
-  video_count: number;
-}
+export type DailyUsage = Tables<"user_daily_usage">;
 
 /**
  * Thrown when a charge is rejected because the caller's daily quota is spent.
@@ -77,7 +74,7 @@ export interface UsageCounter {
  * discouraged.
  */
 export function supabaseUsageCounter(
-  adminClient: SupabaseClient,
+  adminClient: DbClient,
   userId: string,
   featureName: FeatureName,
 ): UsageCounter {
@@ -93,9 +90,9 @@ export function supabaseUsageCounter(
       if (error) {
         throw new Error(`Failed to increment quota: ${error.message}`);
       }
-      // RPC returns: { allowed: boolean, usage: DailyUsage | null }
-      charged = Boolean(data?.allowed);
-      return { allowed: charged, usage: (data?.usage ?? null) as DailyUsage | null };
+      const result = asJsonObject<{ allowed: boolean; usage: DailyUsage | null }>(data);
+      charged = Boolean(result?.allowed);
+      return { allowed: charged, usage: result?.usage ?? null };
     },
 
     async refund() {

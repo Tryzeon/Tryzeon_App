@@ -14,8 +14,9 @@
  * back the values and nothing more, so it does not accrete one accessor per
  * caller.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { nonEmptyStr } from "./text.ts";
+import { nonEmptyStr, textArrayValues } from "./text.ts";
+import type { Enums } from "./database.types.ts";
+import type { DbClient } from "./supabase.ts";
 
 export const USER_PROFILES_TABLE = "user_profiles";
 
@@ -44,7 +45,7 @@ const PROFILE_COLUMNS = "name, gender, age_range, style_preferences";
 /** The user's stored profile fields, normalized but uninterpreted. */
 export interface UserProfile {
   name: string | null;
-  gender: string | null;
+  gender: Enums<"user_gender"> | null;
   /** Raw bucket code (e.g. `25_34`); consumers own what it renders as. */
   ageRange: string | null;
   stylePreferences: string[];
@@ -55,7 +56,7 @@ export interface UserProfile {
  * is normalized to null so callers have a single "not onboarded yet" check.
  */
 export async function getAvatarPath(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<string | null> {
   const { data, error } = await client
@@ -78,7 +79,7 @@ export async function getAvatarPath(
  * "no measurements" — degrading is the caller's decision, not this module's.
  */
 export async function getBodyMeasurements(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<BodyMeasurements | null> {
   const { data, error } = await client
@@ -101,7 +102,7 @@ export async function getBodyMeasurements(
  * connection fault, so whether to degrade or fail stays its decision to make.
  */
 export async function getUserProfile(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<UserProfile | null> {
   const { data, error } = await client
@@ -116,10 +117,8 @@ export async function getUserProfile(
 
   return {
     name: nonEmptyStr(data.name),
-    gender: nonEmptyStr(data.gender),
+    gender: data.gender,
     ageRange: nonEmptyStr(data.age_range),
-    stylePreferences: Array.isArray(data.style_preferences)
-      ? data.style_preferences.filter((s): s is string => typeof s === "string")
-      : [],
+    stylePreferences: textArrayValues(data.style_preferences),
   };
 }
