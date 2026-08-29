@@ -10,32 +10,30 @@
  * two stop making sense.
  */
 
+import {
+  ELASTICITY_VALUES,
+  FIT_VALUES,
+  GENDER_VALUES,
+  SEASON_VALUES,
+  STYLE_VALUES,
+  THICKNESS_VALUES,
+} from "../_shared/vocabularies.ts";
+
 /**
- * The controlled vocabularies. Values stay in English because that is what the
- * app's Dart enums parse; the Chinese labels a shopper sees are applied at
- * display time in `product_attributes_extensions.dart` and belong only there.
+ * The controlled vocabularies come from `_shared/vocabularies.ts`, which
+ * derives them from the generated schema types. `MATERIAL_VALUES` is the
+ * exception, and mirrors
+ * `kMaterialPresets` in the app: `products.material` is free text, so these
+ * Chinese strings are the stored value and the displayed value at once. There
+ * is no enum behind them and nothing to translate later.
  */
-const STYLE_VALUES = [
-  "japanese", "korean", "western", "british", "chinese",
-  "minimalist", "casual", "sporty", "lazy", "streetwear",
-  "business", "preppy", "functional", "vintage", "artsy",
-  "literary", "elegant", "mature", "neutral", "spicy", "sweet",
-];
-const GENDER_VALUES = ["male", "female", "unisex"];
-const SEASON_VALUES = ["spring", "summer", "autumn", "winter"];
-const THICKNESS_VALUES = ["low", "medium", "high"];
-const ELASTICITY_VALUES = ["none", "low", "medium", "high"];
-const FIT_VALUES = ["slim", "regular", "loose", "oversize"];
-// The exception, and mirrors `kMaterialPresets` in the app: `products.material`
-// is free text, so these Chinese strings are the stored value and the displayed
-// value at once. There is no enum behind them and nothing to translate later.
 const MATERIAL_VALUES = [
   "棉", "麻", "羊毛", "蠶絲", "聚酯纖維",
   "尼龍", "嫘縈", "天絲", "萊卡", "混紡",
 ];
 
 /** A vocabulary spelled out for the model: `slim / regular / loose / …`. */
-const list = (vocab: string[]): string => vocab.join(" / ");
+const list = (vocab: readonly string[]): string => vocab.join(" / ");
 
 /** The sentinel every field carries for "the photo doesn't tell me". */
 const UNKNOWN = "unknown";
@@ -56,10 +54,10 @@ const freeText = (v: unknown): string | null => {
   return s === null || s.toLowerCase() === UNKNOWN ? null : s;
 };
 
-const inList = (v: unknown, list: string[]): string | null =>
+const inList = (v: unknown, list: readonly string[]): string | null =>
   typeof v === "string" && list.includes(v) ? v : null;
 
-const filterList = (v: unknown, list: string[], cap: number): string[] =>
+const filterList = (v: unknown, list: readonly string[], cap: number): string[] =>
   Array.isArray(v)
     ? [...new Set(v.filter((x): x is string => typeof x === "string" && list.includes(x)))]
       .slice(0, cap)
