@@ -6,6 +6,8 @@
 - Development in this project does not require creating a branch — make changes directly on `main` and commit there. The user manages these changes themselves.
 - Always propose the best-practice solution. Do not compromise the design to minimize change scope or migration effort — optimize for correctness and quality, not for avoiding churn.
 - Dart/Flutter conventions (theme, state management, errors, logging) live in `lib/CLAUDE.md`.
+- **No code comments by default:** write self-explanatory code instead. Only annotate a non-obvious trade-off or constraint a reader cannot infer from the code — never restate what a symbol already says. Match the surrounding file: if it has no comments, adding a field/function there adds none either.
+- Jira tickets: use the `acli` CLI to fetch ticket details instead of asking the user to paste them.
 
 ## Engineering principles
 
