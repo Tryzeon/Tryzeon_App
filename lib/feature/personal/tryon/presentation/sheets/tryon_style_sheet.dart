@@ -116,7 +116,7 @@ class TryonStyleSheet extends HookConsumerWidget {
             _PresetChips(
               controller: stylingController,
               presets: stylingPresets,
-              emptyLabel: '沿用原本穿法',
+              emptyLabel: '不指定',
             ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
