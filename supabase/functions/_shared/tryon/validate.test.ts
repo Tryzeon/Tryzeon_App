@@ -428,3 +428,34 @@ Deno.test("validateTryonParams still requires garments without a baseImage", () 
     "garments",
   );
 });
+
+Deno.test("validateTryonParams rejects an overlong stylingPrompt", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        stylingPrompt: "x".repeat(LIMITS.MAX_PROMPT_LENGTH + 1),
+      }),
+    ValidationError,
+    "stylingPrompt",
+  );
+});
+
+Deno.test("validateTryonParams keeps the stylingPrompt on a generate job", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    stylingPrompt: "tucked into the waistband",
+  });
+  assertEquals(job.stylingPrompt, "tucked into the waistband");
+});
+
+Deno.test("validateTryonParams accepts a stylingPrompt with baseImage and drops it", () => {
+  // Same reasoning as scenePrompt: the picture is already made, so how the
+  // garment is worn is settled and the ambient config is merely inapplicable.
+  const out = validateTryonParams({
+    ...animateParams,
+    stylingPrompt: "tucked in",
+  });
+  assertEquals(out.stylingPrompt, undefined);
+  assertEquals(out.baseImage, { base64: "FINISHED" });
+});

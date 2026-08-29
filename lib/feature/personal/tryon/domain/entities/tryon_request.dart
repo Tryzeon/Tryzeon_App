@@ -14,11 +14,13 @@ sealed class TryonRequest with _$TryonRequest {
     required final TryonMode mode,
     final String? avatarBase64,
     final String? scenePrompt,
+    final String? stylingPrompt,
     final String? transitionPrompt,
   }) = TryonGenerateRequest;
 
   /// No mode field because video is the only thing a finished picture can
-  /// become, and no scene prompt because the scene is already in the picture.
+  /// become, and no scene or styling prompt because both are already settled in
+  /// the picture.
   const factory TryonRequest.animate({
     required final String requestId,
     required final String baseImageBase64,

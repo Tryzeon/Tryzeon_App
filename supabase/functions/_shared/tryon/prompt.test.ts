@@ -1,5 +1,9 @@
 import { assertEquals, assertStringIncludes } from "jsr:@std/assert";
-import { buildTaskPrompt, buildVideoPrompt } from "./prompt.ts";
+import {
+  buildTaskPrompt,
+  buildVideoPrompt,
+  SYSTEM_INSTRUCTION,
+} from "./prompt.ts";
 
 Deno.test("buildTaskPrompt counts the person image plus every garment image", () => {
   const prompt = buildTaskPrompt([["a", "b"], ["c"]]);
@@ -113,4 +117,59 @@ Deno.test("buildTaskPrompt keeps details, fit, and scene in that order", () => {
       prompt.indexOf("SCENE CONTEXT — BACKGROUND ONLY"),
     true,
   );
+});
+
+Deno.test("buildTaskPrompt omits the styling section when no styling is given", () => {
+  const prompt = buildTaskPrompt([["a"]]);
+  assertEquals(prompt.includes("STYLING"), false);
+});
+
+Deno.test("buildTaskPrompt adds the styling section and its preservation caveat", () => {
+  const prompt = buildTaskPrompt([["a"]], {
+    stylingPrompt: "tucked into the waistband",
+  });
+  assertStringIncludes(prompt, "STYLING — HOW THE GARMENT IS WORN");
+  assertStringIncludes(
+    prompt,
+    "Wear the replaced garment this way: tucked into the waistband",
+  );
+  assertStringIncludes(
+    prompt,
+    "except where STYLING below changes how the replaced garment sits against them",
+  );
+});
+
+Deno.test("buildTaskPrompt keeps the styling override scoped to the replaced garment", () => {
+  const prompt = buildTaskPrompt([["a"]], { stylingPrompt: "hem tucked in" });
+  assertStringIncludes(
+    prompt,
+    "This authorizes ONE deviation: the styling of the garment(s) you replaced.",
+  );
+  assertStringIncludes(
+    prompt,
+    "the preserved garment's own color, pattern, cut, and length still must not change",
+  );
+});
+
+Deno.test("buildTaskPrompt places styling after fit and before scene", () => {
+  const prompt = buildTaskPrompt([["a"]], {
+    garmentFits: ["size M: chest 104cm"],
+    stylingPrompt: "hem tucked in",
+    scenePrompt: "a rooftop at dusk",
+  });
+
+  assertEquals(
+    prompt.indexOf("GARMENT FIT") <
+      prompt.indexOf("STYLING — HOW THE GARMENT IS WORN"),
+    true,
+  );
+  assertEquals(
+    prompt.indexOf("STYLING — HOW THE GARMENT IS WORN") <
+      prompt.indexOf("SCENE CONTEXT — BACKGROUND ONLY"),
+    true,
+  );
+});
+
+Deno.test("SYSTEM_INSTRUCTION authorizes styling edits alongside garment and scene", () => {
+  assertStringIncludes(SYSTEM_INSTRUCTION, "garment-styling");
 });

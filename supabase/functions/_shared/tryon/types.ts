@@ -94,6 +94,7 @@ export interface TryonParams {
   garments: GarmentInput[];
   mode: TryonMode;
   scenePrompt?: string;
+  stylingPrompt?: string;
   transitionPrompt?: string;
   /** Only valid with `mode: "video"`. */
   baseImage?: BaseImage;
@@ -176,7 +177,7 @@ export type QuotaFactory = (
  * prefix — stripping any provider preamble is the implementation's job), or
  * null when the model returned no image.
  *
- * `scenePrompt`, `garmentDetails`, and `garmentFits` are grouped into one
+ * `scenePrompt`, `stylingPrompt`, `garmentDetails`, and `garmentFits` are grouped into one
  * options object rather than left as separate positional parameters:
  * `garmentDetails` and `garmentFits` are both `(string | undefined)[]`, so two
  * positionals of the same shape would let a caller transpose them and still

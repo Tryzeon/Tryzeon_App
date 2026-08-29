@@ -14,6 +14,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       return Ok(
         TryonPromptConfig(
           scenePrompt: prefs.getString(AppConstants.keyTryonScenePrompt),
+          stylingPrompt: prefs.getString(AppConstants.keyTryonStylingPrompt),
           transitionPrompt: prefs.getString(AppConstants.keyTryonTransitionPrompt),
         ),
       );
@@ -32,6 +33,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await _write(prefs, AppConstants.keyTryonScenePrompt, config.scenePrompt);
       await _write(
         prefs,
+        AppConstants.keyTryonStylingPrompt,
+        config.stylingPrompt,
+      );
+      await _write(
+        prefs,
         AppConstants.keyTryonTransitionPrompt,
         config.transitionPrompt,
       );
@@ -47,6 +53,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(AppConstants.keyTryonScenePrompt);
+      await prefs.remove(AppConstants.keyTryonStylingPrompt);
       await prefs.remove(AppConstants.keyTryonTransitionPrompt);
       return const Ok(null);
     } catch (e, stackTrace) {

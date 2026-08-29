@@ -25,17 +25,23 @@ void main() {
     SharedPreferences.setMockInitialValues({});
 
     await repository.setTryonPromptConfig(
-      const TryonPromptConfig(scenePrompt: '都會街頭', transitionPrompt: '動態跳剪'),
+      const TryonPromptConfig(
+        scenePrompt: '都會街頭',
+        stylingPrompt: '紮進褲頭',
+        transitionPrompt: '動態跳剪',
+      ),
     );
 
     final config = (await repository.getTryonPromptConfig()).get()!;
     expect(config.scenePrompt, '都會街頭');
+    expect(config.stylingPrompt, '紮進褲頭');
     expect(config.transitionPrompt, '動態跳剪');
   });
 
   test('clearing a prompt removes its key instead of storing an empty string', () async {
     SharedPreferences.setMockInitialValues({
       AppConstants.keyTryonScenePrompt: '都會街頭',
+      AppConstants.keyTryonStylingPrompt: '紮進褲頭',
       AppConstants.keyTryonTransitionPrompt: '動態跳剪',
     });
 
@@ -43,10 +49,12 @@ void main() {
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.containsKey(AppConstants.keyTryonScenePrompt), isFalse);
+    expect(prefs.containsKey(AppConstants.keyTryonStylingPrompt), isFalse);
     expect(prefs.containsKey(AppConstants.keyTryonTransitionPrompt), isFalse);
 
     final config = (await repository.getTryonPromptConfig()).get()!;
     expect(config.hasScene, isFalse);
+    expect(config.hasStyling, isFalse);
     expect(config.hasTransition, isFalse);
   });
 }

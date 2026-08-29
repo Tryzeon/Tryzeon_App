@@ -70,6 +70,7 @@ void main() {
     expect(body.containsKey('garments'), isFalse);
     expect(body.containsKey('avatar'), isFalse);
     expect(body.containsKey('scenePrompt'), isFalse);
+    expect(body.containsKey('stylingPrompt'), isFalse);
   });
 
   test('omits the transitionPrompt when the user set no style', () {
@@ -93,6 +94,31 @@ void main() {
     expect(body['garments'], [
       {'productId': 'p1'},
     ]);
+  });
+
+  test('sends the stylingPrompt when the user set one', () {
+    final body = TryonRequestModel.fromDomain(
+      const TryonRequest.generate(
+        requestId: 'r1',
+        garments: garments,
+        mode: TryonMode.image,
+        stylingPrompt: '紮進褲頭',
+      ),
+    ).toJson();
+
+    expect(body['stylingPrompt'], '紮進褲頭');
+  });
+
+  test('omits the stylingPrompt when the user set no styling', () {
+    final body = TryonRequestModel.fromDomain(
+      const TryonRequest.generate(
+        requestId: 'r1',
+        garments: garments,
+        mode: TryonMode.image,
+      ),
+    ).toJson();
+
+    expect(body.containsKey('stylingPrompt'), isFalse);
   });
 
   test('an animate request reports video as its mode', () {

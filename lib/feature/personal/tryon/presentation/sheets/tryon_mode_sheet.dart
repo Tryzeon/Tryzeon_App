@@ -113,7 +113,9 @@ class _StyleEntryButton extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final config = ref.watch(tryonPromptConfigProvider).asData?.value;
     final hasCustomStyle =
-        (config?.hasScene ?? false) || (config?.hasTransition ?? false);
+        (config?.hasScene ?? false) ||
+        (config?.hasStyling ?? false) ||
+        (config?.hasTransition ?? false);
 
     return Stack(
       clipBehavior: Clip.none,

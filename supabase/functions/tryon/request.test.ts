@@ -205,3 +205,27 @@ Deno.test("parseTryonParams keeps an omitted baseImage omitted", () => {
   const params = parse({ garments: [{ images: [{ base64: "B" }] }] }, "u1");
   assertEquals(params.baseImage, undefined);
 });
+
+Deno.test("parseTryonParams trims the stylingPrompt", () => {
+  const params = parse(
+    {
+      avatar: { base64: "A" },
+      garments: [{ images: [{ base64: "B" }] }],
+      stylingPrompt: "  tucked into the waistband  ",
+    },
+    "u1",
+  );
+  assertEquals(params.stylingPrompt, "tucked into the waistband");
+});
+
+Deno.test("parseTryonParams drops a blank stylingPrompt", () => {
+  const params = parse(
+    {
+      avatar: { base64: "A" },
+      garments: [{ images: [{ base64: "B" }] }],
+      stylingPrompt: "   ",
+    },
+    "u1",
+  );
+  assertEquals(params.stylingPrompt, undefined);
+});

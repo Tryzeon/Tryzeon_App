@@ -76,6 +76,7 @@ class AppConstants {
   static const String modeImage = 'image';
   static const String modeVideo = 'video';
   static const String paramScenePrompt = 'scenePrompt';
+  static const String paramStylingPrompt = 'stylingPrompt';
   static const String paramTransitionPrompt = 'transitionPrompt';
   static const String paramBaseImage = 'baseImage';
   static const String paramGarmentImages = 'images';
@@ -86,6 +87,7 @@ class AppConstants {
   // Stored names keep their `video_` prefix from when scene was video-only —
   // renaming them would only cost a migration for v1.13 users.
   static const String keyTryonScenePrompt = 'video_scene_prompt';
+  static const String keyTryonStylingPrompt = 'tryon_styling_prompt';
   static const String keyTryonTransitionPrompt = 'video_transition_prompt';
 
   // Stale Durations

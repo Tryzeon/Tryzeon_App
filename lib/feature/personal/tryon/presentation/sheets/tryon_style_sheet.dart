@@ -9,6 +9,8 @@ import 'package:tryzeon/feature/personal/subscription/providers/subscription_cap
 class TryonStyleSheet extends HookConsumerWidget {
   const TryonStyleSheet({super.key});
 
+  static const List<String> stylingPresets = ['紮進褲頭', '衣襬放下', '袖子捲起'];
+
   static const List<String> scenePresets = ['純白攝影棚', '都會街頭', '柔焦自然風景'];
 
   static const List<String> transitionPresets = ['一鏡到底', '動態跳剪', '柔和淡入淡出'];
@@ -34,6 +36,7 @@ class TryonStyleSheet extends HookConsumerWidget {
         (final async) => async.value?.hasVideoAccess ?? false,
       ),
     );
+    final stylingController = useTextEditingController();
     final sceneController = useTextEditingController();
     final transitionController = useTextEditingController();
     final isSaving = useState(false);
@@ -44,6 +47,7 @@ class TryonStyleSheet extends HookConsumerWidget {
       if (!hasInitialized.value && configAsync.hasValue) {
         hasInitialized.value = true;
         configAsync.whenData((final loaded) {
+          stylingController.text = loaded.stylingPrompt ?? '';
           sceneController.text = loaded.scenePrompt ?? '';
           transitionController.text = loaded.transitionPrompt ?? '';
         });
@@ -53,6 +57,7 @@ class TryonStyleSheet extends HookConsumerWidget {
 
     Future<void> handleSave() async {
       isSaving.value = true;
+      final styling = stylingController.text.trim();
       final scene = sceneController.text.trim();
       final transition = transitionController.text.trim();
       await ref
@@ -60,6 +65,7 @@ class TryonStyleSheet extends HookConsumerWidget {
           .save(
             TryonPromptConfig(
               scenePrompt: scene.isEmpty ? null : scene,
+              stylingPrompt: styling.isEmpty ? null : styling,
               transitionPrompt: transition.isEmpty ? null : transition,
             ),
           );
@@ -91,6 +97,37 @@ class TryonStyleSheet extends HookConsumerWidget {
                 ],
               ),
             ),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text('穿搭細節 Styling', style: textTheme.titleSmall),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  '圖片與影片試穿',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _PresetChips(
+              controller: stylingController,
+              presets: stylingPresets,
+              emptyLabel: '沿用原本穿法',
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: stylingController,
+              decoration: const InputDecoration(hintText: '例如：紮進褲頭'),
+              textInputAction: TextInputAction.done,
+              maxLines: 2,
+              minLines: 1,
+            ),
+
+            const SizedBox(height: AppSpacing.mdLg),
 
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,

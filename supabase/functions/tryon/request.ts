@@ -59,6 +59,7 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
     // would leave the core's own mode check unreachable from this adapter.
     mode: (b.mode ?? "image") as TryonParams["mode"],
     scenePrompt: normalizeText(b.scenePrompt),
+    stylingPrompt: normalizeText(b.stylingPrompt),
     transitionPrompt: normalizeText(b.transitionPrompt),
     baseImage: b.baseImage as TryonParams["baseImage"],
   };

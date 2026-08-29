@@ -92,8 +92,8 @@ class TryonController extends _$TryonController {
 
   /// The video lands as a new gallery entry, leaving the original photo there
   /// to download or set as the model. Image generation is skipped entirely, so
-  /// the scene prompt has nothing left to influence and only the transition
-  /// style is sent.
+  /// the scene and styling prompts have nothing left to influence and only the
+  /// transition style is sent.
   Future<void> animate(final TryonResult source) async {
     final imageUrl = source.imageUrl;
     if (source.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
@@ -156,8 +156,9 @@ class TryonController extends _$TryonController {
         return;
       }
 
-      // Scene applies to both modes — video renders its first frame through the
-      // same image pass. Transition only reaches the video generator.
+      // Scene and styling apply to both modes — video renders its first frame
+      // through the same image pass. Transition only reaches the video
+      // generator.
       promptConfig = await ref.read(tryonPromptConfigProvider.future);
     } catch (e, stackTrace) {
       AppLogger.error('Try-on setup failed', e, stackTrace);
@@ -188,6 +189,7 @@ class TryonController extends _$TryonController {
             mode: mode,
             avatarBase64: avatarBase64,
             scenePrompt: promptConfig.scenePrompt,
+            stylingPrompt: promptConfig.stylingPrompt,
             transitionPrompt: mode == TryonMode.video
                 ? promptConfig.transitionPrompt
                 : null,

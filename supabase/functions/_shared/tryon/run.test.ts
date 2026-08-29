@@ -699,3 +699,25 @@ Deno.test("a baseImage job is rejected before quota when the mode is image", asy
   );
   assertEquals(quota.calls, []);
 });
+
+Deno.test("runTryonJob forwards the styling prompt to the image generator", async () => {
+  const quota = fakeQuota();
+  let seenStyling: string | undefined;
+
+  await runTryonJob(client, {
+    userId: "u1",
+    avatar: { base64: "AVATAR" },
+    garments: [{ images: [{ base64: "GARMENT" }] }],
+    mode: "image",
+    stylingPrompt: "tucked into the waistband",
+  }, {
+    quota: quota.factory,
+    generate: (_avatar, _groups, opts) => {
+      seenStyling = opts?.stylingPrompt;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenStyling, "tucked into the waistband");
+});

@@ -6,7 +6,7 @@
  */
 
 export const SYSTEM_INSTRUCTION =
-  `You are a photorealistic virtual try-on image editor. Preserve the target person's identity and follow only the garment-replacement and optional scene-edit instructions explicitly authorized by the task. Do not alter anything else.`;
+  `You are a photorealistic virtual try-on image editor. Preserve the target person's identity and follow only the garment-replacement, garment-styling, and optional scene-edit instructions explicitly authorized by the task. Do not alter anything else.`;
 
 function buildGarmentManifest(garmentGroups: string[][]): string {
   const lines: string[] = [];
@@ -81,6 +81,7 @@ ${lines.join("\n")}`;
 export interface TaskPromptOptions {
   garmentDetails?: (string | undefined)[];
   scenePrompt?: string;
+  stylingPrompt?: string;
   garmentFits?: (string | undefined)[];
 }
 
@@ -88,7 +89,7 @@ export function buildTaskPrompt(
   garmentGroups: string[][],
   opts: TaskPromptOptions = {},
 ): string {
-  const { garmentDetails, scenePrompt, garmentFits } = opts;
+  const { garmentDetails, scenePrompt, stylingPrompt, garmentFits } = opts;
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt = `You will receive ${
     totalGarmentImages + 1
@@ -112,7 +113,11 @@ GARMENT SCOPE — THE CATEGORIES
 - OUTERWEAR: jacket, coat, cardigan, blazer, vest (worn OVER existing clothing)
 
 REPLACEMENT SCOPE RULES — STRICT
-- Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person — including footwear — MUST be preserved EXACTLY from the first image: same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked). Never redesign or recolor it — e.g., do NOT touch the original pants when the reference is a top.
+- Replace ONLY the original clothing in the SAME CATEGORY as the reference. Everything else on the person — including footwear — MUST be preserved EXACTLY from the first image: same color, pattern, fabric, length, fit, and styling (e.g., tucked/untucked)${
+    stylingPrompt
+      ? " — except where STYLING below changes how the replaced garment sits against them"
+      : ""
+  }. Never redesign or recolor it — e.g., do NOT touch the original pants when the reference is a top.
 - FULL-BODY reference → replaces both upper and lower body (the dress/jumpsuit covers everything).
 - OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.
 - If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
@@ -144,6 +149,16 @@ OUTPUT
 
   prompt += buildGarmentDetailsSection(garmentDetails);
   prompt += buildGarmentFitSection(garmentFits);
+
+  if (stylingPrompt) {
+    prompt += `
+
+STYLING — HOW THE GARMENT IS WORN
+Wear the replaced garment this way: ${stylingPrompt}
+- This authorizes ONE deviation: the styling of the garment(s) you replaced. It licenses no other change.
+- Where it needs the replaced garment to interact with a preserved one (a hem tucked behind a waistband), render that interaction; the preserved garment's own color, pattern, cut, and length still must not change.
+- If it cannot apply to the garment being replaced, ignore it rather than inventing a change.`;
+  }
 
   if (scenePrompt) {
     prompt += `

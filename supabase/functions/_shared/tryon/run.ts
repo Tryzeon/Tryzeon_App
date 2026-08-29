@@ -164,6 +164,7 @@ export async function runTryonJob<M extends TryonMode>(
 
       generated = await generate(avatarBase64, garmentGroups, {
         scenePrompt: job.scenePrompt,
+        stylingPrompt: job.stylingPrompt,
         garmentDetails,
         garmentFits,
       });

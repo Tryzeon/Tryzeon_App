@@ -19,6 +19,7 @@ class TryonRequestModel {
     this.avatarBase64,
     this.baseImageBase64,
     this.scenePrompt,
+    this.stylingPrompt,
     this.transitionPrompt,
   });
 
@@ -30,6 +31,7 @@ class TryonRequestModel {
         :final mode,
         :final avatarBase64,
         :final scenePrompt,
+        :final stylingPrompt,
         :final transitionPrompt,
       ) =>
         TryonRequestModel(
@@ -38,10 +40,11 @@ class TryonRequestModel {
           mode: mode.name,
           isVideo: mode == TryonMode.video,
           scenePrompt: scenePrompt,
+          stylingPrompt: stylingPrompt,
           transitionPrompt: transitionPrompt,
         ),
-      // The backend rejects an animate body carrying garments, an avatar or a
-      // scene prompt, so none of them are ever set here.
+      // The backend rejects an animate body carrying garments or an avatar and
+      // drops a scene or styling prompt, so none of them are ever set here.
       TryonAnimateRequest(:final baseImageBase64, :final transitionPrompt) =>
         TryonRequestModel(
           garments: const [],
@@ -59,6 +62,7 @@ class TryonRequestModel {
   final String mode;
   final bool isVideo;
   final String? scenePrompt;
+  final String? stylingPrompt;
   final String? transitionPrompt;
 
   Map<String, dynamic> toJson() {
@@ -77,6 +81,10 @@ class TryonRequestModel {
     final scene = scenePrompt;
     if (scene != null && scene.isNotEmpty) {
       body[AppConstants.paramScenePrompt] = scene;
+    }
+    final styling = stylingPrompt;
+    if (styling != null && styling.isNotEmpty) {
+      body[AppConstants.paramStylingPrompt] = styling;
     }
     final transition = transitionPrompt;
     if (transition != null && transition.isNotEmpty) {

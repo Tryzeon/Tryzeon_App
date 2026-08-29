@@ -165,6 +165,11 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     LIMITS.MAX_PROMPT_LENGTH,
   );
   assertOptionalText(
+    params.stylingPrompt,
+    "stylingPrompt",
+    LIMITS.MAX_PROMPT_LENGTH,
+  );
+  assertOptionalText(
     params.transitionPrompt,
     "transitionPrompt",
     LIMITS.MAX_PROMPT_LENGTH,
@@ -185,15 +190,16 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     if (params.avatar !== undefined && params.avatar !== null) {
       throw new ValidationError("baseImage cannot be combined with an avatar");
     }
-    // A scene prompt is not a contradiction, just inapplicable: it is ambient
-    // user config rather than something the caller attached to this request, so
-    // a client that sends it uniformly is tolerated. Dropped here so the job
-    // runs on params that say what will actually happen.
+    // The scene and styling prompts are not contradictions, just inapplicable:
+    // they are ambient user config rather than something the caller attached to
+    // this request, so a client that sends them uniformly is tolerated. Dropped
+    // here so the job runs on params that say what will actually happen.
     return {
       ...params,
       avatar: undefined,
       garments: [],
       scenePrompt: undefined,
+      stylingPrompt: undefined,
       baseImage,
     };
   }
