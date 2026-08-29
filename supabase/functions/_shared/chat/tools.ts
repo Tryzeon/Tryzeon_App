@@ -6,9 +6,19 @@ import {
   resolveCategoryFilter,
   SEARCH_LIMIT,
   toSearchResultItem,
+  validateVocabularyFilters,
   WARDROBE_SELECT,
 } from "./logic.ts";
 import { nonEmptyStr } from "../text.ts";
+import {
+  CHANNEL_VALUES,
+  ELASTICITY_VALUES,
+  FIT_VALUES,
+  GENDER_VALUES,
+  SEASON_VALUES,
+  STYLE_VALUES,
+  THICKNESS_VALUES,
+} from "../vocabularies.ts";
 
 // The error case is returned, not thrown: a throw would abort the agent loop,
 // whereas an empty result carrying the reason lets the model correct the name
@@ -27,6 +37,10 @@ async function runSearchProducts(
   const category = resolveCategoryFilter(args.category_name, categoryIdByName);
   if (!category.ok) {
     return { items: [], error: category.error };
+  }
+  const vocabulary = validateVocabularyFilters(args);
+  if (!vocabulary.ok) {
+    return { items: [], error: vocabulary.error };
   }
   const params = mapSearchProductsArgs(args, { categoryIds: category.categoryIds });
   const { data, error } = await client.rpc("list_shop_products", params);
@@ -67,29 +81,21 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
       "不要放：材質、風格、季節、版型、彈性、厚度、性別、價格、分類——這些都有對應參數。也不要把品類和專有名詞併成同一個 query（『蜘蛛人 T恤』會要求名稱同時含這兩個詞），品類請改用 category_name。\n",
   ),
   category_name: z.string().optional().describe("商品分類名稱，需與分類清單一致"),
-  gender: z.string().optional().describe(
-    "選填。依商品適用性別篩選，只能用：male, female, unisex。可參考使用者資訊自行決定是否使用。",
+  gender: z.enum(GENDER_VALUES).optional().describe(
+    "選填。依商品適用性別篩選。可參考使用者資訊自行決定是否使用。",
   ),
   materials: z.array(z.string()).optional().describe(
     "選填。材質關鍵字（自由文字，子字串比對），如 棉、麻、羊毛、聚酯纖維。"
   ),
-  styles: z.array(z.string()).optional().describe(
-    "選填。風格，只能用這些固定英文值：japanese, korean, western, british, chinese, minimalist, casual, sporty, lazy, streetwear, business, preppy, functional, vintage, artsy, literary, elegant, mature, neutral, spicy, sweet。",
+  styles: z.array(z.enum(STYLE_VALUES)).optional().describe("選填。風格。"),
+  seasons: z.array(z.enum(SEASON_VALUES)).optional().describe("選填。季節。"),
+  fits: z.array(z.enum(FIT_VALUES)).optional().describe(
+    "選填。版型：slim（合身）, regular（常規）, loose（寬鬆）, oversize（超大寬版）。",
   ),
-  seasons: z.array(z.string()).optional().describe(
-    "選填。季節，只能用：spring, summer, autumn, winter。",
-  ),
-  fits: z.array(z.string()).optional().describe(
-    "選填。版型，只能用這些固定英文值：slim（合身）, regular（常規）, loose（寬鬆）, oversize（超大寬版）。",
-  ),
-  elasticities: z.array(z.string()).optional().describe(
-    "選填。彈性，只能用：none, low, medium, high。",
-  ),
-  thicknesses: z.array(z.string()).optional().describe(
-    "選填。厚度，只能用：low, medium, high。",
-  ),
-  channels: z.array(z.string()).optional().describe(
-    "選填。購物管道，只能用：physical（實體店面）, online（線上）。",
+  elasticities: z.array(z.enum(ELASTICITY_VALUES)).optional().describe("選填。彈性。"),
+  thicknesses: z.array(z.enum(THICKNESS_VALUES)).optional().describe("選填。厚度。"),
+  channels: z.array(z.enum(CHANNEL_VALUES)).optional().describe(
+    "選填。購物管道：physical（實體店面）, online（線上）。",
   ),
   min_price: z.number().optional().describe("選填。價格下限。"),
   max_price: z.number().optional().describe("選填。價格上限。"),

@@ -1,6 +1,14 @@
 // Pure helpers for the chat agent loop. No SDK or network imports so they
 // unit-test offline (no Gemini SDK, no network).
 import { isUuid, nonEmptyStr } from "../text.ts";
+import {
+  CHANNEL_VALUES,
+  ELASTICITY_VALUES,
+  FIT_VALUES,
+  GENDER_VALUES,
+  SEASON_VALUES,
+  THICKNESS_VALUES,
+} from "../vocabularies.ts";
 import type {
   AnswerRef,
   AnswerRows,
@@ -24,6 +32,54 @@ export const PRODUCT_SELECT =
 
 const nonEmptyArray = (v: unknown): unknown[] | null =>
   Array.isArray(v) && v.length > 0 ? v : null;
+
+// Enum-backed filters the model chooses values for. p_fits/p_seasons/p_elasticities/
+// p_thicknesses/p_channels/p_gender are Postgres enum (array) parameters: an
+// invented value is a cast error, not a filter that matches nothing, so — same
+// principle as resolveCategoryFilter below — a value outside the vocabulary is
+// rejected rather than silently dropped. Dropping only the bad entries out of a
+// mixed list would still run a query the model believes is fully filtered; the
+// whole field is rejected unless every value in it is in vocabulary.
+const VOCABULARY_FIELDS: { field: string; vocab: readonly string[] }[] = [
+  { field: "fits", vocab: FIT_VALUES },
+  { field: "seasons", vocab: SEASON_VALUES },
+  { field: "elasticities", vocab: ELASTICITY_VALUES },
+  { field: "thicknesses", vocab: THICKNESS_VALUES },
+  { field: "channels", vocab: CHANNEL_VALUES },
+];
+
+export type VocabularyFilter = { ok: true } | { ok: false; error: string };
+
+export function validateVocabularyFilters(args: Record<string, unknown>): VocabularyFilter {
+  for (const { field, vocab } of VOCABULARY_FIELDS) {
+    const value = args[field];
+    if (!Array.isArray(value)) continue;
+    const bad = value.find((x) => !(typeof x === "string" && vocab.includes(x)));
+    if (bad !== undefined) {
+      return {
+        ok: false,
+        error: `${field} 參數包含不支援的值「${String(bad)}」。請改用允許的值（${
+          vocab.join("、")
+        }）其中之一，或省略 ${field} 參數後重試。`,
+      };
+    }
+  }
+
+  const gender = args.gender;
+  if (
+    gender !== undefined && gender !== null &&
+    !(typeof gender === "string" && (GENDER_VALUES as readonly string[]).includes(gender))
+  ) {
+    return {
+      ok: false,
+      error: `gender 參數包含不支援的值「${String(gender)}」。請改用允許的值（${
+        (GENDER_VALUES as readonly string[]).join("、")
+      }）其中之一，或省略 gender 參數後重試。`,
+    };
+  }
+
+  return { ok: true };
+}
 
 // Resolve the model's category_name into the id filter the RPC takes. An absent
 // name means "no category filter"; an unrecognised one is rejected rather than
@@ -54,6 +110,10 @@ export function resolveCategoryFilter(
 // Assemble list_shop_products RPC params from model tool args + resolved context.
 // gender is an optional model-chosen filter (args.gender), not a forced one —
 // the model decides whether to apply it, informed by the user context in the prompt.
+// Callers must run validateVocabularyFilters(args) first (as runSearchProducts
+// does, right alongside resolveCategoryFilter) — by the time args reach here,
+// every enum-backed field is assumed already in vocabulary, the same way
+// opts.categoryIds arrives pre-resolved rather than as a raw category_name.
 export function mapSearchProductsArgs(
   args: Record<string, unknown>,
   opts: { categoryIds: string[] | null },
@@ -65,7 +125,7 @@ export function mapSearchProductsArgs(
     p_min_price: typeof args.min_price === "number" ? args.min_price : null,
     p_max_price: typeof args.max_price === "number" ? args.max_price : null,
     p_channels: nonEmptyArray(args.channels),
-    p_gender: nonEmptyStr(args.gender),
+    p_gender: typeof args.gender === "string" ? args.gender : null,
     p_materials: nonEmptyArray(args.materials),
     p_elasticities: nonEmptyArray(args.elasticities),
     p_fits: nonEmptyArray(args.fits),

@@ -7,6 +7,7 @@ import {
   SEARCH_LIMIT,
   toModelMessages,
   toSearchResultItem,
+  validateVocabularyFilters,
 } from "./logic.ts";
 
 const CATEGORIES = new Map([["上衣", "cat-1"], ["洋裝", "cat-2"]]);
@@ -248,4 +249,45 @@ Deno.test("toSearchResultItem drops unset attributes rather than sending nulls",
 Deno.test("toSearchResultItem tolerates a row with no variants and no store", () => {
   const item = toSearchResultItem({ id: "p9", name: "褲", price: 500 });
   assertEquals(item, { id: "p9", name: "褲", price: 500 });
+});
+
+Deno.test("validateVocabularyFilters accepts values inside the vocabularies", () => {
+  const r = validateVocabularyFilters({
+    fits: ["slim", "regular"],
+    seasons: ["summer"],
+    elasticities: ["high"],
+    thicknesses: ["low"],
+    channels: ["online"],
+    gender: "female",
+  });
+  assertEquals(r, { ok: true });
+});
+
+Deno.test("validateVocabularyFilters treats absent fields as no filter", () => {
+  assertEquals(validateVocabularyFilters({}), { ok: true });
+});
+
+Deno.test("validateVocabularyFilters rejects a value outside the enum vocabulary instead of dropping it", () => {
+  const r = validateVocabularyFilters({ fits: ["tight"] });
+  assertEquals(r.ok, false);
+  if (r.ok) throw new Error("expected a rejection");
+  // The field name and offending value must appear so the model can see what
+  // it got wrong and retry with a permitted value or omit the field.
+  assertStringIncludes(r.error, "fits");
+  assertStringIncludes(r.error, "tight");
+});
+
+Deno.test("validateVocabularyFilters rejects gender outside the enum vocabulary", () => {
+  const r = validateVocabularyFilters({ gender: "boy" });
+  assertEquals(r.ok, false);
+  if (r.ok) throw new Error("expected a rejection");
+  assertStringIncludes(r.error, "gender");
+  assertStringIncludes(r.error, "boy");
+});
+
+Deno.test("validateVocabularyFilters rejects a filter mixing valid and invalid values rather than narrowing to the valid ones", () => {
+  const r = validateVocabularyFilters({ fits: ["slim", "tight"] });
+  assertEquals(r.ok, false);
+  if (r.ok) throw new Error("expected a rejection");
+  assertStringIncludes(r.error, "tight");
 });
