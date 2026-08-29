@@ -9,9 +9,9 @@
  * An adapter binds its service-role client here and hands the result to
  * `runTryonJob`; that binding is the only place the two meet.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { type FeatureName, supabaseUsageCounter } from "../quota.ts";
 import type { QuotaFactory, TryonMode } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
 
 /**
  * The counter each mode is charged against. A total map rather than a ternary:
@@ -23,5 +23,5 @@ const FEATURE_BY_MODE: Record<TryonMode, FeatureName> = {
   video: "tryon_video",
 };
 
-export const supabaseQuota = (admin: SupabaseClient): QuotaFactory =>
+export const supabaseQuota = (admin: DbClient): QuotaFactory =>
 (userId, mode) => supabaseUsageCounter(admin, userId, FEATURE_BY_MODE[mode]);

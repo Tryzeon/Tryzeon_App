@@ -1,7 +1,7 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { DailyUsage, UsageCounter } from "../quota.ts";
 import type { BodyMeasurements } from "../user-profile.ts";
 import type { TaskPromptOptions } from "./prompt.ts";
+import type { DbClient } from "../supabase.ts";
 
 export type { UsageCounter };
 
@@ -224,7 +224,7 @@ export type VideoUploader = (
  * not its fit".
  */
 export type ProductResolver = (
-  client: SupabaseClient,
+  client: DbClient,
   ref: ProductRef,
   body: BodyMeasurements | null,
 ) => Promise<ResolvedGarment>;
@@ -237,19 +237,19 @@ export type ProductResolver = (
  * client with no policy beneath it.
  */
 export type WardrobeResolver = (
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
   wardrobeItemId: string,
 ) => Promise<ResolvedGarment>;
 
 /** Resolves the user's stored model photo into a loadable source. */
 export type AvatarResolver = (
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ) => Promise<ImageSource>;
 
 /** Resolves the wearer's recorded body dimensions, or null when they have none. */
 export type BodyResolver = (
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ) => Promise<BodyMeasurements | null>;

@@ -3,10 +3,10 @@ import {
   assertRejects,
   assertStringIncludes,
 } from "jsr:@std/assert";
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { buildProductGarmentDetail, resolveProductGarment } from "./catalog.ts";
 import { LIMITS } from "./types.ts";
 import { ValidationError } from "./errors.ts";
+import type { DbClient } from "../supabase.ts";
 
 const PRODUCT_ID = "11111111-1111-1111-1111-111111111111";
 const SIZE_ID = "22222222-2222-2222-2222-222222222222";
@@ -77,7 +77,7 @@ function fakeAdmin(stubs: Record<string, LookupStub>) {
         },
       };
     },
-  } as unknown as SupabaseClient;
+  } as unknown as DbClient;
   return { admin, filters, rpcCalls };
 }
 

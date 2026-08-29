@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import { type DbClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { deletePublicImagesFromR2, generatePresignedPutUrl } from "../_shared/r2.ts";
 import { json } from "../_shared/http.ts";
 
@@ -41,7 +40,7 @@ function isUuid(s: string): boolean {
 // naming the owner is not a privileged question — deciding on the answer is, and
 // that happens here.
 async function assertStoreOwner(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
   storeId: string,
 ): Promise<Response | null> {
@@ -85,7 +84,7 @@ Deno.serve(async (req) => {
 
 async function handlePresignLogo(
   req: Request,
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<Response> {
   const body = await req.json().catch(() => null);
@@ -112,7 +111,7 @@ async function handlePresignLogo(
 
 async function handlePresignProducts(
   req: Request,
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<Response> {
   const body = await req.json().catch(() => null);
@@ -156,7 +155,7 @@ async function handlePresignProducts(
 
 async function handleDelete(
   req: Request,
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<Response> {
   const body = await req.json().catch(() => null);

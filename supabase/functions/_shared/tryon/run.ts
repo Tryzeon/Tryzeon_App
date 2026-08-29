@@ -1,4 +1,3 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import {
   base64ToUint8Array,
   detectMimeType,
@@ -33,6 +32,7 @@ import {
   type VideoGenerator,
   type VideoUploader,
 } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
 
 /**
  * A tagged union rather than two optional locals, so the branch inside the job
@@ -78,7 +78,7 @@ export interface RunTryonJobDeps {
  * runtime check at each call site.
  */
 export async function runTryonJob<M extends TryonMode>(
-  client: SupabaseClient,
+  client: DbClient,
   params: TryonParams & { mode: M },
   deps: RunTryonJobDeps,
 ): Promise<TryonResultFor<M>> {

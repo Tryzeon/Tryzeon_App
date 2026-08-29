@@ -10,8 +10,9 @@
  * them (`line-user.ts` derives one from the LINE sub), and reading it back here
  * keeps that format from acquiring a second knower.
  */
-import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { supabaseAnonKey, supabaseUrl } from "./supabase.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import type { Database } from "./database.types.ts";
+import { type DbClient, supabaseAnonKey, supabaseUrl } from "./supabase.ts";
 
 /** A GoTrue session, reduced to the one credential a client needs to adopt it. */
 export interface MintedSession {
@@ -23,8 +24,8 @@ export interface MintedSession {
  * auth code, and a link generated server-side has no code_verifier to redeem
  * one with.
  */
-function defaultAnonClient(): SupabaseClient {
-  return createClient(supabaseUrl(), supabaseAnonKey(), {
+function defaultAnonClient(): DbClient {
+  return createClient<Database>(supabaseUrl(), supabaseAnonKey(), {
     auth: { persistSession: false, autoRefreshToken: false, flowType: "implicit" },
   });
 }
@@ -38,9 +39,9 @@ function defaultAnonClient(): SupabaseClient {
  * `anon` is injectable for testing, following `verifyLineIdToken`'s `fetchFn`.
  */
 export async function mintSessionForUser(
-  admin: SupabaseClient,
+  admin: DbClient,
   userId: string,
-  anon: SupabaseClient = defaultAnonClient(),
+  anon: DbClient = defaultAnonClient(),
 ): Promise<MintedSession> {
   const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId);
   const email = userData?.user?.email;

@@ -1,8 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { json } from "../_shared/http.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
-import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import { type DbClient, getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 
 // --- Error Handling ---
 class AppError extends Error {
@@ -14,7 +13,7 @@ class AppError extends Error {
 
 // --- Storage Cleanup Service ---
 class StorageCleanupService {
-  constructor(private supabase: SupabaseClient) { }
+  constructor(private supabase: DbClient) { }
 
   private async listFilesRecursively(bucket: string, path: string): Promise<string[]> {
     let allFiles: string[] = [];

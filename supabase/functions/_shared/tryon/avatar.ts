@@ -1,7 +1,7 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getAvatarPath } from "../user-profile.ts";
 import { MissingAvatarError } from "./errors.ts";
 import type { ImageSource } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
 
 /**
  * The model photo on the user's profile.
@@ -11,7 +11,7 @@ import type { ImageSource } from "./types.ts";
  * wire — a client copy of the path is a copy of the truth, and it goes stale.
  */
 export async function resolveStoredAvatar(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ): Promise<ImageSource> {
   const path = await getAvatarPath(client, userId);

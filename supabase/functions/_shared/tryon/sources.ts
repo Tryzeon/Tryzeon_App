@@ -1,7 +1,7 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { fetchImageAsBase64 } from "../image-utils.ts";
 import type { SupabaseImageBucket } from "../storage.ts";
 import type { ImageSource, ResolvedGarment } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
 
 /**
  * Loads one image source into the base64 bytes the model consumes. "Resolve"
@@ -18,7 +18,7 @@ export type SourceLoader = (source: ImageSource) => Promise<string>;
  * (e.g. avatar vs. wardrobe garment) need one loader per bucket.
  */
 export function makeSourceLoader(
-  client: SupabaseClient,
+  client: DbClient,
   bucket: SupabaseImageBucket,
 ): SourceLoader {
   return (source: ImageSource): Promise<string> =>

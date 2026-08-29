@@ -1,5 +1,5 @@
-import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { DailyUsage, UsageCounter } from "../quota.ts";
+import type { DbClient } from "../supabase.ts";
 
 export type { UsageCounter };
 
@@ -108,7 +108,7 @@ export interface ChatContext {
 
 /** Loads the grounding for one turn. */
 export type ContextLoader = (
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
 ) => Promise<ChatContext>;
 
@@ -121,7 +121,7 @@ export type ContextLoader = (
  * give them room to disagree.
  */
 export interface AgentRequest {
-  client: SupabaseClient;
+  client: DbClient;
   userId: string;
   context: ChatContext;
   messages: ChatMessage[];
@@ -160,7 +160,7 @@ export interface AnswerRows {
  * four fields — stays the implementation's choice.
  */
 export type AnswerHydrator = (
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
   refs: AnswerRef[],
 ) => Promise<AnswerRows>;

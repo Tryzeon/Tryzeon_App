@@ -1,6 +1,6 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { downloadPublicImageFromR2 } from "./r2.ts";
 import { isR2PublicKey, type SupabaseImageBucket } from "./storage.ts";
+import type { DbClient } from "./supabase.ts";
 
 export function uint8ToBase64(bytes: Uint8Array): string {
   return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
@@ -14,7 +14,7 @@ export function uint8ToBase64(bytes: Uint8Array): string {
  * `storage.ts` for the origin conventions.
  */
 export async function fetchImageAsBase64(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   path: string,
   bucket: SupabaseImageBucket,
 ): Promise<string> {

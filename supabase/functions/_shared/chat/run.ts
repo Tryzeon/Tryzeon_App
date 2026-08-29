@@ -1,4 +1,3 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { QuotaExceededError } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { supabaseAnswerRows } from "./hydrate.ts";
@@ -15,6 +14,7 @@ import type {
   ContentBlock,
   ContextLoader,
 } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
 
@@ -52,7 +52,7 @@ export interface RunChatAgentDeps {
  * as "I couldn't find anything" would charge the caller for a lie.
  */
 export async function runChatAgent(
-  client: SupabaseClient,
+  client: DbClient,
   params: ChatParams,
   deps: RunChatAgentDeps,
 ): Promise<ChatResult> {

@@ -1,5 +1,5 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { LineProfile } from "./line-identity.ts";
+import type { DbClient } from "./supabase.ts";
 
 const SYNTHETIC_EMAIL_DOMAIN = "liff.tryzeon.app";
 
@@ -14,7 +14,7 @@ const SYNTHETIC_EMAIL_DOMAIN = "liff.tryzeon.app";
  * that already exists (see `_shared/tryon/sources.ts`), which this is not.
  */
 export async function getOrCreateUserId(
-  admin: SupabaseClient,
+  admin: DbClient,
   profile: LineProfile,
   resolveDisplayName?: () => Promise<string | undefined>,
 ): Promise<string> {

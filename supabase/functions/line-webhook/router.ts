@@ -21,7 +21,6 @@
  * which had to be edited in step with this file every time the set changed, in
  * the one module in the feature with no test.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import {
   handleImageTryon,
   handleProductTryon,
@@ -32,9 +31,10 @@ import { parsePostback } from "./postback.ts";
 import { hintMessage, welcomeMessage } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 import type { ConversationStore } from "./conversation.ts";
+import type { DbClient } from "../_shared/supabase.ts";
 
 export interface RouterDeps {
-  admin: SupabaseClient;
+  admin: DbClient;
   line: LineApi;
   liffUrl: string;
   imagesBaseUrl: string;

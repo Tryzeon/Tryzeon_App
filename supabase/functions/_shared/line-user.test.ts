@@ -1,6 +1,6 @@
 import { assertEquals } from "jsr:@std/assert";
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getOrCreateUserId } from "./line-user.ts";
+import type { DbClient } from "./supabase.ts";
 
 interface AdminStub {
   /** Set to simulate a LINE account already linked to an auth user. */
@@ -9,7 +9,7 @@ interface AdminStub {
   created: (Record<string, unknown> | undefined)[];
 }
 
-function fakeAdmin(stub: AdminStub): SupabaseClient {
+function fakeAdmin(stub: AdminStub): DbClient {
   return {
     from: (_table: string) => ({
       select: () => ({
@@ -31,7 +31,7 @@ function fakeAdmin(stub: AdminStub): SupabaseClient {
         },
       },
     },
-  } as unknown as SupabaseClient;
+  } as unknown as DbClient;
 }
 
 Deno.test("getOrCreateUserId does not look a name up when the link already exists", async () => {

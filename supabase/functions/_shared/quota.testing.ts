@@ -6,8 +6,8 @@
  * counter is shared: a `DailyUsage` field added later should be one edit, not
  * one per core that ever faked a charge.
  */
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type { DailyUsage } from "./quota.ts";
+import type { DbClient } from "./supabase.ts";
 
 /** A usage row with every counter present, for assertions that echo it back. */
 export const SAMPLE_USAGE: DailyUsage = {
@@ -28,7 +28,7 @@ export interface RpcCall {
  * `increment_feature_usage` with the scripted allow/reject.
  */
 export function fakeQuotaAdmin(allowed = true): {
-  client: SupabaseClient;
+  client: DbClient;
   calls: RpcCall[];
 } {
   const calls: RpcCall[] = [];
@@ -43,6 +43,6 @@ export function fakeQuotaAdmin(allowed = true): {
       }
       return Promise.resolve({ data: true, error: null });
     },
-  } as unknown as SupabaseClient;
+  } as unknown as DbClient;
   return { client, calls };
 }

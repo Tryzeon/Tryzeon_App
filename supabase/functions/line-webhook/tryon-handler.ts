@@ -1,4 +1,3 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-user.ts";
 import {
   classifyTryonError,
@@ -33,9 +32,10 @@ import {
   tryonNote,
   wardrobeTryonNote,
 } from "./conversation.ts";
+import type { DbClient } from "../_shared/supabase.ts";
 
 export interface TryonHandlerDeps {
-  admin: SupabaseClient;
+  admin: DbClient;
   line: LineApi;
   liffUrl: string;
   conversations: ConversationStore;

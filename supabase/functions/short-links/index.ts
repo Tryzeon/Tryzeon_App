@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import { getAnonClient } from "../_shared/supabase.ts";
+import { type DbClient, getAnonClient } from "../_shared/supabase.ts";
 import { publicImageUrl } from "../_shared/storage.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import {
@@ -31,7 +30,7 @@ const IMAGES_BASE_URL = Deno.env.get("R2_PUBLIC_IMAGES_BASE_URL") ?? null;
  * try/catch：背景任務的 rejection 沒有人會接。
  */
 async function recordOpen(
-  client: SupabaseClient,
+  client: DbClient,
   code: string,
   surface: Surface,
   userAgent: string | null,
@@ -49,11 +48,6 @@ async function recordOpen(
   } catch (err) {
     console.error("short-links: failed to record open:", err);
   }
-}
-
-interface StoreRow {
-  name: string | null;
-  logo_path: string | null;
 }
 
 /** 一律 no-store —— 每次呼叫都會記一筆開啟事件，所以呼叫端不能對這支端點加快取。 */
@@ -115,8 +109,9 @@ Deno.serve(async (req) => {
 
     // 掃碼的人不需要等事件寫完才被導走。實測這次寫入約佔熱路徑回應時間的一半
     // （~0.45s，第二次 PostgREST 往返），而它對使用者沒有任何價值。
-    // 巢狀關聯在 to-one 時回物件，但視 PostgREST 版本也可能是單元素陣列。
-    const embedded = link.store_profiles as unknown as StoreRow | StoreRow[] | null;
+    // 型別上 `!inner` 的 to-one 關聯是物件，但視 PostgREST 版本也可能實際回單元素陣列，
+    // 所以形狀仍在執行期收斂一次。
+    const embedded = link.store_profiles;
     const store = Array.isArray(embedded) ? embedded[0] ?? null : embedded;
 
     const userAgent = req.headers.get("User-Agent");

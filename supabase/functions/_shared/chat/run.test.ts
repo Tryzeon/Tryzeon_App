@@ -1,5 +1,4 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
-import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { runChatAgent } from "./run.ts";
 import { ValidationError } from "../validation.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
@@ -14,6 +13,7 @@ import type {
   ContentBlock,
   ContextLoader,
 } from "./types.ts";
+import type { DbClient } from "../supabase.ts";
 
 const USAGE: DailyUsage = {
   user_id: "u1",
@@ -26,7 +26,7 @@ const USAGE: DailyUsage = {
 // The run never reaches Supabase in these tests — quota, grounding, the agent
 // and hydration all go through ports — so an empty object is an honest stand-in
 // for the one client it now takes.
-const client = {} as unknown as SupabaseClient;
+const client = {} as unknown as DbClient;
 
 // Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
 // rejects anything else.

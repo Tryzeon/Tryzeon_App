@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { mintSessionForUser } from "./auth-session.ts";
+import type { DbClient } from "./supabase.ts";
 
 interface AdminStub {
   email?: string | null;
@@ -11,7 +11,7 @@ interface AdminStub {
   seen: { email?: string };
 }
 
-function fakeAdmin(stub: AdminStub): SupabaseClient {
+function fakeAdmin(stub: AdminStub): DbClient {
   return {
     auth: {
       admin: {
@@ -31,13 +31,13 @@ function fakeAdmin(stub: AdminStub): SupabaseClient {
         },
       },
     },
-  } as unknown as SupabaseClient;
+  } as unknown as DbClient;
 }
 
 function fakeAnon(
   session: { refresh_token: string } | null,
   error?: string,
-): SupabaseClient {
+): DbClient {
   return {
     auth: {
       verifyOtp: (_p: unknown) =>
@@ -46,7 +46,7 @@ function fakeAnon(
           error: error ? { message: error } : null,
         }),
     },
-  } as unknown as SupabaseClient;
+  } as unknown as DbClient;
 }
 
 Deno.test("mintSessionForUser returns the refresh token of the minted session", async () => {

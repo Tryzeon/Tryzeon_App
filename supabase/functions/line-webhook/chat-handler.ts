@@ -1,4 +1,3 @@
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-user.ts";
 import {
   type ChatMessage,
@@ -12,6 +11,7 @@ import { renderAnswer } from "./chat-render.ts";
 import { type ConversationStore, dehydrateMessages } from "./conversation.ts";
 import { chatErrorMessage, type ChatErrorKind } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
+import type { DbClient } from "../_shared/supabase.ts";
 
 export interface TextEvent {
   replyToken: string;
@@ -20,7 +20,7 @@ export interface TextEvent {
 }
 
 export interface ChatHandlerDeps {
-  admin: SupabaseClient;
+  admin: DbClient;
   line: LineApi;
   /** Public R2 base the hydrator resolves product image keys against. */
   imagesBaseUrl: string;
