@@ -1,15 +1,14 @@
 import { tool } from "npm:ai@^6.0.208";
 import { z } from "npm:zod@^4.4.3";
-import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import {
   mapSearchProductsArgs,
   resolveCategoryFilter,
+  resolveWardrobeCategory,
   SEARCH_LIMIT,
   toSearchResultItem,
   validateVocabularyFilters,
   WARDROBE_SELECT,
 } from "./logic.ts";
-import { nonEmptyStr } from "../text.ts";
 import {
   CHANNEL_VALUES,
   ELASTICITY_VALUES,
@@ -18,22 +17,24 @@ import {
   SEASON_VALUES,
   STYLE_VALUES,
   THICKNESS_VALUES,
+  WARDROBE_CATEGORY_VALUES,
 } from "../vocabularies.ts";
+import type { DbClient } from "../supabase.ts";
 
 // The error case is returned, not thrown: a throw would abort the agent loop,
 // whereas an empty result carrying the reason lets the model correct the name
 // (or drop the filter) and search again, which the system prompt already asks
 // it to do when a search comes back empty.
-type SearchProductsResult = {
+type SearchResult = {
   items: Record<string, any>[];
   error?: string;
 };
 
 async function runSearchProducts(
-  client: SupabaseClient,
+  client: DbClient,
   args: Record<string, any>,
   categoryIdByName: Map<string, string>,
-): Promise<SearchProductsResult> {
+): Promise<SearchResult> {
   const category = resolveCategoryFilter(args.category_name, categoryIdByName);
   if (!category.ok) {
     return { items: [], error: category.error };
@@ -42,7 +43,10 @@ async function runSearchProducts(
   if (!vocabulary.ok) {
     return { items: [], error: vocabulary.error };
   }
-  const params = mapSearchProductsArgs(args, { categoryIds: category.categoryIds });
+  const params = mapSearchProductsArgs(args, {
+    categoryIds: category.categoryIds,
+    filters: vocabulary.filters,
+  });
   const { data, error } = await client.rpc("list_shop_products", params);
   if (error) throw error;
   return { items: ((data ?? []) as Record<string, any>[]).map(toSearchResultItem) };
@@ -51,24 +55,27 @@ async function runSearchProducts(
 // The `.eq("user_id", …)` is the filter, not the guard: with a user-scoped `client`
 // the wardrobe RLS policy refuses another user's rows independently of it.
 async function runSearchWardrobe(
-  client: SupabaseClient,
+  client: DbClient,
   userId: string,
   args: Record<string, any>,
-): Promise<Record<string, any>[]> {
+): Promise<SearchResult> {
+  const category = resolveWardrobeCategory(args.category);
+  if (!category.ok) {
+    return { items: [], error: category.error };
+  }
   let q = client
     .from("wardrobe_items")
     .select(WARDROBE_SELECT)
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(SEARCH_LIMIT);
-  const category = nonEmptyStr(args.category);
-  if (category) q = q.eq("category", category);
+  if (category.category) q = q.eq("category", category.category);
   if (Array.isArray(args.tags) && args.tags.length > 0) {
     q = q.contains("tags", args.tags);
   }
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as Record<string, any>[];
+  return { items: data ?? [] };
 }
 
 // The tool schemas are request-independent — only the `execute` closures below
@@ -102,7 +109,7 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
 });
 
 const SEARCH_WARDROBE_SCHEMA = z.object({
-  category: z.string().optional().describe("top / bottoms / outerwear / sets / others"),
+  category: z.enum(WARDROBE_CATEGORY_VALUES).optional().describe("衣櫃單品分類。"),
   tags: z.array(z.string()).optional(),
 });
 
@@ -119,7 +126,7 @@ export const answerSchema = z.object({
 });
 
 export function buildTools(deps: {
-  client: SupabaseClient;
+  client: DbClient;
   userId: string;
   categoryIdByName: Map<string, string>;
 }) {
@@ -134,9 +141,7 @@ export function buildTools(deps: {
     search_wardrobe: tool({
       description: "搜尋使用者衣櫃既有衣物；想用既有單品搭配時優先呼叫。",
       inputSchema: SEARCH_WARDROBE_SCHEMA,
-      execute: async (args) => ({
-        items: await runSearchWardrobe(client, userId, args),
-      }),
+      execute: (args) => runSearchWardrobe(client, userId, args),
     }),
   };
 }

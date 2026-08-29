@@ -4,6 +4,7 @@ import {
   mapSearchProductsArgs,
   parseAnswerRefs,
   resolveCategoryFilter,
+  resolveWardrobeCategory,
   SEARCH_LIMIT,
   toModelMessages,
   toSearchResultItem,
@@ -37,24 +38,33 @@ Deno.test("resolveCategoryFilter rejects an unknown name instead of dropping the
 
 Deno.test("mapSearchProductsArgs trims query, keeps non-empty arrays, drops empties", () => {
   const p = mapSearchProductsArgs(
-    { query: "  白襯衫 ", styles: ["casual"], materials: [], min_price: 100, gender: "female" },
-    { categoryIds: ["c1"] },
+    { query: "  白襯衫 ", styles: ["casual"], materials: [], min_price: 100 },
+    { categoryIds: ["c1"], filters: { gender: "female" } },
   );
   assertEquals(p.p_search_query, "白襯衫");
   assertEquals(p.p_styles, ["casual"]);
-  assertEquals(p.p_materials, null);
+  assertEquals(p.p_materials, undefined);
   assertEquals(p.p_min_price, 100);
   assertEquals(p.p_category_ids, ["c1"]);
   assertEquals(p.p_gender, "female");
   assertEquals(p.p_limit, SEARCH_LIMIT);
 });
 
-Deno.test("mapSearchProductsArgs defaults: null query, limit 10, null gender", () => {
-  const p = mapSearchProductsArgs({}, { categoryIds: null });
-  assertEquals(p.p_search_query, null);
-  assertEquals(p.p_category_ids, null);
-  assertEquals(p.p_gender, null);
+Deno.test("mapSearchProductsArgs omits absent filters so the RPC applies its SQL defaults", () => {
+  const p = mapSearchProductsArgs({}, { categoryIds: null, filters: {} });
+  assertEquals(p.p_search_query, undefined);
+  assertEquals(p.p_category_ids, undefined);
+  assertEquals(p.p_gender, undefined);
   assertEquals(p.p_limit, SEARCH_LIMIT);
+});
+
+Deno.test("mapSearchProductsArgs takes the enum-backed filters from the validated set, not raw args", () => {
+  const p = mapSearchProductsArgs(
+    { fits: ["tight"], channels: ["carrier-pigeon"] },
+    { categoryIds: null, filters: { fits: ["slim"] } },
+  );
+  assertEquals(p.p_fits, ["slim"]);
+  assertEquals(p.p_channels, undefined);
 });
 
 Deno.test("assembleAnswerBlocks keeps the model's order across both kinds", () => {
@@ -251,7 +261,7 @@ Deno.test("toSearchResultItem tolerates a row with no variants and no store", ()
   assertEquals(item, { id: "p9", name: "褲", price: 500 });
 });
 
-Deno.test("validateVocabularyFilters accepts values inside the vocabularies", () => {
+Deno.test("validateVocabularyFilters returns the accepted values, typed, rather than a bare pass", () => {
   const r = validateVocabularyFilters({
     fits: ["slim", "regular"],
     seasons: ["summer"],
@@ -260,11 +270,31 @@ Deno.test("validateVocabularyFilters accepts values inside the vocabularies", ()
     channels: ["online"],
     gender: "female",
   });
-  assertEquals(r, { ok: true });
+  assertEquals(r, {
+    ok: true,
+    filters: {
+      fits: ["slim", "regular"],
+      seasons: ["summer"],
+      elasticities: ["high"],
+      thicknesses: ["low"],
+      channels: ["online"],
+      gender: "female",
+    },
+  });
 });
 
-Deno.test("validateVocabularyFilters treats absent fields as no filter", () => {
-  assertEquals(validateVocabularyFilters({}), { ok: true });
+Deno.test("validateVocabularyFilters treats absent and empty fields as no filter", () => {
+  assertEquals(validateVocabularyFilters({ fits: [] }), {
+    ok: true,
+    filters: {
+      fits: undefined,
+      seasons: undefined,
+      elasticities: undefined,
+      thicknesses: undefined,
+      channels: undefined,
+      gender: undefined,
+    },
+  });
 });
 
 Deno.test("validateVocabularyFilters rejects a value outside the enum vocabulary instead of dropping it", () => {
@@ -290,4 +320,15 @@ Deno.test("validateVocabularyFilters rejects a filter mixing valid and invalid v
   assertEquals(r.ok, false);
   if (r.ok) throw new Error("expected a rejection");
   assertStringIncludes(r.error, "tight");
+});
+
+Deno.test("resolveWardrobeCategory accepts a category in the enum and reports one that is not", () => {
+  assertEquals(resolveWardrobeCategory("top"), { ok: true, category: "top" });
+  assertEquals(resolveWardrobeCategory(" "), { ok: true });
+
+  const r = resolveWardrobeCategory("hats");
+  assertEquals(r.ok, false);
+  if (r.ok) throw new Error("expected a rejection");
+  assertStringIncludes(r.error, "category");
+  assertStringIncludes(r.error, "hats");
 });

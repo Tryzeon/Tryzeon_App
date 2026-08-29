@@ -21,6 +21,7 @@ export const FIT_VALUES = ENUMS.product_fit;
 export const SEASON_VALUES = ENUMS.product_season;
 export const CHANNEL_VALUES = ENUMS.store_channel;
 export const GENDER_VALUES = ENUMS.product_gender;
+export const WARDROBE_CATEGORY_VALUES = ENUMS.wardrobe_category;
 
 /**
  * The exception. `products.styles` is `text[]` with no enum behind it, because
