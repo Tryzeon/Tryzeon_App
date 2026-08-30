@@ -1,9 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import { type DbClient, getAdminClient } from "../_shared/supabase.ts";
 import { json } from "../_shared/http.ts";
 import { resolveTier } from "./entitlements.ts";
 import { fetchSubscriber } from "./revenuecat-api.ts";
+import { isAuthorized } from "./authorization.ts";
 
 function requireEnv(name: string): string {
   const value = Deno.env.get(name);
@@ -29,18 +29,6 @@ interface RevenueCatEvent {
   /** `TRANSFER` only, and the reason `app_user_id` is optional. */
   transferred_from?: string[];
   transferred_to?: string[];
-}
-
-function isAuthorized(req: Request): boolean {
-  const header = req.headers.get("Authorization");
-  if (!header) return false;
-
-  const encoder = new TextEncoder();
-  const received = encoder.encode(header);
-  const expected = encoder.encode(`Bearer ${WEBHOOK_SECRET}`);
-
-  return received.byteLength === expected.byteLength &&
-    timingSafeEqual(received, expected);
 }
 
 /**
@@ -82,7 +70,7 @@ async function syncSubscription(admin: DbClient, appUserId: string): Promise<voi
 }
 
 Deno.serve(async (req) => {
-  if (!isAuthorized(req)) {
+  if (!isAuthorized(req.headers.get("Authorization"), WEBHOOK_SECRET)) {
     console.warn("Unauthorized webhook attempt");
     return json({ error: "Unauthorized" }, 401);
   }
