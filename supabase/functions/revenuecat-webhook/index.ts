@@ -1,142 +1,125 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getAdminClient } from "../_shared/supabase.ts";
+import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
+import { type DbClient, getAdminClient } from "../_shared/supabase.ts";
 import { json } from "../_shared/http.ts";
+import { resolveTier } from "./entitlements.ts";
+import { fetchSubscriber } from "./revenuecat-api.ts";
 
-// ── Configuration ──────────────────────────────────────────────────────────
-
-const WEBHOOK_SECRET = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
-
-if (!WEBHOOK_SECRET) {
-  throw new Error("REVENUECAT_WEBHOOK_SECRET is not configured");
+function requireEnv(name: string): string {
+  const value = Deno.env.get(name);
+  if (!value) throw new Error(`${name} is not configured`);
+  return value;
 }
 
-// ── Types ──────────────────────────────────────────────────────────────────
+const WEBHOOK_SECRET = requireEnv("REVENUECAT_WEBHOOK_SECRET");
+const API_KEY = requireEnv("REVENUECAT_SECRET_API_KEY");
+
+const SUBSCRIPTIONS_TABLE = "subscriptions";
+
+/** Postgres foreign-key violation: the app user id has no row in `auth.users`. */
+const FK_VIOLATION = "23503";
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface RevenueCatEvent {
   type: string;
   id: string;
-  app_user_id: string;
-  original_app_user_id: string;
-  aliases: string[];
-  product_id?: string;
-  entitlement_ids?: string[] | null;
-  purchased_at_ms?: number;
-  expiration_at_ms?: number | null;
-  environment: string;
-  store?: string;
+  app_user_id?: string;
+  /** `TRANSFER` only, and the reason `app_user_id` is optional. */
+  transferred_from?: string[];
+  transferred_to?: string[];
 }
 
-interface WebhookPayload {
-  api_version: string;
-  event: RevenueCatEvent;
+function isAuthorized(req: Request): boolean {
+  const header = req.headers.get("Authorization");
+  if (!header) return false;
+
+  const encoder = new TextEncoder();
+  const received = encoder.encode(header);
+  const expected = encoder.encode(`Bearer ${WEBHOOK_SECRET}`);
+
+  return received.byteLength === expected.byteLength &&
+    timingSafeEqual(received, expected);
 }
-
-// Events where we resolve the new tier from entitlement_ids
-const PLAN_CHANGE_EVENTS = new Set([
-  "INITIAL_PURCHASE",
-  "RENEWAL",
-  "UNCANCELLATION",
-  "SUBSCRIPTION_EXTENDED",
-  "PRODUCT_CHANGE",
-  "NON_RENEWING_PURCHASE",
-]);
-
-// Events where the user loses access → reset to free
-const RESET_TO_FREE_EVENTS = new Set([
-  "EXPIRATION",
-]);
-
-// Events where we keep the current tier (CANCELLATION, BILLING_ISSUE, SUBSCRIPTION_PAUSED)
-// These are handled in the else branch — the user still has access until expiration.
-
-// ── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Maps RevenueCat entitlement_ids to the tier id in the subscription_tiers table.
- * Priority: max > pro > free
+ * Which customers to re-read, which is all the event type is used for: state
+ * comes from RevenueCat, not from the event's own fields. TRANSFER carries no
+ * `app_user_id` and moves entitlements between customers, so both ends need a
+ * refresh or the origin keeps a tier it no longer holds.
  */
-function resolveEntitlementToTier(entitlementIds?: string[] | null): string {
-  if (!entitlementIds || entitlementIds.length === 0) return "free";
-  if (entitlementIds.includes("max")) return "max";
-  if (entitlementIds.includes("pro")) return "pro";
-  return "free";
+function affectedAppUserIds(event: RevenueCatEvent): string[] {
+  if (event.type === "TRANSFER") {
+    return [...(event.transferred_from ?? []), ...(event.transferred_to ?? [])];
+  }
+  return event.app_user_id ? [event.app_user_id] : [];
 }
 
-// ── Main Handler ───────────────────────────────────────────────────────────
+/** Throws on a transient failure so the caller can answer 5xx and be retried. */
+async function syncSubscription(admin: DbClient, appUserId: string): Promise<void> {
+  // `Purchases.logIn` sets the app user id to the Supabase auth user id.
+  // Anonymous ids ($RCAnonymousID:…) belong to no account and never will.
+  if (!UUID_PATTERN.test(appUserId)) {
+    console.warn(`Skipping non-account app_user_id: ${appUserId}`);
+    return;
+  }
+
+  const subscriber = await fetchSubscriber(API_KEY, appUserId);
+  const tier = resolveTier(subscriber, new Date());
+
+  const { error } = await admin
+    .from(SUBSCRIPTIONS_TABLE)
+    .upsert({ user_id: appUserId, tier }, { onConflict: "user_id" });
+
+  if (!error) return;
+
+  if (error.code === FK_VIOLATION) {
+    console.warn(`No account for app_user_id ${appUserId}; ignoring event`);
+    return;
+  }
+  throw new Error(`Failed to upsert subscription: ${error.message}`);
+}
 
 Deno.serve(async (req) => {
+  if (!isAuthorized(req)) {
+    console.warn("Unauthorized webhook attempt");
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  let event: RevenueCatEvent | undefined;
   try {
-    // 1. Verify Authorization header
-    const authHeader = req.headers.get("Authorization");
-    const expectedHeader = `Bearer ${WEBHOOK_SECRET}`;
+    const payload = await req.json() as { event?: RevenueCatEvent };
+    event = payload.event;
+  } catch {
+    return json({ message: "Invalid payload" }, 400);
+  }
 
-    if (!authHeader || authHeader !== expectedHeader) {
-      console.warn("Unauthorized webhook attempt");
-      return json({ error: "Unauthorized" }, 401);
+  if (!event?.type) {
+    return json({ message: "Invalid payload" }, 400);
+  }
+
+  if (event.type === "TEST") {
+    console.log("Received TEST event from RevenueCat");
+    return json({ message: "TEST event received" }, 200);
+  }
+
+  const appUserIds = affectedAppUserIds(event);
+  if (appUserIds.length === 0) {
+    console.warn(`No app user id on ${event.type} event ${event.id}`);
+    return json({ message: "OK" }, 200);
+  }
+
+  try {
+    const admin = getAdminClient();
+    for (const appUserId of appUserIds) {
+      await syncSubscription(admin, appUserId);
     }
-
-    // 2. Parse event payload
-    const payload: WebhookPayload = await req.json();
-    const event = payload.event;
-
-    if (!event || !event.type) {
-      return json({ message: "Invalid payload" }, 400);
-    }
-
-    // 3. Handle TEST event — just acknowledge
-    if (event.type === "TEST") {
-      console.log("Received TEST event from RevenueCat");
-      return json({ message: "TEST event received" }, 200);
-    }
-
-    // 4. Resolve user_id from app_user_id
-    //    RevenueCat app_user_id is set via Purchases.logIn(userId) which uses the Supabase auth user id.
-    const userId = event.app_user_id;
-    if (!userId) {
-      console.warn("Missing app_user_id in webhook event");
-      return json({ message: "Missing app_user_id" }, 200);
-    }
-
-    // 5. Determine tier based on event type
-    const eventType = event.type;
-    const adminClient = getAdminClient();
-    let tier: string;
-
-    if (PLAN_CHANGE_EVENTS.has(eventType)) {
-      // Active subscription events → resolve tier from entitlement_ids
-      tier = resolveEntitlementToTier(event.entitlement_ids);
-    } else if (RESET_TO_FREE_EVENTS.has(eventType)) {
-      // Expired → reset to free
-      tier = "free";
-    } else {
-      // CANCELLATION, BILLING_ISSUE, SUBSCRIPTION_PAUSED
-      // Tier doesn't change — user still has access until expiration.
-      return json({ message: "OK" }, 200);
-    }
-
-    // 6. Upsert subscriptions table
-    const { error: upsertError } = await adminClient
-      .from("subscriptions")
-      .upsert(
-        {
-          user_id: userId,
-          tier: tier,
-        },
-        { onConflict: "user_id" }
-      );
-
-    if (upsertError) {
-      console.error("Failed to upsert subscription:", upsertError);
-      // Still return 200 to prevent RevenueCat retries for DB errors we can investigate
-      return json({ message: "Upsert failed", error: upsertError.message }, 200);
-    }
-
     return json({ message: "OK" }, 200);
   } catch (err) {
-    console.error("Webhook handler error:", err);
-
-    // Always return 200 to prevent infinite retries from RevenueCat.
-    // Errors are logged for investigation.
-    return json({ message: "Internal error (logged)" }, 200);
+    // 5xx so RevenueCat retries: a lost event leaves the backend out of step
+    // with the store until the next one arrives, which may be a month away.
+    console.error(`Failed to handle ${event.type} event ${event.id}:`, err);
+    return json({ message: "Sync failed" }, 500);
   }
 });
