@@ -6,6 +6,9 @@ let _r2Client: S3Client | null = null;
 
 const SIGNED_URL_EXPIRY_SECONDS = 604800; // 7 days
 
+const TRYON_CACHE_CONTROL =
+  `private, max-age=${SIGNED_URL_EXPIRY_SECONDS}, immutable`;
+
 const validateR2Env = () => {
   const requiredVars = [
     "R2_ACCESS_KEY_ID",
@@ -53,6 +56,7 @@ async function uploadToR2(
     Key: key,
     Body: body,
     ContentType: contentType,
+    CacheControl: TRYON_CACHE_CONTROL,
   });
 
   await s3Client.send(putCommand);
