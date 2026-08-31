@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/modules/revenue_cat/data/repositories/revenue_cat_repository_impl.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
@@ -61,62 +59,58 @@ Stream<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) {
 ///
 /// Must be kept alive for the whole app lifecycle — read it once at the root
 /// widget so the subscription is established at startup.
+///
+/// Only a *confirmed* link updates [syncedUserId]. Recording the intent instead
+/// would strand a customer on the anonymous RevenueCat id — and therefore on the
+/// free tier — for the rest of the session whenever the first attempt happens to
+/// fail, with every later auth event skipped as already handled.
 @Riverpod(keepAlive: true)
 void revenueCatIdentitySync(final Ref ref) {
   final logIn = ref.watch(logInRevenueCatUseCaseProvider);
   final logOut = ref.watch(logOutRevenueCatUseCaseProvider);
-  final auth = Supabase.instance.client.auth;
 
   String? syncedUserId;
 
   Future<void> syncLogIn(final String userId) async {
     if (syncedUserId == userId) return;
-    syncedUserId = userId;
+
     final result = await logIn(userId);
     if (result.isFailure) {
       AppLogger.error(
-        'RevenueCat login failed (ignored)',
+        'RevenueCat login failed; retrying on the next auth event',
         result.getError()!,
         StackTrace.current,
       );
+      return;
     }
+    syncedUserId = userId;
   }
 
   Future<void> syncLogOut() async {
-    syncedUserId = null;
     final result = await logOut();
     if (result.isFailure) {
       AppLogger.error(
-        'RevenueCat logout failed (ignored)',
+        'RevenueCat logout failed; the customer stays linked',
         result.getError()!,
         StackTrace.current,
       );
+      return;
     }
+    syncedUserId = null;
   }
 
-  // Link an already-restored session at startup. The `initialSession` event is
-  // emitted asynchronously and may fire before this listener subscribes, so we
-  // read the current session directly rather than relying on the stream.
-  final initialUser = auth.currentSession?.user;
-  if (initialUser != null) {
-    unawaited(syncLogIn(initialUser.id));
-  }
+  // Serialized so an id arriving mid-call is neither dropped nor raced against
+  // the call already in flight.
+  var pending = Future<void>.value();
 
-  final subscription = auth.onAuthStateChange.listen((final state) {
-    switch (state.event) {
-      case AuthChangeEvent.signedIn:
-      case AuthChangeEvent.initialSession:
-      case AuthChangeEvent.tokenRefreshed:
-        final user = state.session?.user;
-        if (user != null) {
-          unawaited(syncLogIn(user.id));
-        }
-      case AuthChangeEvent.signedOut:
-        unawaited(syncLogOut());
-      default:
-        break;
-    }
-  });
+  final subscription = ref
+      .watch(authIdentityServiceProvider)
+      .watchUserId()
+      .listen((final userId) {
+        pending = pending.then(
+          (final _) => userId == null ? syncLogOut() : syncLogIn(userId),
+        );
+      });
 
   ref.onDispose(subscription.cancel);
 }

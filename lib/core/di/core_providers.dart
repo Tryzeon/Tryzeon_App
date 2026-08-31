@@ -9,6 +9,8 @@ import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.dart
 import 'package:tryzeon/core/modules/analytics/data/models/analytics_event_model.dart';
 import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
+import 'package:tryzeon/core/modules/auth_identity/data/services/auth_identity_service_impl.dart';
+import 'package:tryzeon/core/modules/auth_identity/domain/services/auth_identity_service.dart';
 import 'package:tryzeon/core/modules/location/data/services/geocoding_service_impl.dart';
 import 'package:tryzeon/core/modules/location/data/services/location_service_impl.dart';
 import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
@@ -65,4 +67,10 @@ IsarService isarService(final Ref ref) {
 @Riverpod(keepAlive: true)
 CacheEntryLocalDataSource cacheEntryLocalDataSource(final Ref ref) {
   return CacheEntryLocalDataSource(ref.watch(isarServiceProvider));
+}
+
+/// Auth Identity Service Provider
+@Riverpod(keepAlive: true)
+AuthIdentityService authIdentityService(final Ref ref) {
+  return AuthIdentityServiceImpl(Supabase.instance.client.auth);
 }
