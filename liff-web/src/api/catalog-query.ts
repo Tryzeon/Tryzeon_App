@@ -35,6 +35,17 @@ export class InvalidStoreIdError extends Error {
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /**
+ * 路徑上的 id,正規化成小寫;不是 uuid 就是 null。
+ *
+ * 擋的是 Postgres 的型別錯誤:一個非 uuid 的字串送進 `uuid` 參數會讓整支 RPC 以
+ * 500 收場,而呼叫端要的答案其實是「沒有這筆」。
+ */
+export function normalizeUuid(raw: string): string | null {
+  const value = raw.trim().toLowerCase();
+  return UUID_PATTERN.test(value) ? value : null;
+}
+
+/**
  * 路徑上的店家 id,正規化成小寫。
  *
  * 沒有 store 區段回 null(全站目錄);有但格式不對就拋。悄悄退回全站目錄是店家
@@ -43,7 +54,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
  */
 export function parseStoreId(raw: string | undefined): string | null {
   if (raw === undefined) return null;
-  const value = raw.trim().toLowerCase();
-  if (!UUID_PATTERN.test(value)) throw new InvalidStoreIdError(raw);
+  const value = normalizeUuid(raw);
+  if (value === null) throw new InvalidStoreIdError(raw);
   return value;
 }

@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import {
+  normalizeUuid,
   parseStoreId,
   searchParam,
   sortParams,
@@ -111,4 +112,20 @@ export function fetchCatalog(query: CatalogQuery): Promise<CatalogPage> {
   const page = prefetched;
   prefetched = null;
   return page;
+}
+
+/**
+ * 單一商品,找不到就是 null。
+ *
+ * 走 `get_shop_product` 而不是自己查 products:「顧客看得到的商品」這條規則
+ * (`status = 'active'`)在那支函式的身體裡,不該再被 client 抄一次。它回的欄位
+ * 和目錄那支對得起來,所以共用同一個 `buildCatalogItem`。
+ */
+export async function fetchProduct(productId: string): Promise<CatalogItem | null> {
+  const id = normalizeUuid(productId);
+  if (id === null) return null;
+
+  const { data, error } = await supabase.rpc("get_shop_product", { p_id: id });
+  if (error) throw error;
+  return data === null ? null : buildCatalogItem(data, IMAGES_BASE_URL);
 }

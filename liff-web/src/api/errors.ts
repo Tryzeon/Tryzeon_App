@@ -26,3 +26,12 @@ export function toApiError(error: unknown): Error {
   const resp = error.context as Response;
   return new ApiError("request failed", resp.status);
 }
+
+/** 一次試穿失敗要對使用者說的話。試衣間和首頁共用同一組措辭。 */
+export function tryonFailureMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 429) return "今日試穿次數已用完，明天再回來試。";
+    if (err.status === 422) return "這張照片沒能生成，請稍後再試。";
+  }
+  return "出了點狀況，請稍後再試。";
+}

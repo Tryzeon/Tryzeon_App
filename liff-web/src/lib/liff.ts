@@ -43,3 +43,23 @@ export function openExternal(url: string): void {
   if (!isExternalUrl(url)) return;
   liff.openWindow({ url, external: true });
 }
+
+/**
+ * 把一張結果圖當成圖片訊息送進使用者選的聊天室。
+ *
+ * 這同時是 LIFF 上的「儲存」—— webview 沒有相簿可以寫,傳回聊天室之後 LINE 自己
+ * 就能存圖,而結果圖只有 7 天的簽章網址,離開這個 webview 就再也找不回來。
+ *
+ * shareTargetPicker 要在 LINE Developers Console 上開,而且在外部瀏覽器裡不存在,
+ * 所以送之前一定要問過 [canShareToChat]。回傳 false 代表使用者按了取消。
+ */
+export function canShareToChat(): boolean {
+  return liff.isApiAvailable("shareTargetPicker");
+}
+
+export async function shareImageToChat(imageUrl: string): Promise<boolean> {
+  const result = await liff.shareTargetPicker([
+    { type: "image", originalContentUrl: imageUrl, previewImageUrl: imageUrl },
+  ]);
+  return result !== undefined;
+}
