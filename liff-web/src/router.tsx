@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { matchPath, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { initAndLogin } from "./lib/liff";
 import { ensureSession } from "./lib/auth";
 import { fetchAvatarPath } from "./api/profile";
-import { setOnboarded } from "./lib/onboarding";
 import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
 import { SearchSortBar } from "./components/SearchSortBar";
 import { Shop } from "./pages/Shop";
+import { Home } from "./pages/Home";
+import { ProductDetail } from "./pages/ProductDetail";
 import { Onboard } from "./pages/Onboard";
+import { TabBar, type ActiveTab } from "./components/TabBar";
+import { AvatarProvider } from "./state/AvatarProvider";
+import { GalleryProvider } from "./state/GalleryProvider";
 
 const noop = () => {};
 
@@ -16,6 +20,7 @@ const noop = () => {};
 // model photo — once, for the whole app — then renders the matched route.
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
 
   useEffect(() => {
     initAndLogin()
@@ -23,7 +28,7 @@ function LiffGate() {
       .then(fetchAvatarPath)
       .then(
         (path) => {
-          setOnboarded(path !== null);
+          setAvatarPath(path);
           setState("ready");
         },
         (err) => {
@@ -59,18 +64,75 @@ function LiffGate() {
       </div>
     );
   }
-  return <Outlet />;
+  // 模特照和 gallery 都掛在這裡而不是各自的頁面裡:兩個分頁看到的要是同一份,
+  // 而去試衣間逛一圈再回來,剛剛的試穿還要在。
+  return (
+    <AvatarProvider initialPath={avatarPath}>
+      <GalleryProvider>
+        <Outlet />
+      </GalleryProvider>
+    </AvatarProvider>
+  );
 }
 
-// App route table. Add new screens (wardrobe, chat, results) as sibling
-// <Route>s under the LiffGate so they inherit LIFF bootstrap for free.
+/**
+ * 分頁殼。兩個分頁一直都掛著,只有其中一個看得見 —— 和 app 的
+ * StatefulNavigationShell 一樣。
+ *
+ * 換分頁不再是卸載重建,所以模特照不會每次進首頁都重簽一次、目錄不會每次回來都
+ * 重抓,而每個 pane 自己是一個捲動容器,捲動位置由瀏覽器保管,不必手動存還。
+ * 商品頁不在此列:那是一個詳情畫面,每次看的是不同的一件,重建才是對的。
+ */
+function TabShell() {
+  const { pathname } = useLocation();
+
+  const isHome = pathname === "/home";
+  const isProduct = pathname.startsWith("/product/");
+  const isShop = !isHome && !isProduct;
+
+  // 試衣間記得自己上次停在哪一家店:從店家目錄切去首頁再切回來,不該掉回全站。
+  const lastShopPath = useRef("/");
+  if (isShop) lastShopPath.current = pathname;
+
+  // 店家 id 來自試衣間記得的那個位置,不是目前的網址 —— 人在首頁時目前的網址配
+  // 不到 /store/:storeId,拿它去問等於在背後把店家目錄換成全站目錄。
+  const storeId =
+    matchPath("/store/:storeId", lastShopPath.current)?.params.storeId;
+
+  const active: ActiveTab = isHome ? "home" : isProduct ? null : "shop";
+
+  return (
+    <div className="tabshell">
+      <div className={paneClass(isShop)}><Shop storeId={storeId} /></div>
+      <div className={paneClass(isHome)}><Home /></div>
+      <div className={paneClass(isProduct)}><Outlet /></div>
+      <TabBar shopPath={lastShopPath.current} active={active} />
+    </div>
+  );
+}
+
+function paneClass(visible: boolean): string {
+  return `tabpane${visible ? "" : " is-hidden"}`;
+}
+
+// App route table. Add new screens (wardrobe, chat) as sibling <Route>s under
+// the LiffGate so they inherit LIFF bootstrap for free; put anything that
+// belongs to a tab under the TabShell.
 export function AppRouter() {
   return (
     <Routes>
       <Route element={<LiffGate />}>
-        <Route path="/" element={<Shop />} />
-        {/* 店家 QR 的落點:resolve-link 302 到 ${LIFF_URL}/store/{store_id}。 */}
-        <Route path="/store/:storeId" element={<Shop />} />
+        {/* 兩個分頁由 TabShell 自己掛著,所以這幾條只負責讓路徑合法(不被 *
+            吃掉)並餵給 TabShell 的 useLocation / useMatch;Outlet 只載商品頁。 */}
+        <Route element={<TabShell />}>
+          <Route path="/" element={<></>} />
+          {/* 店家 QR 的落點:resolve-link 302 到 ${LIFF_URL}/store/{store_id}。 */}
+          <Route path="/store/:storeId" element={<></>} />
+          <Route path="/home" element={<></>} />
+          {/* 一件商品一個網址,可以被連結、被分享。 */}
+          <Route path="/product/:id" element={<ProductDetail />} />
+        </Route>
+        {/* Onboarding 是全螢幕的一段流程,和 app 一樣站在分頁殼之外。 */}
         <Route path="/onboard" element={<Onboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
