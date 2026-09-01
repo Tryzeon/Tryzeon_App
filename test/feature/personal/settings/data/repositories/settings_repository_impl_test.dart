@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
-import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:typed_result/typed_result.dart';
 
 void main() {
@@ -16,7 +16,7 @@ void main() {
       AppConstants.keyTryonTransitionPrompt: '一鏡到底',
     });
 
-    final config = (await repository.getTryonPromptConfig()).get()!;
+    final config = (await repository.getTryonPreferences()).get()!;
     expect(config.scenePrompt, '都會街頭');
     expect(config.transitionPrompt, '一鏡到底');
   });
@@ -24,15 +24,15 @@ void main() {
   test('reads back what it saved', () async {
     SharedPreferences.setMockInitialValues({});
 
-    await repository.setTryonPromptConfig(
-      const TryonPromptConfig(
+    await repository.setTryonPreferences(
+      const TryonPreferences(
         scenePrompt: '都會街頭',
         stylingPrompt: '紮進褲頭',
         transitionPrompt: '動態跳剪',
       ),
     );
 
-    final config = (await repository.getTryonPromptConfig()).get()!;
+    final config = (await repository.getTryonPreferences()).get()!;
     expect(config.scenePrompt, '都會街頭');
     expect(config.stylingPrompt, '紮進褲頭');
     expect(config.transitionPrompt, '動態跳剪');
@@ -45,14 +45,14 @@ void main() {
       AppConstants.keyTryonTransitionPrompt: '動態跳剪',
     });
 
-    await repository.setTryonPromptConfig(const TryonPromptConfig());
+    await repository.setTryonPreferences(const TryonPreferences());
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.containsKey(AppConstants.keyTryonScenePrompt), isFalse);
     expect(prefs.containsKey(AppConstants.keyTryonStylingPrompt), isFalse);
     expect(prefs.containsKey(AppConstants.keyTryonTransitionPrompt), isFalse);
 
-    final config = (await repository.getTryonPromptConfig()).get()!;
+    final config = (await repository.getTryonPreferences()).get()!;
     expect(config.hasScene, isFalse);
     expect(config.hasStyling, isFalse);
     expect(config.hasTransition, isFalse);

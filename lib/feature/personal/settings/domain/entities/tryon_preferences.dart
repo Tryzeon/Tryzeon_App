@@ -1,17 +1,17 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'tryon_prompt_config.freezed.dart';
+part 'tryon_preferences.freezed.dart';
 
-/// Scene and styling apply to both image and video try-on; transition is
-/// video-only.
+/// Try-on preferences the user has set, persisted locally. Scene and styling
+/// apply to both image and video try-on; transition is video-only.
 @freezed
-sealed class TryonPromptConfig with _$TryonPromptConfig {
-  const factory TryonPromptConfig({
+sealed class TryonPreferences with _$TryonPreferences {
+  const factory TryonPreferences({
     final String? scenePrompt,
     final String? stylingPrompt,
     final String? transitionPrompt,
-  }) = _TryonPromptConfig;
-  const TryonPromptConfig._();
+  }) = _TryonPreferences;
+  const TryonPreferences._();
 
   bool get hasScene => scenePrompt?.isNotEmpty ?? false;
   bool get hasStyling => stylingPrompt?.isNotEmpty ?? false;

@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
-import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
-import 'package:tryzeon/feature/personal/settings/domain/usecases/get_tryon_prompt_config.dart';
-import 'package:tryzeon/feature/personal/settings/domain/usecases/set_tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/usecases/get_tryon_preferences.dart';
+import 'package:tryzeon/feature/personal/settings/domain/usecases/set_tryon_preferences.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'settings_providers.g.dart';
@@ -14,25 +14,25 @@ SettingsRepository settingsRepository(final Ref ref) {
 }
 
 @riverpod
-GetTryonPromptConfig getTryonPromptConfigUseCase(final Ref ref) =>
-    GetTryonPromptConfig(ref.watch(settingsRepositoryProvider));
+GetTryonPreferences getTryonPreferencesUseCase(final Ref ref) =>
+    GetTryonPreferences(ref.watch(settingsRepositoryProvider));
 
 @riverpod
-SetTryonPromptConfig setTryonPromptConfigUseCase(final Ref ref) =>
-    SetTryonPromptConfig(ref.watch(settingsRepositoryProvider));
+SetTryonPreferences setTryonPreferencesUseCase(final Ref ref) =>
+    SetTryonPreferences(ref.watch(settingsRepositoryProvider));
 
 @riverpod
-class TryonPromptConfigNotifier extends _$TryonPromptConfigNotifier {
+class TryonPreferencesNotifier extends _$TryonPreferencesNotifier {
   @override
-  Future<TryonPromptConfig> build() async {
-    final result = await ref.read(getTryonPromptConfigUseCaseProvider)();
-    return result.isSuccess ? result.get()! : const TryonPromptConfig();
+  Future<TryonPreferences> build() async {
+    final result = await ref.read(getTryonPreferencesUseCaseProvider)();
+    return result.isSuccess ? result.get()! : const TryonPreferences();
   }
 
-  Future<bool> save(final TryonPromptConfig config) async {
-    final result = await ref.read(setTryonPromptConfigUseCaseProvider)(config);
+  Future<bool> save(final TryonPreferences preferences) async {
+    final result = await ref.read(setTryonPreferencesUseCaseProvider)(preferences);
     if (result.isSuccess) {
-      state = AsyncData(config);
+      state = AsyncData(preferences);
       return true;
     }
     return false;

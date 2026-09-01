@@ -7,7 +7,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
@@ -101,9 +101,9 @@ class TryonController extends _$TryonController {
       return;
     }
 
-    final TryonPromptConfig promptConfig;
+    final TryonPreferences preferences;
     try {
-      promptConfig = await ref.read(tryonPromptConfigProvider.future);
+      preferences = await ref.read(tryonPreferencesProvider.future);
     } catch (e, stackTrace) {
       AppLogger.error('Animate setup failed', e, stackTrace);
       state = TryonFailed(mapExceptionToFailure(e));
@@ -126,7 +126,7 @@ class TryonController extends _$TryonController {
           TryonRequest.animate(
             requestId: id,
             baseImageBase64: image.get()!,
-            transitionPrompt: promptConfig.transitionPrompt,
+            transitionPrompt: preferences.transitionPrompt,
           ),
         );
       },
@@ -142,7 +142,7 @@ class TryonController extends _$TryonController {
 
     // Setup runs before the placeholder exists, so its failures always speak up.
     final String? customAvatarUrl;
-    final TryonPromptConfig promptConfig;
+    final TryonPreferences preferences;
     try {
       customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
       final hasCustomAvatar = customAvatarUrl != null && customAvatarUrl.isNotEmpty;
@@ -159,7 +159,7 @@ class TryonController extends _$TryonController {
       // Scene and styling apply to both modes — video renders its first frame
       // through the same image pass. Transition only reaches the video
       // generator.
-      promptConfig = await ref.read(tryonPromptConfigProvider.future);
+      preferences = await ref.read(tryonPreferencesProvider.future);
     } catch (e, stackTrace) {
       AppLogger.error('Try-on setup failed', e, stackTrace);
       state = TryonFailed(mapExceptionToFailure(e));
@@ -188,10 +188,10 @@ class TryonController extends _$TryonController {
             garments: garments,
             mode: mode,
             avatarBase64: avatarBase64,
-            scenePrompt: promptConfig.scenePrompt,
-            stylingPrompt: promptConfig.stylingPrompt,
+            scenePrompt: preferences.scenePrompt,
+            stylingPrompt: preferences.stylingPrompt,
             transitionPrompt: mode == TryonMode.video
-                ? promptConfig.transitionPrompt
+                ? preferences.transitionPrompt
                 : null,
           ),
         );

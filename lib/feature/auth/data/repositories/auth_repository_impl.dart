@@ -215,7 +215,7 @@ class AuthRepositoryImpl implements AuthRepository {
   /// added there that belongs to the user, rather than to the device, has to be
   /// cleared here too.
   Future<void> _clearDevicePreferences() async {
-    final result = await _settingsRepository.clearTryonPromptConfig();
+    final result = await _settingsRepository.clearTryonPreferences();
     if (result.isFailure) {
       AppLogger.error(
         'Failed to clear device preferences (ignored)',

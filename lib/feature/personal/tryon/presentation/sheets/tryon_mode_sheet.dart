@@ -6,7 +6,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_style_sheet.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_settings_sheet.dart';
 
 class TryonModeSheet extends ConsumerWidget {
   const TryonModeSheet({super.key, required this.onModeSelected});
@@ -51,7 +51,7 @@ class TryonModeSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title + style entry
+            // Title + settings entry
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Row(
@@ -60,7 +60,7 @@ class TryonModeSheet extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.smMd),
                   Text('選擇試穿方式', style: textTheme.titleLarge),
                   const Spacer(),
-                  const _StyleEntryButton(),
+                  const _SettingsEntryButton(),
                 ],
               ),
             ),
@@ -103,15 +103,15 @@ class TryonModeSheet extends ConsumerWidget {
   }
 }
 
-/// Style customisation entry. Lives in the title row rather than on a card so
+/// Try-on settings entry. Lives in the title row rather than on a card so
 /// it can never be mistaken for the card's "start generating" tap target.
-class _StyleEntryButton extends ConsumerWidget {
-  const _StyleEntryButton();
+class _SettingsEntryButton extends ConsumerWidget {
+  const _SettingsEntryButton();
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final config = ref.watch(tryonPromptConfigProvider).asData?.value;
+    final config = ref.watch(tryonPreferencesProvider).asData?.value;
     final hasCustomStyle =
         (config?.hasScene ?? false) ||
         (config?.hasStyling ?? false) ||
@@ -122,8 +122,8 @@ class _StyleEntryButton extends ConsumerWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.tune_rounded),
-          tooltip: '自訂試穿風格',
-          onPressed: () => TryonStyleSheet.show(context),
+          tooltip: '試穿設定',
+          onPressed: () => TryonSettingsSheet.show(context),
         ),
         if (hasCustomStyle)
           Positioned(

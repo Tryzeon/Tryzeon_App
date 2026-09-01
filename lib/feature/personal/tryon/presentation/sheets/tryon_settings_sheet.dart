@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 
-class TryonStyleSheet extends HookConsumerWidget {
-  const TryonStyleSheet({super.key});
+class TryonSettingsSheet extends HookConsumerWidget {
+  const TryonSettingsSheet({super.key});
 
   static const List<String> stylingPresets = ['紮進褲頭', '衣襬放下', '袖子捲起'];
 
@@ -21,7 +21,7 @@ class TryonStyleSheet extends HookConsumerWidget {
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (final context) => const TryonStyleSheet(),
+      builder: (final context) => const TryonSettingsSheet(),
     );
   }
 
@@ -30,7 +30,7 @@ class TryonStyleSheet extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final configAsync = ref.watch(tryonPromptConfigProvider);
+    final preferencesAsync = ref.watch(tryonPreferencesProvider);
     final hasVideoAccess = ref.watch(
       subscriptionCapabilitiesProvider.select(
         (final async) => async.value?.hasVideoAccess ?? false,
@@ -44,16 +44,16 @@ class TryonStyleSheet extends HookConsumerWidget {
     // Seed the fields once the stored config lands; later edits are the user's.
     final hasInitialized = useRef(false);
     useEffect(() {
-      if (!hasInitialized.value && configAsync.hasValue) {
+      if (!hasInitialized.value && preferencesAsync.hasValue) {
         hasInitialized.value = true;
-        configAsync.whenData((final loaded) {
+        preferencesAsync.whenData((final loaded) {
           stylingController.text = loaded.stylingPrompt ?? '';
           sceneController.text = loaded.scenePrompt ?? '';
           transitionController.text = loaded.transitionPrompt ?? '';
         });
       }
       return null;
-    }, [configAsync.hasValue]);
+    }, [preferencesAsync.hasValue]);
 
     Future<void> handleSave() async {
       isSaving.value = true;
@@ -61,9 +61,9 @@ class TryonStyleSheet extends HookConsumerWidget {
       final scene = sceneController.text.trim();
       final transition = transitionController.text.trim();
       await ref
-          .read(tryonPromptConfigProvider.notifier)
+          .read(tryonPreferencesProvider.notifier)
           .save(
-            TryonPromptConfig(
+            TryonPreferences(
               scenePrompt: scene.isEmpty ? null : scene,
               stylingPrompt: styling.isEmpty ? null : styling,
               transitionPrompt: transition.isEmpty ? null : transition,
@@ -93,7 +93,7 @@ class TryonStyleSheet extends HookConsumerWidget {
                 children: [
                   Icon(Icons.tune_rounded, color: colorScheme.onSurface, size: 24),
                   const SizedBox(width: AppSpacing.smMd),
-                  Text('自訂試穿風格', style: textTheme.titleLarge),
+                  Text('試穿設定', style: textTheme.titleLarge),
                 ],
               ),
             ),

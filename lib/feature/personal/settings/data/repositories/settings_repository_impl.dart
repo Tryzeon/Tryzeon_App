@@ -2,17 +2,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_prompt_config.dart';
+import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   @override
-  Future<Result<TryonPromptConfig, Failure>> getTryonPromptConfig() async {
+  Future<Result<TryonPreferences, Failure>> getTryonPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return Ok(
-        TryonPromptConfig(
+        TryonPreferences(
           scenePrompt: prefs.getString(AppConstants.keyTryonScenePrompt),
           stylingPrompt: prefs.getString(AppConstants.keyTryonStylingPrompt),
           transitionPrompt: prefs.getString(AppConstants.keyTryonTransitionPrompt),
@@ -25,21 +25,21 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<Result<void, Failure>> setTryonPromptConfig(
-    final TryonPromptConfig config,
+  Future<Result<void, Failure>> setTryonPreferences(
+    final TryonPreferences preferences,
   ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await _write(prefs, AppConstants.keyTryonScenePrompt, config.scenePrompt);
+      await _write(prefs, AppConstants.keyTryonScenePrompt, preferences.scenePrompt);
       await _write(
         prefs,
         AppConstants.keyTryonStylingPrompt,
-        config.stylingPrompt,
+        preferences.stylingPrompt,
       );
       await _write(
         prefs,
         AppConstants.keyTryonTransitionPrompt,
-        config.transitionPrompt,
+        preferences.transitionPrompt,
       );
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -49,7 +49,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<Result<void, Failure>> clearTryonPromptConfig() async {
+  Future<Result<void, Failure>> clearTryonPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(AppConstants.keyTryonScenePrompt);
