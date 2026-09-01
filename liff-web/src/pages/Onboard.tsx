@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setAvatar } from "../api/avatar";
-import { setOnboarded } from "../lib/onboarding";
 import { Header } from "../components/Header";
+import { useAvatar } from "../state/AvatarProvider";
 
 // LIFF is already initialized + logged in by <LiffGate> before this renders.
 type Phase = "ready" | "saving" | "done" | "error";
@@ -16,6 +15,7 @@ const CTA_LABEL: Record<Phase, string> = {
 
 export function Onboard() {
   const navigate = useNavigate();
+  const avatar = useAvatar();
   const [phase, setPhase] = useState<Phase>("ready");
   const [message, setMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -38,15 +38,13 @@ export function Onboard() {
     setPreviewUrl(url);
     setPhase("saving");
     setMessage("");
-    try {
-      await setAvatar(file);
-      setOnboarded(true);
+    if (await avatar.replace(file)) {
       setPhase("done");
-    } catch {
-      // Keep the preview — the photo stays on screen next to the error.
-      setMessage("儲存失敗，換一張清楚的全身照再試。");
-      setPhase("error");
+      return;
     }
+    // Keep the preview — the photo stays on screen next to the error.
+    setMessage("儲存失敗，換一張清楚的全身照再試。");
+    setPhase("error");
   }
 
   return (
