@@ -28,14 +28,32 @@ export function SearchSortBar({ sort, onSearch, onSortChange, disabled = false }
           onSearch(draft.trim());
         }}
       >
-        <input
-          className="searchbar__input"
-          type="search"
-          value={draft}
-          placeholder="搜尋商品"
-          disabled={disabled}
-          onChange={(e) => setDraft(e.target.value)}
-        />
+        <div className="searchbar__field">
+          {/* `text` 而不是 `search`:原生的清除鍵按下去只改值、不送事件,React 也
+              沒把 `search` 事件開出來,所以那顆叉叉沒辦法直接套用。自己畫一顆。 */}
+          <input
+            className="searchbar__input"
+            type="text"
+            value={draft}
+            placeholder="搜尋商品"
+            disabled={disabled}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          {draft !== "" && (
+            <button
+              type="button"
+              className="searchbar__clear"
+              aria-label="清除搜尋"
+              disabled={disabled}
+              onClick={() => {
+                setDraft("");
+                onSearch("");
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <button className="searchbar__submit" type="submit" disabled={disabled}>搜尋</button>
       </form>
       <div className="chiprow">
