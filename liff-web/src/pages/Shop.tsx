@@ -1,90 +1,35 @@
-import { useEffect, useRef } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import type { CatalogItem } from "../api/catalog";
 import { CatalogSkeleton } from "../components/CatalogSkeleton";
 import { Header } from "../components/Header";
 import { ProductGrid } from "../components/ProductGrid";
-import { ProductSheet } from "../components/ProductSheet";
 import { SearchSortBar } from "../components/SearchSortBar";
-import { FittingScreen } from "../components/FittingScreen";
-import { ResultScreen } from "../components/ResultScreen";
 import { useCatalog } from "../hooks/useCatalog";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
-import { useTryon } from "../hooks/useTryon";
-import { isOnboarded } from "../lib/onboarding";
 
-export function Shop() {
-  // /store/:storeId 進來時篩選成單一店家；首頁沒有這個參數就是全站商品。
-  const { storeId } = useParams<{ storeId: string }>();
+/** [storeId] 由分頁殼從 /store/:storeId 解出來；沒有就是全站商品。 */
+export function Shop({ storeId }: { storeId?: string }) {
   const catalog = useCatalog(storeId);
+  const navigate = useNavigate();
 
   const storeName = catalog.store?.name ?? null;
-
-  const tryon = useTryon();
-  const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
-
-  const openId = params.get("p");
-  const openItem = catalog.items.find((i) => i.productId === openId) ?? null;
-
-  // True while the sheet's own history entry is on the stack, so closing pops
-  // it instead of stacking a second entry. LINE's back button pops it directly.
-  const pushed = useRef(false);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useInfiniteScroll(sentinel, catalog.loadMore, {
     enabled: catalog.status === "ready" && catalog.hasMore && !catalog.loadMoreFailed,
     itemCount: catalog.items.length,
   });
-  const resetTryon = tryon.reset;
-  useEffect(() => {
-    if (openId === null) {
-      pushed.current = false;
-      resetTryon();
-    }
-  }, [openId, resetTryon]);
 
-  function openSheet(item: CatalogItem) {
-    tryon.reset();
-    setParams({ p: item.productId });
-    pushed.current = true;
+  // 目錄這一列和詳情那一列是同一個 buildCatalogItem 蓋的,所以點進去要看的東西
+  // 現在就在手上 —— 一起帶過去,詳情頁才不必為了同一筆資料再問一次伺服器。
+  function openProduct(item: CatalogItem) {
+    navigate(`/product/${item.productId}`, { state: { item } });
   }
 
   function emptyMessage(): string {
     if (catalog.appliedQuery) return `找不到符合「${catalog.appliedQuery}」的商品。`;
     return storeId ? "這家店還沒有上架商品。" : "找不到符合的商品。";
-  }
-
-  function closeSheet() {
-    tryon.reset();
-    if (pushed.current) {
-      pushed.current = false;
-      navigate(-1);
-    } else {
-      setParams({}, { replace: true });
-    }
-  }
-
-  if (tryon.state.phase === "generating") {
-    return (
-      <div className="app">
-        <Header overlay title={storeName} />
-        <FittingScreen />
-      </div>
-    );
-  }
-
-  if (tryon.state.phase === "done") {
-    return (
-      <div className="app">
-        <Header title={storeName} />
-        <ResultScreen
-          item={tryon.state.item}
-          imageUrl={tryon.state.imageUrl}
-          onBack={closeSheet}
-        />
-      </div>
-    );
   }
 
   return (
@@ -108,7 +53,7 @@ export function Shop() {
 
         {catalog.status === "ready" && (catalog.items.length === 0
           ? <p className="empty">{emptyMessage()}</p>
-          : <ProductGrid items={catalog.items} onOpen={openSheet} />)}
+          : <ProductGrid items={catalog.items} onOpen={openProduct} />)}
 
         {catalog.status === "ready" && catalog.hasMore && (
           catalog.loadMoreFailed
@@ -120,17 +65,6 @@ export function Shop() {
             )
         )}
       </main>
-
-      {openItem && (
-        <ProductSheet
-          item={openItem}
-          tryon={tryon.state}
-          onClose={closeSheet}
-          onTryon={() => tryon.generate(openItem)}
-          onPickAvatar={(file) => tryon.uploadAvatarAndGenerate(openItem, file)}
-          needAvatar={!isOnboarded()}
-        />
-      )}
     </div>
   );
 }
