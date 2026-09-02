@@ -82,6 +82,7 @@ class AppConstants {
   static const String paramGarmentImages = 'images';
   static const String paramProductId = 'productId';
   static const String paramSizeId = 'sizeId';
+  static const String paramWardrobeItemId = 'wardrobeItemId';
   static const String paramEngine = 'engine';
 
   // Shared Preferences Keys

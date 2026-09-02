@@ -34,4 +34,12 @@ sealed class TryonSubject with _$TryonSubject {
       garments.whereType<TryonGarmentProduct>().firstOrNull?.productId,
     TryonSubjectAnimated(:final origin) => origin.productId,
   };
+
+  /// The wardrobe item being tried on, or null when the garment is a catalog
+  /// product or the user's own photo.
+  String? get wardrobeItemId => switch (this) {
+    TryonSubjectGenerate(:final garments) =>
+      garments.whereType<TryonGarmentWardrobe>().firstOrNull?.wardrobeItemId,
+    TryonSubjectAnimated(:final origin) => origin.wardrobeItemId,
+  };
 }

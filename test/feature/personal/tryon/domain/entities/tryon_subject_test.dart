@@ -17,6 +17,11 @@ void main() {
     mode: TryonMode.image,
   );
 
+  const wardrobe = TryonSubject.generate(
+    garments: [TryonGarment.wardrobe(wardrobeItemId: 'w1')],
+    mode: TryonMode.image,
+  );
+
   test('a generate subject reports the mode it was asked for', () {
     expect(product.mode, TryonMode.image);
     expect(
@@ -49,5 +54,20 @@ void main() {
     const subject = TryonSubject.animated(baseImageUrl: 'u', origin: ownPhoto);
 
     expect(subject.productId, isNull);
+  });
+
+  test('a wardrobe try-on names the item it is of, and no product', () {
+    expect(wardrobe.wardrobeItemId, 'w1');
+    expect(wardrobe.productId, isNull);
+  });
+
+  test('an animated subject names the wardrobe item its base image was of', () {
+    const subject = TryonSubject.animated(baseImageUrl: 'u', origin: wardrobe);
+
+    expect(subject.wardrobeItemId, 'w1');
+  });
+
+  test('a product try-on names no wardrobe item', () {
+    expect(product.wardrobeItemId, isNull);
   });
 }

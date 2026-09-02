@@ -16,6 +16,6 @@ void triggerWardrobeItemTryon(
     context: context,
     onModeSelected: (final mode) => ref
         .read(tryonCoordinatorProvider)
-        .tryonFromStoragePaths([item.imagePath], mode: mode),
+        .tryonFromWardrobeItem(item.id, mode: mode),
   );
 }

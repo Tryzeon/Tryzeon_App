@@ -53,6 +53,21 @@ void main() {
     ]);
   });
 
+  test('sends a wardrobe garment as a bare item reference', () {
+    final body = TryonRequestModel.fromDomain(
+      const TryonRequest.generate(
+        requestId: 'r1',
+        garments: [TryonGarment.wardrobe(wardrobeItemId: 'w1')],
+        mode: TryonMode.image,
+        engine: TryonEngine.standard,
+      ),
+    ).toJson();
+
+    expect(body['garments'], [
+      {'wardrobeItemId': 'w1'},
+    ]);
+  });
+
   test('omits the sizeId key entirely when no size is known', () {
     final body = TryonRequestModel.fromDomain(
       const TryonRequest.generate(

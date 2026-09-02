@@ -64,18 +64,15 @@ class TryonController extends _$TryonController {
     );
   }
 
-  /// Runs a try-on from garment images already stored remotely (by path).
-  Future<void> tryonFromStoragePaths(
-    final List<String> garmentImagePaths, {
+  /// Runs a try-on for one of the user's wardrobe items; the backend resolves
+  /// its image and builds a prompt detail from the item's category and tags.
+  Future<void> tryonFromWardrobeItem(
+    final String wardrobeItemId, {
     final TryonMode mode = TryonMode.image,
   }) {
     return _start(
       TryonSubject.generate(
-        garments: [
-          TryonGarment.images(
-            images: garmentImagePaths.map(TryonImageSource.path).toList(),
-          ),
-        ],
+        garments: [TryonGarment.wardrobe(wardrobeItemId: wardrobeItemId)],
         mode: mode,
       ),
     );

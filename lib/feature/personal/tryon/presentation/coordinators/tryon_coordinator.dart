@@ -41,15 +41,16 @@ class TryonCoordinator {
         .tryonFromLocalImage(image, mode: mode);
   }
 
-  /// Starts a try-on from garment images already stored remotely (by path).
-  Future<void> tryonFromStoragePaths(
-    final List<String> garmentImagePaths, {
+  /// Starts a try-on for one of the user's wardrobe items (backend resolves the
+  /// garment).
+  Future<void> tryonFromWardrobeItem(
+    final String wardrobeItemId, {
     final TryonMode mode = TryonMode.image,
   }) async {
     _navigateToHome?.call();
     await _ref
         .read(tryonControllerProvider.notifier)
-        .tryonFromStoragePaths(garmentImagePaths, mode: mode);
+        .tryonFromWardrobeItem(wardrobeItemId, mode: mode);
   }
 
   /// Starts a try-on for a catalog product by id (backend resolves the garment).

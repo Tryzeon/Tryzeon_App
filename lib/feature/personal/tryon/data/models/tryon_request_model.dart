@@ -116,6 +116,9 @@ class TryonRequestModel {
         AppConstants.paramProductId: productId,
         AppConstants.paramSizeId: ?sizeId,
       },
+      TryonGarmentWardrobe(:final wardrobeItemId) => {
+        AppConstants.paramWardrobeItemId: wardrobeItemId,
+      },
       TryonGarmentImages(:final images) => {
         AppConstants.paramGarmentImages: images.map(_sourceToJson).toList(),
       },
