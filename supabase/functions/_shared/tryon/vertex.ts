@@ -9,15 +9,19 @@
  */
 import { experimental_generateVideo, generateText } from "npm:ai@^6.0.208";
 import { base64ToUint8Array } from "../image-utils.ts";
-import { tryonImageModel, tryonVideoModel } from "../vertex/config.ts";
+import {
+  tryonAdvancedImageModel,
+  tryonImageModel,
+  tryonVideoModel,
+} from "../vertex/config.ts";
 import { rethrowAsBusy } from "../vertex/errors.ts";
 import { vertexModel, vertexVideoModel } from "../vertex/provider.ts";
 import {
   buildTaskPrompt,
   buildVideoPrompt,
   SYSTEM_INSTRUCTION,
-  type TaskPromptOptions,
 } from "./prompt.ts";
+import type { ImageGenerationOptions } from "./types.ts";
 
 /**
  * An `image` part rather than a `file` one so the SDK settles the media type: it
@@ -42,13 +46,19 @@ function imagePart(base64: string) {
 export async function generateTryonImage(
   avatarImage: string,
   garmentGroups: string[][],
-  opts: TaskPromptOptions = {},
+  opts: ImageGenerationOptions = {},
 ): Promise<string | null> {
   const taskPrompt = buildTaskPrompt(garmentGroups, opts);
   console.log("[tryon] task prompt:\n" + taskPrompt);
 
+  // Read at call time, not at module load: a deployment missing the advanced
+  // model must still serve standard jobs.
+  const modelName = opts.engine === "advanced"
+    ? tryonAdvancedImageModel()
+    : tryonImageModel();
+
   const { files, finishReason } = await generateText({
-    model: vertexModel(tryonImageModel()),
+    model: vertexModel(modelName),
     system: SYSTEM_INSTRUCTION,
     messages: [{
       role: "user",

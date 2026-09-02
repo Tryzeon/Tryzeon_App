@@ -26,7 +26,8 @@
  * | ------------------------ | ------------ | ------------------------------------ |
  * | `GOOGLE_SERVICE_ACCOUNT` | yes          | everything — credential and project  |
  * | `CHAT_MODEL`             | yes          | chat, image analysis, audio analysis |
- * | `TRYON_MODEL`            | yes          | try-on images                        |
+ * | `TRYON_MODEL`            | yes          | try-on images, standard engine       |
+ * | `TRYON_MODEL_ADVANCED`   | yes          | try-on images, advanced engine       |
  * | `VIDEO_MODEL`            | yes          | try-on video                         |
  * | `VERTEX_LOCATION`        | no, `global` | everything — the endpoint region     |
  *
@@ -98,8 +99,8 @@ export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "
 /** Model behind the chat agent and both analysis helpers. */
 export const chatModel = (): string => requireEnv("CHAT_MODEL");
 
-/** Model behind try-on image generation. */
-export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
+export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-2.5-flash-image
+export const tryonAdvancedImageModel = (): string => requireEnv("TRYON_MODEL_ADVANCED"); // gemini-3.1-flash-image
 
 /** Model behind try-on video generation. No sensible default to fall back on. */
 export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // veo-3.1-generate-001

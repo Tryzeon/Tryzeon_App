@@ -88,11 +88,22 @@ export function isWardrobeRef(garment: GarmentInput): garment is WardrobeRef {
 
 export type TryonMode = "image" | "video";
 
+/**
+ * Which image model a job runs on. Video goes through the same image pass, so
+ * this is not an image-mode-only setting; only an animate job escapes it, and
+ * that job runs no image pass at all.
+ *
+ * A caller that names none gets `standard`, which is what every adapter without
+ * a picker (LINE, LIFF) sends.
+ */
+export type TryonEngine = "standard" | "advanced";
+
 export interface TryonParams {
   userId: string;
   avatar?: AvatarOverride;
   garments: GarmentInput[];
   mode: TryonMode;
+  engine?: TryonEngine;
   scenePrompt?: string;
   stylingPrompt?: string;
   transitionPrompt?: string;
@@ -194,8 +205,19 @@ export type QuotaFactory = (
 export type ImageGenerator = (
   avatarBase64: string,
   garmentGroups: string[][],
-  opts?: TaskPromptOptions,
+  opts?: ImageGenerationOptions,
 ) => Promise<string | null>;
+
+/**
+ * Everything the prompt builder reads, plus the engine, which it does not: the
+ * engine names a model rather than shaping the text. It extends
+ * `TaskPromptOptions` instead of restating it so the shared-declaration
+ * argument above still holds — a renamed prompt field is a compile error here
+ * too — while keeping the model choice out of the prompt builder's signature.
+ */
+export interface ImageGenerationOptions extends TaskPromptOptions {
+  engine?: TryonEngine;
+}
 
 /** Animates a generated try-on image; resolves to raw video bytes. */
 export type VideoGenerator = (

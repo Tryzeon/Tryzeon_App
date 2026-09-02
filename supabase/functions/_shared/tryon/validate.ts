@@ -159,6 +159,14 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     throw new ValidationError("mode must be 'image' or 'video'");
   }
 
+  // Rejected rather than defaulted: an unrecognised engine means the caller
+  // asked for a model this deployment does not have, and quietly running the
+  // standard one would bill them for something they did not ask for.
+  const engine = params.engine ?? "standard";
+  if (engine !== "standard" && engine !== "advanced") {
+    throw new ValidationError("engine must be 'standard' or 'advanced'");
+  }
+
   assertOptionalText(
     params.scenePrompt,
     "scenePrompt",
@@ -194,10 +202,16 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     // they are ambient user config rather than something the caller attached to
     // this request, so a client that sends them uniformly is tolerated. Dropped
     // here so the job runs on params that say what will actually happen.
+    //
+    // The engine survives, unlike them. Today nothing on this path reads it —
+    // animating runs no image pass — but it names a model tier rather than a
+    // prompt, and a video model that grows tiers would need it back. Keeping it
+    // costs a field; dropping it would make that a change to the guard.
     return {
       ...params,
       avatar: undefined,
       garments: [],
+      engine,
       scenePrompt: undefined,
       stylingPrompt: undefined,
       baseImage,
@@ -214,5 +228,5 @@ export function validateTryonParams(params: TryonParams): TryonParams {
   }
   const garments = params.garments.map(validateGarment);
 
-  return { ...params, avatar, garments, baseImage: undefined };
+  return { ...params, avatar, engine, garments, baseImage: undefined };
 }

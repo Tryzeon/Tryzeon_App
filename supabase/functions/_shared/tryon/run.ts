@@ -163,6 +163,7 @@ export async function runTryonJob<M extends TryonMode>(
       const garmentFits = materialGarments.map((g) => g.fit);
 
       generated = await generate(avatarBase64, garmentGroups, {
+        engine: job.engine,
         scenePrompt: job.scenePrompt,
         stylingPrompt: job.stylingPrompt,
         garmentDetails,

@@ -32,6 +32,7 @@ export { supabaseQuota } from "./quota.ts";
 export type {
   AvatarResolver,
   BodyResolver,
+  ImageGenerationOptions,
   ImageGenerator,
   ImageUploader,
   ProductResolver,
@@ -53,6 +54,7 @@ export type {
   WardrobeRef,
   ImageSource,
   ResolvedGarment,
+  TryonEngine,
   TryonMode,
   TryonParams,
   TryonResult,

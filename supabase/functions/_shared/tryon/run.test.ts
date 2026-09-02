@@ -721,3 +721,35 @@ Deno.test("runTryonJob forwards the styling prompt to the image generator", asyn
 
   assertEquals(seenStyling, "tucked into the waistband");
 });
+
+Deno.test("runTryonJob forwards the engine to the image generator", async () => {
+  const quota = fakeQuota();
+  let seenEngine: string | undefined;
+
+  await runTryonJob(client, { ...imageParams, engine: "advanced" }, {
+    quota: quota.factory,
+    generate: (_avatar, _groups, opts) => {
+      seenEngine = opts?.engine;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenEngine, "advanced");
+});
+
+Deno.test("runTryonJob sends the standard engine when the caller names none", async () => {
+  const quota = fakeQuota();
+  let seenEngine: string | undefined;
+
+  await runTryonJob(client, imageParams, {
+    quota: quota.factory,
+    generate: (_avatar, _groups, opts) => {
+      seenEngine = opts?.engine;
+      return Promise.resolve("GENERATEDB64");
+    },
+    upload: () => Promise.resolve("https://img/result.png"),
+  });
+
+  assertEquals(seenEngine, "standard");
+});

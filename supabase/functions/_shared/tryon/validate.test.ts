@@ -459,3 +459,36 @@ Deno.test("validateTryonParams accepts a stylingPrompt with baseImage and drops 
   assertEquals(out.stylingPrompt, undefined);
   assertEquals(out.baseImage, { base64: "FINISHED" });
 });
+
+Deno.test("validateTryonParams defaults a missing engine to standard", () => {
+  assertEquals(validateTryonParams(validParams).engine, "standard");
+});
+
+Deno.test("validateTryonParams keeps the advanced engine on a generate job", () => {
+  const job = validateTryonParams({ ...validParams, engine: "advanced" });
+  assertEquals(job.engine, "advanced");
+});
+
+Deno.test("validateTryonParams rejects an unknown engine", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        engine: "turbo" as TryonParams["engine"],
+      }),
+    ValidationError,
+    "engine",
+  );
+});
+
+Deno.test("validateTryonParams keeps the engine on an animate job", () => {
+  // Unlike the scene and styling prompts, the engine is not dropped: nothing
+  // reads it on this path yet, but it names a model tier rather than a prompt.
+  const out = validateTryonParams({ ...animateParams, engine: "advanced" });
+  assertEquals(out.engine, "advanced");
+  assertEquals(out.baseImage, { base64: "FINISHED" });
+});
+
+Deno.test("validateTryonParams defaults an animate job's engine to standard", () => {
+  assertEquals(validateTryonParams(animateParams).engine, "standard");
+});

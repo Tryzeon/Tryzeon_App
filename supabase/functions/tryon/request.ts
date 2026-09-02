@@ -58,6 +58,7 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
     // charge the image quota for a request that asked for something else, and
     // would leave the core's own mode check unreachable from this adapter.
     mode: (b.mode ?? "image") as TryonParams["mode"],
+    engine: b.engine as TryonParams["engine"],
     scenePrompt: normalizeText(b.scenePrompt),
     stylingPrompt: normalizeText(b.stylingPrompt),
     transitionPrompt: normalizeText(b.transitionPrompt),
