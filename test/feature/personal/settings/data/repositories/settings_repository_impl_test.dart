@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:typed_result/typed_result.dart';
 
 void main() {
@@ -19,6 +20,7 @@ void main() {
     final config = (await repository.getTryonPreferences()).get()!;
     expect(config.scenePrompt, '都會街頭');
     expect(config.transitionPrompt, '一鏡到底');
+    expect(config.engine, TryonEngine.standard);
   });
 
   test('reads back what it saved', () async {
@@ -29,6 +31,7 @@ void main() {
         scenePrompt: '都會街頭',
         stylingPrompt: '紮進褲頭',
         transitionPrompt: '動態跳剪',
+        engine: TryonEngine.advanced,
       ),
     );
 
@@ -36,6 +39,16 @@ void main() {
     expect(config.scenePrompt, '都會街頭');
     expect(config.stylingPrompt, '紮進褲頭');
     expect(config.transitionPrompt, '動態跳剪');
+    expect(config.engine, TryonEngine.advanced);
+  });
+
+  test('falls back to the standard engine when the stored name is unknown', () async {
+    SharedPreferences.setMockInitialValues({
+      AppConstants.keyTryonEngine: 'turbo',
+    });
+
+    final config = (await repository.getTryonPreferences()).get()!;
+    expect(config.engine, TryonEngine.standard);
   });
 
   test('clearing a prompt removes its key instead of storing an empty string', () async {
@@ -56,5 +69,6 @@ void main() {
     expect(config.hasScene, isFalse);
     expect(config.hasStyling, isFalse);
     expect(config.hasTransition, isFalse);
+    expect(config.hasCustomEngine, isFalse);
   });
 }

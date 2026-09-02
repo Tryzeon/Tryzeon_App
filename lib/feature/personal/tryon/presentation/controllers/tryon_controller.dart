@@ -93,7 +93,8 @@ class TryonController extends _$TryonController {
   /// The video lands as a new gallery entry, leaving the original photo there
   /// to download or set as the model. Image generation is skipped entirely, so
   /// the scene and styling prompts have nothing left to influence and only the
-  /// transition style is sent.
+  /// transition style shapes the result — the engine travels anyway, against
+  /// the day a video model has tiers of its own.
   Future<void> animate(final TryonResult source) async {
     final imageUrl = source.imageUrl;
     if (source.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
@@ -127,6 +128,7 @@ class TryonController extends _$TryonController {
             requestId: id,
             baseImageBase64: image.get()!,
             transitionPrompt: preferences.transitionPrompt,
+            engine: preferences.engine,
           ),
         );
       },
@@ -193,6 +195,7 @@ class TryonController extends _$TryonController {
             transitionPrompt: mode == TryonMode.video
                 ? preferences.transitionPrompt
                 : null,
+            engine: preferences.engine,
           ),
         );
       },

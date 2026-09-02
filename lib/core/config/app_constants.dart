@@ -82,6 +82,7 @@ class AppConstants {
   static const String paramGarmentImages = 'images';
   static const String paramProductId = 'productId';
   static const String paramSizeId = 'sizeId';
+  static const String paramEngine = 'engine';
 
   // Shared Preferences Keys
   // Stored names keep their `video_` prefix from when scene was video-only —
@@ -89,6 +90,7 @@ class AppConstants {
   static const String keyTryonScenePrompt = 'video_scene_prompt';
   static const String keyTryonStylingPrompt = 'tryon_styling_prompt';
   static const String keyTryonTransitionPrompt = 'video_transition_prompt';
+  static const String keyTryonEngine = 'tryon_engine';
 
   // Stale Durations
   static const Duration staleDurationProductCategories = Duration(days: 7);

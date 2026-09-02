@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
@@ -12,6 +13,7 @@ sealed class TryonRequest with _$TryonRequest {
     required final String requestId,
     required final List<TryonGarment> garments,
     required final TryonMode mode,
+    required final TryonEngine engine,
     final String? avatarBase64,
     final String? scenePrompt,
     final String? stylingPrompt,
@@ -20,10 +22,13 @@ sealed class TryonRequest with _$TryonRequest {
 
   /// No mode field because video is the only thing a finished picture can
   /// become, and no scene or styling prompt because both are already settled in
-  /// the picture.
+  /// the picture. The engine still travels even though animating runs no image
+  /// pass today, so the day a video model gains a tier there is nothing to
+  /// re-thread.
   const factory TryonRequest.animate({
     required final String requestId,
     required final String baseImageBase64,
+    required final TryonEngine engine,
     final String? transitionPrompt,
   }) = TryonAnimateRequest;
 

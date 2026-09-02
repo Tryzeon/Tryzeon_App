@@ -16,6 +16,7 @@ class TryonRequestModel {
     required this.garments,
     required this.mode,
     required this.isVideo,
+    required this.engine,
     this.avatarBase64,
     this.baseImageBase64,
     this.scenePrompt,
@@ -33,6 +34,7 @@ class TryonRequestModel {
         :final scenePrompt,
         :final stylingPrompt,
         :final transitionPrompt,
+        :final engine,
       ) =>
         TryonRequestModel(
           avatarBase64: avatarBase64,
@@ -42,16 +44,22 @@ class TryonRequestModel {
           scenePrompt: scenePrompt,
           stylingPrompt: stylingPrompt,
           transitionPrompt: transitionPrompt,
+          engine: engine.name,
         ),
       // The backend rejects an animate body carrying garments or an avatar and
       // drops a scene or styling prompt, so none of them are ever set here.
-      TryonAnimateRequest(:final baseImageBase64, :final transitionPrompt) =>
+      TryonAnimateRequest(
+        :final baseImageBase64,
+        :final transitionPrompt,
+        :final engine,
+      ) =>
         TryonRequestModel(
           garments: const [],
           mode: AppConstants.modeVideo,
           isVideo: true,
           baseImageBase64: baseImageBase64,
           transitionPrompt: transitionPrompt,
+          engine: engine.name,
         ),
     };
   }
@@ -61,6 +69,7 @@ class TryonRequestModel {
   final List<Map<String, Object>> garments;
   final String mode;
   final bool isVideo;
+  final String engine;
   final String? scenePrompt;
   final String? stylingPrompt;
   final String? transitionPrompt;
@@ -90,6 +99,7 @@ class TryonRequestModel {
     if (transition != null && transition.isNotEmpty) {
       body[AppConstants.paramTransitionPrompt] = transition;
     }
+    body[AppConstants.paramEngine] = engine;
     return body;
   }
 

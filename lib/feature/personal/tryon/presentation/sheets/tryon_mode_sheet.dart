@@ -111,11 +111,12 @@ class _SettingsEntryButton extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final config = ref.watch(tryonPreferencesProvider).asData?.value;
-    final hasCustomStyle =
-        (config?.hasScene ?? false) ||
-        (config?.hasStyling ?? false) ||
-        (config?.hasTransition ?? false);
+    final preferences = ref.watch(tryonPreferencesProvider).asData?.value;
+    final hasCustomSettings =
+        (preferences?.hasScene ?? false) ||
+        (preferences?.hasStyling ?? false) ||
+        (preferences?.hasTransition ?? false) ||
+        (preferences?.hasCustomEngine ?? false);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -125,7 +126,7 @@ class _SettingsEntryButton extends ConsumerWidget {
           tooltip: '試穿設定',
           onPressed: () => TryonSettingsSheet.show(context),
         ),
-        if (hasCustomStyle)
+        if (hasCustomSettings)
           Positioned(
             top: AppSpacing.sm,
             right: AppSpacing.sm,
