@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
@@ -29,12 +30,14 @@ class TryonPreferencesNotifier extends _$TryonPreferencesNotifier {
     return result.isSuccess ? result.get()! : const TryonPreferences();
   }
 
-  Future<bool> save(final TryonPreferences preferences) async {
+  /// Applies [preferences] at once and persists them. Every control writes
+  /// through this as it changes, so there is nothing to confirm and closing the
+  /// sheet cannot drop an edit.
+  Future<void> apply(final TryonPreferences preferences) async {
+    state = AsyncData(preferences);
     final result = await ref.read(setTryonPreferencesUseCaseProvider)(preferences);
-    if (result.isSuccess) {
-      state = AsyncData(preferences);
-      return true;
+    if (result.isFailure) {
+      AppLogger.error('Failed to persist tryon preferences', result.getError());
     }
-    return false;
   }
 }
