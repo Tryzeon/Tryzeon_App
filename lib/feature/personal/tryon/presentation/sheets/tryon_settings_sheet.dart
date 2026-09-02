@@ -168,9 +168,9 @@ class _TryonSettingsForm extends HookConsumerWidget {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text('進階引擎 Beta', style: textTheme.titleSmall),
+                      title: Text('進階模型 Beta', style: textTheme.titleSmall),
                       subtitle: Text(
-                        '更精準，但較慢',
+                        '實驗性質的模型，可能會有不穩定的結果',
                         style: textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
