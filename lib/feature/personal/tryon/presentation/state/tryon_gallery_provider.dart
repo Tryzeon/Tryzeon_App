@@ -1,8 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 
 part 'tryon_gallery_provider.freezed.dart';
@@ -61,11 +61,14 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   void showAvatarPage() => setCurrentPage(0);
 
   /// Inserts the pending placeholder for a try-on that just started.
-  void addPending({required final String id, required final TryonMode mode}) {
+  void addPending({
+    required final String id,
+    required final TryonSubject subject,
+  }) {
     state = state.copyWith(
       entries: [
         ...state.entries,
-        PendingTryonEntry(id: id, mode: mode),
+        PendingTryonEntry(id: id, subject: subject),
       ],
       currentId: id,
     );
@@ -77,7 +80,8 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     final index = state.entries.indexWhere((final e) => e.id == result.id);
     if (index == -1) return false;
     state = state.copyWith(
-      entries: [...state.entries]..[index] = FinishedTryonEntry(result),
+      entries: [...state.entries]
+        ..[index] = FinishedTryonEntry(result, state.entries[index].subject),
     );
     return true;
   }

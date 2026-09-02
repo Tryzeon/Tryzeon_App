@@ -7,12 +7,14 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 
 /// The action button floating over the gallery. Replacing the model photo is
-/// offered on every page; a finished try-on adds share / download / animate /
-/// set-as-avatar / delete on top, and one still generating offers to cancel.
+/// offered on every page; a finished try-on adds share / download / regenerate
+/// / animate / set-as-avatar / delete on top, and one still generating offers
+/// to cancel.
 ///
 /// Owns its own handlers so the home page stays a layout — the only action it
 /// cannot own is [onReplaceAvatar], which the home CTA offers as well.
@@ -24,6 +26,7 @@ class TryonGalleryActions extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final gallery = ref.watch(tryonGalleryProvider);
+    final entry = gallery.currentEntry;
     final result = gallery.currentResult;
     final isCurrentTheAvatar = gallery.isCurrentTheAvatar;
 
@@ -62,10 +65,20 @@ class TryonGalleryActions extends ConsumerWidget {
     );
 
     Future<void> animateToVideo() async {
-      if (result == null) return;
+      if (entry is! FinishedTryonEntry) return;
 
-      await ref.read(tryonControllerProvider.notifier).animate(result);
+      await ref.read(tryonControllerProvider.notifier).animate(entry);
     }
+
+    Future<void> regenerate() async {
+      if (entry == null) return;
+
+      await ref.read(tryonControllerProvider.notifier).regenerate(entry);
+    }
+
+    // Regenerating a video charges the video quota, same as making one.
+    final canRegenerate =
+        entry != null && (entry.mode != TryonMode.video || hasVideoAccess);
 
     final targetId = gallery.currentId;
 
@@ -135,6 +148,13 @@ class TryonGalleryActions extends ConsumerWidget {
           subtitle: '儲存到相簿',
           onTap: downloadMedia,
         ),
+        if (canRegenerate)
+          AppMenuAction(
+            icon: Icons.refresh_rounded,
+            title: '重新生成',
+            subtitle: result?.mode == TryonMode.video ? '再生成一支影片' : '再生成一張試穿照片',
+            onTap: regenerate,
+          ),
         if (result?.mode == TryonMode.image && hasVideoAccess)
           AppMenuAction(
             icon: Icons.movie_creation_outlined,

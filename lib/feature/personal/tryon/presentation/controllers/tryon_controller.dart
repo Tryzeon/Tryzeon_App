@@ -13,7 +13,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dar
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
@@ -53,11 +54,13 @@ class TryonController extends _$TryonController {
       return;
     }
 
-    await _runTryon(
-      garments: [
-        TryonGarment.images(images: [TryonImageSource.base64(base64Encode(bytes))]),
-      ],
-      mode: mode,
+    await _start(
+      TryonSubject.generate(
+        garments: [
+          TryonGarment.images(images: [TryonImageSource.base64(base64Encode(bytes))]),
+        ],
+        mode: mode,
+      ),
     );
   }
 
@@ -66,13 +69,15 @@ class TryonController extends _$TryonController {
     final List<String> garmentImagePaths, {
     final TryonMode mode = TryonMode.image,
   }) {
-    return _runTryon(
-      garments: [
-        TryonGarment.images(
-          images: garmentImagePaths.map(TryonImageSource.path).toList(),
-        ),
-      ],
-      mode: mode,
+    return _start(
+      TryonSubject.generate(
+        garments: [
+          TryonGarment.images(
+            images: garmentImagePaths.map(TryonImageSource.path).toList(),
+          ),
+        ],
+        mode: mode,
+      ),
     );
   }
 
@@ -84,78 +89,56 @@ class TryonController extends _$TryonController {
     final String? sizeId,
     final TryonMode mode = TryonMode.image,
   }) {
-    return _runTryon(
-      garments: [TryonGarment.product(productId: productId, sizeId: sizeId)],
-      mode: mode,
+    return _start(
+      TryonSubject.generate(
+        garments: [TryonGarment.product(productId: productId, sizeId: sizeId)],
+        mode: mode,
+      ),
     );
   }
+
+  /// Runs [entry] again. The preferences are read fresh, so a style or engine
+  /// changed since is the one that applies.
+  Future<void> regenerate(final TryonGalleryEntry entry) => _start(entry.subject);
 
   /// The video lands as a new gallery entry, leaving the original photo there
   /// to download or set as the model. Image generation is skipped entirely, so
   /// the scene and styling prompts have nothing left to influence and only the
   /// transition style shapes the result — the engine travels anyway, against
   /// the day a video model has tiers of its own.
-  Future<void> animate(final TryonResult source) async {
-    final imageUrl = source.imageUrl;
-    if (source.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
+  ///
+  /// Takes the entry, not its result: the video inherits its subject.
+  Future<void> animate(final FinishedTryonEntry entry) async {
+    final imageUrl = entry.result.imageUrl;
+    if (entry.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
       state = const TryonFailed(ValidationFailure());
       return;
     }
 
-    final TryonPreferences preferences;
-    try {
-      preferences = await ref.read(tryonPreferencesProvider.future);
-    } catch (e, stackTrace) {
-      AppLogger.error('Animate setup failed', e, stackTrace);
-      state = TryonFailed(mapExceptionToFailure(e));
-      return;
-    }
-
-    final id = _uuid.v4();
-    ref
-        .read(tryonGalleryProvider.notifier)
-        .addPending(id: id, mode: TryonMode.video);
-
-    await _run(
-      id: id,
-      mode: TryonMode.video,
-      buildRequest: () async {
-        final image = await ref.read(loadImageAsBase64UseCaseProvider)(imageUrl);
-        if (image.isFailure) return Err(image.getError()!);
-
-        return Ok(
-          TryonRequest.animate(
-            requestId: id,
-            baseImageBase64: image.get()!,
-            transitionPrompt: preferences.transitionPrompt,
-            engine: preferences.engine,
-          ),
-        );
-      },
+    await _start(
+      TryonSubject.animated(baseImageUrl: imageUrl, origin: entry.subject),
     );
   }
 
-  Future<void> _runTryon({
-    required final List<TryonGarment> garments,
-    required final TryonMode mode,
-  }) async {
-    final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
-    final id = _uuid.v4();
-
+  /// The one path every try-on takes.
+  Future<void> _start(final TryonSubject subject) async {
     // Setup runs before the placeholder exists, so its failures always speak up.
-    final String? customAvatarUrl;
+    String? customAvatarUrl;
     final TryonPreferences preferences;
     try {
-      customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
-      final hasCustomAvatar = customAvatarUrl != null && customAvatarUrl.isNotEmpty;
+      // An animate job dresses a finished picture, so it needs no avatar.
+      if (subject is TryonSubjectGenerate) {
+        customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
+        final hasCustomAvatar = customAvatarUrl != null && customAvatarUrl.isNotEmpty;
 
-      // Precondition: "no avatar at all" is a UI prompt, not a failure — check
-      // it before inserting a placeholder so nothing flickers. The backend
-      // answers NO_AVATAR either way, so this only saves a round trip.
-      final profile = await ref.read(userProfileProvider.future);
-      if (!hasCustomAvatar && !(profile?.avatarPath?.isNotEmpty ?? false)) {
-        state = const TryonAvatarMissing();
-        return;
+        // Precondition: "no avatar at all" is a UI prompt, not a failure — check
+        // it before inserting a placeholder so nothing flickers. The backend
+        // answers NO_AVATAR either way, so this only saves a round trip.
+        final profile = await ref.read(userProfileProvider.future);
+        if (!hasCustomAvatar && !(profile?.avatarPath?.isNotEmpty ?? false)) {
+          state = const TryonAvatarMissing();
+          return;
+        }
       }
 
       // Scene and styling apply to both modes — video renders its first frame
@@ -168,53 +151,21 @@ class TryonController extends _$TryonController {
       return;
     }
 
-    galleryNotifier.addPending(id: id, mode: mode);
-
-    await _run(
-      id: id,
-      mode: mode,
-      buildRequest: () async {
-        // Sending none makes the backend fall back to the profile photo.
-        String? avatarBase64;
-        if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
-          final loaded = await ref.read(loadImageAsBase64UseCaseProvider)(
-            customAvatarUrl,
-          );
-          if (loaded.isFailure) return Err(loaded.getError()!);
-          avatarBase64 = loaded.get();
-        }
-
-        return Ok(
-          TryonRequest.generate(
-            requestId: id,
-            garments: garments,
-            mode: mode,
-            avatarBase64: avatarBase64,
-            scenePrompt: preferences.scenePrompt,
-            stylingPrompt: preferences.stylingPrompt,
-            transitionPrompt: mode == TryonMode.video
-                ? preferences.transitionPrompt
-                : null,
-            engine: preferences.engine,
-          ),
-        );
-      },
-    );
-  }
-
-  /// Shared by both entry points so their cancel and quota semantics cannot
-  /// drift apart. [buildRequest] is fallible because each path fetches
-  /// something before it can name its request, and a failure there must drop
-  /// the placeholder rather than reach the backend.
-  Future<void> _run({
-    required final String id,
-    required final TryonMode mode,
-    required final Future<Result<TryonRequest, Failure>> Function() buildRequest,
-  }) async {
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
+    final id = _uuid.v4();
 
+    // Before the request is built, because building it fetches images.
+    galleryNotifier.addPending(id: id, subject: subject);
+
+    // Past the placeholder everything recovers the same way. A `removeById`
+    // that finds nothing means the user cancelled, so that run stays silent.
     try {
-      final request = await buildRequest();
+      final request = await _buildRequest(
+        id: id,
+        subject: subject,
+        preferences: preferences,
+        customAvatarUrl: customAvatarUrl,
+      );
       if (request.isFailure) {
         if (!galleryNotifier.removeById(id)) return;
         state = TryonFailed(request.getError()!);
@@ -235,7 +186,9 @@ class TryonController extends _$TryonController {
         usageCache.syncFromFailure(failure);
         if (!galleryNotifier.removeById(id)) return;
         state = switch (failure) {
-          RateLimitFailure() => TryonRateLimited(isVideo: mode == TryonMode.video),
+          RateLimitFailure() => TryonRateLimited(
+            isVideo: subject.mode == TryonMode.video,
+          ),
           AvatarMissingFailure() => const TryonAvatarMissing(),
           _ => TryonFailed(failure),
         };
@@ -244,6 +197,57 @@ class TryonController extends _$TryonController {
       AppLogger.error('Try-on orchestration failed unexpectedly', e, stackTrace);
       if (!galleryNotifier.removeById(id)) return;
       state = TryonFailed(mapExceptionToFailure(e));
+    }
+  }
+
+  /// Fallible because both variants fetch an image first, and a failure there
+  /// must never reach the backend. Named parameters because [id] and
+  /// [customAvatarUrl] are both strings and would transpose silently.
+  Future<Result<TryonRequest, Failure>> _buildRequest({
+    required final String id,
+    required final TryonSubject subject,
+    required final TryonPreferences preferences,
+    required final String? customAvatarUrl,
+  }) async {
+    final loadImage = ref.read(loadImageAsBase64UseCaseProvider);
+
+    switch (subject) {
+      case TryonSubjectAnimated(:final baseImageUrl):
+        final image = await loadImage(baseImageUrl);
+        if (image.isFailure) return Err(image.getError()!);
+
+        return Ok(
+          TryonRequest.animate(
+            requestId: id,
+            baseImageBase64: image.get()!,
+            transitionPrompt: preferences.transitionPrompt,
+            engine: preferences.engine,
+          ),
+        );
+
+      case TryonSubjectGenerate(:final garments, :final mode):
+        // Sending none makes the backend fall back to the profile photo.
+        String? avatarBase64;
+        if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
+          final loaded = await loadImage(customAvatarUrl);
+          if (loaded.isFailure) return Err(loaded.getError()!);
+          avatarBase64 = loaded.get();
+        }
+
+        return Ok(
+          TryonRequest.generate(
+            requestId: id,
+            garments: garments,
+            mode: mode,
+            avatarBase64: avatarBase64,
+            scenePrompt: preferences.scenePrompt,
+            stylingPrompt: preferences.stylingPrompt,
+            transitionPrompt: mode == TryonMode.video
+                ? preferences.transitionPrompt
+                : null,
+            engine: preferences.engine,
+          ),
+        );
     }
   }
 }
