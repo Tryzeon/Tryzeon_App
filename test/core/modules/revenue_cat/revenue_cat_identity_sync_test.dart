@@ -137,6 +137,16 @@ void main() {
     expect(repository.loggedInUserIds, ['user-a', 'user-a']);
   });
 
+  test('未登入啟動時不會對匿名的 RevenueCat 打 logOut', () async {
+    repository = _FakeRevenueCatRepository();
+    build();
+
+    authUserIds.add(null);
+    await settle();
+
+    expect(repository.logOutCount, 0);
+  });
+
   test('切換帳號時不會漏掉後到的使用者', () async {
     repository = _FakeRevenueCatRepository();
     build();

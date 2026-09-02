@@ -87,6 +87,8 @@ void revenueCatIdentitySync(final Ref ref) {
   }
 
   Future<void> syncLogOut() async {
+    if (syncedUserId == null) return;
+
     final result = await logOut();
     if (result.isFailure) {
       AppLogger.error(
