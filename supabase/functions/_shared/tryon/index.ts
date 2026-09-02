@@ -73,7 +73,6 @@ export {
 // two are re-exported from `_shared/validation.ts` rather than owned here: an
 // adapter parsing a try-on body should not have to know which of its primitives
 // happen to be try-on's.
-export { requireImageSource } from "./validate.ts";
 export {
   normalizeText,
   parseJsonObject,

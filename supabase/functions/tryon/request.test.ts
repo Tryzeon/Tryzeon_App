@@ -26,7 +26,7 @@ Deno.test("parseTryonParams shapes wire body, keeps mode, attaches userId", () =
   const params = parse(
     {
       avatar: { base64: "AVATAR" },
-      garments: [{ images: [{ path: "u1/top/x.jpg" }] }],
+      garments: [{ images: [{ base64: "GARMENT" }] }],
       mode: "video",
       transitionPrompt: "spin",
     },
@@ -35,8 +35,22 @@ Deno.test("parseTryonParams shapes wire body, keeps mode, attaches userId", () =
   assertEquals(params.userId, "u1");
   assertEquals(params.mode, "video");
   assertEquals(params.avatar, { base64: "AVATAR" });
-  assertEquals(params.garments, [{ images: [{ path: "u1/top/x.jpg" }] }]);
+  assertEquals(params.garments, [{ images: [{ base64: "GARMENT" }] }]);
   assertEquals(params.transitionPrompt, "spin");
+});
+
+Deno.test("parseTryonParams defers a path garment to the core", () => {
+  // Same layering as the avatar below: decoding asserts the shape the wire
+  // format claims and lets `validateTryonParams` reject a path, so the two
+  // layers cannot disagree about which sources a caller may name.
+  const params = parse(
+    { garments: [{ images: [{ path: "u1/top/x.jpg" }] }] },
+    "u1",
+  );
+  assertEquals(params.garments, [
+    { images: [{ path: "u1/top/x.jpg" }] } as unknown as typeof params
+      .garments[number],
+  ]);
 });
 
 Deno.test("parseTryonParams keeps an omitted avatar omitted", () => {

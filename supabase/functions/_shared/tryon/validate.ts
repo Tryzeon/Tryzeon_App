@@ -16,33 +16,30 @@ import type {
   AvatarOverride,
   BaseImage,
   GarmentInput,
+  GarmentMaterial,
   ProductRef,
-  ImageSource,
   TryonParams,
 } from "./types.ts";
 
 /**
- * Decode an unknown value into an ImageSource carrying exactly one usable key.
- * Raises when it has neither or both — an image addressed two ways is a caller
- * bug, not something to silently pick a winner for.
+ * Decode an unknown value into the inline bytes a caller is allowed to send.
+ * A `{ path }` is rejected rather than ignored: silently dropping it would run
+ * the job against whatever else the garment carried, which is not what the
+ * caller asked for. See {@link GarmentMaterial} for why paths are not in the
+ * contract at all.
  */
-export function requireImageSource(
+function requireInlineImage(
   source: unknown,
   label: string,
-): ImageSource {
+): { base64: string } {
   if (typeof source !== "object" || source === null) {
     throw new ValidationError(`${label} must be an object`);
   }
-  const s = source as Record<string, unknown>;
-  const keys = (["path", "base64"] as const).filter(
-    (k) => typeof s[k] === "string" && (s[k] as string).length > 0,
-  );
-  if (keys.length !== 1) {
-    throw new ValidationError(
-      `${label} must have exactly one of path | base64`,
-    );
+  const base64 = (source as Record<string, unknown>).base64;
+  if (typeof base64 !== "string" || base64.length === 0) {
+    throw new ValidationError(`${label} must have a non-empty base64`);
   }
-  return { [keys[0]]: s[keys[0]] } as ImageSource;
+  return { base64 };
 }
 
 /**
@@ -138,7 +135,7 @@ function validateGarment(garment: GarmentInput): GarmentInput {
   // which is capped where it is built.
   return {
     images: garment.images.map((img) =>
-      requireImageSource(img, "garment image")
+      requireInlineImage(img, "garment image")
     ),
   };
 }

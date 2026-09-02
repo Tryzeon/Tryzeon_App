@@ -9,9 +9,11 @@ export type { UsageCounter };
  * An image is addressed EITHER by storage key OR by inline bytes. A union
  * rather than two optional fields, so the empty `{}` case cannot be
  * constructed and loaders narrow with `in` instead of re-checking for a usable
- * key. (TypeScript still admits an object literal carrying both keys — excess
- * property checks accept any key present in some union member — so
- * `requireImageSource` remains the runtime guard for unknown input.)
+ * key.
+ *
+ * Server-side only: no caller can name one. It is what a resolver produces
+ * after reading a row it checked ownership on, so it is never decoded from
+ * untrusted input and needs no runtime guard.
  */
 export type ImageSource = { path: string } | { base64: string };
 
@@ -51,20 +53,38 @@ export interface WardrobeRef {
   wardrobeItemId: string;
 }
 
-/** A garment described directly by the user's own image sources. */
+/**
+ * A garment described directly by the caller, as inline bytes.
+ *
+ * Bytes and never a path, for the reason an avatar override is bytes only: a
+ * path names an object in the wardrobe bucket, and whether the caller may read
+ * it is a question the type cannot ask. The app and LIFF hold a session, so RLS
+ * would bound them — but the LINE adapter runs on the admin client, where a
+ * forwarded path would be a read of the whole bucket with nothing checking
+ * whose it was. Anything stored is reached by reference instead
+ * ({@link ProductRef}, {@link WardrobeRef}), which the core resolves against
+ * the job's own user.
+ */
 export interface GarmentMaterial {
-  images: ImageSource[];
+  images: { base64: string }[];
 }
 
 /**
  * Garment material as the model will finally see it: the sources, plus the
  * description built for a catalog product.
  *
- * `detail` lives here and not on `GarmentMaterial` because no caller writes it
- * directly: it is always composed server-side from rows the server itself
- * read (`resolveProductGarment`, `resolveWardrobeGarment`), after validation.
+ * Declares its own `images` rather than extending {@link GarmentMaterial},
+ * because the two answer different questions. What a caller may send is inline
+ * bytes; what a resolver produces is usually a storage key, since resolving a
+ * reference is exactly how a path becomes trusted. Sharing one field would
+ * force the looser of the two on both.
+ *
+ * `detail` lives here for the same reason: no caller writes it directly. It is
+ * always composed server-side from rows the server itself read
+ * (`resolveProductGarment`, `resolveWardrobeGarment`), after validation.
  */
-export interface ResolvedGarment extends GarmentMaterial {
+export interface ResolvedGarment {
+  images: ImageSource[];
   detail?: string;
   fit?: string;
 }

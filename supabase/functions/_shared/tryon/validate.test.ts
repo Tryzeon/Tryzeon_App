@@ -1,7 +1,7 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { requireImageSource, validateTryonParams } from "./validate.ts";
+import { validateTryonParams } from "./validate.ts";
 import { ValidationError } from "./errors.ts";
-import { type ImageSource, LIMITS, type TryonParams } from "./types.ts";
+import { LIMITS, type TryonParams } from "./types.ts";
 
 const validParams: TryonParams = {
   userId: "u1",
@@ -52,12 +52,30 @@ Deno.test("validateTryonParams rejects too many images in a garment", () => {
   );
 });
 
-Deno.test("validateTryonParams rejects a garment image with both path and base64", () => {
+Deno.test("validateTryonParams rejects a garment image named by path", () => {
   assertThrows(
     () =>
       validateTryonParams({
         ...validParams,
-        garments: [{ images: [{ path: "p", base64: "b" }] }],
+        garments: [{
+          images: [{ path: "p" } as unknown as { base64: string }],
+        }],
+      }),
+    ValidationError,
+    "garment image",
+  );
+});
+
+Deno.test("validateTryonParams rejects a path even alongside usable bytes", () => {
+  // Dropping the path silently would run the job on the bytes, which is not
+  // what a caller that named two sources asked for.
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        garments: [{
+          images: [{ path: "p", base64: "" } as unknown as { base64: string }],
+        }],
       }),
     ValidationError,
   );
@@ -221,9 +239,7 @@ Deno.test("validateTryonParams returns params with sources narrowed", () => {
   const job = validateTryonParams({
     ...validParams,
     avatar: { base64: "AAAA" },
-    garments: [{
-      images: [{ base64: "BBBB", path: "" } as unknown as ImageSource],
-    }],
+    garments: [{ images: [{ base64: "BBBB" }] }],
     scenePrompt: "beach",
   });
   assertEquals(job.avatar, { base64: "AAAA" });
@@ -246,23 +262,6 @@ Deno.test("validateTryonParams returns a product-ref garment as just its id", ()
   assertEquals(job.garments, [
     { productId: "33333333-3333-3333-3333-333333333333" },
   ]);
-});
-
-Deno.test("requireImageSource keeps exactly the one usable key", () => {
-  assertEquals(requireImageSource({ path: "a.jpg" }, "avatar"), {
-    path: "a.jpg",
-  });
-  assertEquals(requireImageSource({ base64: "AAA", path: "" }, "avatar"), {
-    base64: "AAA",
-  });
-});
-
-Deno.test("requireImageSource rejects zero or two usable keys", () => {
-  assertThrows(() => requireImageSource({}, "avatar"), ValidationError);
-  assertThrows(
-    () => requireImageSource({ path: "a", base64: "b" }, "avatar"),
-    ValidationError,
-  );
 });
 
 Deno.test("validateTryonParams accepts a wardrobe ref", () => {
