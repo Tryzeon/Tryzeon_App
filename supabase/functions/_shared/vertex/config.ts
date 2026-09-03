@@ -1,4 +1,6 @@
 /**
+ * Readers are functions rather than constants because they raise when unset,
+ * and no consumer needs the whole set: validating everything at import would
  * stop `chat` from booting over a try-on variable, or a wardrobe upload over
  * the chat model. Each caller asks for what it uses and decides when — at its
  * own module load where that is safe, lazily where the module is reachable from

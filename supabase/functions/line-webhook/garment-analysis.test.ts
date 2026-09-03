@@ -9,14 +9,12 @@ import {
 const USER = "user-1";
 const B64 = "aGVsbG8=";
 
-/** Seams with both collaborators stubbed permissive; each test overrides one. */
 const seams = (over: DescribeGarmentDeps = {}): DescribeGarmentDeps => ({
   analyze: () => Promise.resolve({ description: "淺藍色寬鬆棉質抽繩長褲" }),
   checkLimit: () => Promise.resolve(true),
   ...over,
 });
 
-/** Runs `fn` with `console.warn` silenced, returning what it would have logged. */
 async function captureWarnings(fn: () => Promise<void>): Promise<unknown[][]> {
   const real = console.warn;
   const calls: unknown[][] = [];
@@ -39,9 +37,8 @@ Deno.test("a described garment comes back as one phrase", async () => {
 });
 
 Deno.test("the photo is sent with this channel's own prompt and schema", async () => {
-  // Not the wardrobe endpoint's: that one's controlled vocabulary exists to keep
-  // `wardrobe_items.tags` filterable, and would drop the very words ("淺",
-  // "抽繩") that make a follow-up search land.
+  // Not the wardrobe endpoint's: its controlled vocabulary would drop the very
+  // words ("淺", "抽繩") that make a follow-up search land.
   const seen: { prompt?: string; schema?: unknown; base64?: string }[] = [];
   await describeGarment(USER, B64, seams({
     analyze: (args) => {
@@ -66,8 +63,6 @@ Deno.test("a surrounding-whitespace description is trimmed", async () => {
 });
 
 Deno.test("an over-long description is clamped", async () => {
-  // The note is replayed to the model every turn, so a vision model left to
-  // ramble would crowd out the conversation itself.
   const result = await describeGarment(USER, B64, seams({
     analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
   }));
@@ -76,9 +71,8 @@ Deno.test("an over-long description is clamped", async () => {
 });
 
 Deno.test("clamping counts characters, not UTF-16 code units", async () => {
-  // The prompt invites a free description when the photo is not a garment, so
-  // an astral character is reachable; `slice` would cut one in half and leave a
-  // lone surrogate in the transcript.
+  // `slice` would cut an astral character in half and leave a lone surrogate in
+  // the transcript.
   const result = await describeGarment(USER, B64, seams({
     analyze: () => Promise.resolve({ description: "👗".repeat(30) }),
   }));
@@ -105,7 +99,6 @@ Deno.test("a failed analysis costs the note, not the caller's turn", async () =>
     }));
   });
 
-  // Never throws — the caller's try-on must survive an outage here.
   assertEquals(result, null);
   assertEquals(warnings.length, 1);
 });
@@ -138,21 +131,18 @@ Deno.test("the limit is this channel's own budget, per minute and per day", asyn
     },
   }));
 
-  // Separate from the app's `wardrobe_image_analysis` budget: mixing them lets
-  // a LINE spike starve the app's wardrobe uploads.
   assertEquals(buckets, ["line_garment_analysis:minute", "line_garment_analysis:day"]);
 });
 
-// The two below lock the prompt to the code that reads its answer. A cap the
-// prompt states but the code does not enforce is a transcript-bloat bug waiting
-// for one verbose model response.
+// A cap the prompt states but the code does not enforce is a transcript-bloat
+// bug waiting for one verbose model response.
 Deno.test("ANALYSIS_PROMPT states the length cap describeGarment enforces", async () => {
   const clamped = await describeGarment(USER, B64, seams({
     analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
   }));
 
-  // Derived, not hardcoded: the marker isn't part of the cap, and code points
-  // (not UTF-16 length) are what the cap is measured in.
+  // Derived, not hardcoded: the ellipsis isn't part of the cap, which is
+  // measured in code points.
   const cap = [...clamped!.replace(/…$/, "")].length;
   assertEquals(ANALYSIS_PROMPT.includes(`最多 ${cap} 字`), true);
 });

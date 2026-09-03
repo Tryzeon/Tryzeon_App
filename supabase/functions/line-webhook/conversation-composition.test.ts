@@ -1,11 +1,5 @@
 /**
- * The branch's headline story, exercised end to end: try on a card, then ask
- * about it in chat, and have the second turn see the first.
- *
- * Every piece here — dehydration, the try-on note, loading and saving in each
- * handler — is covered in isolation in `conversation.test.ts`,
- * `tryon-handler.test.ts` and `chat-handler.test.ts`. None of those prove the
- * composition, which exists only across two handlers sharing one store and
+ * The composition exists only across two handlers sharing one store, so it
  * belongs to neither handler's suite on its own.
  */
 import { assertEquals } from "jsr:@std/assert";
@@ -102,8 +96,6 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
     text: "這件配什麼褲子",
   });
 
-  // Provable only because the store double now remembers what was written —
-  // this is exactly what makes "試穿完直接問這件配什麼褲子" work.
   assertEquals(chat.seen[0].params.messages, [
     ...prior,
     tryonNote(someProduct),

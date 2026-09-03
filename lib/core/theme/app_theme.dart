@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 /// Raw colour palette (M3 *reference* tokens). Tonal numbers follow Material 3
 /// convention: 100 = white, 0 = black. Roles are assigned in [AppTheme]'s
 /// `ColorScheme`; widgets read `Theme.of(context).colorScheme`, not this class.
@@ -52,7 +51,6 @@ class AppColors {
   static const Color onFitOutOfRangeContainer = Color(0xFF4A2F22);
 }
 
-
 /// 8px-grid spacing tokens.
 class AppSpacing {
   AppSpacing._();
@@ -71,7 +69,6 @@ class AppSpacing {
   static const double androidNavBarHeight = 80; // Material NavigationBar
 }
 
-
 class AppOpacity {
   AppOpacity._();
 
@@ -82,7 +79,6 @@ class AppOpacity {
   static const double overlay = 0.6; // image scrim / modal backdrop
 }
 
-
 class AppDuration {
   AppDuration._();
 
@@ -91,7 +87,6 @@ class AppDuration {
   static const Duration slow = Duration(milliseconds: 300);
   static const Duration thinking = Duration(milliseconds: 1800);
 }
-
 
 class AppCurves {
   AppCurves._();
@@ -102,7 +97,6 @@ class AppCurves {
   static const Curve emphasized = Curves.easeOutCubic;
 }
 
-
 class AppStroke {
   AppStroke._();
 
@@ -111,7 +105,6 @@ class AppStroke {
   static const double medium = 2; // progress indicators
   static const double thick = 3; // emphasized progress
 }
-
 
 class AppRadius {
   AppRadius._();
@@ -134,7 +127,6 @@ class AppRadius {
   );
   static const BorderRadius pillAll = BorderRadius.all(Radius.circular(pill));
 }
-
 
 class AppTheme {
   AppTheme._();

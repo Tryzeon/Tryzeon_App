@@ -10,8 +10,6 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// Records identity calls and fails [logIn] as many times as asked, standing in
-/// for a RevenueCat SDK that is unreachable at cold start.
 class _FakeRevenueCatRepository implements RevenueCatRepository {
   _FakeRevenueCatRepository({this.logInFailures = 0});
 
