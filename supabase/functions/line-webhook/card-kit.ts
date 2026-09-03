@@ -5,8 +5,8 @@
  * ColorScheme, a type scale, an 8px grid. This module is that spec's LINE
  * dialect: the same tokens as hex, and the two button shapes the spec defines,
  * built the only way Flex can build them. It knows nothing about products, so
- * every surface this feature grows later can dress itself from here rather
- * than inventing a second charcoal.
+ * any surface this feature grows can dress itself from here rather than
+ * inventing a second charcoal.
  */
 
 /** Card palette. Every value is a token from `docs/ui-design-system.md`. */
@@ -26,12 +26,11 @@ export const CARD_COLOR = {
 /**
  * A filled charcoal button.
  *
- * A box rather than Flex's `button`, because `button` offers three fixed
- * styles — filled-coloured, filled-grey, text-only — and controls neither
- * corner radius nor type. The design system asks for an 8px radius and, for
- * `secondaryButton`, an outlined shape that `button` simply does not have. A
- * box carrying an `action` is tappable across its whole area, so both buttons
- * are built the same way and stay siblings.
+ * A box rather than Flex's `button`: `button` offers three fixed styles —
+ * filled-coloured, filled-grey, text-only — and controls neither corner radius
+ * nor type, so it can give neither the design system's 8px radius nor
+ * `secondaryButton`'s outlined shape. A box carrying an `action` is tappable
+ * across its whole area, so both buttons are built the same way.
  *
  * The action belongs on the box, never on the inner text: on the text only the
  * glyphs would be tappable.

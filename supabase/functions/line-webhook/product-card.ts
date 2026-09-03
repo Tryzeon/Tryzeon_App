@@ -159,12 +159,11 @@ export function amountText(price: number): string {
 /**
  * The name / price / store lines both cards show.
  *
- * The price is one text carrying two spans rather than one string, because
- * this is the only hierarchy Flex can express: `docs/ui-design-system.md`
- * calls typography the primary means of creating levels, and Flex offers no
- * font choice and no letter-spacing — only size, weight and colour. So the
- * amount takes high-emphasis charcoal at `lg` while the currency retreats to
- * muted `xs`, and the price stops reading at the same level as the name.
+ * The price is one text carrying two spans rather than one string, because that
+ * is the only hierarchy Flex can express: `docs/ui-design-system.md` makes
+ * typography the primary means of creating levels, and Flex offers no font
+ * choice and no letter-spacing — only size, weight and colour. So the amount
+ * takes charcoal at `lg` and the currency muted `xs`.
  */
 export function productInfoContents(product: ProductInfo): object[] {
   const contents: object[] = [
