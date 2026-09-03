@@ -264,7 +264,7 @@ class AppTheme {
       // colorScheme.primary), so its `color` is set explicitly at each site.
       progressIndicatorTheme: ProgressIndicatorThemeData(color: colorScheme.onSurface),
 
-      // Spec: no top/bottom dividers (design system forbids stacked lines).
+      // No top/bottom dividers — the design system forbids stacked lines.
       expansionTileTheme: const ExpansionTileThemeData(
         shape: Border(),
         collapsedShape: Border(),

@@ -16,7 +16,6 @@ import { fakeConversations } from "./conversation.testing.ts";
 const USER = "Uline123";
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
-/** LINE double recording what was sent, with scripted `reply`/`showLoading` outcomes. */
 function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
   const replied: object[][] = [];
   const pushed: object[][] = [];
@@ -44,8 +43,6 @@ function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
 }
 
 /**
- * Chat double returning scripted blocks (or throwing), recording its params.
- *
  * Typed as `runChatAgent` itself, so a rename in `ChatParams` fails the build
  * here rather than leaving the assertions below silently reading `undefined`.
  */
@@ -79,7 +76,6 @@ function deps(over: Partial<ChatHandlerDeps> = {}): ChatHandlerDeps {
 
 const textOf = (message: object) => (message as { text: string }).text;
 
-/** Runs `fn` with `console[method]` silenced, returning what it would have logged. */
 async function captureConsole(
   method: "error" | "warn",
   fn: () => Promise<void>,
@@ -108,7 +104,6 @@ Deno.test("runs one turn for the incoming message and replies with the answer", 
   });
 
   assertEquals(loading, [USER]);
-  // A new conversation: the transcript is this message alone.
   assertEquals(chat.seen[0].params.userId, "user-uuid");
   assertEquals(chat.seen[0].params.messages, [
     { role: "user", content: [{ type: "text", text: "找白襯衫" }] },
@@ -125,10 +120,9 @@ Deno.test("supplies the quota port, substitutes this channel's hydrator, and not
     text: "找白襯衫",
   });
 
-  // `quota` is not a substitution — it is required, because the core holds no
-  // credential able to charge. `hydrate` is the one thing this channel genuinely
-  // renders differently. Anything else appearing here would be a default the
-  // adapter had started second-guessing.
+  // `quota` is required, because the core holds no credential able to charge;
+  // `hydrate` is the one thing this channel renders differently. Anything else
+  // here would be a default the adapter had started second-guessing.
   assertEquals(Object.keys(chat.seen[0].deps), ["quota", "hydrate"]);
 });
 
@@ -171,7 +165,6 @@ Deno.test("reports an unexpected failure as a generic apology", async () => {
     }));
 
   assertStringIncludes(textOf(replied[0][0]), "稍後再試");
-  // A server fault leaves a trace beyond the message the sender sees.
   assertEquals(errors.length, 1);
 });
 
@@ -205,7 +198,6 @@ Deno.test("the turn runs on the stored conversation plus this message", async ()
     { replyToken: "rt", sourceUserId: USER, text: "有便宜一點的嗎" },
   );
 
-  // The follow-up is only answerable because the prior turns went in with it.
   assertEquals(chat.seen[0].params.messages, [
     ...prior,
     { role: "user", content: [{ type: "text", text: "有便宜一點的嗎" }] },
@@ -260,8 +252,6 @@ Deno.test("the whole turn is written back, with recommended items reduced to ids
 });
 
 Deno.test("a failed turn leaves the conversation untouched", async () => {
-  // A stored user message with no answer is a question the next turn's model
-  // would read as ignored, so a turn that did not happen is not recorded.
   const conversations = fakeConversations();
   const chat = fakeChat({ throws: new QuotaExceededError(null) });
 
@@ -275,10 +265,7 @@ Deno.test("a failed turn leaves the conversation untouched", async () => {
 
 Deno.test("a validation failure writes nothing either, stored transcript or not", async () => {
   // No failure kind is special-cased: every one of them leaves the store as it
-  // was. A validation error is the one where that is worth stating, because it
-  // is the kind most likely to be about the *history* rather than this message
-  // — which was already length-checked above — and the transcript it blames is
-  // left in place for the idle TTL to retire.
+  // was, including a validation error that blames the replayed history.
   const prior: ChatMessage[] = [
     { role: "user", content: [{ type: "text", text: "找外套" }] },
   ];
@@ -315,7 +302,6 @@ Deno.test("the answer is replied before the conversation is written", async () =
     { replyToken: "rt", sourceUserId: USER, text: "找外套" },
   );
 
-  // Bookkeeping never delays the reply the user is waiting for.
   assertEquals(trace, ["reply", "save"]);
 });
 

@@ -118,7 +118,6 @@ CREATE OR REPLACE FUNCTION "public"."cleanup_old_daily_usage"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 BEGIN
-  -- 刪除超過 30 天前的紀錄
   DELETE FROM public.user_daily_usage
   WHERE usage_date < CURRENT_DATE - INTERVAL '30 days';
 END;
@@ -433,7 +432,6 @@ CREATE OR REPLACE FUNCTION "public"."log_analytics_events"("p_events" "jsonb") R
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 begin
-  -- Insert all events from the JSON array
   insert into analytics_events (product_id, store_id, event_type, user_id)
   select 
     (event->>'product_id')::uuid,
@@ -465,11 +463,9 @@ CREATE OR REPLACE FUNCTION "public"."update_analytics_summary"() RETURNS "trigge
   v_year int;
   v_month int;
 begin
-  -- Extract date parts
   v_year := extract(year from new.created_at);
   v_month := extract(month from new.created_at);
 
-  -- Upsert (Insert or Update) into the per-product summary
   insert into analytics_product_monthly_summary (
     store_id, 
     product_id, 

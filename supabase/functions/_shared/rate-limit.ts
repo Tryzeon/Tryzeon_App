@@ -22,6 +22,7 @@ function getLimiter(
 }
 
 /**
+ * Fails OPEN: if Upstash is unreachable we allow the request rather than block
  * core functionality on a third-party outage. Rate limiting is abuse
  * prevention, not a billing quota, so occasional misses are acceptable.
  */
