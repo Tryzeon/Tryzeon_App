@@ -78,7 +78,7 @@ void main() {
     addTearDown(authUserIds.close);
   });
 
-  test('登入成功後，同一個 user id 的重複事件不會重打 logIn', () async {
+  test('repeated events for the same user id do not call logIn again', () async {
     repository = _FakeRevenueCatRepository();
     build();
 
@@ -90,7 +90,7 @@ void main() {
     expect(repository.loggedInUserIds, ['user-a']);
   });
 
-  test('logIn 失敗不會鎖死：下一個 auth 事件會用同一個 user id 重試', () async {
+  test('a failed logIn retries on the next auth event with the same user id', () async {
     repository = _FakeRevenueCatRepository(logInFailures: 1);
     build();
 
@@ -106,7 +106,7 @@ void main() {
     expect(repository.loggedInUserIds, ['user-a', 'user-a']);
   });
 
-  test('重試成功後就停止重試', () async {
+  test('retrying stops once it succeeds', () async {
     repository = _FakeRevenueCatRepository(logInFailures: 1);
     build();
 
@@ -120,7 +120,7 @@ void main() {
     expect(repository.loggedInUserIds, ['user-a', 'user-a']);
   });
 
-  test('登出後再登入同一個帳號會重新 logIn', () async {
+  test('signing out and back in to the same account calls logIn again', () async {
     repository = _FakeRevenueCatRepository();
     build();
 
@@ -135,7 +135,7 @@ void main() {
     expect(repository.loggedInUserIds, ['user-a', 'user-a']);
   });
 
-  test('未登入啟動時不會對匿名的 RevenueCat 打 logOut', () async {
+  test('starting up signed out does not logOut an anonymous RevenueCat', () async {
     repository = _FakeRevenueCatRepository();
     build();
 
@@ -145,7 +145,7 @@ void main() {
     expect(repository.logOutCount, 0);
   });
 
-  test('切換帳號時不會漏掉後到的使用者', () async {
+  test('switching accounts does not drop the user that arrives later', () async {
     repository = _FakeRevenueCatRepository();
     build();
 

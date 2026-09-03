@@ -11,7 +11,7 @@ class GeocodingServiceImpl implements GeocodingService {
       try {
         await setLocaleIdentifier('zh_TW');
       } catch (e) {
-        AppLogger.info('無法設定 geocoding 語言環境: $e');
+        AppLogger.info('Failed to set the geocoding locale: $e');
       }
       final locations = await locationFromAddress(address);
       if (locations.isEmpty) return null;

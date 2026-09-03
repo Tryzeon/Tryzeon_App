@@ -128,7 +128,7 @@ describe("custom avatar", () => {
 });
 
 describe("product source", () => {
-  const shirt = { productId: "p1", name: "白襯衫" };
+  const shirt = { productId: "p1", name: "White Shirt" };
 
   // The "試穿 ⋯" line on the result image lives off this field, so completing
   // must not overwrite it.

@@ -159,11 +159,11 @@ void main() {
         garments: garments,
         mode: TryonMode.image,
         engine: TryonEngine.standard,
-        stylingPrompt: '紮進褲頭',
+        stylingPrompt: 'tucked in',
       ),
     ).toJson();
 
-    expect(body['stylingPrompt'], '紮進褲頭');
+    expect(body['stylingPrompt'], 'tucked in');
   });
 
   test('omits the stylingPrompt when the user set no styling', () {

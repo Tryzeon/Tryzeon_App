@@ -26,10 +26,10 @@ Product product(
 int noAnalytics(final String productId, final AnalyticsMetric metric) => 0;
 
 void main() {
-  test('只回傳目前分頁狀態的商品', () {
+  test('returns only the products in the current tab status', () {
     final products = [
-      product('白襯衫'),
-      product('黑褲', status: ProductStatus.archived),
+      product('White Shirt'),
+      product('Black Pants', status: ProductStatus.archived),
     ];
 
     final active = filterAndSortProducts(
@@ -37,30 +37,30 @@ void main() {
       const ProductQueryState(),
       noAnalytics,
     );
-    expect(active.map((final p) => p.name), ['白襯衫']);
+    expect(active.map((final p) => p.name), ['White Shirt']);
 
     final archived = filterAndSortProducts(
       products,
       const ProductQueryState(status: ProductStatus.archived),
       noAnalytics,
     );
-    expect(archived.map((final p) => p.name), ['黑褲']);
+    expect(archived.map((final p) => p.name), ['Black Pants']);
   });
 
-  test('搜尋在狀態之內生效，不會撈到另一個狀態的同名商品', () {
+  test('search applies within a status, not across statuses', () {
     // The bucket is the outer filter: a matching name in the other bucket must
     // stay out, or switching tabs would look like the search stopped working.
     final products = [
-      product('亞麻襯衫'),
-      product('亞麻洋裝', status: ProductStatus.archived),
+      product('Linen Shirt'),
+      product('Linen Dress', status: ProductStatus.archived),
     ];
 
     final result = filterAndSortProducts(
       products,
-      const ProductQueryState(searchQuery: '亞麻'),
+      const ProductQueryState(searchQuery: 'linen'),
       noAnalytics,
     );
 
-    expect(result.map((final p) => p.name), ['亞麻襯衫']);
+    expect(result.map((final p) => p.name), ['Linen Shirt']);
   });
 }

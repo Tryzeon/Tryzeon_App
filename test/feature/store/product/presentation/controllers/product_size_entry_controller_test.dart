@@ -6,27 +6,27 @@ import 'package:tryzeon/feature/store/product/presentation/controllers/product_s
 
 void main() {
   group('matchKey', () {
-    test('不做別名轉換：XXL 與 2XL 是不同的尺寸', () {
+    test('does not fold aliases: XXL and 2XL are different sizes', () {
       expect(
         ProductSizeEntryController(label: 'XXL').matchKey,
         isNot(ProductSizeEntryController(label: '2XL').matchKey),
       );
     });
 
-    test('大小寫不同視為同一個尺寸', () {
+    test('case differences are the same size', () {
       expect(
         ProductSizeEntryController(label: 'm').matchKey,
         ProductSizeEntryController(label: 'M').matchKey,
       );
     });
 
-    test('自訂尺碼只做大小寫正規化', () {
+    test('a custom size is only normalized for case', () {
       expect(ProductSizeEntryController(label: 'us 10').matchKey, 'US 10');
     });
   });
 
   group('toSizeItem', () {
-    test('沒有 id 時產生 NewSizeItem，名稱用 label', () {
+    test('with no id it produces a NewSizeItem named after the label', () {
       final entry = ProductSizeEntryController(label: '4XL');
       entry.measurementControllers[GarmentMeasurementType.chestCircumference]!.text =
           '100';
@@ -39,7 +39,7 @@ void main() {
       expect(item.measurements?.getValue(GarmentMeasurementType.chestCircumference), 100);
     });
 
-    test('有 id 時產生 ExistingSizeItem', () {
+    test('with an id it produces an ExistingSizeItem', () {
       final entry = ProductSizeEntryController(label: 'M', id: 'size-1');
       final item = entry.toSizeItem(
         unit: MeasurementUnit.centimeter,

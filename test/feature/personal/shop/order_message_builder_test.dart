@@ -5,8 +5,8 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
 import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
 
 ShopProduct product({required final List<String> imageUrls}) => ShopProduct(
-  storeInfo: const ShopStoreInfo(id: 's1', name: '店', channels: {}),
-  name: '白T',
+  storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
+  name: 'White Tee',
   categoryId: 'c1',
   price: 590,
   imagePaths: const [],

@@ -5,11 +5,11 @@ const BASE = "https://img.test";
 
 const row = {
   id: "11111111-1111-1111-1111-111111111111",
-  name: "亞麻襯衫",
+  name: "Linen Shirt",
   price: 1280,
   image_paths: ["stores/a/1.jpg", "stores/a/2.jpg"],
   purchase_link: "https://shop.test/p/1",
-  store_profiles: { id: "s1", name: "小島選物" },
+  store_profiles: { id: "s1", name: "Island Select" },
 };
 
 describe("publicImageUrl", () => {
@@ -34,9 +34,9 @@ describe("buildCatalogItem", () => {
   it("carries purchase link, store name and price", () => {
     const item = buildCatalogItem(row, BASE);
     expect(item.productId).toBe("11111111-1111-1111-1111-111111111111");
-    expect(item.name).toBe("亞麻襯衫");
+    expect(item.name).toBe("Linen Shirt");
     expect(item.price).toBe(1280);
-    expect(item.storeName).toBe("小島選物");
+    expect(item.storeName).toBe("Island Select");
     expect(item.purchaseLink).toBe("https://shop.test/p/1");
   });
 
@@ -51,7 +51,7 @@ describe("buildCatalogItem", () => {
     for (const imagePaths of [[], null, [""]]) {
       const item = buildCatalogItem({ ...row, image_paths: imagePaths }, BASE);
       expect(item.imageUrls).toEqual([]);
-      expect(item.name).toBe("亞麻襯衫");
+      expect(item.name).toBe("Linen Shirt");
     }
   });
 

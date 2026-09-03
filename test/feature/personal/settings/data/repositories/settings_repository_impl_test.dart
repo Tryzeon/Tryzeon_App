@@ -13,13 +13,13 @@ void main() {
 
   test('reads back settings saved by v1.13, which used the same keys', () async {
     SharedPreferences.setMockInitialValues({
-      AppConstants.keyTryonScenePrompt: '都會街頭',
-      AppConstants.keyTryonTransitionPrompt: '一鏡到底',
+      AppConstants.keyTryonScenePrompt: 'urban street',
+      AppConstants.keyTryonTransitionPrompt: 'single take',
     });
 
     final config = (await repository.getTryonPreferences()).get()!;
-    expect(config.scenePrompt, '都會街頭');
-    expect(config.transitionPrompt, '一鏡到底');
+    expect(config.scenePrompt, 'urban street');
+    expect(config.transitionPrompt, 'single take');
     expect(config.engine, TryonEngine.standard);
   });
 
@@ -28,17 +28,17 @@ void main() {
 
     await repository.setTryonPreferences(
       const TryonPreferences(
-        scenePrompt: '都會街頭',
-        stylingPrompt: '紮進褲頭',
-        transitionPrompt: '動態跳剪',
+        scenePrompt: 'urban street',
+        stylingPrompt: 'tucked in',
+        transitionPrompt: 'jump cut',
         engine: TryonEngine.advanced,
       ),
     );
 
     final config = (await repository.getTryonPreferences()).get()!;
-    expect(config.scenePrompt, '都會街頭');
-    expect(config.stylingPrompt, '紮進褲頭');
-    expect(config.transitionPrompt, '動態跳剪');
+    expect(config.scenePrompt, 'urban street');
+    expect(config.stylingPrompt, 'tucked in');
+    expect(config.transitionPrompt, 'jump cut');
     expect(config.engine, TryonEngine.advanced);
   });
 
@@ -53,9 +53,9 @@ void main() {
 
   test('clearing a prompt removes its key instead of storing an empty string', () async {
     SharedPreferences.setMockInitialValues({
-      AppConstants.keyTryonScenePrompt: '都會街頭',
-      AppConstants.keyTryonStylingPrompt: '紮進褲頭',
-      AppConstants.keyTryonTransitionPrompt: '動態跳剪',
+      AppConstants.keyTryonScenePrompt: 'urban street',
+      AppConstants.keyTryonStylingPrompt: 'tucked in',
+      AppConstants.keyTryonTransitionPrompt: 'jump cut',
     });
 
     await repository.setTryonPreferences(const TryonPreferences());

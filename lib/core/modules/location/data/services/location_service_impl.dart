@@ -51,14 +51,14 @@ class LocationServiceImpl implements LocationService {
       try {
         await setLocaleIdentifier('zh_TW');
       } catch (e) {
-        AppLogger.info('無法設定語言環境: $e');
+        AppLogger.info('Failed to set the locale: $e');
       }
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
       if (placemarks.isEmpty) {
-        AppLogger.info('無法取得地址資訊');
+        AppLogger.info('No address information available');
         return null;
       }
       final placemark = placemarks.first;
@@ -68,12 +68,12 @@ class LocationServiceImpl implements LocationService {
       final district = placemark.locality;
 
       if (city == null || city.isEmpty) {
-        AppLogger.info('無法解析城市：$placemark');
+        AppLogger.info('Could not resolve a city from: $placemark');
         return null;
       }
 
       if (district == null || district.isEmpty) {
-        AppLogger.info('無法解析區：$placemark');
+        AppLogger.info('Could not resolve a district from: $placemark');
         return null;
       }
 

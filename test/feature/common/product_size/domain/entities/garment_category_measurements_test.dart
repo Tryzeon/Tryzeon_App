@@ -4,11 +4,11 @@ import 'package:tryzeon/feature/common/product_size/domain/entities/garment_cate
 
 void main() {
   group('relevantMeasurementTypesFor', () {
-    test('null（未選分類或清單未載入）回傳全部欄位', () {
+    test('null (no category, or the list has not loaded) returns every field', () {
       expect(relevantMeasurementTypesFor(null), GarmentMeasurementType.values);
     });
 
-    test('top 回傳上身欄位', () {
+    test('top returns the upper-body fields', () {
       expect(relevantMeasurementTypesFor(WardrobeCategory.top), const [
         GarmentMeasurementType.shoulderWidth,
         GarmentMeasurementType.chestCircumference,
@@ -17,7 +17,7 @@ void main() {
       ]);
     });
 
-    test('bottoms 回傳下身欄位', () {
+    test('bottoms returns the lower-body fields', () {
       expect(relevantMeasurementTypesFor(WardrobeCategory.bottoms), const [
         GarmentMeasurementType.waistCircumference,
         GarmentMeasurementType.hipCircumference,
@@ -26,7 +26,7 @@ void main() {
       ]);
     });
 
-    test('sets 與 others 回傳全部欄位', () {
+    test('sets and others return every field', () {
       expect(
         relevantMeasurementTypesFor(WardrobeCategory.sets),
         GarmentMeasurementType.values,
