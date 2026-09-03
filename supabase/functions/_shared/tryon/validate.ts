@@ -11,7 +11,6 @@ import type {
   AvatarOverride,
   BaseImage,
   GarmentInput,
-  GarmentMaterial,
   ProductRef,
   TryonParams,
 } from "./types.ts";

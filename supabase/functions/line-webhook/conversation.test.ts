@@ -10,7 +10,6 @@ import {
 } from "./conversation.ts";
 import type { ChatMessage } from "../_shared/chat/index.ts";
 import type { LineProduct } from "./product-card.ts";
-import type { WardrobeItemInfo } from "./wardrobe-card.ts";
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 

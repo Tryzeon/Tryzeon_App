@@ -8,7 +8,6 @@ import {
   toLineWardrobeItem,
   toWardrobeItemInfo,
   type WardrobeCardRow,
-  type WardrobeItemInfo,
   wardrobeInfoContents,
 } from "./wardrobe-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
