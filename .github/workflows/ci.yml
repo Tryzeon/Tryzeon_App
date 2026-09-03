@@ -45,7 +45,7 @@ env:
 
 # ─────────────────────────────────────────────────────
 # Pipeline:
-#   analyze (Linux) → build-android (Linux)
+#   analyze + format + test (Linux) → build-android (Linux)
 #                   → build-ios     (macOS)
 #
 # Cache strategy:
@@ -72,6 +72,11 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # Tracked files only: build_runner output is gitignored and `dart format`
+      # has no exclude of its own.
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart')
+
       - name: Create .env file
         run: |
           echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
@@ -87,6 +92,9 @@ jobs:
 
       - name: Analyze Dart
         run: dart analyze
+
+      - name: Run tests
+        run: flutter test
 
   # ════════════════════════════════════════════════════
   # Job 2: Android build (Linux)

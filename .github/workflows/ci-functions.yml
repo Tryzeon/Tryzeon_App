@@ -1,0 +1,49 @@
+name: CI - Edge Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - '.github/workflows/ci-functions.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - '.github/workflows/ci-functions.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-functions-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: supabase/functions
+
+jobs:
+  test:
+    name: Lint & Test Edge Functions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+          cache: true
+
+      - name: Lint
+        run: deno lint
+
+      # --frozen fails the run instead of silently re-resolving: the Supabase
+      # Functions use centrally declared, exact versions and a committed
+      # lockfile, so CI runs the same dependency graph as local development.
+      - name: Test
+        run: deno task test
