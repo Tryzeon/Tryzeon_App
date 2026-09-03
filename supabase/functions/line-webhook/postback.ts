@@ -16,11 +16,7 @@
  */
 import { isUuid } from "../_shared/text.ts";
 
-/**
- * The two actions a card can carry. Product and wardrobe are the same kind of
- * thing, so they are named the same way — the asymmetry that would come from
- * calling one of them by the bare verb is the reason both carry their noun.
- */
+/** The two actions a card can carry, each naming its noun, not a bare verb. */
 const TRYON_PRODUCT = "tryon_product";
 const TRYON_WARDROBE = "tryon_wardrobe";
 

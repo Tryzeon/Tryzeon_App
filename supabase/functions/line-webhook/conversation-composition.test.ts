@@ -5,11 +5,8 @@
  * Every piece here — dehydration, the try-on note, loading and saving in each
  * handler — is covered in isolation in `conversation.test.ts`,
  * `tryon-handler.test.ts` and `chat-handler.test.ts`. None of those prove the
- * composition, because it only exists across two handlers sharing one store,
- * and `fakeConversations`'s old fixed-`prior` behaviour could not represent a
- * write from one call being read back by the next. This is a separate file
- * rather than an addition to either handler's suite because the scenario
- * belongs to neither on its own.
+ * composition, which exists only across two handlers sharing one store and
+ * belongs to neither handler's suite on its own.
  */
 import { assertEquals } from "jsr:@std/assert";
 import { handleProductTryon, type ProductTryonDeps } from "./tryon-handler.ts";

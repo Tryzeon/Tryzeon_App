@@ -23,11 +23,9 @@ export interface FakeConversations {
  * been written to yet. `onSave` fires before the write is recorded, so a test
  * can interleave it with other doubles to assert ordering.
  *
- * `load` returns the most recent `save` for that key rather than always
- * `prior`: a fixed-`prior` double cannot exercise the composition the whole
- * point of this store is to enable — a try-on note saved by one handler being
- * read back by the next chat turn. Real, per-key memory is what makes that
- * provable in a test.
+ * `load` returns the most recent `save` for that key rather than always `prior`:
+ * a fixed-`prior` double could not exercise a try-on note saved by one handler
+ * being read back by the next chat turn.
  */
 export function fakeConversations(
   opts: { prior?: ChatMessage[]; onSave?: () => void } = {},
