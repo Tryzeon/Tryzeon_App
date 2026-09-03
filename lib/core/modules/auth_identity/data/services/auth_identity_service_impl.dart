@@ -6,13 +6,11 @@ class AuthIdentityServiceImpl implements AuthIdentityService {
 
   final GoTrueClient _auth;
 
-  // Supabase fires several events (`initialSession`, `tokenRefreshed`, ...) that
-  // all resolve to the same identity, so only actual identity changes are
-  // published.
+  // Repeated ids are the retry budget, so this must not be `.distinct()`:
+  // deduplicating here silently strands a consumer whose binding side effect
+  // failed, since the next token refresh carries the same id.
   @override
-  Stream<String?> watchUserId() => _watchUserId().distinct();
-
-  Stream<String?> _watchUserId() async* {
+  Stream<String?> watchUserId() async* {
     // `initialSession` is emitted asynchronously and may fire before this
     // subscribes, so the restored session is read directly instead.
     yield _auth.currentSession?.user.id;
