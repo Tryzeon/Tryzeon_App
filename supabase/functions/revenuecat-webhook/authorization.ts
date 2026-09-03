@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
+import { timingSafeEqual } from "jsr:@std/crypto@^1.1.0/timing-safe-equal";
 
 const BEARER_PREFIX = "Bearer ";
 

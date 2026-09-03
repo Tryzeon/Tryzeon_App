@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import type { AnswerRef } from "../_shared/chat/index.ts";
 

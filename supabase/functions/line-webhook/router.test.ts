@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from "jsr:@std/assert";
+import { assertEquals, assertStringIncludes } from "jsr:@std/assert@^1.0.19";
 import { type RouterDeps, routeEvent } from "./router.ts";
 import type { LineApi } from "./line-api.ts";
 import { fakeConversations } from "./conversation.testing.ts";

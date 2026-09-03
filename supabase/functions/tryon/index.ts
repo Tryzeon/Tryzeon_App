@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { makeCors } from "../_shared/cors.ts";

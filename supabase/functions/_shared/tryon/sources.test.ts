@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { loadGarments, makeSourceLoader } from "./sources.ts";
 import { USER_AVATARS_BUCKET } from "../storage.ts";
 import type { SourceLoader } from "./sources.ts";

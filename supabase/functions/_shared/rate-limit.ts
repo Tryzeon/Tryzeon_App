@@ -1,4 +1,4 @@
-import { Ratelimit } from "npm:@upstash/ratelimit";
+import { Ratelimit } from "npm:@upstash/ratelimit@^2.0.8";
 import { redis } from "./redis.ts";
 
 const limiters = new Map<string, Ratelimit>();

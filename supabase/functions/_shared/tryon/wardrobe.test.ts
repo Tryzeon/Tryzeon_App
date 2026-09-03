@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert";
+import { assertEquals, assertRejects } from "jsr:@std/assert@^1.0.19";
 import { buildWardrobeGarmentDetail, resolveWardrobeGarment } from "./wardrobe.ts";
 import { LIMITS } from "./types.ts";
 import { ValidationError } from "./errors.ts";

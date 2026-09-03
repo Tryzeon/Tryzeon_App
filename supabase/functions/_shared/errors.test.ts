@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { classifyCoreError, ServiceBusyError } from "./errors.ts";
 import { ValidationError } from "./validation.ts";
 import { QuotaExceededError } from "./quota.ts";

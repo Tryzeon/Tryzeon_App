@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { tryonErrorResponse } from "./http.ts";
 import { MissingAvatarError } from "./errors.ts";
 import { ServiceBusyError } from "../errors.ts";

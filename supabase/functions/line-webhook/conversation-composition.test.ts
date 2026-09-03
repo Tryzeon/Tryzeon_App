@@ -2,7 +2,7 @@
  * The composition exists only across two handlers sharing one store, so it
  * belongs to neither handler's suite on its own.
  */
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { handleProductTryon, type ProductTryonDeps } from "./tryon-handler.ts";
 import { handleTextMessage, type ChatHandlerDeps } from "./chat-handler.ts";
 import {

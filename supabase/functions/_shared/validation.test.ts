@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
 import { normalizeText, requireString, ValidationError } from "./validation.ts";
 
 Deno.test("requireString rejects missing and empty values", () => {

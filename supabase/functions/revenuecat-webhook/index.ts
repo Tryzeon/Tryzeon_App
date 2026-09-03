@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
 import { type DbClient, getAdminClient } from "../_shared/supabase.ts";
 import { json } from "../_shared/http.ts";
 import { resolveTier } from "./entitlements.ts";

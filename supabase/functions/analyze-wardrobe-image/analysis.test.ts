@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { ANALYSIS_PROMPT, ANALYSIS_SCHEMA, toResponse } from "./analysis.ts";
 
 type PropertySpec = { type: string; enum?: string[] };

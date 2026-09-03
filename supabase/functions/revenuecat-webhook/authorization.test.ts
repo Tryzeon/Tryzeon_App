@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { isAuthorized } from "./authorization.ts";
 
 const SECRET = "s3cr3t!value";

@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { normalizeParsedSizes, normalizeSizeName } from "./parse.ts";
 
 Deno.test("normalizeSizeName maps aliases onto the canonical literal", () => {

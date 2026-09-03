@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { supabaseChatQuota } from "./quota.ts";
 import { fakeQuotaAdmin, SAMPLE_USAGE } from "../quota.testing.ts";
 

@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { CARD_COLOR, primaryButton, secondaryButton } from "./card-kit.ts";
 
 const action = { type: "postback", label: "試穿這件", data: "a=tryon&pid=p1" };

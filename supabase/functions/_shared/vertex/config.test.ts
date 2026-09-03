@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
 import { parseServiceAccount } from "./config.ts";
 
 const KEY_FILE = JSON.stringify({

@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
 import { parseChatParams } from "./request.ts";
 import { ValidationError } from "../_shared/chat/index.ts";
 import type { ChatMessage } from "../_shared/chat/index.ts";

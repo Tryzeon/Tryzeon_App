@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
 import { parseLineAuthBody } from "./request.ts";
 import { ValidationError } from "../_shared/validation.ts";
 

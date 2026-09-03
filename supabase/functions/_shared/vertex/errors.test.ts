@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
 import { APICallError, RetryError } from "npm:ai@^6.0.208";
 import { ServiceBusyError } from "../errors.ts";
 import { rethrowAsBusy } from "./errors.ts";

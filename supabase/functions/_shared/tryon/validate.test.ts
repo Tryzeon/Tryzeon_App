@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
 import { validateTryonParams } from "./validate.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS, type TryonParams } from "./types.ts";

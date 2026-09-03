@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { getOrCreateUserId } from "./line-user.ts";
 import type { DbClient } from "./supabase.ts";
 

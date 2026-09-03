@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { buildPrompt, buildSchema, toResponse } from "./analysis.ts";
 
 const CATEGORIES = new Map([["襯衫", "cat-shirt"], ["褲子", "cat-pants"]]);

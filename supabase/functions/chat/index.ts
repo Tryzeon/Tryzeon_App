@@ -1,7 +1,7 @@
 // Errors split by when they happen, not by what they are: a bad body is
 // rejected with a status code, while anything raised after the 200 is committed
 // arrives as an in-stream error frame. Both render from `classifyCoreError`.
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
 import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { coreErrorResponse, jsonError } from "../_shared/http.ts";
 import {

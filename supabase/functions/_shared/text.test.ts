@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { isUuid, nonEmptyStr, textArrayValues } from "./text.ts";
 
 Deno.test("nonEmptyStr trims, and rejects blanks and non-strings", () => {

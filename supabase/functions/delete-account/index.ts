@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
 import { json } from "../_shared/http.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 import { type DbClient, getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";

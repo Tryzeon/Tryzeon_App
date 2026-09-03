@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert";
+import { assertEquals, assertRejects } from "jsr:@std/assert@^1.0.19";
 import { runChatAgent } from "./run.ts";
 import { ValidationError } from "../validation.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";

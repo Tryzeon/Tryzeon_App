@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from "jsr:@std/assert";
+import { assertEquals, assertStringIncludes } from "jsr:@std/assert@^1.0.19";
 import { type ChatHandlerDeps, handleTextMessage } from "./chat-handler.ts";
 import {
   type ChatParams,
