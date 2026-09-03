@@ -64,9 +64,7 @@ class AdBanner extends HookConsumerWidget {
                         // TODO: route the ad tap to a detail page or external link
                       },
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                        ),
+                        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         decoration: BoxDecoration(
                           borderRadius: AppRadius.cardAll,
                           image: DecorationImage(

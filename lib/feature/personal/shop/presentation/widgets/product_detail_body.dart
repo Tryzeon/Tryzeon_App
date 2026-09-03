@@ -115,11 +115,7 @@ class _ProductDetailContent extends HookConsumerWidget {
                 right: AppSpacing.sm,
                 child: Skeleton.ignore(
                   child: TryonFab(
-                    onTap: () => triggerProductTryon(
-                      context,
-                      ref,
-                      product,
-                    ),
+                    onTap: () => triggerProductTryon(context, ref, product),
                   ),
                 ),
               ),

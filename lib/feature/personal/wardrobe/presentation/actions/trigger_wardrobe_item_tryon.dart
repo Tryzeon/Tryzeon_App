@@ -12,8 +12,7 @@ void triggerWardrobeItemTryon(
   HapticFeedback.mediumImpact();
   TryonModeSheet.show(
     context: context,
-    onModeSelected: (final mode) => ref
-        .read(tryonCoordinatorProvider)
-        .tryonFromWardrobeItem(item.id, mode: mode),
+    onModeSelected: (final mode) =>
+        ref.read(tryonCoordinatorProvider).tryonFromWardrobeItem(item.id, mode: mode),
   );
 }

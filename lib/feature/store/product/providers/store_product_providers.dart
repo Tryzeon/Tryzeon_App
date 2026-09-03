@@ -240,21 +240,17 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     required final List<ImageItem> images,
     required final List<SizeItem> sizes,
   }) {
-    return _write(
-      ProductMutation.update,
-      () async {
-        final original = await ref.read(productByIdProvider(productId).future);
-        return ref.read(updateProductUseCaseProvider)(
-          UpdateProductParams(
-            original: original,
-            draft: draft,
-            images: images,
-            sizes: sizes,
-          ),
-        );
-      },
-      refreshedProductId: productId,
-    );
+    return _write(ProductMutation.update, () async {
+      final original = await ref.read(productByIdProvider(productId).future);
+      return ref.read(updateProductUseCaseProvider)(
+        UpdateProductParams(
+          original: original,
+          draft: draft,
+          images: images,
+          sizes: sizes,
+        ),
+      );
+    }, refreshedProductId: productId);
   }
 
   Future<Result<void, Failure>> setStatus({
@@ -263,10 +259,7 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   }) {
     return _write(
       ProductMutation.update,
-      () => ref.read(setProductStatusUseCaseProvider)(
-        product: product,
-        status: status,
-      ),
+      () => ref.read(setProductStatusUseCaseProvider)(product: product, status: status),
       refreshedProductId: product.id,
     );
   }

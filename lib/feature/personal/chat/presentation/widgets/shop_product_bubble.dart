@@ -97,11 +97,7 @@ class _ShopInfo extends ConsumerWidget {
             TryonFab(
               size: 18,
               label: '試穿',
-              onTap: () => triggerProductTryon(
-                context,
-                ref,
-                product,
-              ),
+              onTap: () => triggerProductTryon(context, ref, product),
             ),
           ],
         ),

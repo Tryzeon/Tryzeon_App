@@ -66,10 +66,7 @@ class HomePage extends HookConsumerWidget {
         context,
         title: '選擇模特來源',
         hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
-        crop: const LockedCrop(
-          ratio: AppConstants.avatarAspectRatio,
-          title: '框出全身',
-        ),
+        crop: const LockedCrop(ratio: AppConstants.avatarAspectRatio, title: '框出全身'),
       );
       if (imageFile == null) return;
 

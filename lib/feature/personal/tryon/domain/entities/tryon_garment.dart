@@ -7,9 +7,8 @@ sealed class TryonGarment with _$TryonGarment {
   /// Bytes and never a storage path: the backend accepts only inline images
   /// from a caller, because whether the caller may read a stored object is not
   /// a question the path can answer.
-  const factory TryonGarment.images({
-    required final List<String> base64Images,
-  }) = TryonGarmentImages;
+  const factory TryonGarment.images({required final List<String> base64Images}) =
+      TryonGarmentImages;
 
   /// [sizeId] names which published size is being worn, so the backend can
   /// describe how that size sits on this shopper.
@@ -20,7 +19,6 @@ sealed class TryonGarment with _$TryonGarment {
 
   /// A reference rather than the item's image path, so the backend can bind the
   /// read to its owner and describe the item from its category and tags.
-  const factory TryonGarment.wardrobe({
-    required final String wardrobeItemId,
-  }) = TryonGarmentWardrobe;
+  const factory TryonGarment.wardrobe({required final String wardrobeItemId}) =
+      TryonGarmentWardrobe;
 }

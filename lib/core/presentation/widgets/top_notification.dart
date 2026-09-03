@@ -53,9 +53,7 @@ class TopNotification {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.smMd,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.smMd),
                         child: Icon(
                           Icons.error_outline_rounded,
                           color: colorScheme.error,
@@ -65,9 +63,7 @@ class TopNotification {
                       const SizedBox(width: AppSpacing.smMd),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.smMd,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.smMd),
                           child: Text(
                             message,
                             style: theme.textTheme.titleSmall?.copyWith(

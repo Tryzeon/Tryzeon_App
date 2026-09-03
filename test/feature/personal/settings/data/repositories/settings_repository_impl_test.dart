@@ -43,9 +43,7 @@ void main() {
   });
 
   test('falls back to the standard engine when the stored name is unknown', () async {
-    SharedPreferences.setMockInitialValues({
-      AppConstants.keyTryonEngine: 'turbo',
-    });
+    SharedPreferences.setMockInitialValues({AppConstants.keyTryonEngine: 'turbo'});
 
     final config = (await repository.getTryonPreferences()).get()!;
     expect(config.engine, TryonEngine.standard);

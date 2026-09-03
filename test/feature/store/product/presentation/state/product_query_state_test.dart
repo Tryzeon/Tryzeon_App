@@ -4,10 +4,7 @@ import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 
-Product product(
-  final String name, {
-  final ProductStatus status = ProductStatus.active,
-}) {
+Product product(final String name, {final ProductStatus status = ProductStatus.active}) {
   final now = DateTime(2026, 8, 16);
   return Product(
     id: name,

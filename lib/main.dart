@@ -106,7 +106,11 @@ class Tryzeon extends HookConsumerWidget {
       theme: AppTheme.lightTheme,
       routerConfig: router,
       builder: (final context, final child) => AppKeyboardDismisser(
-        child: AppUpgradeAlert(upgrader: upgrader, navigatorKey: navigatorKey, child: child),
+        child: AppUpgradeAlert(
+          upgrader: upgrader,
+          navigatorKey: navigatorKey,
+          child: child,
+        ),
       ),
     );
   }

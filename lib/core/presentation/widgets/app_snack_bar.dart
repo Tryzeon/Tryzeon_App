@@ -12,8 +12,7 @@ class AppSnackBar {
     final String? actionLabel,
     final VoidCallback? onAction,
   }) {
-    final liftsItself =
-        Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
+    final liftsItself = Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
 
     final navBarOffset = PlatformInfo.isIOS26OrHigher() && !liftsItself
         ? AppSpacing.iosTabBarHeight
@@ -31,9 +30,7 @@ class AppSnackBar {
             : null,
 
         persist: false,
-        duration: hasAction
-            ? const Duration(seconds: 6)
-            : const Duration(seconds: 4),
+        duration: hasAction ? const Duration(seconds: 6) : const Duration(seconds: 4),
         margin: EdgeInsets.only(
           left: AppSpacing.md,
           right: AppSpacing.md,

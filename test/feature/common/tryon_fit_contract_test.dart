@@ -66,45 +66,34 @@ void main() {
     },
   );
 
-  test(
-    "fit.ts's CIRCUMFERENCES ladders still match EaseTable "
-    '(update supabase/functions/_shared/tryon/fit.ts if this fails)',
-    () {
-      // Verbatim from fit.ts. Each ladder flattens the ProductFit axis: slim's
-      // min, regular's max, loose's max. Elasticity is `none` because fit.ts
-      // derives from the base bands, before any stretch shift.
-      const ladders = <BodyMeasurementType,
-          ({double slimMin, double regularMax, double looseMax})>{
-        BodyMeasurementType.chest: (
-          slimMin: 4,
-          regularMax: 15,
-          looseMax: 24,
-        ),
-        BodyMeasurementType.waist: (slimMin: 0, regularMax: 4, looseMax: 8),
-        BodyMeasurementType.hips: (slimMin: 2, regularMax: 9, looseMax: 14),
-        BodyMeasurementType.thigh: (slimMin: 1, regularMax: 7, looseMax: 12),
-      };
+  test("fit.ts's CIRCUMFERENCES ladders still match EaseTable "
+      '(update supabase/functions/_shared/tryon/fit.ts if this fails)', () {
+    // Verbatim from fit.ts. Each ladder flattens the ProductFit axis: slim's
+    // min, regular's max, loose's max. Elasticity is `none` because fit.ts
+    // derives from the base bands, before any stretch shift.
+    const ladders =
+        <BodyMeasurementType, ({double slimMin, double regularMax, double looseMax})>{
+          BodyMeasurementType.chest: (slimMin: 4, regularMax: 15, looseMax: 24),
+          BodyMeasurementType.waist: (slimMin: 0, regularMax: 4, looseMax: 8),
+          BodyMeasurementType.hips: (slimMin: 2, regularMax: 9, looseMax: 14),
+          BodyMeasurementType.thigh: (slimMin: 1, regularMax: 7, looseMax: 12),
+        };
 
-      for (final MapEntry(key: type, value: ladder) in ladders.entries) {
-        EaseBand band(final ProductFit fit) =>
-            EaseTable.bandFor(type, fit, ProductElasticity.none)!;
+    for (final MapEntry(key: type, value: ladder) in ladders.entries) {
+      EaseBand band(final ProductFit fit) =>
+          EaseTable.bandFor(type, fit, ProductElasticity.none)!;
 
-        expect(
-          band(ProductFit.slim).min,
-          ladder.slimMin,
-          reason: '${type.name} slimMin',
-        );
-        expect(
-          band(ProductFit.regular).max,
-          ladder.regularMax,
-          reason: '${type.name} regularMax',
-        );
-        expect(
-          band(ProductFit.loose).max,
-          ladder.looseMax,
-          reason: '${type.name} looseMax',
-        );
-      }
-    },
-  );
+      expect(band(ProductFit.slim).min, ladder.slimMin, reason: '${type.name} slimMin');
+      expect(
+        band(ProductFit.regular).max,
+        ladder.regularMax,
+        reason: '${type.name} regularMax',
+      );
+      expect(
+        band(ProductFit.loose).max,
+        ladder.looseMax,
+        reason: '${type.name} looseMax',
+      );
+    }
+  });
 }

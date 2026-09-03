@@ -84,7 +84,9 @@ Failure mapExceptionToFailure(final Object e) {
         'SERVICE_BUSY' => const ServiceBusyFailure(),
         'NO_AVATAR' => const AvatarMissingFailure(),
         'AI_GENERATION_FAILED' => const ServerFailure('AI 無法辨識圖片，請換一張試試'),
-        'RATE_LIMIT_EXCEEDED' => RateLimitFailure(usagePayload: _usagePayload(body['usage'])),
+        'RATE_LIMIT_EXCEEDED' => RateLimitFailure(
+          usagePayload: _usagePayload(body['usage']),
+        ),
         _ => null,
       };
       if (coded != null) return coded;

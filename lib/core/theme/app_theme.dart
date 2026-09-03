@@ -14,9 +14,7 @@ class AppColors {
   static const Color brandContainer = Color(
     0xFFE8DEF8,
   ); // soft lavender — chip / tag surface
-  static const Color onBrandContainer = Color(
-    0xFF463371,
-  );
+  static const Color onBrandContainer = Color(0xFF463371);
 
   static const Color neutral100 = Color(0xFFFFFFFF); // page background
   static const Color neutral98 = Color(0xFFF7F7F7); // surfaceContainerLow
@@ -380,10 +378,7 @@ class AppTheme {
         labelColor: colorScheme.onSurface,
         unselectedLabelColor: colorScheme.onSurfaceVariant,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(
-            color: colorScheme.onSurface,
-            width: AppStroke.medium,
-          ),
+          borderSide: BorderSide(color: colorScheme.onSurface, width: AppStroke.medium),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: colorScheme.outline,

@@ -20,10 +20,7 @@ class ProductActionsSheet extends StatelessWidget {
 
   final Product product;
 
-  static Future<bool?> show(
-    final BuildContext context,
-    final Product product,
-  ) {
+  static Future<bool?> show(final BuildContext context, final Product product) {
     return showModalBottomSheet<bool>(
       context: context,
       useRootNavigator: true,

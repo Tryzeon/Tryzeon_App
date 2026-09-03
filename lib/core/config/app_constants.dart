@@ -9,8 +9,7 @@ class AppConstants {
       '924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com';
   static const String lineChannelId = '2010556446';
 
-  static String productWebUrl(final String productId) =>
-      '$webBaseUrl/product/$productId';
+  static String productWebUrl(final String productId) => '$webBaseUrl/product/$productId';
 
   static const String tableUserProfiles = 'user_profiles';
   static const String tableStoreProfiles = 'store_profiles';

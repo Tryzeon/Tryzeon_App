@@ -23,10 +23,7 @@ Future<void> toggleProductStatus(
   if (!context.mounted) return;
 
   if (result.isFailure) {
-    TopNotification.show(
-      context,
-      message: result.getError()!.displayMessage(context),
-    );
+    TopNotification.show(context, message: result.getError()!.displayMessage(context));
     return;
   }
 
@@ -38,10 +35,7 @@ Future<void> toggleProductStatus(
   );
 }
 
-Future<void> _undo(
-  final ProviderContainer container,
-  final Product product,
-) async {
+Future<void> _undo(final ProviderContainer container, final Product product) async {
   final result = await container
       .read(productEditProvider.notifier)
       .setStatus(product: product, status: product.status);

@@ -101,9 +101,7 @@ class TryonController extends _$TryonController {
       return;
     }
 
-    await _start(
-      TryonSubject.animated(baseImageUrl: imageUrl, origin: entry.subject),
-    );
+    await _start(TryonSubject.animated(baseImageUrl: imageUrl, origin: entry.subject));
   }
 
   Future<void> _start(final TryonSubject subject) async {

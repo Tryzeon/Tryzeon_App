@@ -202,7 +202,7 @@ class _ProfileHeader extends HookConsumerWidget {
       if (profile == null) {
         return Text('尚未建立個人資料', style: theme.textTheme.titleMedium);
       }
-      
+
       final email = profile.email;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

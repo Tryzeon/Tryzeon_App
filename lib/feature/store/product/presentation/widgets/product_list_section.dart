@@ -34,10 +34,7 @@ class ProductListSection extends HookConsumerWidget {
     Widget buildProductGrid(final List<Product> products) {
       if (products.isEmpty) {
         return centeredFill(
-          _EmptyState(
-            hasQuery: query.searchQuery.isNotEmpty,
-            status: query.status,
-          ),
+          _EmptyState(hasQuery: query.searchQuery.isNotEmpty, status: query.status),
         );
       }
 

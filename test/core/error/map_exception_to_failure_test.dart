@@ -59,7 +59,10 @@ void main() {
         mapExceptionToFailure(
           const FunctionException(
             status: 503,
-            details: {'error': 'Service is busy, please try again shortly', 'code': 'SERVICE_BUSY'},
+            details: {
+              'error': 'Service is busy, please try again shortly',
+              'code': 'SERVICE_BUSY',
+            },
           ),
         ),
         isA<ServiceBusyFailure>(),
@@ -104,11 +107,15 @@ void main() {
       // This is the function that turns exceptions into Failures — a body whose
       // shape surprises us must not become a second exception.
       expect(
-        mapExceptionToFailure(const FunctionException(status: 500, details: 'not an object')),
+        mapExceptionToFailure(
+          const FunctionException(status: 500, details: 'not an object'),
+        ),
         isA<ServerFailure>(),
       );
       expect(
-        mapExceptionToFailure(const FunctionException(status: 500, details: {'code': 42})),
+        mapExceptionToFailure(
+          const FunctionException(status: 500, details: {'code': 42}),
+        ),
         isA<ServerFailure>(),
       );
       final failure = mapExceptionToFailure(

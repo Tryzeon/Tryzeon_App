@@ -89,14 +89,12 @@ void revenueCatIdentitySync(final Ref ref) {
   // the call already in flight.
   var pending = Future<void>.value();
 
-  final subscription = ref
-      .watch(authIdentityServiceProvider)
-      .watchUserId()
-      .listen((final userId) {
-        pending = pending.then(
-          (final _) => userId == null ? syncLogOut() : syncLogIn(userId),
-        );
-      });
+  final userIdStream = ref.watch(authIdentityServiceProvider).watchUserId();
+  final subscription = userIdStream.listen((final userId) {
+    pending = pending.then(
+      (final _) => userId == null ? syncLogOut() : syncLogIn(userId),
+    );
+  });
 
   ref.onDispose(subscription.cancel);
 }
