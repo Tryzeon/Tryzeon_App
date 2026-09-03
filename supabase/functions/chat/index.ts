@@ -19,7 +19,6 @@ import { encodeEvent, errorEvent } from "./stream.ts";
 
 Deno.serve(async (req) => {
   try {
-    // Auth: Verify JWT and get user securely
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 

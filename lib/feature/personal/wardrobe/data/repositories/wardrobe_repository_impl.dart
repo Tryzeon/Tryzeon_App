@@ -30,7 +30,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     final bool forceRefresh = false,
   }) async {
     try {
-      // 1. Try Local Cache
       if (!forceRefresh) {
         try {
           final cachedItems = await _localDataSource.getWardrobeItems();
@@ -52,10 +51,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         }
       }
 
-      // 2. Try Remote
       final remoteItems = await _remoteDataSource.getWardrobeItems();
 
-      // 3. Update Cache
       try {
         await _localDataSource.saveWardrobeItems(remoteItems);
       } catch (e, stackTrace) {
@@ -79,7 +76,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final imageName = p.basename(params.image.path);
       final bytes = await params.image.readAsBytes();
 
-      // 1. Upload Image first
       final imagePath = await _remoteDataSource.uploadImage(
         category: categoryString,
         fileName: imageName,
@@ -88,7 +84,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       await _localDataSource.saveImage(bytes, imagePath);
 
-      // 2. Create Request DTO
       final request = CreateWardrobeItemRequest(
         imagePath: imagePath,
         category: params.category,

@@ -24,7 +24,6 @@ class PersonalOnboardingPage extends HookConsumerWidget {
     final notifier = ref.read(onboardingProvider.notifier);
     final currentStep = onboardingState.currentStep;
 
-    // Animate page when step changes
     ref.listen(onboardingProvider, (final previous, final next) {
       if ((previous?.currentStep ?? 0) != next.currentStep) {
         pageController.animateToPage(

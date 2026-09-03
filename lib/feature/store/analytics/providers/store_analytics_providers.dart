@@ -29,7 +29,6 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   }
 }
 
-// --- Data Sources ---
 @riverpod
 ProductAnalyticsRemoteDataSource productAnalyticsRemoteDataSource(final Ref ref) {
   return ProductAnalyticsRemoteDataSource(Supabase.instance.client);
@@ -43,7 +42,6 @@ ProductAnalyticsLocalDataSource productAnalyticsLocalDataSource(final Ref ref) {
   );
 }
 
-// --- Repository ---
 @riverpod
 ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
   return ProductAnalyticsRepositoryImpl(
@@ -52,13 +50,11 @@ ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
   );
 }
 
-// --- Use Case ---
 @riverpod
 GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
   return GetProductAnalyticsSummaries(ref.watch(productAnalyticsRepositoryProvider));
 }
 
-// --- Feature Provider: per-product summaries ---
 /// Per-product analytics for the selected month, and the owner of analytics
 /// refreshes.
 @riverpod

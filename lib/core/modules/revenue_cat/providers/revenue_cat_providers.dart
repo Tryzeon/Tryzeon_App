@@ -11,14 +11,10 @@ import 'package:typed_result/typed_result.dart';
 
 part 'revenue_cat_providers.g.dart';
 
-// ── Repository ──────────────────────────────────────────────────────────────
-
 @Riverpod(keepAlive: true)
 RevenueCatRepository revenueCatRepository(final Ref ref) {
   return RevenueCatRepositoryImpl();
 }
-
-// ── Use Case Providers ───────────────────────────────────────────────────────
 
 @riverpod
 WatchAppSubscriptionEntitlement watchAppSubscriptionEntitlementUseCase(final Ref ref) {
@@ -45,8 +41,6 @@ LogOutRevenueCat logOutRevenueCatUseCase(final Ref ref) {
 Stream<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) {
   return ref.watch(watchAppSubscriptionEntitlementUseCaseProvider)();
 }
-
-// ── Identity Sync ─────────────────────────────────────────────────────────────
 
 /// Single source of truth for keeping the RevenueCat App User ID in sync with
 /// the Supabase auth identity.

@@ -7,12 +7,11 @@
  * (HTTP responses, LINE push messages, anything later) renders from the same
  * classification instead of growing its own `instanceof` chain.
  *
- * Only `generation` is try-on's. A rejected input and a spent quota are raised
- * identically by every feature, so both the classes and the arms narrowing them
- * belong to `_shared/validation.ts`, `_shared/quota.ts` and
- * `_shared/errors.ts`; this module layers its own arm over them and delegates
- * the rest, and re-exports `ValidationError` so it still reads as the one list
- * of what a try-on job can raise.
+ * Only `generation` is try-on's: a rejected input and a spent quota are raised
+ * identically by every feature, so those classes and the arms narrowing them
+ * live in `_shared/validation.ts`, `_shared/quota.ts` and `_shared/errors.ts`.
+ * This module layers its own arm over them and re-exports `ValidationError`, so
+ * it still reads as the one list of what a try-on job can raise.
  */
 
 import { classifyCoreError, type CoreErrorInfo } from "../errors.ts";

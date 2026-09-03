@@ -51,7 +51,6 @@ class TryonModeSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title + settings entry
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Row(
@@ -65,7 +64,6 @@ class TryonModeSheet extends ConsumerWidget {
               ),
             ),
 
-            // ③ Image Try-On Card
             _ModeCard(
               icon: Icons.photo_outlined,
               title: '圖片試穿',
@@ -82,7 +80,6 @@ class TryonModeSheet extends ConsumerWidget {
 
             const SizedBox(height: AppSpacing.smMd),
 
-            // ④ Video Try-On Card
             _ModeCard(
               icon: Icons.videocam_outlined,
               title: '影片試穿',
@@ -180,7 +177,6 @@ class _ModeCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Icon circle
                   Container(
                     width: 36,
                     height: 36,
@@ -192,7 +188,6 @@ class _ModeCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.md),
 
-                  // Title + subtitle
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +238,6 @@ class _ModeCard extends StatelessWidget {
                 ],
               ),
 
-              // ⑤ Upgrade button (non-Max only)
               if (isLocked) ...[
                 const SizedBox(height: AppSpacing.md),
                 SizedBox(

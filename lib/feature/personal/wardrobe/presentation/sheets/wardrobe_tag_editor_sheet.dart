@@ -98,7 +98,6 @@ class WardrobeTagEditorSheet extends HookWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Area
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,

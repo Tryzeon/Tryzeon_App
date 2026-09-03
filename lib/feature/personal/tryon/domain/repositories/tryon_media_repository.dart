@@ -14,6 +14,5 @@ abstract class TryonMediaRepository {
   /// Saves a finished try-on [result] to the device gallery.
   Future<Result<void, Failure>> saveToGallery(final TryonResult result);
 
-  /// Shares a finished try-on [result].
   Future<Result<void, Failure>> share(final TryonResult result);
 }

@@ -1,4 +1,3 @@
--- supabase/migrations/20260630000000_add_line_user_links.sql
 -- Maps a LINE userId (id_token `sub`) to a Supabase auth user.
 -- Written/read ONLY by the liff-tryon Edge Function via the service role.
 create table if not exists public.line_user_links (

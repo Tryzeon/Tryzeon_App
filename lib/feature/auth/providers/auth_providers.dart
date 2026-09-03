@@ -27,9 +27,6 @@ bool isAuthenticated(final Ref ref) {
   // without manually invalidating (which causes infinite rebuild loops)
   ref.watch(authStateProvider);
 
-  // By watching the stream, this provider will automatically update
-  // when auth state changes. The stream updates directly instead of
-  // triggering manual invalidation loops.
   return Supabase.instance.client.auth.currentSession != null;
 }
 
@@ -39,7 +36,6 @@ User? currentUser(final Ref ref) {
   return Supabase.instance.client.auth.currentUser;
 }
 
-// Data Source Providers
 @riverpod
 AuthRemoteDataSource authRemoteDataSource(final Ref ref) {
   return AuthRemoteDataSource(Supabase.instance.client);
@@ -51,7 +47,6 @@ AuthLocalDataSource authLocalDataSource(final Ref ref) {
   return AuthLocalDataSource(isarService);
 }
 
-// Repository Provider
 @riverpod
 AuthRepository authRepository(final Ref ref) {
   final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
@@ -70,7 +65,6 @@ AuthRepository authRepository(final Ref ref) {
   );
 }
 
-// Use Case Providers
 @riverpod
 SignInWithProvider signInWithProviderUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);

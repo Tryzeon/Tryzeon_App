@@ -87,7 +87,6 @@ function optionalBaseImage(source: unknown): BaseImage | undefined {
   return { base64 };
 }
 
-/** Guard an optional text field: if present it must be a string within `max`. */
 function assertOptionalText(value: unknown, label: string, max: number): void {
   if (value === undefined) return;
   if (typeof value !== "string") {
@@ -200,10 +199,9 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     // this request, so a client that sends them uniformly is tolerated. Dropped
     // here so the job runs on params that say what will actually happen.
     //
-    // The engine survives, unlike them. Today nothing on this path reads it —
-    // animating runs no image pass — but it names a model tier rather than a
-    // prompt, and a video model that grows tiers would need it back. Keeping it
-    // costs a field; dropping it would make that a change to the guard.
+    // The engine survives: nothing on this path reads it — animating runs no
+    // image pass — but it names a model tier rather than a prompt, and a video
+    // model that grows tiers would need it back.
     return {
       ...params,
       avatar: undefined,

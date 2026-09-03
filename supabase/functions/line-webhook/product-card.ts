@@ -95,18 +95,16 @@ export function fetchProductRows(
  * throws instead: a missing product is something the user can be told about, a
  * broken query is ours to fix.
  *
- * Unlisted counts as "nothing that can be acted on" for the same reason the
- * other two do: `handleProductTryon` runs this before charging quota, so
- * whatever the core would later reject has to be rejected here too — otherwise
- * the tap costs the user a try-on and returns a generic error. A card can sit
- * in a LINE thread long after the store took the product down. The unlisted
- * check is `get_shop_product`'s rather than this function's: it is the same
- * rule the try-on core reads through, and this path runs on the service-role
- * client, where an RLS policy would not apply.
+ * Unlisted counts as "nothing that can be acted on" because `handleProductTryon`
+ * runs this before charging quota: whatever the core would later reject has to
+ * be rejected here too, or the tap costs the user a try-on and returns a generic
+ * error — and a card can sit in a LINE thread long after the store took the
+ * product down. The unlisted check is `get_shop_product`'s, the same rule the
+ * try-on core reads through; this path runs on the service-role client, where an
+ * RLS policy would not apply.
  *
  * No image url, and so no `imagesBaseUrl`: this serves the try-on path, whose
- * result card's hero is the generated image. The catalog image was carried here
- * for years and never read.
+ * result card's hero is the generated image.
  */
 export async function fetchProductInfo(
   admin: DbClient,
@@ -130,11 +128,10 @@ export async function fetchProductInfo(
  * display-only.
  *
  * "Absolute http(s)" is checked with the `URL` parser, not a prefix test:
- * `startsWith("http")` also accepts `"httpfoo://x"` and, because `URL`
- * normalizes a single-slash scheme into a double-slash one, a bare protocol
- * check on the *parsed* result would still wave through `"https:/one-slash"`
- * even though that literal string is not something LINE accepts — so the
- * scheme is also confirmed against the original, unnormalized input.
+ * `startsWith("http")` also accepts `"httpfoo://x"`, and because `URL` normalizes
+ * a single-slash scheme into a double-slash one, checking only the parsed
+ * protocol would wave through `"https:/one-slash"` — so the scheme is confirmed
+ * against the original, unnormalized input too.
  */
 export function purchaseAction(product: ProductInfo): object | null {
   const url = product.purchaseUrl;
@@ -220,9 +217,8 @@ export function productInfoContents(product: ProductInfo): object[] {
  * piece of text. `products.name` is bare `text` in Postgres with no length
  * constraint, so nothing upstream stops a name from reaching either cap.
  *
- * The cap here is far below both LINE limits: a name past ~40 characters is
- * already unreadable on a LINE card, so clamping this early costs nothing
- * legible while removing the failure mode outright.
+ * The cap is far below both LINE limits: a name past ~40 characters is already
+ * unreadable on a card, so clamping early costs nothing legible.
  */
 const MAX_CLAMPED_NAME_CHARS = 40;
 

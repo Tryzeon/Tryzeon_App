@@ -72,7 +72,6 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
       }
 
-      // Sign out from Supabase
       try {
         await _remoteDataSource.signOut();
       } catch (e, stackTrace) {
@@ -81,14 +80,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await _signOutProviderSdks();
 
-      // Clear API cache
       try {
         await _cacheService.clearCache();
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
       }
 
-      // Clear local preferences
       try {
         await _localDataSource.clearAll();
       } catch (e, stackTrace) {

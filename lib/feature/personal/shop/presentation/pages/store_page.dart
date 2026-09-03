@@ -209,7 +209,6 @@ class StorePage extends HookConsumerWidget {
                     ),
                   ),
 
-                  // Products Section
                   ProductSliverGrid(
                     productsAsync: productsAsync,
                     onRetry: () => ref.invalidate(shopProductsProvider(filter)),

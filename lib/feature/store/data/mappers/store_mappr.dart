@@ -22,7 +22,6 @@ import 'store_mappr.auto_mappr.dart';
 /// AutoMappr configuration for Store feature
 @AutoMappr(
   [
-    // ProductSize mappings
     MapType<ProductSizeModel, ProductSize>(),
     MapType<ProductSize, ProductSizeModel>(),
     MapType<ProductSizeModel, ProductSizeEmbedded>(),
@@ -76,7 +75,6 @@ import 'store_mappr.auto_mappr.dart';
     MapType<StoreProfileModel, StoreProfileCache>(fields: [Field('storeId', from: 'id')]),
     MapType<StoreProfileCache, StoreProfileModel>(fields: [Field('id', from: 'storeId')]),
 
-    // ProductAnalyticsSummary mappings
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(),
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(),
     MapType<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(),

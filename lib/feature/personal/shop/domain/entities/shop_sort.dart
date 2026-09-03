@@ -12,10 +12,8 @@ sealed class ShopSort with _$ShopSort {
   /// 綜合(預設):最新優先。
   const factory ShopSort.latest() = ShopSortLatest;
 
-  /// 價格由低到高。
   const factory ShopSort.priceLowToHigh() = ShopSortPriceLowToHigh;
 
-  /// 價格由高到低。
   const factory ShopSort.priceHighToLow() = ShopSortPriceHighToLow;
 
   /// 依與使用者座標的距離由近到遠。

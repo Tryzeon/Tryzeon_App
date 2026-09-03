@@ -85,7 +85,6 @@ export function toLineWardrobeItem(
   return { ...toWardrobeItemInfo(row), imageUrl: signedUrl };
 }
 
-/** The tags as the one line a card shows them on. */
 export function tagLine(tags: string[]): string {
   const line = tags.map((t) => `#${t}`).join(" ");
   return line.length > MAX_TAG_LINE_CHARS
@@ -160,9 +159,8 @@ export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
  *
  * Seven days, not the app's hour: a LINE message is scrolled back to, and an
  * expired URL is a card that renders as a hole. Deliberately not shared with
- * `_shared/r2.ts`'s identical constant — that one is R2's signing window and
- * this one is Supabase Storage's, and their being equal today is a coincidence
- * rather than a rule.
+ * `_shared/r2.ts`'s identical constant — that is R2's signing window, this is
+ * Supabase Storage's, and their being equal today is a coincidence.
  */
 const SIGNED_URL_TTL_SECONDS = 604800;
 
@@ -199,8 +197,7 @@ async function signImageUrls(
  * `userId` bounds the query, and that is a security property rather than a
  * filter: this path runs on the admin client with no RLS beneath it, so without
  * the `.eq` an id the model quoted could name another sender's item.
- * `fetchProductRows` takes no such parameter because the catalog is public —
- * the asymmetry is the point, and closing it would open a leak.
+ * `fetchProductRows` needs no such parameter only because the catalog is public.
  *
  * Two round trips, both batched: the rows, then every image signed at once.
  */
@@ -231,16 +228,13 @@ export async function fetchWardrobeRows(
  * One wardrobe item's text fields, or null when the id names nothing the
  * sender owns.
  *
- * No signed URL, and that is the one place this departs from `fetchProductInfo`:
- * a try-on result card's hero is the generated image, so the body needs only
- * the words. Signing here would be a round trip nobody reads, and a signing
- * failure would refuse a try-on the core could have completed — the core reads
- * the storage object itself and never wants a URL.
+ * No signed URL, unlike `fetchProductInfo`: a try-on result card's hero is the
+ * generated image, so the body needs only the words, and a signing failure would
+ * refuse a try-on the core could have completed.
  *
  * Bound to `userId` like every wardrobe read. `resolveWardrobeGarment` binds it
- * again inside the job; this one exists so that "gone, or never yours" becomes
- * a sentence before any quota is charged, which is the same reason
- * `handleProductTryon` reads its product up front.
+ * again inside the job; this one exists so that "gone, or never yours" becomes a
+ * sentence before any quota is charged.
  */
 export async function fetchWardrobeItemInfo(
   admin: DbClient,

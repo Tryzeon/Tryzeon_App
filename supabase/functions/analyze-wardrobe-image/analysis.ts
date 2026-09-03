@@ -69,10 +69,7 @@ export interface WardrobeAnalysisResponse {
  * at {@link MAX_TAGS}.
  *
  * Unlike its sibling in `analyze-product-image/analysis.ts`, this does not
- * de-dupe tags. This module was lifted verbatim out of `index.ts` in a refactor
- * whose only acceptance criterion was zero behaviour change, so de-duplication
- * was out of scope rather than rejected on its merits — and the sibling only
- * de-dupes because it filters against a closed enum, where a repeat is
+ * de-dupe tags: that one filters against a closed enum, where a repeat is
  * redundant by construction; `tags` here is free text with no such vocabulary,
  * so a repeat is a fact about the model's answer, not noise to collapse.
  */

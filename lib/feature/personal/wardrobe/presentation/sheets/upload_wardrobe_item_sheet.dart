@@ -270,7 +270,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Header
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
@@ -280,7 +279,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           ),
           child: Text('上傳衣服', style: textTheme.titleMedium),
         ),
-        // Scrollable content
         Flexible(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -300,7 +298,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             ),
           ),
         ),
-        // Footer
         Padding(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.md,

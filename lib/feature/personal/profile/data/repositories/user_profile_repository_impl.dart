@@ -34,7 +34,6 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     final bool forceRefresh = false,
   }) async {
     try {
-      // 1. Try Local Cache
       if (!forceRefresh) {
         try {
           final cachedProfile = await _localDataSource.getUserProfile();
@@ -55,10 +54,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         }
       }
 
-      // 2. Fetch from API
       final remoteProfile = await _remoteDataSource.getUserProfile();
 
-      // 3. Update Cache
       try {
         await _localDataSource.saveUserProfile(remoteProfile);
       } catch (e, stackTrace) {
@@ -187,13 +184,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   @override
   Future<Result<File, Failure>> getUserAvatar(final String path) async {
     try {
-      // 1. Try Local Cache
       final cachedAvatar = await _localDataSource.getAvatar(path);
       if (cachedAvatar != null) {
         return Ok(cachedAvatar);
       }
 
-      // 2. If missing, generate URL and download
       final url = await _remoteDataSource.createSignedUrl(path);
       final downloadedAvatar = await _localDataSource.downloadAvatar(path, url);
 

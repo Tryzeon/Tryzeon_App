@@ -9,7 +9,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 /// [PrePurchaseSheet]. Lives at the presentation layer because Material
 /// `IconData` and Chinese display strings are presentation concerns.
 extension FitResultUiMapper on FitResult {
-  /// The localized headline shown as the title text.
   String get headline {
     switch (displayState) {
       case FitDisplayState.match:
@@ -27,7 +26,6 @@ extension FitResultUiMapper on FitResult {
     }
   }
 
-  /// The localized subline shown as the secondary descriptive text.
   String get subline {
     switch (displayState) {
       case FitDisplayState.match:
@@ -50,7 +48,6 @@ extension FitResultUiMapper on FitResult {
     }
   }
 
-  /// The icon representing the current display state.
   IconData get iconData => switch (displayState) {
     FitDisplayState.match => Icons.check_rounded,
     FitDisplayState.caveats => Icons.contrast_rounded,

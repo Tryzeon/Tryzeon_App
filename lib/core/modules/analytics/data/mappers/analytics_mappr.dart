@@ -5,7 +5,6 @@ import '../models/analytics_event_model.dart';
 
 import 'analytics_mappr.auto_mappr.dart';
 
-/// AutoMappr configuration for Analytics module
 @AutoMappr([
   MapType<AnalyticsEvent, AnalyticsEventModel>(
     fields: [Field('eventType', custom: AnalyticsMappr.eventTypeToString)],

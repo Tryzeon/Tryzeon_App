@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// A reusable loading overlay widget that shows a loading indicator
-/// over the child widget when isLoading is true.
 class LoadingOverlay extends StatelessWidget {
   const LoadingOverlay({required this.isLoading, required this.child, super.key});
 

@@ -1,11 +1,10 @@
 /**
  * HTTP rendering of try-on core errors.
  *
- * This module sits beside the core but is not part of it, and the boundary is
- * directional rather than positional: it imports the core, the core imports
- * nothing from here, and `index.ts` does not re-export it. An adapter reaching
- * for this reaches past the core's public surface deliberately — that deep
- * import is the signal it is taking on a transport concern.
+ * Beside the core but not part of it, and the boundary is directional rather
+ * than positional: it imports the core, the core imports nothing from here, and
+ * `index.ts` does not re-export it — so an adapter's deep import is the signal
+ * it is deliberately taking on a transport concern.
  *
  * It renders only try-on's own kind; the shared ones go to `coreErrorResponse`
  * so a validation error cannot answer 400 here and something else elsewhere.

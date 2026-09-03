@@ -1,4 +1,3 @@
-/// 認證身分服務抽象介面
 abstract class AuthIdentityService {
   /// 目前登入的使用者 id：先給啟動時還原的 session，之後每個認證事件各給一次。
   ///

@@ -2,9 +2,7 @@ import '../../domain/entities/body_measurement_type.dart';
 
 export '../../domain/entities/body_measurement_type.dart';
 
-/// UI display extensions for [BodyMeasurementType] in the presentation layer.
 extension BodyMeasurementTypeUiMapper on BodyMeasurementType {
-  /// The localized label for UI rendering.
   String get label => switch (this) {
     BodyMeasurementType.height => '身高',
     BodyMeasurementType.weight => '體重',

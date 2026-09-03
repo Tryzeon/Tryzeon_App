@@ -1,4 +1,3 @@
-// supabase/functions/parse-size-voice/index.ts
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { checkImageAnalysisRateLimit } from "../_shared/image-analysis.ts";
 import { json, jsonError } from "../_shared/http.ts";

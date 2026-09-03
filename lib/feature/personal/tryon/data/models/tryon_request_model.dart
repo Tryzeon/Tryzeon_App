@@ -23,7 +23,6 @@ class TryonRequestModel {
     this.transitionPrompt,
   });
 
-  /// Maps a domain [request] into the wire model.
   factory TryonRequestModel.fromDomain(final TryonRequest request) {
     return switch (request) {
       TryonGenerateRequest(

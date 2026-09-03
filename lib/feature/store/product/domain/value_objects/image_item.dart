@@ -4,7 +4,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'image_item.freezed.dart';
 
 /// Unified representation of product images in the editing flow.
-/// Supports both existing (already uploaded) and new (pending upload) images.
 @freezed
 sealed class ImageItem with _$ImageItem {
   /// An image that already exists in Supabase storage.

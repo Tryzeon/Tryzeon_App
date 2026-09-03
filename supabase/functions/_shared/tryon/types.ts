@@ -56,14 +56,13 @@ export interface WardrobeRef {
 /**
  * A garment described directly by the caller, as inline bytes.
  *
- * Bytes and never a path, for the reason an avatar override is bytes only: a
- * path names an object in the wardrobe bucket, and whether the caller may read
- * it is a question the type cannot ask. The app and LIFF hold a session, so RLS
- * would bound them — but the LINE adapter runs on the admin client, where a
- * forwarded path would be a read of the whole bucket with nothing checking
- * whose it was. Anything stored is reached by reference instead
- * ({@link ProductRef}, {@link WardrobeRef}), which the core resolves against
- * the job's own user.
+ * Bytes and never a path, for the reason an avatar override is bytes only: the
+ * type cannot ask whether the caller may read that wardrobe-bucket object. The
+ * app and LIFF hold a session, so RLS would bound them — but the LINE adapter
+ * runs on the admin client, where a forwarded path reads the whole bucket with
+ * nothing checking whose it was. Anything stored is reached by reference
+ * instead ({@link ProductRef}, {@link WardrobeRef}), which the core resolves
+ * against the job's own user.
  */
 export interface GarmentMaterial {
   images: { base64: string }[];
@@ -73,15 +72,14 @@ export interface GarmentMaterial {
  * Garment material as the model will finally see it: the sources, plus the
  * description built for a catalog product.
  *
- * Declares its own `images` rather than extending {@link GarmentMaterial},
- * because the two answer different questions. What a caller may send is inline
- * bytes; what a resolver produces is usually a storage key, since resolving a
- * reference is exactly how a path becomes trusted. Sharing one field would
- * force the looser of the two on both.
+ * Declares its own `images` rather than extending {@link GarmentMaterial}: a
+ * caller may send inline bytes, while a resolver usually produces a storage
+ * key, since resolving a reference is how a path becomes trusted. Sharing one
+ * field would force the looser of the two on both.
  *
- * `detail` lives here for the same reason: no caller writes it directly. It is
- * always composed server-side from rows the server itself read
- * (`resolveProductGarment`, `resolveWardrobeGarment`), after validation.
+ * `detail` likewise is never written by a caller — it is composed server-side
+ * from rows the server read (`resolveProductGarment`,
+ * `resolveWardrobeGarment`), after validation.
  */
 export interface ResolvedGarment {
   images: ImageSource[];
@@ -96,12 +94,10 @@ export interface ResolvedGarment {
  */
 export type GarmentInput = ProductRef | WardrobeRef | GarmentMaterial;
 
-/** True when a garment names a catalog product. */
 export function isProductRef(garment: GarmentInput): garment is ProductRef {
   return "productId" in garment;
 }
 
-/** True when a garment names one of the user's own wardrobe items. */
 export function isWardrobeRef(garment: GarmentInput): garment is WardrobeRef {
   return "wardrobeItemId" in garment;
 }
@@ -132,14 +128,11 @@ export interface TryonParams {
 }
 
 /*
- * Results carry `DailyUsage`, not a try-on-shaped subset of it. What a job
- * hands back is the caller's whole counter row for the day — every feature's
- * count, `chat_count` included — because that is what the client syncs its
- * usage cache from after any request that charges quota. Naming a try-on-local
- * copy of it made `chat_count` look like a stray field in a try-on type, when
- * the field is right and the ownership was wrong: the row belongs to the
- * counter, so `_shared/quota.ts` declares it and chat already publishes the
- * same one.
+ * Results carry `DailyUsage`, not a try-on-shaped subset: a job hands back the
+ * caller's whole counter row for the day — every feature's count, `chat_count`
+ * included — because that is what the client syncs its usage cache from after
+ * any request that charges quota. The row belongs to the counter, so
+ * `_shared/quota.ts` declares it and chat publishes the same one.
  */
 
 export interface TryonImageResult {
@@ -189,9 +182,9 @@ export const LIMITS = {
  * especially, since a user able to call it has unlimited quota — so charging
  * cannot run on the client a job reads with. Binding the service-role key into
  * the factory (see `supabaseQuota`) keeps that credential in the adapter and
- * hands the core a capability instead. It is not a wall: `getAdminClient()` is
- * one import away for anything under `_shared/`. It makes the privileged step
- * the visible exception rather than an ambient possibility.
+ * hands the core a capability instead. Not a wall — `getAdminClient()` is one
+ * import away under `_shared/` — but it makes the privileged step visible
+ * rather than ambient.
  *
  * Takes the mode rather than a feature name so the backend's vocabulary
  * (`tryon` vs `tryon_video`) stays on the implementation side of the port. The
@@ -208,19 +201,15 @@ export type QuotaFactory = (
  * prefix — stripping any provider preamble is the implementation's job), or
  * null when the model returned no image.
  *
- * `scenePrompt`, `stylingPrompt`, `garmentDetails`, and `garmentFits` are grouped into one
- * options object rather than left as separate positional parameters:
- * `garmentDetails` and `garmentFits` are both `(string | undefined)[]`, so two
- * positionals of the same shape would let a caller transpose them and still
- * type-check — putting the wearer's body measurements under the garment's
- * appearance notes, or vice versa. A named object makes that transposition a
- * compile error instead of a silent prompt bug.
+ * The prompt inputs are grouped into one options object rather than left as
+ * positional parameters: `garmentDetails` and `garmentFits` are both
+ * `(string | undefined)[]`, so two positionals of the same shape could be
+ * transposed and still type-check — the wearer's body measurements under the
+ * garment's appearance notes, or vice versa.
  *
- * The shape is `TaskPromptOptions` itself rather than a copy of it. A copy
- * would be structurally compatible while the two agreed, and — because every
- * field is optional — would stay compatible after one side renamed a field,
- * silently dropping that input on its way to the prompt. Sharing the
- * declaration makes a rename one edit instead of a convention.
+ * The shape is `TaskPromptOptions` itself, not a copy: every field being
+ * optional, a copy would stay structurally compatible after one side renamed a
+ * field, silently dropping that input on its way to the prompt.
  */
 export type ImageGenerator = (
   avatarBase64: string,

@@ -25,7 +25,6 @@ class ProductDetailBody extends HookConsumerWidget {
   final AsyncValue<ShopProduct> productAsync;
   final VoidCallback onRetry;
 
-  /// Skeleton data for loading state
   static final _skeletonProduct = ShopProduct(
     id: 'skeleton_product',
     storeInfo: const ShopStoreInfo(
@@ -180,7 +179,6 @@ class _ProductDetailContent extends HookConsumerWidget {
                 const Divider(),
                 const SizedBox(height: AppSpacing.mdLg),
 
-                // Store Info Section
                 ProductStoreInfo(storeInfo: product.storeInfo),
                 const SizedBox(height: AppSpacing.xl),
 
@@ -194,7 +192,6 @@ class _ProductDetailContent extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                 ],
 
-                // Size Info Section
                 if (product.sizes != null && product.sizes!.isNotEmpty) ...[
                   ProductSizeTable(
                     sizes: product.sizes!,

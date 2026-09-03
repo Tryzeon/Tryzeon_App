@@ -1,6 +1,5 @@
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 
-/// UI labels for [SortKey] in the Presentation Layer.
 extension SortKeyLabels on SortKey {
   String get label => switch (this) {
     ProductSortKey(:final field) => switch (field) {

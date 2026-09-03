@@ -45,7 +45,6 @@ class ProductFormData {
     return formKey.currentState?.validate() ?? false;
   }
 
-  /// Extract only new images (files pending upload)
   List<File> get newImageFiles =>
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 

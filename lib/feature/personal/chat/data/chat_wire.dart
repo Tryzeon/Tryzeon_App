@@ -9,8 +9,6 @@ import 'package:tryzeon/feature/personal/shop/shop.dart';
 import 'package:tryzeon/feature/personal/usage/usage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/wardrobe.dart';
 
-// ── domain → wire ──
-
 Map<String, dynamic> messageToWire(final ChatMessage m) => {
   'role': m.role.name,
   'content': [for (final b in m.content) _blockToWire(b)],
@@ -34,8 +32,6 @@ Map<String, dynamic> _blockToWire(final ContentBlock block) => switch (block) {
   ShopProductBlock(:final product) => {'type': 'product', 'id': product.id},
   WardrobeProductBlock(:final item) => {'type': 'wardrobe', 'id': item.id},
 };
-
-// ── wire → domain ──
 
 ChatMessage parseMessage(final Map<String, dynamic> raw) => ChatMessage(
   role: raw['role'] == 'user' ? ChatRole.user : ChatRole.assistant,
@@ -80,8 +76,6 @@ List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
   }
   return result;
 }
-
-// ── NDJSON stream line → event ──
 
 /// Parses one NDJSON line into a [ChatStreamEvent]. Returns null for blank,
 /// malformed, or unrecognised lines (defensive — the stream is best-effort UI).

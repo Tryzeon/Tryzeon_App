@@ -25,12 +25,9 @@ sealed class ShopProductsState with _$ShopProductsState {
 
 /// Offset-paginated shop product list, keyed by [ShopFilter].
 ///
-/// [build] loads the first page; [loadMore] appends the next page. Backend
-/// paging plumbing (`p_limit`/`p_offset`) already exists end-to-end, so this
-/// notifier only supplies `limit`/`offset` to the existing use case.
-///
-/// The family argument [filter] is exposed as a generated getter and reused
-/// inside [loadMore].
+/// Supplies `limit`/`offset` to the use case, which the backend already
+/// exposes as `p_limit`/`p_offset`. The family argument [filter] is available
+/// as a generated getter and reused inside [loadMore].
 @riverpod
 class ShopProductsNotifier extends _$ShopProductsNotifier {
   static const _pageSize = 20;

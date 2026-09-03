@@ -20,23 +20,18 @@ class WardrobePage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    // 1. Data Providers
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
 
-    // 2. State
     final selectedCategory = useState<WardrobeCategory?>(null);
     final categoryScrollController = useScrollController();
 
-    // 3. Memoized Data
     final wardrobeCategories = useMemoized(() {
       return CategoryDisplay.allWithDisplayNames;
     }, []);
 
-    // 4. Theme
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // 5. Actions
     Future<void> showUploadSheet() async {
       final File? image = await ImagePickerHelper.pickImage(context);
 
@@ -61,7 +56,6 @@ class WardrobePage extends HookConsumerWidget {
       }
     }
 
-    // 6. Widget Helpers
     Widget buildCategoryChip(final String displayName, final bool isSelected) {
       return Padding(
         padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -145,7 +139,6 @@ class WardrobePage extends HookConsumerWidget {
       );
     }
 
-    // Determine the count for the header
     final totalCount = wardrobeItemsAsync.value?.length ?? 0;
 
     return Scaffold(
@@ -163,7 +156,6 @@ class WardrobePage extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Layer (Typography driven)
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg,
@@ -201,10 +193,8 @@ class WardrobePage extends HookConsumerWidget {
               ),
             ),
 
-            // Category Bar
             buildCategoryBar(),
 
-            // Grid Content
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => ref.read(wardrobeItemsProvider.notifier).refresh(),

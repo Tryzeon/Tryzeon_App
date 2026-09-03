@@ -19,7 +19,6 @@ class AdBanner extends HookConsumerWidget {
     if (adsAsync.hasValue) {
       final adImages = adsAsync.value!;
 
-      // Handle empty state
       if (adImages.isEmpty) {
         return const SizedBox.shrink();
       }

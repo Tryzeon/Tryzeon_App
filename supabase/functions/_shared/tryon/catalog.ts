@@ -32,12 +32,11 @@ function trimmedString(value: unknown): string {
  * `analyze-product-image`), describing the garment's design silhouette on a
  * generic body. It says nothing about this wearer.
  *
- * It ships even when `buildGarmentFitDetail` also has real ease numbers. The
- * two are not rivals: the cut is product information the shopper is buying,
- * the numbers are what that cut does on this body. "Oversize" and "-15cm,
- * pulled taut" are both true of a large enough wearer, and the prompt names
- * which one governs tightness — so the model reconciles them rather than
- * having one hidden from it.
+ * It ships even when `buildGarmentFitDetail` also has real ease numbers: the
+ * cut is product information the shopper is buying, the numbers are what that
+ * cut does on this body. "Oversize" and "-15cm, pulled taut" are both true of
+ * a large enough wearer, and the prompt names which one governs tightness, so
+ * the model reconciles them rather than having one hidden from it.
  */
 export function buildProductGarmentDetail(
   row: ProductGarmentRow,

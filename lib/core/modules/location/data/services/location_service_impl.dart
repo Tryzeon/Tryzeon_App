@@ -5,7 +5,6 @@ import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.
 import 'package:tryzeon/core/modules/location/domain/services/location_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
-/// LocationService 實作，使用 Geolocator 和 Geocoding 套件
 class LocationServiceImpl implements LocationService {
   @override
   Future<bool> hasPermission() async {
@@ -26,7 +25,6 @@ class LocationServiceImpl implements LocationService {
 
     LocationPermission permission = await Geolocator.checkPermission();
 
-    // 尚未授權 → 申請
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
@@ -37,12 +35,10 @@ class LocationServiceImpl implements LocationService {
   @override
   Future<UserLocation?> getUserLocation() async {
     try {
-      // 檢查權限
       if (!await hasPermission()) {
         return null;
       }
 
-      // 取得目前位置
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
@@ -65,7 +61,6 @@ class LocationServiceImpl implements LocationService {
       }
       final placemark = placemarks.first;
 
-      // 解析城市和區
       final city = placemark.administrativeArea;
       final district = placemark.locality;
 
@@ -79,7 +74,6 @@ class LocationServiceImpl implements LocationService {
         return null;
       }
 
-      // 組合完整地址
       final addressParts = [
         placemark.administrativeArea,
         placemark.locality,

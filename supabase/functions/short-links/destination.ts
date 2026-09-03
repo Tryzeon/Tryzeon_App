@@ -19,7 +19,6 @@ export function isOpenWith(value: unknown): value is OpenWith {
   return typeof value === "string" && (OPEN_WITH as readonly string[]).includes(value);
 }
 
-/** 各開啟方式所需的設定。每一項獨立，缺一項只影響對應的那一種連結。 */
 export interface DestinationConfig {
   /** LIFF 入口，例如 `https://liff.line.me/{liffId}`。 */
   liffUrl: string | null;
@@ -60,7 +59,6 @@ export function buildStoreDestination(
  */
 export type Delivery = "redirect" | "interstitial";
 
-/** 這次開啟該直接導走，還是要算繪一頁讓使用者點。 */
 export function deliveryFor(openWith: OpenWith, surface: Surface): Delivery {
   switch (openWith) {
     case "liff":

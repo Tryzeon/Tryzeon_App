@@ -45,7 +45,6 @@ class TryonGallery extends HookWidget {
           itemCount: entries.length + 1,
           itemBuilder: (final context, final index) {
             if (index == 0) {
-              // Original Avatar
               final ImageProvider imageProvider = avatarFile != null
                   ? FileImage(avatarFile!)
                   : const AssetImage(AppConstants.defaultProfileImage);

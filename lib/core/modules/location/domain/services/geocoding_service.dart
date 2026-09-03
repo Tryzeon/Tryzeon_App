@@ -1,4 +1,3 @@
-/// 一組經緯度座標。
 typedef GeoCoordinates = ({double latitude, double longitude});
 
 /// 將地址文字轉成經緯度的服務。

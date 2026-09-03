@@ -10,20 +10,17 @@ import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.d
 
 part 'chat_providers.g.dart';
 
-// Data Source Provider
 @riverpod
 ChatRemoteDataSource chatRemoteDataSource(final Ref ref) {
   return ChatRemoteDataSource(Supabase.instance.client);
 }
 
-// Repository Provider
 @riverpod
 ChatRepository chatRepository(final Ref ref) {
   final remoteDataSource = ref.watch(chatRemoteDataSourceProvider);
   return ChatRepositoryImpl(remoteDataSource: remoteDataSource);
 }
 
-// Use Case Provider
 @riverpod
 SendChatMessage sendChatMessageUseCase(final Ref ref) {
   final repository = ref.watch(chatRepositoryProvider);

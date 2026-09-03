@@ -23,7 +23,6 @@ class AuthRemoteDataSource {
       throw const ServerException();
     }
 
-    // Wait for auth state change
     final user = await _supabase.auth.onAuthStateChange
         .firstWhere((final state) => state.event == AuthChangeEvent.signedIn)
         .then((final state) => state.session?.user);

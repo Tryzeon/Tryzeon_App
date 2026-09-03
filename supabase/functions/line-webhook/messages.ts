@@ -242,8 +242,7 @@ export function wardrobeTryonErrorMessage(
  * The kinds a feature can fail with are its own, and so is the wording: both
  * tables have a `quota` arm, but "今日試穿次數已用完" is not what a user who
  * asked for a shirt should read. One shared table would have to name the arms
- * `tryon_quota` / `chat_quota` to keep them apart, which is the same split
- * spelled worse.
+ * `tryon_quota` / `chat_quota` to keep them apart — the same split spelled worse.
  */
 
 const TRYON_ERROR_TEXT = {

@@ -7,7 +7,6 @@ class AnalyticsRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
-  /// Upload a batch of analytics events to the backend
   Future<void> uploadAnalyticsEvents(final List<AnalyticsEventModel> events) async {
     if (events.isEmpty) {
       return;

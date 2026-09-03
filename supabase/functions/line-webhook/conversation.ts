@@ -38,19 +38,17 @@ export interface ConversationStore {
 }
 
 /**
- * The Redis-backed store — named for the capability it uses, not for the vendor
- * hosting it, which `_shared/redis.ts` owns and is the only module that should
- * know. Nothing below reaches past `get`/`set`.
+ * The Redis-backed store — named for the capability, not the vendor hosting it,
+ * which `_shared/redis.ts` owns. Nothing below reaches past `get`/`set`.
  *
  * Keyed by the LINE account rather than by the auth user it maps to: the two
  * are 1:1, and the LINE id is in hand before the account is resolved, so keying
  * by it leaves this layer independent of the identity mapping entirely.
  *
- * Neither method throws, and that is the contract callers are written against
- * rather than an implementation detail. Memory is an enhancement — losing it
- * costs continuity, not the user's answer — so an outage degrades to a turn of
- * one. This is the same fail-open judgement `checkRateLimit` makes, and it
- * lives here so that no handler needs an error path for it.
+ * Neither method throws, and that is the contract callers are written against.
+ * Memory is an enhancement — losing it costs continuity, not the user's answer —
+ * so an outage degrades to a turn of one, the same fail-open judgement
+ * `checkRateLimit` makes, and no handler needs an error path for it.
  */
 export function redisConversations(client: RedisLike = redis()): ConversationStore {
   return {
@@ -127,15 +125,13 @@ export function tryonNote(product: ProductInfo): ChatMessage {
  *
  * Where it differs is what it claims. {@link tryonNote} says the user *tried on*
  * a product, so its caller writes it only when the generation succeeded; this
- * one says only that a photo arrived, which is true whether or not the try-on
- * that followed produced anything. So its caller writes it unconditionally of
- * the generation's result — it still skips this when there is no description to
- * write — and a generation failure still leaves the agent able to answer "那有
- * 沒有類似的".
+ * one says only that a photo arrived, which holds either way — so its caller
+ * writes it regardless of the generation's result (skipping only when there is
+ * no description), and a failure still leaves the agent able to answer "那有沒有
+ * 類似的".
  *
  * The description arrives already trimmed and capped (`describeGarment` in
- * `garment-analysis.ts`), so nothing is clamped again here — one cap, stated in
- * the module that also states it to the model.
+ * `garment-analysis.ts`), so nothing is clamped again here.
  */
 export function photoNote(description: string): ChatMessage {
   return {
@@ -152,10 +148,9 @@ export function photoNote(description: string): ChatMessage {
  *
  * Carries the tags as well as the category because the chip this card offers
  * next is "幫我配這件" — the agent has to know what "這件" was to answer it,
- * and a bare "上衣" is not enough to pair anything with. Tags are capped via
- * `tagLine` because `wardrobe_items.tags` is unconstrained text and one absurd
- * tag should not crowd out the conversation — the same reason `tryonNote` clamps
- * product names.
+ * and a bare "上衣" is not enough to pair anything with. Tags go through
+ * `tagLine` because `wardrobe_items.tags` is unconstrained text, the same reason
+ * `tryonNote` clamps product names.
  */
 export function wardrobeTryonNote(item: WardrobeItemInfo): ChatMessage {
   const tags = item.tags.length > 0 ? ` ${tagLine(item.tags)}` : "";

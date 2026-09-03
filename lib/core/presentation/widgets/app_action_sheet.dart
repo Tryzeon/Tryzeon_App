@@ -23,7 +23,6 @@ class AppMenuAction {
 /// Each action is rendered as a [ListTile]; tapping one dismisses the sheet
 /// and invokes its callback. An optional [title] is shown as a header, and an
 /// optional [hint] is shown as helper text below the actions.
-/// Colors are pulled from [AppTheme].
 Future<void> showAppActionSheet(
   final BuildContext context, {
   required final List<AppMenuAction> actions,

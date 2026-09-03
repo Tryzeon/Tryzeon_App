@@ -1,13 +1,11 @@
 /**
  * Renders an answer as LINE messages.
  *
- * The core hands back an ordered list of blocks — text, shop products and the
- * sender's own wardrobe items, in the sequence the model composed them. LINE
- * has no equivalent of that sequence: it has messages, and a bubble carousel is
- * one message. So consecutive cards collapse into one carousel and each text
- * block stays its own message, which preserves the ordering the model meant
- * ("上身…" then the top, "下身…" then the bottom) for as long as it fits in a
- * single send.
+ * The core hands back an ordered list of blocks; LINE has no equivalent of that
+ * sequence — it has messages, and a bubble carousel is one message. So
+ * consecutive cards collapse into one carousel and each text block stays its own
+ * message, preserving the ordering the model meant ("上身…" then the top, "下身…"
+ * then the bottom) for as long as it fits in a single send.
  */
 import type { ContentBlock } from "../_shared/chat/index.ts";
 import {
@@ -132,15 +130,11 @@ function productBubble(product: LineProduct): object {
 /**
  * One wardrobe item as a card.
  *
- * `fit` rather than the product card's `cover` because these images are
- * usually background-removed (`AnalyzeWardrobeImage.removeBackground`) and
- * cropping cuts the sleeves off; the pinned background is what keeps a
- * transparent PNG from rendering as a black silhouette on LINE's dark chat
- * surface.
- *
- * `fit` is the whole vocabulary LINE offers for this — `aspectMode` takes
- * `cover` or `fit` and nothing else, and it rejects the entire send rather than
- * the one property, so CSS's `contain` is not a synonym to reach for here.
+ * `fit` rather than the product card's `cover` because these images are usually
+ * background-removed (`AnalyzeWardrobeImage.removeBackground`) and cropping cuts
+ * the sleeves off; the pinned background keeps a transparent PNG from rendering
+ * as a black silhouette on LINE's dark chat surface. `aspectMode` takes only
+ * `cover` or `fit`, and LINE rejects the whole send on any other value.
  */
 function wardrobeBubble(item: LineWardrobeItem): object {
   return {
@@ -194,9 +188,8 @@ const bubble = (card: LineCard): object =>
  * is wrong for clothes the sender already owns.
  *
  * Asked per kind rather than by counting products against the total: counting
- * would make "none of them are products" mean "all of them are wardrobe", which
- * only holds while the union has exactly two arms, and would answer an empty
- * carousel with the most confident wording of the three.
+ * assumes the union has exactly two arms, and would answer an empty carousel
+ * with the most confident wording of the three.
  */
 function carouselAltText(items: LineCard[]): string {
   const hasProduct = items.some((c) => c.kind === "product");
@@ -230,10 +223,9 @@ const sectionMessages = (section: Section): object[] =>
 /**
  * The whole answer as at most two sections: all the prose, then all the cards.
  *
- * Collapsing to sections rather than straight to messages keeps one route from
- * a section to a message — `sectionMessages` — so the chunk size, the altText
- * and the character cap are stated once and cannot drift between the two
- * layouts.
+ * Collapsing to sections rather than straight to messages keeps `sectionMessages`
+ * the one route to a message, so the chunk size, the altText and the character
+ * cap cannot drift between the two layouts.
  */
 function foldSections(sections: Section[]): Section[] {
   const lines = sections.flatMap((s) => s.kind === "text" ? s.lines : []);
@@ -246,10 +238,8 @@ function foldSections(sections: Section[]): Section[] {
 }
 
 /**
- * What an answer offers next.
- *
- * Only when it recommended something: the chips narrow a set of products, so
- * they only make sense once the answer contains at least one.
+ * What an answer offers next. Only when it recommended something: the chips
+ * narrow a set of products, so they need at least one in the answer.
  */
 function answerChips(blocks: ContentBlock[]): object[] {
   if (!blocks.some((b) => b.type === "product")) return [];
@@ -263,21 +253,17 @@ function answerChips(blocks: ContentBlock[]): object[] {
 /**
  * The answer as messages, never more than LINE accepts in one send.
  *
- * When the interleaving fits, it is kept. When it does not — an outfit with
- * four labelled parts runs to eight sections — everything folds into one block
- * of prose followed by the carousels. That loses which line introduced which
- * product, but the model names its picks in the prose and the carousels stay in
- * the same order, so the pairing survives by reading rather than by layout.
+ * When the interleaving fits, it is kept. When it does not — an outfit with four
+ * labelled parts runs to eight sections — everything folds into one block of
+ * prose followed by the carousels: that loses which line introduced which
+ * product, but the model names its picks in the prose and the carousels keep
+ * their order, so the pairing survives by reading rather than by layout.
  *
  * Only the fold can drop anything, and only once the carousels alone outrun
- * `MAX_LINE_MESSAGES`: a search returns 10 products, so reaching that would take
- * several searches whose every result was recommended. The cap is stated rather
- * than assumed away because silently sending four fifths of an answer is worse
- * than a rule you can read.
+ * `MAX_LINE_MESSAGES` — several searches whose every result was recommended.
  *
- * The chips are attached last, after any fold and its slice: a message the
- * slice drops must not take its chip's would-be home down with it. Which of
- * the surviving messages wears them is `dressLast`'s rule, not this one's.
+ * The chips are attached last, after any fold and its slice: a message the slice
+ * drops must not take its chip's would-be home down with it.
  */
 export function renderAnswer(blocks: ContentBlock[]): object[] {
   const sections = toSections(blocks);

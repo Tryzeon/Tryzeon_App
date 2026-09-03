@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'user_location.freezed.dart';
 
-/// 使用者位置資訊
 @freezed
 sealed class UserLocation with _$UserLocation {
   const factory UserLocation({
@@ -12,10 +11,8 @@ sealed class UserLocation with _$UserLocation {
     /// 區名稱，如「信義區」
     required final String district,
 
-    /// 緯度
     required final double latitude,
 
-    /// 經度
     required final double longitude,
 
     /// 完整地址（如「台北市信義區市府路1號」）
@@ -38,7 +35,6 @@ sealed class UserLocation with _$UserLocation {
     return address.startsWith(city);
   }
 
-  /// 計算與指定地址的接近度分數
   /// 2: 同區, 1: 同城市, 0: 其他
   int proximityScore(final String? address) {
     if (isSameDistrict(address)) return 2;

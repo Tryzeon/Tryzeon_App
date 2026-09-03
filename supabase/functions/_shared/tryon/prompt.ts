@@ -71,12 +71,10 @@ ${lines.join("\n")}`;
  * positional parameters of the same shape would let a caller transpose them
  * and still type-check.
  *
- * `types.ts`'s `ImageGenerator` and `vertex.ts`'s `generateTryonImage` both
- * take THIS type rather than a copy of its shape. That matters more than it
- * looks: every field here is optional, so two independent declarations stay
- * mutually assignable even after one of them renames a field — the compiler
- * accepts the drift, and the renamed input is silently dropped on its way to
- * the prompt.
+ * `types.ts`'s `ImageGenerator` and `vertex.ts`'s `generateTryonImage` take
+ * THIS type, not a copy of its shape: every field being optional, two
+ * declarations stay mutually assignable even after one renames a field, and
+ * the renamed input is silently dropped on its way to the prompt.
  */
 export interface TaskPromptOptions {
   garmentDetails?: (string | undefined)[];

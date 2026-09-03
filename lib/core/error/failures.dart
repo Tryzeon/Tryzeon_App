@@ -6,7 +6,6 @@ import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
-/// Base Failure class
 sealed class Failure extends Equatable {
   const Failure([this.message]);
   final String? message;
@@ -69,7 +68,6 @@ class TimeoutFailure extends Failure {
 Map<String, dynamic>? _usagePayload(final Object? usage) =>
     usage is Map<String, dynamic> ? usage : null;
 
-/// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
   if (e is AuthException && e.code == 'otp_expired') {
     return const AuthFailure('驗證碼錯誤或過期');
@@ -129,7 +127,6 @@ Failure mapExceptionToFailure(final Object e) {
     HttpException() => const ServerFailure(),
     TlsException() => const ServerFailure(),
 
-    // Fallback
     _ => const UnknownFailure(),
   };
 }

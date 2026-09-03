@@ -1,4 +1,3 @@
-// supabase/functions/analyze-product-image/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import {
@@ -22,7 +21,6 @@ Deno.serve(async (req) => {
     const limited = await checkImageAnalysisRateLimit(user!.id, "product_image_analysis");
     if (limited) return limited;
 
-    // Load global categories and build a name -> ids map (server-side mapping).
     // The caller's own client: `product_categories` is world-readable, so this
     // read needs no privilege the caller does not already have.
     const { data: categories, error: categoriesError } = await userClient!

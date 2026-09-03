@@ -1,4 +1,3 @@
--- supabase/migrations/20260712000000_store_order_contacts.sql
 -- Store DM ordering channels (LINE / FB / IG) for stores without an online shop.
 -- Stored as a JSONB array of {type, value, label?} on store_profiles, and surfaced
 -- to the consumer through list_shop_products' embedded store_profiles object.
