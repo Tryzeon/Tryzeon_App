@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
+import "@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient } from "../_shared/supabase.ts";
 import { asRecord, parseJsonObject } from "../_shared/validation.ts";
 import { verifyLineSignature } from "./signature.ts";

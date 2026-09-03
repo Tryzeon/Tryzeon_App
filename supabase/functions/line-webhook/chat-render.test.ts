@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert@^1.0.19";
+import { assertEquals } from "@std/assert";
 import { renderAnswer } from "./chat-render.ts";
 import type { LineProduct } from "./product-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
