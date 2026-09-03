@@ -53,6 +53,28 @@ void main() {
     ]);
   });
 
+  test('wraps each of a garment\'s own photos as inline bytes', () {
+    final body = TryonRequestModel.fromDomain(
+      const TryonRequest.generate(
+        requestId: 'r1',
+        garments: [
+          TryonGarment.images(base64Images: ['AAAA', 'BBBB']),
+        ],
+        mode: TryonMode.image,
+        engine: TryonEngine.standard,
+      ),
+    ).toJson();
+
+    expect(body['garments'], [
+      {
+        'images': [
+          {'base64': 'AAAA'},
+          {'base64': 'BBBB'},
+        ],
+      },
+    ]);
+  });
+
   test('sends a wardrobe garment as a bare item reference', () {
     final body = TryonRequestModel.fromDomain(
       const TryonRequest.generate(

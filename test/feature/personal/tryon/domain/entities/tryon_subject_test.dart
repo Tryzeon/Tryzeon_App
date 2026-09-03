@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 
@@ -12,7 +11,7 @@ void main() {
 
   const ownPhoto = TryonSubject.generate(
     garments: [
-      TryonGarment.images(images: [TryonImageSource.base64('AAAA')]),
+      TryonGarment.images(base64Images: ['AAAA']),
     ],
     mode: TryonMode.image,
   );

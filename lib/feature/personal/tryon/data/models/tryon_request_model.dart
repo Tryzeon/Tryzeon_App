@@ -1,6 +1,5 @@
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 
@@ -9,8 +8,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 /// Owns the domain → wire serialization (built once via [TryonRequestModel.fromDomain])
 /// so the datasource stays pure transport and never imports domain entities.
 /// Hand-written rather than json_serializable because the body omits empty
-/// prompts, an absent avatar and an absent garment list, and encodes garment
-/// image sources as `{path}` / `{base64}`.
+/// prompts, an absent avatar and an absent garment list, and wraps each garment
+/// image as `{base64}`.
 class TryonRequestModel {
   const TryonRequestModel({
     required this.garments,
@@ -103,13 +102,6 @@ class TryonRequestModel {
     return body;
   }
 
-  static Map<String, String> _sourceToJson(final TryonImageSource source) {
-    return switch (source) {
-      TryonImageSourcePath(:final path) => {'path': path},
-      TryonImageSourceBase64(:final data) => {'base64': data},
-    };
-  }
-
   static Map<String, Object> _garmentToJson(final TryonGarment garment) {
     return switch (garment) {
       TryonGarmentProduct(:final productId, :final sizeId) => {
@@ -119,8 +111,10 @@ class TryonRequestModel {
       TryonGarmentWardrobe(:final wardrobeItemId) => {
         AppConstants.paramWardrobeItemId: wardrobeItemId,
       },
-      TryonGarmentImages(:final images) => {
-        AppConstants.paramGarmentImages: images.map(_sourceToJson).toList(),
+      TryonGarmentImages(:final base64Images) => {
+        AppConstants.paramGarmentImages: base64Images
+            .map((final data) => {'base64': data})
+            .toList(),
       },
     };
   }

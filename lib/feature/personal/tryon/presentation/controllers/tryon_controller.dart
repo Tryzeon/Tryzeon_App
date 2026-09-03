@@ -10,7 +10,6 @@ import 'package:tryzeon/feature/personal/profile/providers/personal_profile_prov
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_image_source.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
@@ -57,7 +56,7 @@ class TryonController extends _$TryonController {
     await _start(
       TryonSubject.generate(
         garments: [
-          TryonGarment.images(images: [TryonImageSource.base64(base64Encode(bytes))]),
+          TryonGarment.images(base64Images: [base64Encode(bytes)]),
         ],
         mode: mode,
       ),
