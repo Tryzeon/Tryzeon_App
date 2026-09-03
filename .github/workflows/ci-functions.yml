@@ -42,6 +42,15 @@ jobs:
       - name: Lint
         run: deno lint
 
+      # Supabase deploys each function with its own deno.json. Check every
+      # entrypoint against that config without creating per-function lockfiles.
+      - name: Check Edge Function dependency graphs
+        run: |
+          for entry in */index.ts; do
+            config="${entry%/index.ts}/deno.json"
+            deno check --config "$config" --no-lock "$entry"
+          done
+
       # --frozen fails the run instead of silently re-resolving: the Supabase
       # Functions use centrally declared, exact versions and a committed
       # lockfile, so CI runs the same dependency graph as local development.
