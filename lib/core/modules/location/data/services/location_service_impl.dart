@@ -35,10 +35,12 @@ class LocationServiceImpl implements LocationService {
   @override
   Future<UserLocation?> getUserLocation() async {
     try {
+      // 檢查權限
       if (!await hasPermission()) {
         return null;
       }
 
+      // 取得目前位置
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
@@ -61,6 +63,7 @@ class LocationServiceImpl implements LocationService {
       }
       final placemark = placemarks.first;
 
+      // 解析城市和區
       final city = placemark.administrativeArea;
       final district = placemark.locality;
 
@@ -74,6 +77,7 @@ class LocationServiceImpl implements LocationService {
         return null;
       }
 
+      // 組合完整地址
       final addressParts = [
         placemark.administrativeArea,
         placemark.locality,

@@ -31,6 +31,7 @@ class ProductStoreInfo extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.sm),
               child: Row(
                 children: [
+                  // Store Logo
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: colorScheme.surfaceContainerHighest,

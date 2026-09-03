@@ -92,21 +92,24 @@ class StorageCleanupService {
 
 Deno.serve(async (req) => {
   try {
+    // 1. Authentication
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
+    // 2. Clean up user storage files, on the caller's own client.
     const storageService = new StorageCleanupService(userClient!);
     await storageService.cleanupUserStorage(user!.id);
 
-    // Deleting the auth user cascades to every DB record. The one step that
-    // genuinely needs the service role — and it comes last, so the key is held
-    // only after every RLS-bounded operation is done.
+    // 3. Delete auth user (triggers cascade delete for all DB records). The one
+    //    step that genuinely needs the service role — and it comes last, so the
+    //    key is held only after every RLS-bounded operation is done.
     const { error: deleteAuthError } = await getAdminClient().auth.admin.deleteUser(user!.id);
     if (deleteAuthError) {
       console.error("Failed to delete auth user:", deleteAuthError);
       throw new AppError("Failed to delete authentication account", 500);
     }
 
+    // 4. Success response
     return json({ message: "Account deleted successfully" });
   } catch (err) {
     console.error(err);

@@ -51,6 +51,7 @@ class ShopPage extends HookConsumerWidget {
       );
     });
 
+    // 篩選/排序狀態
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
     final isLocating = useState(false);

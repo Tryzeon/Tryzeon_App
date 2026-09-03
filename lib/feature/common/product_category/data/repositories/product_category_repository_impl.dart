@@ -20,6 +20,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
     final bool forceRefresh = false,
   }) async {
     try {
+      // 1. Try Local Cache
       if (!forceRefresh) {
         try {
           final cachedCategories = await _localDataSource.getProductCategories();
@@ -40,8 +41,10 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
         }
       }
 
+      // 2. Fetch from API
       final remoteCategories = await _remoteDataSource.getProductCategories();
 
+      // 3. Update Cache
       try {
         await _localDataSource.saveProductCategories(remoteCategories);
       } catch (e, stackTrace) {

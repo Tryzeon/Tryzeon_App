@@ -28,6 +28,7 @@ class SubscriptionCapabilitiesRepositoryImpl
     final capabilityTier = _resolveCapabilityTier(tier);
 
     try {
+      // 1. Try local cache
       try {
         final cached = await _localDataSource.getTierCapabilities(capabilityTier);
         switch (cached) {
@@ -45,8 +46,10 @@ class SubscriptionCapabilitiesRepositoryImpl
         );
       }
 
+      // 2. Fetch from remote
       final tierConfig = await _remoteDataSource.getTierCapabilities(capabilityTier);
 
+      // 3. Persist to local cache
       try {
         await _localDataSource.saveTierCapabilities(tierConfig);
       } catch (e, stackTrace) {

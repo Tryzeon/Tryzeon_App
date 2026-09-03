@@ -142,7 +142,7 @@ class HomePage extends HookConsumerWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Wrapped in a scrollable so RefreshIndicator has something to pull.
+            // 1. Background Image Layer — wrapped in scrollable for RefreshIndicator
             SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: SizedBox(
@@ -165,6 +165,7 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
+            // 2. Top Left — Tryzeon Logo (transparent mark)
             Positioned(
               top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
               left: AppSpacing.lg,
@@ -183,7 +184,8 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // Always up: the sheet adapts its actions to the page in view.
+            // 3. Top Right — Avatar Badge + More Options (parallel). Always up:
+            // the sheet adapts its actions to the page in view.
             Positioned(
               top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
               right: AppSpacing.md,
@@ -198,8 +200,9 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // The AI disclaimer is the last element on the page, so it reads as
-            // a footnote rather than a caption for the indicator. The group hangs
+            // 4. Bottom Left — Indicator (white floating lines) with the AI
+            // disclaimer as the last element on the page, so it reads as a
+            // footnote rather than a caption for the indicator. The group hangs
             // from a lower anchor to leave the indicator where it was.
             if (!isAvatarPage)
               Positioned(
@@ -219,6 +222,7 @@ class HomePage extends HookConsumerWidget {
                 ),
               ),
 
+            // 5. Bottom Right — Try On Button (dark glassmorphism pill).
             // Only an in-flight avatar upload blocks it: the backend resolves
             // the model photo itself, so a try-on never waits on the download.
             Positioned(

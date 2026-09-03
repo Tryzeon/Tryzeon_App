@@ -58,6 +58,7 @@ class ProductRepositoryImpl implements ProductRepository {
     final bool forceRefresh = false,
   }) async {
     try {
+      // 1. Try Local Cache
       if (!forceRefresh) {
         try {
           final cachedProducts = await _localDataSource.listProducts(storeId: storeId);
@@ -78,8 +79,10 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
+      // 2. Try Remote
       final remoteProducts = await _remoteDataSource.listProducts(storeId: storeId);
 
+      // 3. Update Cache
       try {
         await _localDataSource.saveProducts(storeId, remoteProducts);
       } catch (e, stackTrace) {
@@ -149,6 +152,7 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<Product, Failure>> getProductById(final String productId) async {
     try {
+      // 1. Try Local Cache
       try {
         final cachedProduct = await _localDataSource.getProductById(productId);
         switch (cachedProduct) {
@@ -162,8 +166,10 @@ class ProductRepositoryImpl implements ProductRepository {
         AppLogger.warning('Local cache read failed', e, stackTrace);
       }
 
+      // 2. Try Remote
       final model = await _remoteDataSource.getProduct(productId);
 
+      // 3. Update Cache
       try {
         await _localDataSource.saveProduct(model);
       } catch (e, stackTrace) {
@@ -185,6 +191,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final targetImages = params.images;
       final targetSizes = params.sizes;
 
+      // 1. Separate existing paths and new files from final order
       final existingPaths = <String>[];
       final newFiles = <File>[];
 
@@ -198,6 +205,7 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
+      // 2. Upload new images if any
       List<String> uploadedPaths = [];
       if (newFiles.isNotEmpty) {
         uploadedPaths = await _remoteDataSource.uploadProductImages(
@@ -212,6 +220,7 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
+      // 3. Build final image paths in correct order
       final finalImagePaths = <String>[];
       int existingIndex = 0;
       int newIndex = 0;
@@ -225,14 +234,15 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
+      // 4. Compute removed images via diff
       final removedPaths = original.imagePaths
           .where((final p) => !finalImagePaths.contains(p))
           .toList();
 
       final targetProduct = target.copyWith(imagePaths: finalImagePaths);
 
-      // Diff against the original so an untouched column keeps whatever value
-      // the server has — `original` is the snapshot the user edited.
+      // 5. Diff against the original so an untouched column keeps whatever
+      // value the server has — `original` is the snapshot the user edited.
       final productChanges = jsonDiff(
         _mappr.convert<Product, ProductModel>(original).toJson(),
         _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
@@ -243,10 +253,12 @@ class ProductRepositoryImpl implements ProductRepository {
         return const Ok(null);
       }
 
+      // 6. Update product in DB
       if (productChanges.isNotEmpty) {
         await _remoteDataSource.updateProduct(original.id, productChanges);
       }
 
+      // 7. Drop removed images locally and on R2.
       if (removedPaths.isNotEmpty) {
         _localDataSource.deleteProductImages(removedPaths).ignore();
         _remoteDataSource
@@ -256,6 +268,7 @@ class ProductRepositoryImpl implements ProductRepository {
             });
       }
 
+      // 8. Handle size changes
       for (final sizeId in sizeDiff.idsToDelete) {
         await _remoteDataSource.deleteProductSize(sizeId);
       }
@@ -280,6 +293,7 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.updateProductSize(update.original.id, sizeChanges);
       }
 
+      // 9. Update local cache
       final model = await _remoteDataSource.getProduct(original.id);
       await _localDataSource.saveProduct(model);
 
