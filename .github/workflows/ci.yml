@@ -72,11 +72,6 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # Tracked files only: build_runner output is gitignored and `dart format`
-      # has no exclude of its own.
-      - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart')
-
       - name: Create .env file
         run: |
           echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
@@ -86,6 +81,11 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      # Tracked files only: build_runner output is gitignored and `dart format`
+      # has no exclude of its own.
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart')
 
       - name: Run build_runner
         run: dart run build_runner build --delete-conflicting-outputs
