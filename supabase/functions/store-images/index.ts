@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
+import "@supabase/functions-js/edge-runtime.d.ts";
 import { type DbClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { deletePublicImagesFromR2, generatePresignedPutUrl } from "../_shared/r2.ts";
 import { json } from "../_shared/http.ts";

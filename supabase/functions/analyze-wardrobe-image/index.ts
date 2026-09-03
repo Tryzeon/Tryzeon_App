@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
+import "@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import {
   analyzeImage,

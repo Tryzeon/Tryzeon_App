@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert@^1.0.19";
+import { assertEquals } from "@std/assert";
 import { resolveTier, type Subscriber } from "./entitlements.ts";
 
 const NOW = new Date("2026-08-30T00:00:00Z");

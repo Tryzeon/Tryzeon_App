@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert@^1.0.19";
+import { assertEquals } from "@std/assert";
 import { buildStoreDestination, deliveryFor, isOpenWith } from "./destination.ts";
 
 const LIFF = { liffUrl: "https://liff.line.me/1234-abcd" };

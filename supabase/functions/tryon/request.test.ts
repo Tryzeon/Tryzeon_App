@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
+import { assertEquals, assertThrows } from "@std/assert";
 import { parseTryonParams } from "./request.ts";
 import { LIMITS, type TryonParams, ValidationError } from "../_shared/tryon/index.ts";
 
