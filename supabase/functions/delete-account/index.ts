@@ -14,8 +14,8 @@ class StorageCleanupService {
   constructor(private supabase: DbClient) { }
 
   private async listFilesRecursively(bucket: string, path: string): Promise<string[]> {
-    let allFiles: string[] = [];
-    let stack: string[] = [path];
+    const allFiles: string[] = [];
+    const stack: string[] = [path];
 
     while (stack.length > 0) {
       const currentPath = stack.pop()!;
