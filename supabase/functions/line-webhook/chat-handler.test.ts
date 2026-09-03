@@ -306,8 +306,6 @@ Deno.test("the answer is replied before the conversation is written", async () =
 });
 
 Deno.test("an expired reply token costs a push, not the answer", async () => {
-  // The token holds for about a minute and a turn is usually seconds — but the
-  // agent loop is capped at ten steps, and LINE says not to rely on the limit.
   const { line, replied, pushed } = fakeLine({ replyFails: true });
   const chat = fakeChat({ blocks: [{ type: "text", text: "為你找到" }] });
 

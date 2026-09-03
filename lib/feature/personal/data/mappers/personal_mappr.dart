@@ -26,8 +26,6 @@ import '../../wardrobe/data/models/wardrobe_item_model.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
-/// Note: measurement mappings come from the two dedicated mapprs — body
-/// measurements for UserProfile, garment measurements for ProductSize.sizes
 @AutoMappr(
   [
     MapType<UserProfileModel, UserProfile>(

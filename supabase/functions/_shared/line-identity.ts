@@ -9,8 +9,8 @@ export class LineAuthError extends Error {}
 const LINE_VERIFY_URL = "https://api.line.me/oauth2/v2.1/verify";
 
 /**
- * Verifies a LINE id_token against LINE's verify endpoint. LINE performs the
- * signature + expiry checks server-side, so we only trust a 200 + matching aud.
+ * LINE performs the signature + expiry checks server-side, so we only trust a
+ * 200 + matching aud.
  */
 export async function verifyLineIdToken(
   idToken: string,

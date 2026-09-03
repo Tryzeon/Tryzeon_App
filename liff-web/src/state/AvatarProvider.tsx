@@ -11,7 +11,7 @@ import { avatarUrl, setAvatar } from "../api/avatar";
 
 interface AvatarValue {
   url: string | null;
-  /** 這個人有沒有 model 照。不等於 [url] 已經備妥 —— 簽章還在路上時仍然是 true。 */
+  /** 不等於 [url] 已經備妥 —— 簽章還在路上時仍然是 true。 */
   hasAvatar: boolean;
   status: "loading" | "ready" | "error";
   busy: boolean;
@@ -20,10 +20,6 @@ interface AvatarValue {
 
 const AvatarContext = createContext<AvatarValue | null>(null);
 
-/**
- * 掛在分頁之上,所以簽章只求一次,而首頁和商品頁看到的是同一個狀態 —— 在商品頁
- * 補上傳的照片,回到首頁就是那一張。
- */
 export function AvatarProvider(
   { initialPath, children }: { initialPath: string | null; children: ReactNode },
 ) {

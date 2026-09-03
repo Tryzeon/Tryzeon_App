@@ -153,8 +153,6 @@ Deno.test("a link LINE would reject is dropped, and takes nothing else with it",
 });
 
 Deno.test("an over-long product name is clamped in the postback displayText", () => {
-  // `displayText` fails the whole send past 300 characters, and a product
-  // name carries no length constraint of its own.
   const longName = "衣".repeat(60);
   const out = renderAnswer([card(product("p1", { name: longName }))]);
   const [{ footer }] = bubbles(out[0]);
@@ -181,11 +179,6 @@ Deno.test("the body and footer sit on the 8px grid, and do not double up", () =>
   assertEquals(bubble.footer.paddingTop, "0px");
 });
 
-/**
- * Full objects rather than labels alone: these chips are all `message` chips,
- * and asserting only `label` would leave `text` — the string that lands in the
- * chat as though the sender typed it — unchecked.
- */
 const chipActions = (message: object): object[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
@@ -235,8 +228,6 @@ Deno.test("a wardrobe block becomes a card", () => {
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[1])[0] as any;
   assertEquals(bubble.hero.url, "https://sig.example/w1.png?token=abc");
-  // Background-removed PNGs: fit so sleeves are not cropped, and a pinned
-  // surface so a transparent image is not shown on LINE's dark background.
   // LINE accepts only `cover` and `fit` here and 400s the whole send otherwise.
   assertEquals(bubble.hero.aspectMode, "fit");
   assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);

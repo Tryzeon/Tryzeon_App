@@ -236,5 +236,5 @@ Deno.test("a pathologically long tag cannot blow up the transcript note", () => 
 
   const text = note.content[0].text as string;
   assertEquals(text.length < LIMITS.MAX_TEXT_LENGTH, true);
-  assertEquals(text.includes("…"), true); // tagLine truncates and marks it
+  assertEquals(text.includes("…"), true);
 });

@@ -8,8 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
-/// Throws on failure — the repository maps exceptions to [Failure]s and owns
-/// temp-file cleanup.
+/// Throws on failure — the repository maps exceptions to [Failure]s.
 class TryonMediaDataSource {
   TryonMediaDataSource({final BaseCacheManager? cacheManager, final Dio? dio})
     : _cacheManager = cacheManager ?? DefaultCacheManager(),

@@ -84,8 +84,6 @@ Deno.test("whitespace-only text is nudged, not answered", async () => {
 });
 
 Deno.test("a message kind with no handler is nudged", async () => {
-  // Understood the sender well enough to know we cannot act on it — a different
-  // thing from the event not being a request; see the `unsend` test.
   assertStringIncludes(
     textOf((await repliedWith(messageEvent({ type: "sticker", id: "s1" })))[0]),
     "傳一張衣服的照片",

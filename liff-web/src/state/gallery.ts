@@ -1,7 +1,4 @@
-/**
- * 首頁那條 gallery 的狀態:第 0 頁永遠是模特照,之後每一次試穿(生成中或已完成)
- * 各佔一頁。不管試穿是從首頁還是從商品頁按下去的,結果都落在這裡。
- */
+/** 第 0 頁永遠是模特照,之後每一次試穿(生成中或已完成)各佔一頁。 */
 
 export interface TryonProduct {
   productId: string;
@@ -90,7 +87,6 @@ function withoutEntry(state: GalleryState, id: string): GalleryState | null {
   const entries = [...state.entries];
   entries.splice(index, 1);
 
-  // 刪掉正在看的那頁就落到它的鄰居,整條都空了就回模特頁。
   const currentId = state.currentId !== id
     ? state.currentId
     : entries.length === 0

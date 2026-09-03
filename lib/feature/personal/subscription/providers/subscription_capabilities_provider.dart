@@ -44,7 +44,6 @@ GetSubscriptionCapabilities getSubscriptionCapabilitiesUseCase(final Ref ref) {
   );
 }
 
-/// Capabilities of the tier the customer is on *right now*.
 @Riverpod(keepAlive: true)
 Future<SubscriptionCapabilities> subscriptionCapabilities(final Ref ref) async {
   final entitlement = await ref.watch(appSubscriptionEntitlementProvider.future);

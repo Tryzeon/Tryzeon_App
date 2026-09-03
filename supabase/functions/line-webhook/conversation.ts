@@ -66,7 +66,6 @@ export function dehydrateMessages(messages: ChatMessage[]): ChatMessage[] {
   }));
 }
 
-/** The name is clamped because `products.name` has no length constraint. */
 export function tryonNote(product: ProductInfo): ChatMessage {
   return {
     role: "user",

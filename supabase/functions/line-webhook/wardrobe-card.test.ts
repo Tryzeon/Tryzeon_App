@@ -128,10 +128,6 @@ Deno.test("an item with no tags shows two lines, not an empty middle one", () =>
   assertEquals(contents[1].text, "你的衣櫃");
 });
 
-/**
- * Records both calls so a test can assert the user bound the query and that
- * signing happened once for the whole set.
- */
 function fakeAdmin(
   rows: Record<string, unknown>[],
   // deno-lint-ignore no-explicit-any
@@ -229,16 +225,10 @@ Deno.test("fetchWardrobeRows queries and signs nothing for an empty id list", as
 });
 
 Deno.test("fetchWardrobeRows throws when signing fails outright", async () => {
-  // A broken read is a server fault; reporting it as "I found nothing" would
-  // charge the caller for a lie.
   const { admin } = fakeAdmin([row()], { data: null, error: { message: "boom" } });
   await assertRejects(() => fetchWardrobeRows(admin, "u1", ["w1"]), Error, "boom");
 });
 
-/**
- * Records the filters so a test can prove the ownership bound, and whether
- * signing was ever attempted.
- */
 function fakeItemAdmin(row: Record<string, unknown> | null) {
   const filters: Array<[string, string]> = [];
   let signCalls = 0;

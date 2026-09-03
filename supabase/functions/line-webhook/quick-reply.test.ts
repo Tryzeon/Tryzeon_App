@@ -56,7 +56,6 @@ Deno.test("chips are attached without disturbing the message", () => {
 });
 
 Deno.test("no chips means no quickReply property at all", () => {
-  // An empty `items` array is not something LINE accepts.
   const message = { type: "text", text: "你想找什麼場合穿的？" };
 
   assertEquals(withQuickReply(message, []), message);
@@ -73,8 +72,6 @@ Deno.test("more chips than LINE accepts are cut to the limit", () => {
 });
 
 Deno.test("only the last message of a send is dressed", () => {
-  // LINE does not document which quick reply wins when several messages in one
-  // send carry them, so exactly one ever does.
   const chip = messageChip("便宜一點的", "有便宜一點的嗎");
   const out = dressLast(
     [{ type: "text", text: "為你找到" }, { type: "flex", altText: "3 件" }],

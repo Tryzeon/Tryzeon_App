@@ -181,7 +181,6 @@ button { font-family: inherit; }
 /* ── Search + sort ─────────────────────────────────────────────────────────── */
 .searchbar { margin-bottom: 16px; }
 .searchbar__form { display: flex; gap: 8px; }
-/* Holds the input and the clear button that sits over its trailing edge. */
 .searchbar__field { position: relative; flex: 1; min-width: 0; }
 
 .searchbar__input {
@@ -411,13 +410,11 @@ button { font-family: inherit; }
 }
 
 /* ── Onboard preview ───────────────────────────────────────────────────── */
-/* Bleeds past the main padding so the photo sits close to the screen edge. */
 .preview { margin: 0 -12px 16px; }
 .preview .frame { width: auto; }
 
 /* ── Ceremony (generating) ─────────────────────────────────────────────── */
-/* Full-bleed brand animation. The background shows through until the clip
-   buffers, matching the app's behaviour. */
+/* The background shows through until the clip buffers, matching the app's behaviour. */
 .fit {
   position: relative;
   flex: none;
@@ -896,8 +893,6 @@ button { font-family: inherit; }
 }
 
 /* ── Product detail page ───────────────────────────────────────────────── */
-/* Bleeds the photo strip to the screen edge; the text below keeps the page
-   padding. */
 .pdp { padding-top: 8px; }
 .pdp .gallery { margin: 0 -16px 16px; }
 

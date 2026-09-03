@@ -14,10 +14,6 @@ const row = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-/**
- * `tables` records which tables were read, so a test can assert that a ref of one
- * kind never queries the other's table.
- */
 function fakeAdmin(
   productRows: Record<string, unknown>[],
   wardrobeRows: Record<string, unknown>[] = [],
