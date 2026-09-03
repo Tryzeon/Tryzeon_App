@@ -34,10 +34,8 @@ const product = (over: Partial<LineProduct> = {}): LineProduct => ({
 });
 
 /**
- * Fake client answering one `.rpc()` call. `queried` keeps the ids asked for;
- * `calls` keeps the full (name, params) pairs. `.from()` throws: the
- * unlisted-product filter lives in `get_shop_product` now, so a direct
- * `products` read is a regression, not an alternative.
+ * `.from()` throws: the unlisted-product filter lives in `get_shop_product` now,
+ * so a direct `products` read is a regression, not an alternative.
  */
 // deno-lint-ignore no-explicit-any
 function fakeAdmin(result: { data: any; error: any }) {
@@ -59,7 +57,6 @@ function fakeAdmin(result: { data: any; error: any }) {
   return { admin: client as any, queried, calls };
 }
 
-/** Fake client answering one `.in()` batch lookup. */
 // deno-lint-ignore no-explicit-any
 function fakeBatchAdmin(result: { data: any; error: any }) {
   const queried: string[][] = [];
@@ -128,8 +125,6 @@ Deno.test("fetchProductInfo is null for a product with no image", async () => {
 
 Deno.test("fetchProductInfo throws when the lookup itself failed", async () => {
   const { admin } = fakeAdmin({ data: null, error: { message: "boom" } });
-  // A missing row and a broken query are different facts: the first is a
-  // product the user can be told about, the second is ours to fix.
   await assertRejects(() => fetchProductInfo(admin, "p1"), Error, "boom");
 });
 
@@ -152,8 +147,7 @@ Deno.test("fetchProductRows leaves out a product with no image", async () => {
   });
   const rows = await fetchProductRows(admin, ["p1", "p2"], BASE);
 
-  // Absent, not present-and-null: the assembler drops it by the same
-  // missing-row rule it applies to a since-deleted product.
+  // Absent, not present-and-null: the assembler drops it by the missing-row rule.
   assertEquals([...rows.keys()], ["p1"]);
 });
 
@@ -173,10 +167,8 @@ Deno.test("fetchProductRows throws when the lookup itself failed", async () => {
 Deno.test("fetchProductInfo will not act on an unlisted product", async () => {
   // The try-on tap is charged after this returns, so a card left in a thread
   // after the store unlisted the product has to fail here, not in the core.
-  // The filter itself is `get_shop_product`'s; what this proves is that the
-  // read goes through it — `fakeAdmin.from()` throws, so a regression to a
-  // direct `products` select fails instead of silently widening what a stale
-  // card can act on.
+  // `fakeAdmin.from()` throws, so a regression to a direct `products` select
+  // fails instead of silently widening what a stale card can act on.
   const { admin, calls } = fakeAdmin({ data: row(), error: null });
   await fetchProductInfo(admin, "p1");
 
@@ -195,14 +187,10 @@ Deno.test("purchaseAction is offered only for an absolute http link", () => {
 });
 
 Deno.test("purchaseAction rejects strings a bare startsWith(\"http\") check let through", () => {
-  // Not a URL at all — a bare prefix check accepted this.
   assertEquals(purchaseAction(product({ purchaseUrl: "http" })), null);
-  // A scheme that merely starts with "http" but isn't it.
   assertEquals(purchaseAction(product({ purchaseUrl: "httpfoo://x" })), null);
-  // A single-slash scheme: `new URL` normalizes this to a valid
-  // "https://one-slash/", so a bare protocol check on the parsed result
-  // would wave it through even though the literal string is not something
-  // LINE accepts as a uri action.
+  // `new URL` normalizes a single-slash scheme to a valid "https://one-slash/",
+  // so a bare protocol check on the parsed result would wave it through.
   assertEquals(purchaseAction(product({ purchaseUrl: "https:/one-slash" })), null);
 });
 

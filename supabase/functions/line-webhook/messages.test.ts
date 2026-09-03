@@ -28,11 +28,9 @@ const product: LineProduct = {
 };
 
 /**
- * The full actions a message's chips carry, in order.
- *
- * Full objects, not labels alone: a `message` chip's `text` is what lands in
- * the chat as though the sender typed it, so a test that only reads `label`
- * would let it drift from what the button promises without failing.
+ * Full objects, not labels alone: a `message` chip's `text` is what lands in the
+ * chat as though the sender typed it, so a test that only reads `label` would
+ * let it drift from what the button promises without failing.
  */
 const chipActions = (message: object): object[] =>
   // deno-lint-ignore no-explicit-any
@@ -40,14 +38,12 @@ const chipActions = (message: object): object[] =>
     (i) => i.action,
   );
 
-/** The template's own button, which is not a chip. */
 const templateUri = (message: object): string =>
   (message as { template: { actions: { uri: string }[] } }).template.actions[0].uri;
 
 Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
-  // The paths belong to us (`liff-web/src/router.tsx`), so only the LIFF app's
-  // own URL is configuration. The catalog chip is the escape hatch for someone
-  // not ready to upload a photo of themselves: they can go look before leaving.
+  // The catalog chip is the escape hatch for someone not ready to upload a photo
+  // of themselves: they can go look before leaving.
   const message = onboardingMessage("https://liff.example");
 
   assertEquals(templateUri(message), "https://liff.example/onboard");
@@ -58,9 +54,6 @@ Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
 });
 
 Deno.test("the welcome leads with what costs the sender nothing", () => {
-  // A recommendation pays off in seconds with nothing uploaded; the camera
-  // needs a garment photo and then a model photo before anything is generated.
-  // Ordering is the whole decision here, so it is what this pins.
   assertEquals(chipActions(welcomeMessage()), [
     { type: "message", label: "有什麼推薦", text: "有什麼推薦的商品嗎" },
     { type: "cameraRoll", label: "傳衣服照試穿" },
@@ -81,10 +74,8 @@ Deno.test("an over-long message offers to ask again, not to resend the same one"
 });
 
 Deno.test("an unknown chat failure offers to re-ask, honestly labelled", () => {
-  // Regression for the mismatch this chip once had: the label promised to
-  // re-ask the question that just failed, but the text it typed on the
-  // sender's behalf was an unrelated generic request. Label and text must
-  // both read as the same offer.
+  // Regression: the label promised to re-ask the question that just failed
+  // while the text it typed on the sender's behalf was an unrelated request.
   assertEquals(chipActions(chatErrorMessage("unknown")), [
     { type: "message", label: "有什麼推薦", text: "有什麼推薦的商品嗎" },
     { type: "cameraRoll", label: "傳衣服照試穿" },
@@ -117,10 +108,9 @@ Deno.test("an unknown try-on failure offers a plain retry", () => {
 });
 
 Deno.test("both try-on paths report a failed generation in the same words", () => {
-  // One string naming both remedies, rather than a per-path split. It has to
-  // stay that way deliberately: the two paths can act on different halves of it
-  // — a photo cannot usefully be retried as-is, a catalog product can — so if
-  // this ever needs to say only one of them, it needs two strings again.
+  // One string naming both remedies: the two paths can act on different halves
+  // of it — a photo cannot usefully be retried as-is, a catalog product can — so
+  // saying only one of them would need two strings again.
   const text = "這件沒能生成，請換一件或再試一次看看！";
 
   assertEquals((tryonErrorMessage("generation") as { text: string }).text, text);
@@ -139,8 +129,7 @@ Deno.test("a spent try-on quota on the product path offers the chat the sender s
 Deno.test("a product that would not generate offers both remedies its text names", () => {
   // No `tryonNote` is written on this path, so a `message` chip asking for
   // "類似的" would have nothing behind it — the retry carries the product id
-  // itself instead. The catalog link is the other half: the text says
-  // "請換一件或再試一次", and without it only one of the two has a button.
+  // itself instead. Without the catalog link, "請換一件" has no button.
   assertEquals(chipActions(productTryonErrorMessage("generation", product, LIFF)), [
     {
       type: "postback",
@@ -154,8 +143,7 @@ Deno.test("a product that would not generate offers both remedies its text names
 
 Deno.test("an unknown failure offers only the retry, not a different product", () => {
   // "出了點狀況，請稍後再試" is a fault on our side rather than this product's,
-  // so a different product would likely fail the same way. This is why the two
-  // kinds are not grouped even though they share the retry.
+  // so a different product would likely fail the same way.
   assertEquals(chipActions(productTryonErrorMessage("unknown", product, LIFF)), [
     {
       type: "postback",
@@ -203,8 +191,6 @@ Deno.test("the others bucket reads as 單品, not 其他, in the acknowledgement
 });
 
 Deno.test("a vanished wardrobe item does not send the user shopping", () => {
-  // A delisted product sends them to browse others; a wardrobe item that is
-  // gone has no such counterpart, so the chips stay in the wardrobe.
   // deno-lint-ignore no-explicit-any
   const message = wardrobeUnavailableMessage() as any;
 
@@ -213,8 +199,6 @@ Deno.test("a vanished wardrobe item does not send the user shopping", () => {
 });
 
 Deno.test("the wardrobe result card leads with the way to shop", () => {
-  // The wardrobe earns nothing by itself; pairing it with something for sale
-  // is the whole return on keeping one.
   // deno-lint-ignore no-explicit-any
   const card = wardrobeResultMessage("https://img/r.png", wardrobeItem) as any;
 
