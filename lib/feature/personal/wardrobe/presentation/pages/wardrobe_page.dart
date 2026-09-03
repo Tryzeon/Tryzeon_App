@@ -145,7 +145,6 @@ class WardrobePage extends HookConsumerWidget {
       );
     }
 
-    // Determine the count for the header
     final totalCount = wardrobeItemsAsync.value?.length ?? 0;
 
     return Scaffold(

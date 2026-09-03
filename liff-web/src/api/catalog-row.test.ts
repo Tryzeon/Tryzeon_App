@@ -51,7 +51,6 @@ describe("buildCatalogItem", () => {
     for (const imagePaths of [[], null, [""]]) {
       const item = buildCatalogItem({ ...row, image_paths: imagePaths }, BASE);
       expect(item.imageUrls).toEqual([]);
-      // 商品本身仍然進得了目錄 —— 缺的只是照片。
       expect(item.name).toBe("亞麻襯衫");
     }
   });

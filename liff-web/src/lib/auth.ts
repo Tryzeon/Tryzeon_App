@@ -5,8 +5,6 @@ import { toApiError } from "../api/errors";
 
 
 /**
- * 一個確定能用的 Supabase session,回傳它的 user id。
- *
  * 「能用」只有伺服器說了算:存著的 session 可能指向一個已經被刪掉的 user,或帶
  * 著已失效的 refresh token,而它的 access token 在 exp 之前看起來都還是好的。壞
  * 掉的那份要當場清掉再換新的 —— 留著只會讓之後每次重新載入都撞同一面牆。
@@ -15,7 +13,6 @@ export async function ensureSession(): Promise<string> {
   return (await liveUserId()) ?? await mintSession();
 }
 
-/** 存著的 session 背後那個 user,已經不能用就清掉並回 null。 */
 async function liveUserId(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return null;
@@ -30,7 +27,6 @@ async function liveUserId(): Promise<string | null> {
   return null;
 }
 
-/** 拿 LINE id_token 跟 line-auth 換一份新的 session。 */
 async function mintSession(): Promise<string> {
   const { data, error } = await supabase.functions.invoke("line-auth", {
     body: { idToken: getIdToken() },

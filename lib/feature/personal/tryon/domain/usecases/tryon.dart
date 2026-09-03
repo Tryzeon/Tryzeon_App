@@ -4,7 +4,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// Runs a virtual try-on from a fully-resolved [TryonRequest].
 class Tryon {
   Tryon({required final TryonRepository tryonRepository})
     : _tryonRepository = tryonRepository;

@@ -10,8 +10,6 @@ import 'package:tryzeon/feature/store/account/presentation/state/unlist_reminder
 import 'package:tryzeon/feature/store/account/providers/unlist_reminder_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/actions/toggle_product_status.dart';
 
-/// Products someone clicked through to buy, so the owner can check the stock
-/// and unlist what has sold out.
 class UnlistReminderSection extends HookConsumerWidget {
   const UnlistReminderSection({super.key});
 
@@ -19,8 +17,6 @@ class UnlistReminderSection extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final remindersAsync = ref.watch(unlistRemindersProvider);
 
-    // Nothing to act on, so the section stays out of the page entirely — its
-    // own top spacing included.
     if (remindersAsync.value?.isEmpty ?? false) {
       return const SizedBox.shrink();
     }
@@ -62,8 +58,6 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text('下架提醒', style: theme.textTheme.headlineMedium),
         const SizedBox(height: AppSpacing.xs),
-        // Without this the section reads as nonsense: these are the products
-        // selling best, filed under a heading that says to take them down.
         Text(
           '依購買連結點擊次數排序，確認庫存後可下架',
           style: theme.textTheme.bodySmall?.copyWith(
@@ -144,8 +138,6 @@ class _Thumbnail extends StatelessWidget {
   }
 }
 
-/// Charcoal like the dashboard figures above, so the two sections read as one
-/// page. The metric is named once in the section subtitle, not on every row.
 class _ClickCount extends StatelessWidget {
   const _ClickCount({required this.clicks});
 

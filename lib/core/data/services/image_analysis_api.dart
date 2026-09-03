@@ -7,9 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'image_analysis_api.g.dart';
 
-/// Shared transport for single-image AI analysis Edge Functions: compresses the
-/// image, base64-encodes it, invokes [functionName], and returns the decoded
-/// JSON body (or null on any failure — callers degrade gracefully).
 class ImageAnalysisApi {
   ImageAnalysisApi(this._supabase);
 

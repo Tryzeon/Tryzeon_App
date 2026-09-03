@@ -10,33 +10,25 @@ import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.d
 
 part 'chat_providers.g.dart';
 
-// Data Source Provider
 @riverpod
 ChatRemoteDataSource chatRemoteDataSource(final Ref ref) {
   return ChatRemoteDataSource(Supabase.instance.client);
 }
 
-// Repository Provider
 @riverpod
 ChatRepository chatRepository(final Ref ref) {
   final remoteDataSource = ref.watch(chatRemoteDataSourceProvider);
   return ChatRepositoryImpl(remoteDataSource: remoteDataSource);
 }
 
-// Use Case Provider
 @riverpod
 SendChatMessage sendChatMessageUseCase(final Ref ref) {
   final repository = ref.watch(chatRepositoryProvider);
   return SendChatMessage(repository);
 }
 
-/// Mutation orchestrator for chat. Wraps [SendChatMessage] and
-/// pushes the post-mutation usage snapshot into [dailyUsageTodayProvider]'s
-/// cache, so consumers (e.g., the Account card) see the updated chat_count
-/// without an extra round trip.
-///
-/// UI should call this instead of [sendChatMessageUseCaseProvider]
-/// directly — any new chat entry point inherits cache sync for free.
+/// UI calls this instead of [sendChatMessageUseCaseProvider] directly, so every
+/// chat entry point inherits the usage-cache sync.
 ///
 /// `keepAlive: true` because the orchestrator is invoked via `ref.read` (no
 /// long-lived listener). Without it, autoDispose may tear the provider down

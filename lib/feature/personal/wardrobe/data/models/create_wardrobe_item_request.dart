@@ -4,7 +4,6 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardro
 
 part 'create_wardrobe_item_request.g.dart';
 
-/// Client → Server：建立衣櫃項目時使用，不含 id/createdAt/updatedAt
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CreateWardrobeItemRequest {
   const CreateWardrobeItemRequest({

@@ -18,11 +18,9 @@ sealed class ProductCategory with _$ProductCategory {
 
   const ProductCategory._();
 
-  /// Whether this category should be shown to a shopper of [shopperGender].
   bool appliesTo(final ProductGender shopperGender) =>
       gender == ProductGender.unisex || gender == shopperGender;
 
-  /// The model image to show for a given shopper [shopperGender].
   String? imageUrlFor(final ProductGender shopperGender) => switch (shopperGender) {
     ProductGender.male => imageMaleUrl,
     ProductGender.female => imageFemaleUrl,

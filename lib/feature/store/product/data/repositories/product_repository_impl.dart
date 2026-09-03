@@ -109,7 +109,6 @@ class ProductRepositoryImpl implements ProductRepository {
         images: params.images,
       );
 
-      // Save to local cache
       for (int i = 0; i < params.images.length; i++) {
         final bytes = await params.images[i].readAsBytes();
         await _localDataSource.saveProductImage(bytes, imagePaths[i]);
@@ -215,7 +214,6 @@ class ProductRepositoryImpl implements ProductRepository {
           images: newFiles,
         );
 
-        // Save to local cache
         for (int i = 0; i < newFiles.length; i++) {
           final bytes = await newFiles[i].readAsBytes();
           await _localDataSource.saveProductImage(bytes, uploadedPaths[i]);

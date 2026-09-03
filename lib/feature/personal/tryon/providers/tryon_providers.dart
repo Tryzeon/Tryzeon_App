@@ -13,13 +13,11 @@ import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 
 part 'tryon_providers.g.dart';
 
-// Data Source Providers
 @riverpod
 TryonRemoteDataSource tryonRemoteDataSource(final Ref ref) {
   return TryonRemoteDataSource(Supabase.instance.client);
 }
 
-// Repository Providers
 @riverpod
 TryonRepository tryonRepository(final Ref ref) {
   final tryonDataSource = ref.watch(tryonRemoteDataSourceProvider);
@@ -27,7 +25,6 @@ TryonRepository tryonRepository(final Ref ref) {
   return TryonRepositoryImpl(remoteDataSource: tryonDataSource);
 }
 
-// Use Case Providers
 @riverpod
 Tryon tryonUseCase(final Ref ref) {
   return Tryon(tryonRepository: ref.watch(tryonRepositoryProvider));
@@ -38,7 +35,6 @@ LoadImageAsBase64 loadImageAsBase64UseCase(final Ref ref) {
   return LoadImageAsBase64(mediaRepository: ref.watch(tryonMediaRepositoryProvider));
 }
 
-// Media (save/share) — data source, repository, use cases
 @riverpod
 TryonMediaDataSource tryonMediaDataSource(final Ref ref) {
   return TryonMediaDataSource();

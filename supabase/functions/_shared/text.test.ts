@@ -10,8 +10,6 @@ Deno.test("nonEmptyStr trims, and rejects blanks and non-strings", () => {
 });
 
 Deno.test("textArrayValues drops the elements a text[] column can hold but its type denies", () => {
-  // `supabase gen types` emits `string[]` for a `text[]` column; Postgres lets
-  // that array hold NULLs, so this is the gap between the two.
   assertEquals(textArrayValues(["a", null, 7, "b"]), ["a", "b"]);
   assertEquals(textArrayValues([]), []);
   assertEquals(textArrayValues(null), []);
@@ -29,8 +27,6 @@ Deno.test("isUuid rejects anything Postgres would choke on", () => {
   assertEquals(isUuid("not-a-uuid"), false);
   // 沒有連字號的 32 位十六進位字串：Postgres 收，但我們的 id 不長這樣
   assertEquals(isUuid("8f14e45fceea467a9c8d1b2c3d4e5f60"), false);
-  // 多一段
   assertEquals(isUuid("8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60-extra"), false);
-  // 混入非十六進位字元
   assertEquals(isUuid("8f14e45f-ceea-467a-9c8d-1b2c3d4e5g60"), false);
 });

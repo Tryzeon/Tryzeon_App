@@ -8,8 +8,6 @@ const AVATARS_BUCKET = "user-avatars";
 const SIGNED_URL_TTL_SECONDS = 86400;
 
 /**
- * 儲存使用者的 model 照,之後每一次試穿都用它,回傳它的儲存路徑。
- *
  * 路徑第一段是 userId,不是慣例而是條件:bucket policy 要求
  * `(storage.foldername(name))[1] = auth.uid()`,寫錯就上傳不了。所以 userId
  * 只能來自 session。
@@ -33,7 +31,6 @@ export async function setAvatar(file: File): Promise<string> {
   return path;
 }
 
-/** 拿一個能放進 `<img>` 的網址。bucket 不是公開的,所以必須簽。 */
 export async function avatarUrl(path: string): Promise<string> {
   const { data, error } = await supabase.storage
     .from(AVATARS_BUCKET)

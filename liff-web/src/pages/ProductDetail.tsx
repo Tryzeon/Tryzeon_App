@@ -13,15 +13,7 @@ type Load =
   | { status: "missing" }
   | { status: "error" };
 
-/**
- * 一件商品一個網址(`/product/{id}`)。
- *
- * 從 bottom sheet 改成獨立的頁面,是為了讓商品可以被連結、被分享、被 LINE 訊息
- * 直接指過來 —— sheet 掛在目錄的查詢字串上,那些事一件都做不到。
- *
- * 按下試穿之後這一頁就結束了:coordinator 把人帶去首頁,結果落在那條 gallery 裡,
- * 和 app 一樣。
- */
+/** 按下試穿之後這一頁就結束了:coordinator 把人帶去首頁,結果落在那條 gallery 裡。 */
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -55,8 +47,6 @@ export function ProductDetail() {
     };
   }, [id, needsFetch]);
 
-  // 沒有上一頁可回(從 LINE 訊息直接點進來)就落到目錄,而不是把人留在死路上。
-  //
   // 判斷依據是 location.key —— react-router 只會給「進來時就在的那一筆」
   // "default" 這個 key。不用 history.length:LIFF 是經過一串轉址才走到這個網址
   // 的,深連結進來時它早就大於 1,拿它判斷會把人送回轉址頁,直接彈出這個 app。
@@ -99,7 +89,6 @@ function Detail({ item }: { item: CatalogItem }) {
     : null;
   const hasPhotos = item.imageUrls.length > 0;
 
-  // 補上傳的照片存起來之後直接接著試穿,使用者不必再點一次。
   async function pickAvatarAndTryon(file: File) {
     if (await avatar.replace(file)) await tryon.fromProduct(item);
   }
@@ -145,7 +134,6 @@ function Detail({ item }: { item: CatalogItem }) {
   );
 }
 
-/** 換頁時一起帶過來的那一筆商品,沒有或形狀不對就是 null。 */
 function seededItem(state: unknown): CatalogItem | null {
   if (typeof state !== "object" || state === null) return null;
   const item = (state as { item?: unknown }).item;

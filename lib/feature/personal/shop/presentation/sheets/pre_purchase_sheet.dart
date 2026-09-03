@@ -230,16 +230,12 @@ class _FitInfoRow extends StatelessWidget {
   }
 }
 
-/// Direct-message ordering section. A titled, two-step flow — copy the order
-/// details, then open a messaging app and paste — followed by the channel row.
-/// Copy-first applies to every channel, so the steps stay generic.
 class _ContactChannels extends StatelessWidget {
   const _ContactChannels({required this.contacts, required this.message});
 
   final List<StoreOrderContact> contacts;
   final String message;
 
-  /// Indent that aligns the channel row under the step text (badge + gap).
   static const double _stepIndent = _StepBadge.size + AppSpacing.smMd;
 
   @override
@@ -287,7 +283,6 @@ class _ContactChannels extends StatelessWidget {
   }
 }
 
-/// A numbered step: a charcoal badge on the left with the step content beside it.
 class _StepRow extends StatelessWidget {
   const _StepRow({required this.number, required this.child});
 
@@ -335,8 +330,6 @@ class _StepBadge extends StatelessWidget {
   }
 }
 
-/// A compact square copy button that flips to a check once the order message is
-/// on the clipboard.
 class _SquareCopyButton extends StatefulWidget {
   const _SquareCopyButton({required this.message});
 
@@ -388,7 +381,6 @@ class _SquareCopyButtonState extends State<_SquareCopyButton> {
   }
 }
 
-/// A single ordering channel rendered as a circular brand icon with a label.
 class _ChannelButton extends StatelessWidget {
   const _ChannelButton({required this.contact});
 

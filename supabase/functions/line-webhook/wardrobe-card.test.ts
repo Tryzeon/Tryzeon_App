@@ -43,8 +43,6 @@ Deno.test("toLineWardrobeItem maps the row onto the card's fields", () => {
 });
 
 Deno.test("every wardrobe_category code has a label", () => {
-  // The vocabulary comes from the generated Constants, so a migration that adds
-  // a value fails here as well as at the map's own declaration.
   const labels = WARDROBE_CATEGORY_VALUES.map(
     (c) => toLineWardrobeItem(row({ category: c }), URL)?.categoryLabel,
   );
@@ -52,9 +50,8 @@ Deno.test("every wardrobe_category code has a label", () => {
 });
 
 Deno.test("an unknown category shows its own code rather than dropping the card", () => {
-  // Unreachable through the types — the cast stands in for a deployed function
-  // reading a schema newer than the types it was built against, which is the
-  // only way this happens now.
+  // The cast stands in for a deployed function reading a schema newer than the
+  // types it was built against.
   const grown = "hats" as Enums<"wardrobe_category">;
   assertEquals(toLineWardrobeItem(row({ category: grown }), URL)?.categoryLabel, "hats");
 });
@@ -74,8 +71,7 @@ Deno.test("toLineWardrobeItem keeps at most three tags and ignores blank ones", 
 Deno.test("a NULL tag drops that tag rather than the whole hydration", () => {
   // `tags` is `text[]` with no element constraint: the generated `string[]`
   // cannot say an element may be NULL, and a row written through PostgREST can
-  // carry one. Reading it as a string would throw here and take every card in
-  // the carousel with it.
+  // carry one. Reading it as a string would take every card in the carousel.
   const got = toLineWardrobeItem(
     row({ tags: ["a", null, "b"] as unknown as string[] }),
     URL,
@@ -106,8 +102,6 @@ Deno.test("garmentNoun keeps a real noun as-is", () => {
 });
 
 Deno.test("garmentNoun turns the others bucket, and anything unmapped, into 單品", () => {
-  // 「其他」 reads fine as a standalone label but not inside a sentence like
-  // 「試穿你的其他」, and an unmapped enum code is not a word at all.
   assertEquals(garmentNoun("其他"), "單品");
   assertEquals(garmentNoun("hats"), "單品");
 });
@@ -134,11 +128,6 @@ Deno.test("an item with no tags shows two lines, not an empty middle one", () =>
   assertEquals(contents[1].text, "你的衣櫃");
 });
 
-/**
- * Fake client answering one `.eq().in()` row lookup and one batch signing call.
- * Records both so a test can assert the user bound the query and that signing
- * happened once for the whole set.
- */
 function fakeAdmin(
   rows: Record<string, unknown>[],
   // deno-lint-ignore no-explicit-any
@@ -236,16 +225,10 @@ Deno.test("fetchWardrobeRows queries and signs nothing for an empty id list", as
 });
 
 Deno.test("fetchWardrobeRows throws when signing fails outright", async () => {
-  // Same rule the product path follows: a broken read is a server fault, and
-  // reporting it as "I found nothing" would charge the caller for a lie.
   const { admin } = fakeAdmin([row()], { data: null, error: { message: "boom" } });
   await assertRejects(() => fetchWardrobeRows(admin, "u1", ["w1"]), Error, "boom");
 });
 
-/**
- * Fake client for the single-item read. Records the filters so a test can prove
- * the ownership bound, and records whether signing was ever attempted.
- */
 function fakeItemAdmin(row: Record<string, unknown> | null) {
   const filters: Array<[string, string]> = [];
   let signCalls = 0;
@@ -287,9 +270,6 @@ Deno.test("fetchWardrobeItemInfo binds the read to the asking user", async () =>
 });
 
 Deno.test("fetchWardrobeItemInfo signs nothing", async () => {
-  // The try-on result card's hero is the generated image, and the body needs
-  // only the text. Signing here would be a round trip nobody reads — and a
-  // signing failure would refuse a try-on the core could have completed.
   const { admin, signCalls } = fakeItemAdmin(row());
   await fetchWardrobeItemInfo(admin, "u1", "w1");
 
@@ -304,8 +284,7 @@ Deno.test("fetchWardrobeItemInfo yields the text fields and no image url", async
 });
 
 Deno.test("fetchWardrobeItemInfo is null for an item that is gone or never theirs", async () => {
-  // One answer for both, for the same reason `resolveWardrobeGarment` gives
-  // one error for both: telling them apart would be an oracle.
+  // One answer for both: telling them apart would be an existence oracle.
   const { admin } = fakeItemAdmin(null);
   assertEquals(await fetchWardrobeItemInfo(admin, "u1", "w1"), null);
 });

@@ -1,5 +1,3 @@
-// lib/feature/personal/subscription/presentation/pages/subscription_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';

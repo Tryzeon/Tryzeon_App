@@ -1,12 +1,4 @@
 /**
- * The AI SDK provider every Vertex call in this project goes through — the chat
- * agent's loop, the one-shot analysis helpers, and try-on's image and video
- * generation.
- *
- * One provider rather than one per feature: they authenticate as the same
- * service account, reach the same project and location, and differ only in what
- * they ask the model for.
- *
  * Built on first use and kept for the isolate, deliberately not at import:
  * `chat/run.ts` names its Vertex runner as the default, so anything touching
  * the chat core pulls this module in — including callers that always inject
@@ -35,23 +27,15 @@ function vertexProvider() {
   });
 }
 
-/**
- * Model and region are the two axes every Vertex quota is keyed on, and the
- * region is now an environment variable rather than a constant, so neither is
- * readable from the code alone. Announced where the handle is built: that is one
- * place for every caller, and it lands just before the call that a `429` refuses.
- */
 function announce(modelId: string) {
   console.info(`vertex: model=${modelId} region=${vertexLocation()}`);
 }
 
-/** A language-model handle for `generateObject` / `generateText` / `streamText`. */
 export function vertexModel(modelId: string) {
   announce(modelId);
   return vertexProvider()(modelId);
 }
 
-/** A video-model handle for `experimental_generateVideo`, which owns Veo's polling. */
 export function vertexVideoModel(modelId: string) {
   announce(modelId);
   return vertexProvider().videoModel(modelId);

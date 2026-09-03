@@ -90,7 +90,6 @@ GetProduct getProductUseCase(final Ref ref) {
   return GetProduct(ref.watch(productRepositoryProvider));
 }
 
-/// Manages the combined search, filter, and sort state for store products.
 @riverpod
 class ProductQuery extends _$ProductQuery {
   @override
@@ -111,8 +110,6 @@ class ProductQuery extends _$ProductQuery {
   void reset() => state = const ProductQueryState();
 }
 
-/// Fetches all products for the store, and owns product-list refreshes.
-/// Sorting is applied entirely client-side in [filteredProductsProvider].
 @riverpod
 class ProductsNotifier extends _$ProductsNotifier {
   @override
@@ -131,10 +128,6 @@ class ProductsNotifier extends _$ProductsNotifier {
     return result.get()!;
   }
 
-  /// Force-refreshes the product list from the server. A failed store profile
-  /// is re-fetched first, since the list can't be loaded without it. Swallows
-  /// errors — the provider drops into an error state and the UI shows an
-  /// `ErrorView` or the previous data.
   Future<void> refresh() async {
     try {
       if (ref.read(storeProfileProvider).hasError) {
@@ -155,7 +148,6 @@ class ProductsNotifier extends _$ProductsNotifier {
   }
 }
 
-/// Applies search and sort (incl. analytics-based sort) entirely in memory.
 @riverpod
 Future<List<Product>> filteredProducts(final Ref ref) async {
   final products = await ref.watch(productsProvider.future);
@@ -212,22 +204,13 @@ SizeVoiceParser sizeVoiceParser(final Ref ref) =>
 @Riverpod(keepAlive: true)
 AudioRecorderService audioRecorderService(final Ref ref) => AudioRecorderServiceImpl();
 
-/// Which product write is currently in flight, so a form can show progress on
-/// the control that started it instead of on every control at once.
 enum ProductMutation { create, update, delete }
 
-/// Owns the product create/update/delete writes: exposes which mutation is in
-/// flight via [state] so a form can show progress on the right control, and
-/// returns the [Result] so the caller can surface a one-shot failure message.
 @riverpod
 class ProductEditNotifier extends _$ProductEditNotifier {
   @override
   ProductMutation? build() => null;
 
-  /// Creates a product for the signed-in store from the store owner's editable
-  /// [draft]. The store the product attaches to is resolved here — it is
-  /// execution context, not form input — and fails with an [AuthFailure] when
-  /// there is no store profile.
   Future<Result<void, Failure>> create({
     required final ProductDraft draft,
     required final List<File> images,
@@ -249,9 +232,8 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     });
   }
 
-  /// Applies the store owner's editable [draft]. The original it is diffed
-  /// against is read here rather than taken from the form, so a stale form
-  /// can't clobber server-owned fields.
+  /// The original the draft is diffed against is read here rather than taken
+  /// from the form, so a stale form can't clobber server-owned fields.
   Future<Result<void, Failure>> update({
     required final String productId,
     required final ProductDraft draft,
@@ -271,8 +253,6 @@ class ProductEditNotifier extends _$ProductEditNotifier {
           ),
         );
       },
-      // The cached product is the original the next edit diffs against, so a
-      // stale one would silently narrow that edit's changes.
       refreshedProductId: productId,
     );
   }
@@ -298,9 +278,6 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     );
   }
 
-  /// Runs [write] while flagging [mutation] as in flight, and drops the cached
-  /// product list on success so every screen re-reads it — plus the single
-  /// product identified by [refreshedProductId], when the write changed one.
   /// Kept alive for the duration, so a form popped mid-write doesn't dispose
   /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(

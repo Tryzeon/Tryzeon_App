@@ -4,10 +4,6 @@ import 'package:tryzeon/feature/personal/shop/domain/services/product_fit_resolv
 
 part 'product_fit_provider.g.dart';
 
-/// Supplies the shopper context every fit judgement needs, so the product grid,
-/// the store page, and the product detail page answer the same question the
-/// same way.
-///
 /// Rebuilds only when the shopper's profile changes, which is what keeps the
 /// grid from re-reading it on every scroll frame.
 ///

@@ -4,13 +4,6 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscriptio
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
 
-/// Account-page-only card showing current plan name + a single hero usage
-/// stat (today's try-ons). Full per-feature usage breakdown lives on the
-/// Subscription page (progressive disclosure — keeps Account page clean and
-/// avoids ambient scarcity anxiety).
-///
-/// For the loading variant use [SubscriptionUsageCardSkeleton] — it mirrors
-/// this layout under Skeletonizer so hydration doesn't cause a height jump.
 class SubscriptionUsageCard extends StatelessWidget {
   const SubscriptionUsageCard({
     required this.entitlement,
@@ -89,12 +82,8 @@ class SubscriptionUsageCard extends StatelessWidget {
   }
 }
 
-/// Layout-only skeleton mirroring [SubscriptionUsageCard]'s structure so the
-/// real card swaps in without a height jump. Skeletonizer shimmers over the
-/// placeholder text — the strings themselves are arbitrary.
-///
-/// Kept structurally close to the real card by convention; if [SubscriptionUsageCard]
-/// changes shape, update this widget too (covered by golden tests).
+/// Mirrors [SubscriptionUsageCard]'s layout so the real card swaps in without
+/// a height jump; keep the two in sync (covered by golden tests).
 class SubscriptionUsageCardSkeleton extends StatelessWidget {
   const SubscriptionUsageCardSkeleton({super.key});
 

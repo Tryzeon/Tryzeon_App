@@ -5,22 +5,14 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/ease_table.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/garment_fit_dimension.dart';
 
-/// Size-fit recommendation.
+/// For every published size it measures each comparable dimension's *ease*
+/// (garment minus body) against the expected band and decides whether the size
+/// fits, runs tight, or runs loose. A garment's length and the shopper's height
+/// carry no fit signal and are never read here.
 ///
-/// The model has two halves, each isolated on purpose:
-///  - which garment dimension speaks to which body dimension, and which are
-///    display-only — `GarmentFitDimension`;
-///  - how much larger than the body each dimension should be for the product's
-///    silhouette and fabric — [EaseTable].
-///
-/// This class only orchestrates them: for every published size it measures each
-/// comparable dimension's *ease* (garment minus body) against the expected band
-/// and decides whether the size fits, runs tight, or runs loose. A garment's
-/// length and the shopper's height carry no fit signal and are never read here.
-///
-/// The result is intentionally honest about missing data: dimensions absent on
-/// either side are skipped rather than guessed, so a size judged on chest alone
-/// says so ("chest fits") instead of implying a full-body match.
+/// Dimensions absent on either side are skipped rather than guessed, so a size
+/// judged on chest alone says so ("chest fits") instead of implying a full-body
+/// match.
 class FitCalculator {
   FitCalculator._();
 
@@ -30,8 +22,6 @@ class FitCalculator {
     required final ProductFit? fit,
     required final ProductElasticity? elasticity,
   }) {
-    // Which body dimensions the shopper has recorded that also carry a fit
-    // signal. Height is excluded because no garment dimension compares to it.
     final userDimensions = fitComparableGarmentTypes
         .map((final g) => g.comparableBodyType!)
         .where((final b) => body?.getValue(b) != null)
@@ -61,17 +51,15 @@ class FitCalculator {
       );
     }
 
-    // No size fits cleanly: recommend the closest one, but only among sizes
-    // close enough to be worth suggesting. The cap is applied before ranking,
-    // not after: the lowest total miss can still be one nobody would wear
-    // (a single huge miss beats several small ones on a sum), and rejecting it
-    // afterwards would discard the sizes that were actually wearable.
+    // The cap is applied before ranking, not after: the lowest total miss can
+    // still be one nobody would wear (a single huge miss beats several small
+    // ones on a sum), and rejecting it afterwards would discard the sizes that
+    // were actually wearable.
     evaluated.sort((final a, final b) => a.deviationScore.compareTo(b.deviationScore));
     final recommendable = evaluated
         .where((final e) => e.maxDeviation <= EaseTable.maxRecommendableDeviation)
         .toList();
-    // Nothing close enough — the product does not stock this shopper's size.
-    // The closest one still goes to the try-on: the banner says there is no
+    // The closest size still goes to the try-on: the banner says there is no
     // size for them, and the render is what shows them why.
     if (recommendable.isEmpty) {
       return FitResult(outOfRange: true, tryonSizeId: evaluated.first.size.id);
@@ -113,8 +101,6 @@ class FitCalculator {
   }
 }
 
-/// One dimension's fit for one size: how the garment's ease compares to the
-/// expected band.
 class _DimensionFit {
   _DimensionFit({required this.type, required this.ease, required this.band});
 
@@ -128,7 +114,6 @@ class _DimensionFit {
   bool get isLoose => ease > band.max;
   bool get inRange => !isTight && !isLoose;
 
-  /// Distance past the nearest band edge (0 when in range), in centimeters.
   double get deviation {
     if (isTight) return band.min - ease;
     if (isLoose) return ease - band.max;
@@ -144,7 +129,6 @@ class _DimensionFit {
   );
 }
 
-/// One size evaluated against the shopper across every overlapping dimension.
 class _SizeFit {
   _SizeFit({required this.size, required this.dimensions}) {
     centerScore = dimensions.fold(
@@ -158,8 +142,7 @@ class _SizeFit {
 
   bool get fitsCleanly => dimensions.every((final d) => d.inRange);
 
-  /// Weighted sum of how far each dimension lands from the ideal ease. Ranks
-  /// sizes that all fit so the most flattering ease wins.
+  /// Weighted distance from the ideal ease. Ranks sizes that all fit cleanly.
   double centerScore = 0;
 
   /// Weighted sum of out-of-range distances. Ranks sizes when none fit cleanly.

@@ -67,8 +67,6 @@ Deno.test("validateTryonParams rejects a garment image named by path", () => {
 });
 
 Deno.test("validateTryonParams rejects a path even alongside usable bytes", () => {
-  // Dropping the path silently would run the job on the bytes, which is not
-  // what a caller that named two sources asked for.
   assertThrows(
     () =>
       validateTryonParams({
@@ -95,9 +93,8 @@ Deno.test("validateTryonParams treats an omitted avatar as no override", () => {
 });
 
 Deno.test("validateTryonParams treats a legacy path avatar as no override", () => {
-  // Shipped app builds still send the profile path. It is not an override and
-  // must not be an error: the job falls back to the stored photo, which is the
-  // same picture, only current.
+  // Shipped app builds still send the profile path; the job falls back to the
+  // stored photo, which is the same picture, only current.
   const job = validateTryonParams({
     ...validParams,
     avatar: { path: "u1/a.jpg" } as unknown as TryonParams["avatar"],
@@ -123,8 +120,7 @@ Deno.test("validateTryonParams rejects an unusable avatar base64", () => {
 });
 
 Deno.test("validateTryonParams treats a null avatar as no override", () => {
-  // Some JSON encoders serialize an absent field as null rather than omitting
-  // it; that must read the same as omitting it entirely.
+  // Some JSON encoders serialize an absent field as null rather than omitting it.
   const job = validateTryonParams({
     ...validParams,
     avatar: null as unknown as TryonParams["avatar"],
@@ -145,8 +141,6 @@ Deno.test("validateTryonParams rejects a non-object avatar", () => {
 });
 
 Deno.test("validateTryonParams rejects an empty-object avatar", () => {
-  // Neither the legacy `{ path }` shape nor a usable override: silently
-  // falling back here would reproduce the stale-photo bug this guards against.
   assertThrows(
     () =>
       validateTryonParams({
@@ -159,7 +153,6 @@ Deno.test("validateTryonParams rejects an empty-object avatar", () => {
 });
 
 Deno.test("validateTryonParams strips a garment detail a caller tried to set", () => {
-  // Only resolveProductGarment may attach one, and it runs after this guard.
   const job = validateTryonParams({
     ...validParams,
     garments: [
@@ -368,8 +361,6 @@ Deno.test("validateTryonParams rejects baseImage combined with an avatar", () =>
 });
 
 Deno.test("validateTryonParams accepts a scenePrompt with baseImage and drops it", () => {
-  // Inapplicable rather than contradictory: the picture is already made, so a
-  // client that attaches its prompt config uniformly is not an error.
   const out = validateTryonParams({ ...animateParams, scenePrompt: "studio" });
   assertEquals(out.scenePrompt, undefined);
   assertEquals(out.baseImage, { base64: "FINISHED" });
@@ -449,8 +440,6 @@ Deno.test("validateTryonParams keeps the stylingPrompt on a generate job", () =>
 });
 
 Deno.test("validateTryonParams accepts a stylingPrompt with baseImage and drops it", () => {
-  // Same reasoning as scenePrompt: the picture is already made, so how the
-  // garment is worn is settled and the ambient config is merely inapplicable.
   const out = validateTryonParams({
     ...animateParams,
     stylingPrompt: "tucked in",
@@ -481,8 +470,6 @@ Deno.test("validateTryonParams rejects an unknown engine", () => {
 });
 
 Deno.test("validateTryonParams keeps the engine on an animate job", () => {
-  // Unlike the scene and styling prompts, the engine is not dropped: nothing
-  // reads it on this path yet, but it names a model tier rather than a prompt.
   const out = validateTryonParams({ ...animateParams, engine: "advanced" });
   assertEquals(out.engine, "advanced");
   assertEquals(out.baseImage, { base64: "FINISHED" });

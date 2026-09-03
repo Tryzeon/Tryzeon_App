@@ -44,17 +44,11 @@ export interface TryonHandlerDeps {
   runJob?: typeof runTryonJob;
 }
 
-/** The sender as try-on sees them: an account, and whether they onboarded. */
 interface Actor {
   userId: string;
   hasAvatar: boolean;
 }
 
-/**
- * Resolves who is asking. A first-time sender is minted an account here, so
- * this is a write as much as a read; a false `hasAvatar` means they have not
- * onboarded and every try-on path must stop and say so.
- */
 async function resolveActor(
   deps: TryonHandlerDeps,
   sourceUserId: string,
@@ -73,32 +67,21 @@ async function resolveActor(
   };
 }
 
-/** One try-on job, reduced to what this channel can render. */
 type TryonOutcome =
   | { ok: true; imageUrl: string }
   | { ok: false; kind: TryonJobErrorKind };
 
-/**
- * Runs one try-on and classifies whatever comes back.
- *
- * An outcome rather than a message, because the two callers differ only in
- * wording: a garment the user photographed comes back as a bare image, a
- * catalog product as a card. Deciding that is each handler's business; the
- * quota, the generation and the error classification are shared, and this is
- * all of the shared part.
- */
 async function runTryon(
   deps: TryonHandlerDeps,
   params: { userId: string; garment: GarmentInput },
 ): Promise<TryonOutcome> {
   const runJob = deps.runJob ?? runTryonJob;
   try {
-    // Running the job on `admin` is safe here and stated explicitly: a LINE
-    // event carries no Supabase session, the avatar is resolved by the core from
-    // the user's own profile, and a garment is inline base64, a product id, or a
-    // wardrobe item id — the core resolves both id forms itself, binding the
-    // wardrobe one to `job.userId`, so this adapter never forwards a
-    // client-supplied path.
+    // Running the job on `admin` is safe here: a LINE event carries no Supabase
+    // session, the avatar is resolved by the core from the user's own profile,
+    // and a garment is inline base64, a product id, or a wardrobe item id — the
+    // core resolves both id forms itself, binding the wardrobe one to
+    // `job.userId`, so this adapter never forwards a client-supplied path.
     const result = await runJob(
       deps.admin,
       { userId: params.userId, garments: [params.garment], mode: "image" },
@@ -183,18 +166,10 @@ export interface ProductTryonDeps extends TryonHandlerDeps {
 }
 
 /**
- * Full lifecycle for a tap on a product card's try-on button.
- *
- * The product is read before anything is charged. `fetchProductInfo` returns
+ * The product is read before anything is charged: `fetchProductInfo` returns
  * null for exactly the two cases the core would later reject as validation
  * errors — the row is gone, or it has no image — so checking here turns both
- * into a sentence the user understands, and costs them no quota. It also
- * supplies the name for the acknowledgement and the fields for the result
- * card, which have to be read either way.
- *
- * The garment goes in as `{ productId }` rather than as bytes: the core
- * resolves the catalog itself, which is how every one of the product's images
- * and its generated description reach the model.
+ * into a sentence the user understands at no quota cost.
  */
 export async function handleProductTryon(
   deps: ProductTryonDeps,
@@ -244,17 +219,11 @@ export interface WardrobeTryonDeps extends TryonHandlerDeps {
 }
 
 /**
- * Full lifecycle for a tap on a wardrobe card's try-on button.
- *
  * The mirror of {@link handleProductTryon}, and deliberately not a
  * parameterisation of it: what is read, how the acknowledgement reads, the
  * result card, the error card and the transcript note all differ, which leaves
  * only the skeleton in common. `resolveActor` and `runTryon` are the parts that
  * genuinely are shared, and they already are.
- *
- * The item is read before anything is charged, for the reason the product path
- * reads its product first: an item deleted since the card was sent becomes a
- * sentence the user understands and costs them no quota.
  *
  * The garment goes in as `{ wardrobeItemId }` and never as a path. This adapter
  * holds the admin client, so a path it chose would be a path with nothing
@@ -303,11 +272,9 @@ export async function handleWardrobeTryon(
 }
 
 /**
- * Renders a core error as one of this channel's message kinds, from the same
- * `classifyTryonError` result the HTTP adapters use. A validation error is not
- * user-actionable here — this adapter builds its own params, and each kind of
- * ref is checked for existence before any job starts — so it is reported as an
- * unknown fault.
+ * A validation error is not user-actionable here — this adapter builds its own
+ * params, and each kind of ref is checked for existence before any job starts —
+ * so it is reported as an unknown fault.
  */
 function tryonFailureKind(err: unknown): TryonJobErrorKind {
   const info = classifyTryonError(err);

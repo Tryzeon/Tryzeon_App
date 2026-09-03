@@ -69,9 +69,6 @@ Deno.test("buildGarmentFitDetail walks the whole adjective ladder for thigh", ()
 });
 
 Deno.test("buildGarmentFitDetail never reports waist as skin-close: its slimMin is 0, so zero ease is already fitted", () => {
-  // Proves the "unreachable bucket" is a real consequence of slimMin 0, not
-  // an accident of some other branch order: zero ease is the closest a
-  // non-negative ease can get to skin-close, and it still lands on "fitted".
   const detail = buildGarmentFitDetail("M", { waist_circumference: 90 }, {
     waist: 90,
   });

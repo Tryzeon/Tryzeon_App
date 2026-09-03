@@ -11,7 +11,6 @@ type ValidationResult =
   | { ok: true; value: string }
   | { ok: false; response: Response };
 
-/** Validates a base64 image payload from a request body. */
 export function validateBase64(base64: unknown): ValidationResult {
   if (typeof base64 !== "string" || base64.length < 16) {
     return { ok: false, response: jsonError("Missing or invalid base64", "BAD_REQUEST", 400) };
@@ -34,8 +33,6 @@ export async function checkImageAnalysisRateLimit(
 }
 
 /**
- * Runs a single-image structured-output analysis and returns the parsed object.
- *
  * Raises when the model returns nothing matching `schema`. A caller cannot tell
  * an empty object meaning "no attributes found" from one meaning "the model
  * failed", so an unreadable answer is reported rather than flattened into the

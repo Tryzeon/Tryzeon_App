@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { useAvatar } from "../state/AvatarProvider";
 
-// LIFF is already initialized + logged in by <LiffGate> before this renders.
 type Phase = "ready" | "saving" | "done" | "error";
 
 const CTA_LABEL: Record<Phase, string> = {

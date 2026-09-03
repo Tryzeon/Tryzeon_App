@@ -29,8 +29,6 @@ class StoreProfileRemoteDataSource {
     return StoreProfileModel.fromJson(_withLogoUrl(response));
   }
 
-  /// Writes only [changes] — the columns the store owner actually edited — so
-  /// a column left alone keeps whatever value the server has.
   Future<StoreProfileModel> updateStoreProfile(final Map<String, dynamic> changes) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();

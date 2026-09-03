@@ -1,8 +1,3 @@
-// Thin HTTP transport for the chat core: authenticate, then stream the core's
-// progress + final answer as NDJSON. All chat logic (validation, quota,
-// grounding, the tool loop, answer assembly) lives in _shared/chat so other
-// platforms can reuse it without HTTP.
-//
 // Errors split by when they happen, not by what they are: a bad body is
 // rejected with a status code, while anything raised after the 200 is committed
 // arrives as an in-stream error frame. Both render from `classifyCoreError`.
@@ -19,7 +14,6 @@ import { encodeEvent, errorEvent } from "./stream.ts";
 
 Deno.serve(async (req) => {
   try {
-    // Auth: Verify JWT and get user securely
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 

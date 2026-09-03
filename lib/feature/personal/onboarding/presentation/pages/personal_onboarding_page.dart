@@ -24,7 +24,6 @@ class PersonalOnboardingPage extends HookConsumerWidget {
     final notifier = ref.read(onboardingProvider.notifier);
     final currentStep = onboardingState.currentStep;
 
-    // Animate page when step changes
     ref.listen(onboardingProvider, (final previous, final next) {
       if ((previous?.currentStep ?? 0) != next.currentStep) {
         pageController.animateToPage(
@@ -116,7 +115,6 @@ class PersonalOnboardingPage extends HookConsumerWidget {
     );
   }
 
-  // Gender (step 0) and age (step 1) are required; style (step 2) is skippable.
   bool _canAdvance(final int step, final OnboardingState state) => switch (step) {
     0 => state.gender != null,
     1 => state.ageRange != null,

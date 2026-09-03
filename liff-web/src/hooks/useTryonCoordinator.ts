@@ -9,16 +9,11 @@ import { loadPromptConfig } from "../lib/promptConfig";
 import { customAvatarUrl, type TryonProduct } from "../state/gallery";
 import { useGallery } from "../state/GalleryProvider";
 
-/** 送出前的準備失敗,帶著要對使用者說的那句話。 */
 class SetupError extends Error {}
 
 const SETUP_FALLBACK = "讀取試穿形象失敗，請稍後再試。";
 
-/**
- * 所有試穿的唯一入口,對應 app 的 `TryonCoordinator`:先把人帶到首頁,再把工作
- * 交出去。從商品頁按下的試穿和從首頁按下的落在同一條 gallery,所以「看結果的
- * 地方」只有一個。
- */
+/** 所有試穿的唯一入口:從商品頁和從首頁按下的都落在同一條 gallery。 */
 export function useTryonCoordinator() {
   const { state, dispatch } = useGallery();
   const navigate = useNavigate();
@@ -66,7 +61,6 @@ export function useTryonCoordinator() {
     [state, dispatch, navigate],
   );
 
-  /** 首頁:使用者自己拍的衣服照。 */
   const fromGarmentPhoto = useCallback(
     (file: File) =>
       run(async () => {
@@ -79,7 +73,6 @@ export function useTryonCoordinator() {
     [run],
   );
 
-  /** 商品頁:目錄裡的一件商品,後端自己去解析它的圖與描述。 */
   const fromProduct = useCallback(
     (item: CatalogItem) =>
       run(async () => ({ productId: item.productId }), {

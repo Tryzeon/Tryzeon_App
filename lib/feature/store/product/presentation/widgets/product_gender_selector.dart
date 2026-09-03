@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 
-/// Single-select gender picker. Gender is required, but starts unselected
-/// (null) on a new product so the choice is explicit; the caller enforces the
-/// requirement via form validation.
 class ProductGenderSelector extends StatelessWidget {
   const ProductGenderSelector({super.key, required this.selectedGender});
 

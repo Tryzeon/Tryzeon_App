@@ -8,7 +8,6 @@ import { SearchSortBar } from "../components/SearchSortBar";
 import { useCatalog } from "../hooks/useCatalog";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
-/** [storeId] 由分頁殼從 /store/:storeId 解出來；沒有就是全站商品。 */
 export function Shop({ storeId }: { storeId?: string }) {
   const catalog = useCatalog(storeId);
   const navigate = useNavigate();

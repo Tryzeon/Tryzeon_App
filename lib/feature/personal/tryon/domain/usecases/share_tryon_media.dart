@@ -3,7 +3,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// Shares a finished try-on result.
 class ShareTryonMedia {
   ShareTryonMedia({required final TryonMediaRepository mediaRepository})
     : _mediaRepository = mediaRepository;

@@ -6,10 +6,6 @@ export 'package:tryzeon/feature/common/product_size/domain/entities/garment_meas
 part 'garment_measurements.freezed.dart';
 
 /// One size's garment measurements, in centimeters.
-///
-/// Every field is optional: a size chart is inherently sparse — a skirt has no
-/// sleeve length, a top has no hip circumference, and store owners publish
-/// only the dimensions they actually measured.
 @freezed
 sealed class GarmentMeasurements with _$GarmentMeasurements {
   const factory GarmentMeasurements({
@@ -23,7 +19,6 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
   }) = _GarmentMeasurements;
   const GarmentMeasurements._();
 
-  /// Builds an instance from a sparse map, ignoring unknown keys.
   factory GarmentMeasurements.fromValues(
     final Map<GarmentMeasurementType, double?> values,
   ) => GarmentMeasurements(

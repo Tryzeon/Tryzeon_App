@@ -3,16 +3,6 @@ import type { DbClient } from "./supabase.ts";
 
 const SYNTHETIC_EMAIL_DOMAIN = "liff.tryzeon.app";
 
-/**
- * The stable auth user id for a verified LINE profile, creating one if this is
- * the first time we have seen the account.
- *
- * Named for the write, not just the read: a miss in `line_user_links` mints an
- * auth user keyed by the synthetic email `line_<sub>@liff.tryzeon.app` and
- * records the mapping, permanently binding that LINE account to an identity.
- * "Resolve" is reserved in this codebase for turning a reference into something
- * that already exists (see `_shared/tryon/sources.ts`), which this is not.
- */
 export async function getOrCreateUserId(
   admin: DbClient,
   profile: LineProfile,

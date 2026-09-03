@@ -9,7 +9,6 @@ type PropertySpec = { type: string; enum?: string[]; items?: { enum?: string[] }
 const schemaProperties = (): Record<string, PropertySpec> =>
   (buildSchema(CATEGORY_NAMES) as { properties: Record<string, PropertySpec> }).properties;
 
-/** The values a field accepts, whether it is an enum or an array of them. */
 const acceptedValues = (spec: PropertySpec): string[] => spec.enum ?? spec.items?.enum ?? [];
 
 const fullAnswer = {
@@ -112,15 +111,14 @@ Deno.test("toResponse nulls a category name that no longer exists", () => {
   assertEquals(toResponse({ ...fullAnswer, category: "外套" }, CATEGORIES).categoryId, null);
 });
 
-// The original bug in one sentence: the prompt taught the model to answer
-// `null` while the schema had no way to accept it, so the model answered with
-// the *word*. These two lock the prompt and the schema to one vocabulary.
+// These two lock the prompt and the schema to one vocabulary: teaching `null`
+// while the schema has no way to accept it is how the model came to answer with
+// the *word*.
 Deno.test("buildPrompt teaches the sentinel the schema accepts", () => {
   const props = schemaProperties();
   const enums = Object.values(props)
     .map((spec) => spec.enum)
     .filter((e): e is string[] => e != null);
-  // The one value every enum field shares is the "can't tell" sentinel.
   const shared = enums.reduce((acc, e) => acc.filter((v) => e.includes(v)));
   assertEquals(shared.length, 1, "expected exactly one sentinel common to all enums");
 
@@ -146,8 +144,7 @@ Deno.test("buildSchema requires every field and offers an unknown sentinel", () 
 
   assertEquals(required.sort(), fields.sort());
 
-  // Every non-array field must give the model a legal way to say "I can't tell";
-  // without one it invents a string, which is how "null" got into the name.
+  // Without a legal way to say "I can't tell", the model invents a string.
   for (const [field, spec] of Object.entries(props)) {
     if (spec.type === "array" || field === "name") continue;
     assertEquals(

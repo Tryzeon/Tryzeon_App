@@ -26,14 +26,8 @@ import '../../wardrobe/data/models/wardrobe_item_model.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
-/// AutoMappr configuration for Personal feature
-/// Handles UserProfile, WardrobeItem, SubscriptionTier, ShopProduct, ShopStoreInfo mappings
-/// Note: ProductSize mappings are defined here directly for ShopProduct.sizes dependency
-/// Note: measurement mappings come from the two dedicated mapprs — body
-/// measurements for UserProfile, garment measurements for ProductSize.sizes
 @AutoMappr(
   [
-    // UserProfile mappings
     MapType<UserProfileModel, UserProfile>(
       fields: [
         Field('gender', custom: UserProfileMapprHelper.genderFromString),
@@ -57,7 +51,6 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileModel, UserProfileCache>(),
     MapType<UserProfileCache, UserProfileModel>(),
 
-    // WardrobeItem mappings
     MapType<WardrobeItemModel, WardrobeItem>(
       fields: [Field('category', custom: WardrobeItemMapprHelper.stringToCategory)],
     ),
@@ -66,7 +59,6 @@ import 'personal_mappr.auto_mappr.dart';
     ),
     MapType<WardrobeItemModel, WardrobeItemCache>(fields: [Field('itemId', from: 'id')]),
     MapType<WardrobeItemCache, WardrobeItemModel>(fields: [Field('id', from: 'itemId')]),
-    // ShopProduct mappings (read-only for consumer)
     MapType<ShopProductModel, ShopProduct>(
       fields: [
         Field('elasticity', custom: ShopProductMapprHelper.elasticityFromString),
@@ -81,15 +73,12 @@ import 'personal_mappr.auto_mappr.dart';
       fields: [Field('type', custom: ShopStoreInfoMapprHelper.codeToOrderContactType)],
     ),
 
-    // ShopStoreInfo mappings (read-only for consumer)
     MapType<ShopStoreInfoModel, ShopStoreInfo>(
       fields: [Field('channels', custom: ShopStoreInfoMapprHelper.codesToChannelSet)],
     ),
 
-    // ProductSize mappings (needed for ShopProduct.sizes)
     MapType<ProductSizeModel, ProductSize>(),
 
-    // SubscriptionTier mappings (Model ↔ Collection for local cache)
     MapType<SubscriptionTierModel, SubscriptionTierCache>(
       fields: [Field('tier', from: 'id')],
     ),

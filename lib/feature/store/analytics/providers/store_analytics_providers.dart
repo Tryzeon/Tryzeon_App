@@ -13,7 +13,6 @@ import 'package:typed_result/typed_result.dart';
 
 part 'store_analytics_providers.g.dart';
 
-// --- Filter Provider (shared by dashboard + product cards) ---
 @riverpod
 class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   @override
@@ -29,7 +28,6 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   }
 }
 
-// --- Data Sources ---
 @riverpod
 ProductAnalyticsRemoteDataSource productAnalyticsRemoteDataSource(final Ref ref) {
   return ProductAnalyticsRemoteDataSource(Supabase.instance.client);
@@ -43,7 +41,6 @@ ProductAnalyticsLocalDataSource productAnalyticsLocalDataSource(final Ref ref) {
   );
 }
 
-// --- Repository ---
 @riverpod
 ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
   return ProductAnalyticsRepositoryImpl(
@@ -52,15 +49,11 @@ ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
   );
 }
 
-// --- Use Case ---
 @riverpod
 GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
   return GetProductAnalyticsSummaries(ref.watch(productAnalyticsRepositoryProvider));
 }
 
-// --- Feature Provider: per-product summaries ---
-/// Per-product analytics for the selected month, and the owner of analytics
-/// refreshes.
 @riverpod
 class ProductAnalyticsSummariesNotifier extends _$ProductAnalyticsSummariesNotifier {
   @override
@@ -83,8 +76,6 @@ class ProductAnalyticsSummariesNotifier extends _$ProductAnalyticsSummariesNotif
     return result.get()!;
   }
 
-  /// Re-fetches the analytics summaries. Swallows errors — the provider drops
-  /// into an error state and the UI shows an `ErrorView` or the previous data.
   Future<void> refresh() async {
     ref.invalidateSelf();
     try {

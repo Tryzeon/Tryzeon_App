@@ -24,17 +24,12 @@ export function processingMessage(): object {
   return { type: "text", text: "收到，正在試穿，請稍等！" };
 }
 
-/** liff-web's avatar screen. Its catalog is the app root — see `liff-web/src/router.tsx`. */
 const LIFF_ONBOARD_PATH = "/onboard";
 
 /**
- * The gate every try-on hits without a model photo.
- *
- * Both destinations come from one base URL, because both screens are ours:
- * liff-web serves the catalog at `/` and the avatar upload at
- * {@link LIFF_ONBOARD_PATH}. The catalog chip matters more than it looks —
- * uploading a photo of yourself is a real ask, and someone not ready for it can
- * still go see what there is to try on rather than leaving.
+ * The catalog chip matters more than it looks — uploading a photo of yourself is
+ * a real ask, and someone not ready for it can still go see what there is to try
+ * on rather than leaving.
  */
 export function onboardingMessage(liffUrl: string): object {
   return withQuickReply({
@@ -82,12 +77,9 @@ export function productUnavailableMessage(liffUrl: string): object {
 }
 
 /**
- * A try-on of a catalog product, as a card.
- *
  * A bare image would not say which of the carousel's products this was, nor
- * offer a way to buy it — so the product travels back out with its own result.
- * The hero is `9:16` because that is what generation produces (see
- * `_shared/tryon/vertex.ts`), so `cover` crops nothing.
+ * offer a way to buy it. The hero is `9:16` because that is what generation
+ * produces, so `cover` crops nothing.
  */
 export function productResultMessage(
   imageUrl: string,
@@ -149,11 +141,9 @@ export function wardrobeProcessingMessage(categoryLabel: string): object {
 
 /**
  * The item is gone, or was never theirs — one message for both, because
- * `fetchWardrobeItemInfo` deliberately cannot tell them apart.
- *
- * Takes no `liffUrl`, unlike its product counterpart: sending someone to browse
- * the catalog answers a question they did not ask. The chips stay in the
- * wardrobe.
+ * `fetchWardrobeItemInfo` deliberately cannot tell them apart. Takes no
+ * `liffUrl`, unlike its product counterpart: sending someone to browse the
+ * catalog answers a question they did not ask.
  */
 export function wardrobeUnavailableMessage(): object {
   return withQuickReply({ type: "text", text: "這件已經不在你的衣櫃裡了。" }, [
@@ -163,11 +153,8 @@ export function wardrobeUnavailableMessage(): object {
 }
 
 /**
- * A try-on of the sender's own clothes, as a card.
- *
- * No purchase footer — a wardrobe item is not for sale — so the way this card
- * pays for itself is the first chip: the wardrobe earns nothing by itself, and
- * pairing it with something that is for sale is the whole return on keeping one.
+ * No purchase footer — a wardrobe item is not for sale — so the first chip is
+ * how this card pays for itself: pairing it with something that is.
  */
 export function wardrobeResultMessage(
   imageUrl: string,
@@ -202,13 +189,10 @@ export function wardrobeResultMessage(
 }
 
 /**
- * The wardrobe counterpart of {@link productTryonErrorMessage}. Takes
- * {@link TryonJobErrorKind} for the same reason: this path has no download step.
- *
- * The retry chip carries the id rather than asking the agent for the item
- * again, so it needs nothing from the transcript. `displayText` is not
- * clamped — `garmentNoun` bounds the word to a fixed set of short labels, so
- * it cannot approach the 300-character cap a product name can.
+ * The retry chip carries the id rather than asking the agent for the item again,
+ * so it needs nothing from the transcript. `displayText` is not clamped —
+ * `garmentNoun` bounds the word to a fixed set of short labels, far from the
+ * 300-character cap a product name can reach.
  */
 export function wardrobeTryonErrorMessage(
   kind: TryonJobErrorKind,
@@ -237,13 +221,10 @@ export function wardrobeTryonErrorMessage(
 }
 
 /*
- * Failure text, one table per feature.
- *
- * The kinds a feature can fail with are its own, and so is the wording: both
- * tables have a `quota` arm, but "今日試穿次數已用完" is not what a user who
- * asked for a shirt should read. One shared table would have to name the arms
- * `tryon_quota` / `chat_quota` to keep them apart, which is the same split
- * spelled worse.
+ * One table per feature: both have a `quota` arm, but "今日試穿次數已用完" is not
+ * what a user who asked for a shirt should read. One shared table would have to
+ * name the arms `tryon_quota` / `chat_quota` to keep them apart, which is the
+ * same split spelled worse.
  */
 
 const TRYON_ERROR_TEXT = {
@@ -277,12 +258,9 @@ export function tryonErrorMessage(kind: TryonErrorKind): object {
 }
 
 /**
- * The product-path counterpart of {@link tryonErrorMessage}.
- *
- * Takes {@link TryonJobErrorKind} because a catalog product has no download
- * step. And unlike the photo path, `tryonNote` is never written on failure — so
- * the retry can only offer actions that need no transcript, which is why it
- * carries the product id itself rather than a `message` chip asking for "類似的".
+ * Unlike the photo path, `tryonNote` is never written on failure — so the retry
+ * can only offer actions that need no transcript, which is why it carries the
+ * product id itself rather than a `message` chip asking for "類似的".
  */
 export function productTryonErrorMessage(
   kind: TryonJobErrorKind,
@@ -332,17 +310,13 @@ export function chatErrorMessage(kind: ChatErrorKind): object {
 }
 
 /**
- * The first thing anyone who follows this account reads.
- *
  * LINE also has a greeting message configurable in the OA Manager, and both
  * would send if both were on — this one exists because that one cannot carry
- * quick replies, and the welcome is the single message every user sees.
+ * quick replies.
  *
  * Recommendation leads, not the camera: it pays off in seconds with nothing
- * uploaded, while trying on a photo needs a garment picture and then a model
- * photo before anything is generated. The product cards it returns each carry a
- * try-on button, so the headline feature still arrives — attached to something
- * the sender already wants.
+ * uploaded, and the product cards it returns each carry a try-on button, so the
+ * headline feature still arrives.
  */
 export function welcomeMessage(): object {
   return withQuickReply({

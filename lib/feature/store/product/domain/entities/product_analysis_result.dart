@@ -5,7 +5,6 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 part 'product_analysis_result.freezed.dart';
 
 /// AI-inferred product attributes used to pre-fill the add-product form.
-/// Every field is optional; the form fills only the ones that are empty.
 @freezed
 sealed class ProductAnalysisResult with _$ProductAnalysisResult {
   const factory ProductAnalysisResult({
@@ -22,8 +21,8 @@ sealed class ProductAnalysisResult with _$ProductAnalysisResult {
 
   const ProductAnalysisResult._();
 
-  /// Whether the analysis populated any field that lives in the form's
-  /// collapsible "advanced" section (used to auto-reveal it).
+  /// Whether the analysis filled any field in the form's collapsible
+  /// "advanced" section.
   bool get hasAdvancedFields =>
       styles.isNotEmpty ||
       seasons.isNotEmpty ||

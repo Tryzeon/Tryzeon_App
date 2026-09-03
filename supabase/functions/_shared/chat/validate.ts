@@ -1,10 +1,4 @@
 /**
- * The core's domain guard.
- *
- * `runChatAgent` calls it before charging anything, so every entry point (the
- * app's HTTP body, a LINE adapter's stored conversation) is checked by the same
- * rules rather than by whatever its own parser happened to look at.
- *
  * What it checks is the transcript's *structure* — roles, shape, size — and not
  * the block vocabulary. `toModelMessages` already ignores blocks it has no
  * mapping for, and a guard that rejected unknown types would have to be edited
@@ -19,7 +13,6 @@ import type { ChatMessage, ChatParams } from "./types.ts";
 
 const ROLES = new Set(["user", "assistant"]);
 
-/** Throws unless the message is a well-formed turn of the transcript. */
 function checkMessage(message: ChatMessage, index: number): void {
   if (typeof message !== "object" || message === null) {
     throw new ValidationError(`messages[${index}] must be an object`);
@@ -49,17 +42,6 @@ function checkMessage(message: ChatMessage, index: number): void {
   }
 }
 
-/**
- * Guard the core's domain invariants and return the params the turn should run
- * on.
- *
- * It returns rather than merely asserting for the same reason
- * `validateTryonParams` does: handing the checked value back means the
- * orchestrator cannot accidentally read the raw input instead. Unlike try-on's
- * it has nothing to normalize — a transcript is passed through as sent — so it
- * returns the input itself rather than copying up to `MAX_MESSAGES` messages to
- * produce an identical one.
- */
 export function validateChatParams(params: ChatParams): ChatParams {
   requireString(params.userId, "userId");
 

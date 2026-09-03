@@ -6,9 +6,6 @@ const FUTURE = "2026-09-30T00:00:00Z";
 const PAST = "2026-08-29T00:00:00Z";
 
 Deno.test("a lapsed entitlement does not cancel an active one", () => {
-  // The bug this replaces: a sandbox subscription expiring while a dashboard
-  // grant was active reset the customer to free, because the EXPIRATION event
-  // was read as "holds nothing" rather than "this one ended".
   const subscriber: Subscriber = {
     entitlements: {
       pro: { expires_date: PAST },

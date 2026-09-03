@@ -8,7 +8,6 @@ import { asJsonObject, type DbClient } from "../supabase.ts";
 
 const PRODUCT_SIZES_TABLE = "product_sizes";
 
-/** Raw product columns needed to build a try-on garment. */
 export interface ProductGarmentRow {
   image_paths: unknown;
   name: unknown;
@@ -23,21 +22,11 @@ function trimmedString(value: unknown): string {
 }
 
 /**
- * Model-facing garment description built from a product row. Mirrors the
- * retired client `toTryonPromptDetail()` so every surface produces the same
- * prompt. DB text already equals the enum values, so no remapping.
- *
- * `products.fit` is emitted as `Cut:`, not `Fit:`, because that is what it
- * actually is: a label derived from the product photo (see
- * `analyze-product-image`), describing the garment's design silhouette on a
- * generic body. It says nothing about this wearer.
- *
- * It ships even when `buildGarmentFitDetail` also has real ease numbers. The
- * two are not rivals: the cut is product information the shopper is buying,
- * the numbers are what that cut does on this body. "Oversize" and "-15cm,
- * pulled taut" are both true of a large enough wearer, and the prompt names
- * which one governs tightness — so the model reconciles them rather than
- * having one hidden from it.
+ * `products.fit` is emitted as `Cut:`, not `Fit:`: it is a label derived from
+ * the product photo (see `analyze-product-image`) describing the design
+ * silhouette on a generic body, saying nothing about this wearer. It ships
+ * alongside `buildGarmentFitDetail`'s ease numbers rather than being displaced
+ * by them, and the prompt names which of the two governs tightness.
  */
 export function buildProductGarmentDetail(
   row: ProductGarmentRow,
@@ -58,17 +47,12 @@ export function buildProductGarmentDetail(
 }
 
 /**
- * The fit description for one published size, or undefined when there is
- * nothing trustworthy to say.
- *
  * Bound by BOTH `id` and `product_id`, so a client-supplied sizeId can only
  * ever name a size of the product it is trying on.
  *
  * Neither a missing row nor a failed read is an error: the size may have been
- * deleted between the client reading the catalog and sending the request, and
- * the fit sentence is a prompt enhancement — failing a generation that has
- * already been charged over either would be the wrong trade. A malformed id is
- * a caller bug and does raise, from `resolveProductGarment`.
+ * deleted since the client read the catalog, and failing a generation that has
+ * already been charged over a prompt enhancement would be the wrong trade.
  */
 async function resolveSizeFit(
   client: DbClient,
@@ -103,12 +87,6 @@ async function resolveSizeFit(
   );
 }
 
-/**
- * Resolves a client-supplied productId to trusted garment material by reading
- * the product from the catalog. The client never supplies a path, so it cannot
- * fetch arbitrary objects — only a real product's images, plus a
- * server-built detail. Shared by every try-on adapter via the core.
- */
 export async function resolveProductGarment(
   client: DbClient,
   ref: ProductRef,
@@ -120,9 +98,9 @@ export async function resolveProductGarment(
   if (!isUuid(productId)) {
     throw new ValidationError(`invalid productId: ${productId}`);
   }
-  // Checked here rather than where it is used: gating this on whether the
-  // shopper happens to have measurements would report the caller bug to some
-  // users and swallow it for the rest.
+  // Checked here rather than where it is used: gating it on whether the shopper
+  // happens to have measurements would report the caller bug to some users and
+  // swallow it for the rest.
   if (ref.sizeId !== undefined && !isUuid(ref.sizeId)) {
     throw new ValidationError(`invalid sizeId: ${ref.sizeId}`);
   }
@@ -146,9 +124,9 @@ export async function resolveProductGarment(
     );
   }
 
-  // The main shot only. A store's later images are detail macros — a washed-out
-  // label, a blurry hem — carrying no garment silhouette, and passing them off
-  // as extra angles dilutes the person photo instead of describing the garment.
+  // The main shot only: a store's later images are detail macros carrying no
+  // garment silhouette, and passing them off as extra angles dilutes the person
+  // photo instead of describing the garment.
   const images = [{ path: paths[0] }];
 
   const detail = buildProductGarmentDetail(row);

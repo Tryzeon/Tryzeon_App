@@ -43,7 +43,6 @@ function fakeLine(overrides: Partial<LineApi> = {}): { line: LineApi; sent: Sent
   return { line, sent };
 }
 
-/** What both paths share, every collaborator stubbed. */
 function baseDeps(): TryonHandlerDeps {
   return {
     // deno-lint-ignore no-explicit-any
@@ -63,7 +62,6 @@ function baseDeps(): TryonHandlerDeps {
   };
 }
 
-/** Photo-path deps; each test overrides what it cares about. */
 function makeDeps(over: Partial<ImageTryonDeps> = {}): ImageTryonDeps {
   return {
     ...baseDeps(),
@@ -77,25 +75,16 @@ const event = { replyToken: "rt", sourceUserId: USER, messageId: "m1" };
 // deno-lint-ignore no-explicit-any
 const textOf = (message: object) => (message as any).text as string;
 
-/** A message with its chips stripped, for assertions that are not about them. */
 const bare = (message: object) => {
   // deno-lint-ignore no-explicit-any
   const { quickReply: _ignored, ...rest } = message as Record<string, any>;
   return rest;
 };
 
-/** The labels a message offers, in order. */
 const chipLabels = (message: object): string[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action.label);
 
-/**
- * The full actions a message's chips carry, in order.
- *
- * Unlike {@link chipLabels}, this keeps `text` — the string a `message` chip
- * sends as though the sender typed it — next to the `label` a test asserts
- * against, so the two are read side by side rather than one going unchecked.
- */
 const chipActions = (message: object): object[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
@@ -188,8 +177,6 @@ Deno.test("a forwarded photo becomes part of the conversation", async () => {
 });
 
 Deno.test("what the user sent is recorded even when nothing could be generated", async () => {
-  // The note says a photo arrived, not that it was worn — true either way. So a
-  // sender who reads "這張沒能生成" can still follow up with "那有沒有類似的".
   const conversations = fakeConversations();
 
   await handleImageTryon(
@@ -338,8 +325,6 @@ Deno.test("the product is named while waiting, and tried on by reference", async
     textOf(sent.replies[0][0]),
     "收到，正在幫你試穿「短版牛仔外套」，請稍等！",
   );
-  // The catalog product goes in as a reference, so the core resolves its images
-  // and builds the garment description — no bytes travel through this adapter.
   assertEquals(jobs[0].garments, [{ productId: PID }]);
 });
 
@@ -398,17 +383,14 @@ Deno.test("an exhausted quota during a product try-on pushes the quota text, not
     productEvent,
   );
 
-  // A regression that reused the success path here would push
-  // `productResultMessage(undefined, product)` — a flex card whose
-  // `hero.url` LINE rejects outright — so this asserts both the count and,
-  // with `quickReply` stripped by `bare()`, the message body underneath it.
+  // A regression reusing the success path here would push
+  // `productResultMessage(undefined, product)` — a flex card whose `hero.url`
+  // LINE rejects outright.
   assertEquals(sent.pushes.length, 1);
   assertEquals(bare(sent.pushes[0][0]), {
     type: "text",
     text: "今日試穿次數已用完，明天再回來試。",
   });
-  // The photo-path quota chip has coverage above; this is its product-path
-  // counterpart.
   assertEquals(chipLabels(sent.pushes[0][0]), ["找衣服看看"]);
 });
 
@@ -425,8 +407,7 @@ Deno.test("a completed product try-on becomes part of the conversation", async (
     productEvent,
   );
 
-  // Appended, not replacing: the card the user tapped came from the turn
-  // before it, and "這件配什麼褲子" needs both.
+  // Appended, not replacing: the card the user tapped came from the turn before.
   assertEquals(conversations.writes.length, 1);
   assertEquals(conversations.writes[0], [
     ...prior,
@@ -491,8 +472,7 @@ Deno.test("the result image is pushed before the conversation is written", async
 
 Deno.test("a stalled description does not hold back the result", async () => {
   // `Promise.all` would settle on the slower of the two, so a hung analysis
-  // would keep the sender from the image they waited 30s for. The description
-  // is context for the next turn; it is not what they are waiting on.
+  // would keep the sender from the image they waited 30s for.
   const trace: string[] = [];
   let releaseDescription: (value: string | null) => void = () => {};
   const described = new Promise<string | null>((resolve) => {
@@ -530,8 +510,6 @@ Deno.test("a finished photo try-on offers the next one, and the shop", async () 
 });
 
 Deno.test("a photo that would not generate offers another photo, not a retry", async () => {
-  // There is nothing to retry: the garment was these bytes, and they are the
-  // thing that failed. What the sender can do is send a clearer picture.
   const { line, sent } = fakeLine();
   await handleImageTryon(
     makeDeps({
@@ -549,8 +527,7 @@ Deno.test("a photo that would not generate offers another photo, not a retry", a
 
 Deno.test("a spent try-on quota offers the chat the sender still has", async () => {
   // `FeatureName` is "chat" | "tryon" | "tryon_video" — three separate counters,
-  // so a spent try-on budget is not a spent conversation. Without this chip the
-  // message is a dead end for the rest of the day.
+  // so a spent try-on budget is not a spent conversation.
   const { line, sent } = fakeLine();
   await handleImageTryon(
     makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(null)) }),
@@ -572,9 +549,7 @@ Deno.test("a finished product try-on offers to build around it", async () => {
 });
 
 Deno.test("a product that would not generate can be retried by id alone", async () => {
-  // The retry carries the product id in the postback, so it still works when the
-  // stored conversation has expired — which is exactly when a `message` chip
-  // asking for "類似的" would have nothing to be similar to.
+  // Retrying by id still works when the stored conversation has expired.
   const { line, sent } = fakeLine();
   await handleProductTryon(
     makeProductDeps({
@@ -592,8 +567,7 @@ Deno.test("a product that would not generate can be retried by id alone", async 
 });
 
 Deno.test("a product try-on puts no avatar on the job params", async () => {
-  // The handler hands the photo to the core through `resolveAvatar`, never as a
-  // params field: a caller-named avatar is what went stale.
+  // The avatar reaches the core through `resolveAvatar`, never as a params field.
   let seenAvatar: unknown = "unset";
   await handleProductTryon(
     makeProductDeps({
@@ -641,7 +615,6 @@ const wardrobeEvent = {
   wardrobeItemId: ITEM.id,
 };
 
-/** Wardrobe-path deps; each test overrides what it cares about. */
 function makeWardrobeDeps(
   over: Partial<WardrobeTryonDeps> = {},
 ): WardrobeTryonDeps {
@@ -669,8 +642,6 @@ Deno.test("a wardrobe try-on with no model photo generates nothing", async () =>
 });
 
 Deno.test("an item that is gone costs the sender no quota", async () => {
-  // Read before the job starts, exactly as a product is, so an item deleted
-  // since the card was sent is a sentence rather than a charged failure.
   const { line, sent } = fakeLine();
   let ran = false;
   await handleWardrobeTryon(
@@ -691,9 +662,6 @@ Deno.test("an item that is gone costs the sender no quota", async () => {
 });
 
 Deno.test("a wardrobe try-on sends the core an id, never a path", async () => {
-  // This adapter holds the admin client, so a path it chose would be a path
-  // with nothing checking whose it was. The core resolves the id against the
-  // job's own user instead.
   const { line } = fakeLine();
   // deno-lint-ignore no-explicit-any
   let seenGarment: any;
@@ -717,8 +685,6 @@ Deno.test("a wardrobe try-on sends the core an id, never a path", async () => {
 });
 
 Deno.test("a finished wardrobe try-on is remembered so the next turn can pair it", async () => {
-  // The first chip the result card offers is 「幫我配這件」, which the agent
-  // can only answer if the transcript says what 這件 was.
   const { line, sent } = fakeLine();
   const conversations = fakeConversations();
   await handleWardrobeTryon(

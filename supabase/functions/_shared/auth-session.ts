@@ -1,20 +1,12 @@
 /**
- * Opening a GoTrue session for an auth user that already exists.
- *
  * GoTrue has no admin "issue a session for this user id" API — `/token` only
  * offers the password, refresh_token, id_token, pkce and web3 grants — so the
  * one official route is to generate a magic link and redeem it immediately.
- *
- * The parameter is a user id, never an email, even though the link is
- * email-keyed. Which email a user carries is the business of whoever minted
- * them (`line-user.ts` derives one from the LINE sub), and reading it back here
- * keeps that format from acquiring a second knower.
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import type { Database } from "./database.types.ts";
 import { type DbClient, supabaseAnonKey, supabaseUrl } from "./supabase.ts";
 
-/** A GoTrue session, reduced to the one credential a client needs to adopt it. */
 export interface MintedSession {
   refreshToken: string;
 }
@@ -35,8 +27,6 @@ function defaultAnonClient(): DbClient {
  * turning the magiclink into a signup and creating one, which is both a flaky
  * path (supabase/supabase#22521) and, were the email ever to come from a
  * request, an unbounded account factory. Callers guarantee existence first.
- *
- * `anon` is injectable for testing, following `verifyLineIdToken`'s `fetchFn`.
  */
 export async function mintSessionForUser(
   admin: DbClient,

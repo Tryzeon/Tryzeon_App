@@ -8,14 +8,12 @@ sealed class CropOptions {
   final CropStyle style;
 }
 
-/// 裁切框鎖死在固定比例，使用者只能拖曳與縮放。
 class LockedCrop extends CropOptions {
   const LockedCrop({required this.ratio, super.title, super.style});
 
   final ({int x, int y}) ratio;
 }
 
-/// 裁切框可自由調整，並提供比例選單。
 class FreeCrop extends CropOptions {
   const FreeCrop({this.presets, super.title, super.style});
 

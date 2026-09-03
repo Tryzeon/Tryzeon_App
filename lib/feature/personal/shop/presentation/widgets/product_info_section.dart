@@ -12,7 +12,6 @@ class ProductInfoSection extends StatelessWidget {
   Widget build(final BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    // Shared style for label and value — use default text color
     final textStyle = textTheme.bodyMedium;
 
     Widget buildInfoRow(final String label, final String value) {

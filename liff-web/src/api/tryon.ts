@@ -1,19 +1,17 @@
 import { supabase } from "../lib/supabase";
 import { toApiError } from "./errors";
 
-/** 一件要穿上的衣服:目錄裡的一個商品,或使用者自己給的圖。 */
 export type Garment = { productId: string } | { images: { base64: string }[] };
 
 export interface TryonOptions {
-  /** 「設為我的形象」選的那張圖;省略時後端讀 profile 上的模特照。 */
   avatarBase64?: string;
   scenePrompt?: string;
   stylingPrompt?: string;
 }
 
 /**
- * `tryon` edge function 的 wire body。只有 image —— 影片試穿在 LIFF 上還沒開,
- * 那條路是一個 ~5 分鐘的同步請求,webview 被切走就會永久掉結果。
+ * 只有 image —— 影片試穿在 LIFF 上還沒開,那條路是一個 ~5 分鐘的同步請求,
+ * webview 被切走就會永久掉結果。
  */
 interface TryonBody extends TryonOptions {
   mode: "image";
@@ -22,8 +20,6 @@ interface TryonBody extends TryonOptions {
 }
 
 /**
- * 跑一次試穿,回傳結果圖的網址。
- *
  * 呼叫的是 app 用的同一個 tryon function,JWT 由 supabase-js 帶上,所以整個 job
  * 跑在 RLS 之下。省略的欄位就是「不指定」—— 空字串會被後端當成一段真的 prompt,
  * 而少了 avatar 時 core 會去讀 profile 上那張,那才是唯一不會過期的一份。

@@ -4,10 +4,5 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 
 const _mappr = PersonalMappr();
 
-/// Decodes a raw `wardrobe_items` row straight to the domain entity.
-///
-/// This is the wardrobe feature's public row contract (exported via
-/// `wardrobe.dart`) so other features can consume wardrobe rows without
-/// touching `wardrobe/data/**`.
 WardrobeItem decodeWardrobeItemRow(final Map<String, dynamic> row) =>
     _mappr.convert<WardrobeItemModel, WardrobeItem>(WardrobeItemModel.fromJson(row));

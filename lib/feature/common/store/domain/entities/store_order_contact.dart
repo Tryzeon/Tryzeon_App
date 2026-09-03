@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'store_order_contact.freezed.dart';
 
-/// A store's direct-message ordering channel (for stores without an online shop).
 enum OrderContactType {
   line('line', 'LINE'),
   facebook('facebook', 'Facebook'),

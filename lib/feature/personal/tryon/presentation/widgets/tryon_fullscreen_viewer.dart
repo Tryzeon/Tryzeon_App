@@ -3,16 +3,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// Full-screen, zoomable image viewer shown as an [Overlay] layer on top of the
-/// current page (not a pushed route).
-///
-/// The image fills the screen using the same `cover` framing as the gallery, so
-/// opening introduces no zoom — it simply fades in (the image keeps its ratio
-/// and is cropped at the top/bottom edges instead of being letterboxed). The
-/// close button fades it back out (the page underneath is never torn down, so
-/// there is no flicker).
+/// An [Overlay] layer rather than a pushed route: the page underneath is never
+/// torn down, so opening and closing only fade. The same `cover` framing as the
+/// gallery means opening introduces no zoom.
 abstract final class TryonFullscreenViewer {
-  /// Inserts the viewer as a layer above everything via the root [Overlay].
   static void open(
     final BuildContext context, {
     required final ImageProvider imageProvider,

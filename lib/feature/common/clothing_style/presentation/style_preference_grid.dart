@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 
-/// Presentational 風格圖片格狀多選元件。無狀態、不依賴任何 provider,
-/// 由呼叫端傳入目前選取集合與 toggle callback,供 onboarding 與設定頁共用。
-/// 本元件為可捲動 GridView,呼叫端通常以 `Expanded` 包裹。
+/// 本元件為可捲動 GridView，呼叫端通常以 `Expanded` 包裹。
 class StylePreferenceGrid extends StatelessWidget {
   const StylePreferenceGrid({super.key, required this.selected, required this.onToggle});
 

@@ -4,8 +4,6 @@ import 'package:tryzeon/feature/personal/subscription/domain/entities/subscripti
 import 'package:typed_result/typed_result.dart';
 
 abstract interface class SubscriptionCapabilitiesRepository {
-  /// Limits and benefits configured for [tier].
-  ///
   /// Which tier the customer is on is not resolved here — it is a live value
   /// owned by the RevenueCat module, and folding it in would fix it at call
   /// time. Callers pass the tier they are currently watching.

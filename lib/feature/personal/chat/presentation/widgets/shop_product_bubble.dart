@@ -8,8 +8,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
-/// A recommended shop product as its own chat bubble: image, name, price and a
-/// try-on button. Tap opens the product detail page.
 class ShopProductBubble extends StatelessWidget {
   const ShopProductBubble({super.key, required this.product});
 

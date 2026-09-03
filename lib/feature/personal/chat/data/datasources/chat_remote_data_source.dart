@@ -10,18 +10,14 @@ import 'package:tryzeon/feature/personal/chat/data/chat_wire.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 
-/// Chat transport. Wire encode/decode lives in `chat_wire.dart`; this owns the
-/// HTTP calls only. [sendMessageStream] streams NDJSON progress events.
 class ChatRemoteDataSource {
   ChatRemoteDataSource(this._supabase, [final Dio? dio]) : _dio = dio ?? Dio();
 
   final SupabaseClient _supabase;
   final Dio _dio;
 
-  /// Streams the chat function's NDJSON progress events. Search steps arrive as
-  /// [ChatToolStarted]/[ChatToolFinished]; the run ends with [ChatReplied] or
-  /// [ChatFailed]. Rate-limit and other run failures arrive in-stream as an error
-  /// event (handled in [parseStreamLine]); a non-200 status is auth/bad-request only.
+  /// Rate-limit and other run failures arrive in-stream as an error event
+  /// (handled in [parseStreamLine]); a non-200 status is auth/bad-request only.
   Stream<ChatStreamEvent> sendMessageStream(final List<ChatMessage> history) async* {
     final url = '${Env.supabaseUrl}/functions/v1/${AppConstants.functionChat}';
     final accessToken = _supabase.auth.currentSession?.accessToken ?? '';

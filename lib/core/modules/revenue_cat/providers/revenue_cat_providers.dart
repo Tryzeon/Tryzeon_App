@@ -11,14 +11,10 @@ import 'package:typed_result/typed_result.dart';
 
 part 'revenue_cat_providers.g.dart';
 
-// ── Repository ──────────────────────────────────────────────────────────────
-
 @Riverpod(keepAlive: true)
 RevenueCatRepository revenueCatRepository(final Ref ref) {
   return RevenueCatRepositoryImpl();
 }
-
-// ── Use Case Providers ───────────────────────────────────────────────────────
 
 @riverpod
 WatchAppSubscriptionEntitlement watchAppSubscriptionEntitlementUseCase(final Ref ref) {
@@ -35,35 +31,23 @@ LogOutRevenueCat logOutRevenueCatUseCase(final Ref ref) {
   return LogOutRevenueCat(ref.watch(revenueCatRepositoryProvider));
 }
 
-/// App-wide source of truth for the customer's plan.
-///
-/// Kept alive so a single RevenueCat listener backs the whole app: every screen
-/// reads the same entitlement, and a change (identity link at startup, purchase,
-/// renewal, cross-device upgrade) re-emits to all of them at once instead of
-/// leaving each screen holding whatever was true when it first mounted.
+/// Kept alive so one RevenueCat listener backs the whole app: every screen reads
+/// the same entitlement and sees each change at once.
 @Riverpod(keepAlive: true)
 Stream<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) {
   return ref.watch(watchAppSubscriptionEntitlementUseCaseProvider)();
 }
 
-// ── Identity Sync ─────────────────────────────────────────────────────────────
-
-/// Single source of truth for keeping the RevenueCat App User ID in sync with
-/// the Supabase auth identity.
+/// Keeps the RevenueCat App User ID in sync with the Supabase auth identity:
+/// RevenueCat starts anonymous (configured in `main.dart`), links to the
+/// Supabase UUID on sign-in, and reverts to a fresh anonymous id on sign-out.
 ///
-/// RevenueCat is configured anonymously at startup (see `main.dart`); this
-/// listener links the anonymous customer to the Supabase auth UUID on sign-in
-/// and reverts to a fresh anonymous ID on sign-out. Centralizing it here means
-/// every current and future auth path is covered without each one having to
-/// remember to call `logIn`/`logOut`.
+/// Must be read once at the root widget: the subscription has to live for the
+/// whole app lifecycle.
 ///
-/// Must be kept alive for the whole app lifecycle — read it once at the root
-/// widget so the subscription is established at startup.
-///
-/// Only a *confirmed* link updates [syncedUserId]. Recording the intent instead
-/// would strand a customer on the anonymous RevenueCat id — and therefore on the
-/// free tier — for the rest of the session whenever the first attempt happens to
-/// fail, with every later auth event skipped as already handled.
+/// Only a *confirmed* link updates [syncedUserId] — recording the intent would
+/// strand the customer on the anonymous id, and the free tier, for the rest of
+/// the session whenever the first attempt fails.
 @Riverpod(keepAlive: true)
 void revenueCatIdentitySync(final Ref ref) {
   final logIn = ref.watch(logInRevenueCatUseCaseProvider);

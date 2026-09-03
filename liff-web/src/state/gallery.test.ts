@@ -51,7 +51,6 @@ describe("completing", () => {
     expect(currentImageUrl(state)).toBe("https://r2/a.jpg");
   });
 
-  // 使用者按了「取消生成」之後,那次請求還是會回來 —— 它不該把自己塞回去。
   it("drops a result whose entry the user already removed", () => {
     const removed = galleryReducer(withEntries("a"), { type: "remove", id: "a" });
     const state = galleryReducer(removed, {
@@ -162,8 +161,6 @@ describe("notice", () => {
     expect(cleared.notice).toBeNull();
   });
 
-  // 首頁的自動消失計時器認 id。同一句話再說一次要換一個 id,否則第二則會沿用
-  // 第一則剩下的時間,冒出來就被收掉。
   it("gives the same message a fresh id when it is raised again", () => {
     const first = galleryReducer(initialGalleryState, {
       type: "notify",
@@ -192,8 +189,6 @@ describe("failing", () => {
     expect(isAvatarPage(state)).toBe(true);
   });
 
-  // 按過「取消生成」之後那次請求還是會回來。它已經不屬於使用者了,不該再為它
-  // 彈一則錯誤訊息。
   it("stays silent when the user already cancelled it", () => {
     const removed = galleryReducer(withEntries("a"), { type: "remove", id: "a" });
     const state = galleryReducer(removed, {

@@ -16,8 +16,6 @@ import { GalleryProvider } from "./state/GalleryProvider";
 
 const noop = () => {};
 
-// Initializes LIFF, opens a Supabase session and learns whether this user has a
-// model photo — once, for the whole app — then renders the matched route.
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
@@ -76,9 +74,6 @@ function LiffGate() {
 }
 
 /**
- * 分頁殼。兩個分頁一直都掛著,只有其中一個看得見 —— 和 app 的
- * StatefulNavigationShell 一樣。
- *
  * 換分頁不再是卸載重建,所以模特照不會每次進首頁都重簽一次、目錄不會每次回來都
  * 重抓,而每個 pane 自己是一個捲動容器,捲動位置由瀏覽器保管,不必手動存還。
  * 商品頁不在此列:那是一個詳情畫面,每次看的是不同的一件,重建才是對的。
@@ -90,7 +85,6 @@ function TabShell() {
   const isProduct = pathname.startsWith("/product/");
   const isShop = !isHome && !isProduct;
 
-  // 試衣間記得自己上次停在哪一家店:從店家目錄切去首頁再切回來,不該掉回全站。
   const lastShopPath = useRef("/");
   if (isShop) lastShopPath.current = pathname;
 
@@ -115,21 +109,17 @@ function paneClass(visible: boolean): string {
   return `tabpane${visible ? "" : " is-hidden"}`;
 }
 
-// App route table. Add new screens (wardrobe, chat) as sibling <Route>s under
-// the LiffGate so they inherit LIFF bootstrap for free; put anything that
-// belongs to a tab under the TabShell.
 export function AppRouter() {
   return (
     <Routes>
       <Route element={<LiffGate />}>
         {/* 兩個分頁由 TabShell 自己掛著,所以這幾條只負責讓路徑合法(不被 *
-            吃掉)並餵給 TabShell 的 useLocation / useMatch;Outlet 只載商品頁。 */}
+            吃掉)並餵給 TabShell 的 useLocation / matchPath;Outlet 只載商品頁。 */}
         <Route element={<TabShell />}>
           <Route path="/" element={<></>} />
           {/* 店家 QR 的落點:resolve-link 302 到 ${LIFF_URL}/store/{store_id}。 */}
           <Route path="/store/:storeId" element={<></>} />
           <Route path="/home" element={<></>} />
-          {/* 一件商品一個網址,可以被連結、被分享。 */}
           <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
         {/* Onboarding 是全螢幕的一段流程,和 app 一樣站在分頁殼之外。 */}

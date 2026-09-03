@@ -148,7 +148,6 @@ class ChatPage extends HookConsumerWidget {
   }
 }
 
-/// Renders one conversation turn as a column of part-bubbles. Each block renders
 class _MessageView extends StatelessWidget {
   const _MessageView({required this.message});
 

@@ -15,9 +15,6 @@ export const TO_CM_FACTOR: Record<string, number> = {
   inch: 2.54,
 };
 
-/// Spoken size names → the canonical literal the app stores. Keys are compared
-/// after trimming, upper-casing and stripping spaces/hyphens/underscores.
-///
 /// Only the ingestion path normalizes: what a store owner types by hand is kept
 /// verbatim, because a custom size name is their decision. Values must stay in
 /// sync with StandardSizeLabel.display in
@@ -32,8 +29,6 @@ const SIZE_NAME_ALIASES: Record<string, string> = {
   "F": "均碼", "FREE": "均碼", "FREESIZE": "均碼", "ONESIZE": "均碼", "均碼": "均碼", "均一": "均碼", "單一尺寸": "均碼",
 };
 
-/// Maps a spoken size name onto a standard label, or returns it trimmed when it
-/// is not one we recognise (`US 10`, `4XL`, …).
 export function normalizeSizeName(raw: string): string {
   const trimmed = raw.trim();
   const key = trimmed.toUpperCase().replace(/[\s\-_]/g, "");

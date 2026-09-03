@@ -5,7 +5,6 @@ interface Props {
   onClose(): void;
 }
 
-/** 點結果圖之後的全螢幕檢視。原尺寸置中,不裁切。 */
 export function FullscreenViewer({ imageUrl, onClose }: Props) {
   return (
     <Overlay>

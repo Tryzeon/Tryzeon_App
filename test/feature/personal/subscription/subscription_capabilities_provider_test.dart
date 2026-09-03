@@ -11,8 +11,6 @@ import 'package:tryzeon/feature/personal/subscription/domain/repositories/subscr
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// Feeds entitlements on demand, standing in for RevenueCat's customer-info
-/// listener.
 class _FakeRevenueCatRepository implements RevenueCatRepository {
   final _controller = StreamController<AppSubscriptionEntitlement>();
 
@@ -39,7 +37,6 @@ class _FakeRevenueCatRepository implements RevenueCatRepository {
   Future<Result<void, Failure>> logOut() async => const Ok(null);
 }
 
-/// The tier → limits table, without Supabase or Isar.
 class _FakeCapabilitiesRepository implements SubscriptionCapabilitiesRepository {
   final tiersAskedFor = <AppSubscriptionTier>[];
 
@@ -83,7 +80,6 @@ void main() {
     addTearDown(container.dispose);
   });
 
-  /// Completes with the first emitted value satisfying [predicate].
   Future<SubscriptionCapabilities> firstWhere(
     final bool Function(SubscriptionCapabilities) predicate,
   ) {

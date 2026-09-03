@@ -1,14 +1,9 @@
 /**
- * The core's domain guard, plus the one decoding primitive that is specific to
- * try-on's wire fields. The generic ones (`requireString`, `normalizeText`) and
- * the error they raise are shared with every other core and live in
- * `_shared/validation.ts`.
- *
  * Policy: normalization never silently changes the meaning of user input — it
- * only trims and narrows shapes. Every limit is enforced by `validateTryonParams`,
- * which throws. Truncation is reserved for server-generated text (see
- * `buildProductGarmentDetail`), so a caller is never told "accepted" while its
- * input was quietly cut short.
+ * only trims and narrows shapes. Every limit is enforced by
+ * `validateTryonParams`, which throws. Truncation is reserved for
+ * server-generated text (see `buildProductGarmentDetail`), so a caller is never
+ * told "accepted" while its input was quietly cut short.
  */
 import { requireString, ValidationError } from "../validation.ts";
 import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
@@ -22,11 +17,9 @@ import type {
 } from "./types.ts";
 
 /**
- * Decode an unknown value into the inline bytes a caller is allowed to send.
  * A `{ path }` is rejected rather than ignored: silently dropping it would run
  * the job against whatever else the garment carried, which is not what the
- * caller asked for. See {@link GarmentMaterial} for why paths are not in the
- * contract at all.
+ * caller asked for.
  */
 function requireInlineImage(
   source: unknown,
@@ -43,11 +36,10 @@ function requireInlineImage(
 }
 
 /**
- * Decode the optional avatar override. Only inline bytes can override; the
- * legacy `{ path }` shape shipped clients still send means "no override", and
- * so does `null` (some encoders serialize an absent field that way). Anything
- * else that is not a usable `{ base64 }` is rejected rather than silently
- * falling back — that silent fallback is the stale-photo bug this replaces.
+ * The legacy `{ path }` shape shipped clients still send means "no override",
+ * and so does `null`. Anything else that is not a usable `{ base64 }` is
+ * rejected rather than silently falling back — that silent fallback is the
+ * stale-photo bug this replaces.
  */
 function optionalAvatarOverride(source: unknown): AvatarOverride | undefined {
   if (source === undefined || source === null) return undefined;
@@ -87,7 +79,6 @@ function optionalBaseImage(source: unknown): BaseImage | undefined {
   return { base64 };
 }
 
-/** Guard an optional text field: if present it must be a string within `max`. */
 function assertOptionalText(value: unknown, label: string, max: number): void {
   if (value === undefined) return;
   if (typeof value !== "string") {
@@ -98,7 +89,6 @@ function assertOptionalText(value: unknown, label: string, max: number): void {
   }
 }
 
-/** Validate one garment and return it with its image sources narrowed. */
 function validateGarment(garment: GarmentInput): GarmentInput {
   if (typeof garment !== "object" || garment === null) {
     throw new ValidationError("each garment must be an object");
@@ -130,9 +120,8 @@ function validateGarment(garment: GarmentInput): GarmentInput {
       `too many images for a garment (max ${LIMITS.MAX_IMAGES_PER_GARMENT})`,
     );
   }
-  // No `detail` to check: a caller cannot supply one. The only description a
-  // job carries is the text a resolver attaches after this guard has run,
-  // which is capped where it is built.
+  // No `detail` to check: a caller cannot supply one. A resolver attaches it
+  // after this guard has run, capped where it is built.
   return {
     images: garment.images.map((img) =>
       requireInlineImage(img, "garment image")
@@ -140,15 +129,7 @@ function validateGarment(garment: GarmentInput): GarmentInput {
   };
 }
 
-/**
- * Guard the lib's domain invariants and return the params with every image
- * source narrowed to exactly one usable key. Called by runTryonJob so every
- * caller (app, LIFF, LINE) is checked uniformly.
- *
- * It returns rather than merely asserting because normalization already
- * produces the value the job should run on: handing it back means the
- * orchestrator consumes checked data instead of re-reading the raw input.
- */
+/** Called by `runTryonJob`, so every caller (app, LIFF, LINE) is checked. */
 export function validateTryonParams(params: TryonParams): TryonParams {
   requireString(params.userId, "userId");
 
@@ -196,14 +177,10 @@ export function validateTryonParams(params: TryonParams): TryonParams {
       throw new ValidationError("baseImage cannot be combined with an avatar");
     }
     // The scene and styling prompts are not contradictions, just inapplicable:
-    // they are ambient user config rather than something the caller attached to
-    // this request, so a client that sends them uniformly is tolerated. Dropped
-    // here so the job runs on params that say what will actually happen.
-    //
-    // The engine survives, unlike them. Today nothing on this path reads it —
-    // animating runs no image pass — but it names a model tier rather than a
-    // prompt, and a video model that grows tiers would need it back. Keeping it
-    // costs a field; dropping it would make that a change to the guard.
+    // ambient user config a client may send uniformly, dropped here so the job
+    // runs on params that say what will actually happen. The engine survives —
+    // nothing on this path reads it, but it names a model tier a video model
+    // that grows tiers would need back.
     return {
       ...params,
       avatar: undefined,

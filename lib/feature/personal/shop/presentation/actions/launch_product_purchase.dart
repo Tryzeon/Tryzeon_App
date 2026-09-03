@@ -9,7 +9,6 @@ import 'package:tryzeon/feature/personal/shop/presentation/sheets/pre_purchase_s
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// True when the product can be bought online or ordered via a store DM channel.
 bool productHasPurchaseOptions(final ShopProduct product) =>
     (product.purchaseLink != null && product.purchaseLink!.isNotEmpty) ||
     product.storeInfo.orderContacts.isNotEmpty;
@@ -44,8 +43,6 @@ Future<void> launchProductPurchase(
   await launchUrl(target.uri, mode: LaunchMode.externalApplication);
 }
 
-/// Resolves the external target for a purchase [choice]: the URL to open and
-/// the message shown if it can't be opened.
 ({Uri uri, String failureMessage}) _resolveTarget(
   final PurchaseChoice choice,
   final ShopProduct product,
@@ -63,9 +60,6 @@ Future<void> launchProductPurchase(
   }
 }
 
-/// Builds the outbound deep link for a store contact channel.
-/// A LINE Official Account (`@id`) prefills the message; a personal LINE ID,
-/// FB and IG can only open the conversation (the user pastes the copied text).
 Uri _buildOrderContactUri(final StoreOrderContact contact, final String message) {
   switch (contact.type) {
     case OrderContactType.line:

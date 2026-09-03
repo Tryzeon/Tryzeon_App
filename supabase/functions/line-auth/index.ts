@@ -1,4 +1,3 @@
-// supabase/functions/line-auth/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAdminClient } from "../_shared/supabase.ts";
 import { coreErrorResponse, json, jsonError } from "../_shared/http.ts";

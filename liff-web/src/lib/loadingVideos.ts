@@ -9,7 +9,6 @@ const LOADING_VIDEOS = [
 let order: string[] | null = null;
 let nextIndex = 0;
 
-/** Cycles a session-scoped shuffle so consecutive try-ons never repeat a clip. */
 export function nextLoadingVideo(): string {
   if (order === null) {
     order = [...LOADING_VIDEOS];

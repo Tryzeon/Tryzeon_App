@@ -87,7 +87,6 @@ Deno.test("more sections than LINE allows fold into prose plus one carousel", ()
 
   assertEquals(out.length, 2);
   assertEquals(out[0], { type: "text", text: "上身\n下身\n外套" });
-  // Order is preserved through the fold, and nothing is dropped.
   assertEquals(bubbles(out[1]).map((b) => b.body.contents[0].text), [
     "商品 p1",
     "商品 p2",
@@ -154,8 +153,6 @@ Deno.test("a link LINE would reject is dropped, and takes nothing else with it",
 });
 
 Deno.test("an over-long product name is clamped in the postback displayText", () => {
-  // `displayText` fails the whole send past 300 characters, and a product
-  // name carries no length constraint of its own.
   const longName = "衣".repeat(60);
   const out = renderAnswer([card(product("p1", { name: longName }))]);
   const [{ footer }] = bubbles(out[0]);
@@ -182,13 +179,6 @@ Deno.test("the body and footer sit on the 8px grid, and do not double up", () =>
   assertEquals(bubble.footer.paddingTop, "0px");
 });
 
-/**
- * The full actions a message's chips carry, in order.
- *
- * Full objects rather than labels alone: these chips are all `message` chips,
- * and asserting only `label` would leave `text` — the string that lands in the
- * chat as though the sender typed it — unchecked.
- */
 const chipActions = (message: object): object[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
@@ -209,8 +199,8 @@ Deno.test("an answer with products offers ways to narrow it", () => {
 });
 
 Deno.test("a follow-up question is left alone", () => {
-  // The right response to "你想找什麼場合穿的？" is the sender's own answer.
-  // A chip here pushes them away from the one thing that would help.
+  // A chip here pushes the sender away from the one thing that would help:
+  // their own answer.
   const out = renderAnswer([text("你想找什麼場合穿的？")]);
 
   assertEquals(chipActions(out[0]), []);
@@ -238,10 +228,7 @@ Deno.test("a wardrobe block becomes a card", () => {
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[1])[0] as any;
   assertEquals(bubble.hero.url, "https://sig.example/w1.png?token=abc");
-  // Background-removed PNGs: fit so sleeves are not cropped, and a pinned
-  // surface so a transparent image is not shown on LINE's dark background.
-  // The literal matters — LINE accepts only `cover` and `fit` here and 400s
-  // the whole send on anything else, which is how CSS's `contain` shipped.
+  // LINE accepts only `cover` and `fit` here and 400s the whole send otherwise.
   assertEquals(bubble.hero.aspectMode, "fit");
   assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);
 });
@@ -271,8 +258,6 @@ Deno.test("the carousel altText names what is actually in it", () => {
 });
 
 Deno.test("a wardrobe-only answer offers no shopping chips", () => {
-  // The chips narrow a set of products ("便宜一點的"), which says nothing
-  // about clothes the user already owns.
   const out = renderAnswer([wardrobeCard(wardrobeItem("w1"))]);
 
   // deno-lint-ignore no-explicit-any
@@ -294,8 +279,7 @@ Deno.test("a wardrobe card offers a try-on keyed by its own id", () => {
 });
 
 Deno.test("the others bucket's card button reads 單品, not 其他", () => {
-  // Same rule as the acknowledgement text: 「試穿「你的其他」」 is broken
-  // Chinese, and `others` is not a rare code — see messages.test.ts's sibling.
+  // 「試穿「你的其他」」 is broken Chinese, and `others` is not a rare code.
   const out = renderAnswer([wardrobeCard(wardrobeItem("w1", { categoryLabel: "其他" }))]);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[0])[0] as any;
@@ -304,7 +288,6 @@ Deno.test("the others bucket's card button reads 單品, not 其他", () => {
 });
 
 Deno.test("a product card still offers only its own actions", () => {
-  // The two cards sit in one carousel, so a change to one must not leak.
   const out = renderAnswer([card(product("p1"))]);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[0])[0] as any;

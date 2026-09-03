@@ -1,5 +1,5 @@
-// Pure helpers for the chat agent loop. No SDK or network imports so they
-// unit-test offline (no Gemini SDK, no network).
+// Pure helpers for the chat agent loop. No SDK or network imports, so they
+// unit-test offline.
 import { isUuid, nonEmptyStr } from "../text.ts";
 import {
   CHANNEL_VALUES,
@@ -17,13 +17,8 @@ import type {
   ContentBlock,
 } from "./types.ts";
 
-// Rows one search tool returns. A page size, not a caller-facing limit — it is
-// what keeps a tool result small enough to re-prompt with, so it belongs to the
-// searches rather than to `LIMITS`, which is the contract on what a caller sends.
 export const SEARCH_LIMIT = 10;
 
-// Columns a wardrobe item needs to render a card. Shared by the search tool and
-// the by-id answer fetch so the two queries can't drift.
 export const WARDROBE_SELECT = "id, image_path, category, tags, created_at, updated_at";
 
 // Shop product shape for an answer card — mirrors the product detail page so the
@@ -53,10 +48,6 @@ const vocabularyError = (field: string, bad: unknown, vocab: readonly string[]):
 // rejected rather than silently dropped. Dropping only the bad entries out of a
 // mixed list would still run a query the model believes is fully filtered; the
 // whole field is rejected unless every value in it is in vocabulary.
-//
-// The accepted values come back typed rather than as a bare "it passed", so the
-// enum column types the generated schema carries are what mapSearchProductsArgs
-// is checked against instead of a comment promising this ran first.
 function readVocabularyArray<T extends string>(
   value: unknown,
   field: string,
@@ -143,13 +134,10 @@ export function resolveCategoryFilter(
   return { ok: true, categoryIds: [id] };
 }
 
-// Assemble list_shop_products RPC params from model tool args + resolved context.
 // gender is an optional model-chosen filter, not a forced one — the model
 // decides whether to apply it, informed by the user context in the prompt.
-// The enum-backed fields arrive already validated and typed in `opts.filters`,
-// the same way `opts.categoryIds` arrives pre-resolved rather than as a raw
-// category_name. Absent filters are omitted rather than sent as null; every
-// parameter defaults to NULL in SQL, so the two mean the same thing to the RPC.
+// Absent filters are omitted rather than sent as null; every parameter defaults
+// to NULL in SQL, so the two mean the same thing to the RPC.
 export function mapSearchProductsArgs(
   args: Record<string, unknown>,
   opts: { categoryIds: string[] | null; filters: VocabularyFilters },
@@ -208,14 +196,12 @@ export function toSearchResultItem(row: Record<string, any>): Record<string, unk
   });
 }
 
-// Map the standard conversation to AI SDK `ModelMessage[]`. The whole history is
-// replayed verbatim and uncompressed: assistant tool_use → a `tool-call` part,
-// the paired user tool_result → a `tool` message with a `tool-result` part (its
-// tool name resolved from the tool_use id), text passes through. Recommended
-// product blocks collapse to a short id reference (their full data is already
-// replayed in the tool_result, so nothing is lost to the model).
+// The whole history is replayed verbatim and uncompressed: assistant tool_use →
+// a `tool-call` part, the paired user tool_result → a `tool` message with a
+// `tool-result` part (its tool name resolved from the tool_use id), text passes
+// through. Recommended product blocks collapse to a short id reference (their
+// full data is already replayed in the tool_result, so nothing is lost).
 export function toModelMessages(messages: ChatMessage[]): any[] {
-  // tool_use id → tool name, so a tool_result can name its tool.
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
     if (m?.role !== "assistant") continue;
@@ -229,7 +215,6 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
     const blocks = Array.isArray(m?.content) ? m.content : [];
 
     if (m?.role === "user") {
-      // tool_result blocks become a `tool` message; plain text stays a user turn.
       const toolResults = blocks.filter((b) => b?.type === "tool_result");
       if (toolResults.length) {
         out.push({
@@ -281,9 +266,9 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
   return out;
 }
 
-// Parse the structured answer output into ordered refs. The model picks the block
-// type (product = shop, wardrobe = wardrobe) and gives the id; the edge fetches each
-// id from the matching table. Empty text and id-less product/wardrobe blocks drop.
+// The model picks the block type (product = shop, wardrobe = wardrobe) and gives
+// the id; the edge fetches each id from the matching table. Empty text and
+// id-less product/wardrobe blocks drop.
 //
 // So does a block whose id is not a uuid. The model quotes ids back from tool
 // results and can misquote one — a dropped character is enough — and every id
@@ -307,11 +292,6 @@ export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
   return refs;
 }
 
-// Assemble the ordered answer blocks from parsed refs + the rows fetched by id.
-// Text passes through; product/wardrobe refs become card blocks, dropping any id
-// whose row is missing (e.g. a since-deleted item). Ordering and that drop rule
-// stay here rather than in the hydrator, so a platform that fetches slimmer rows
-// still renders the answer in the sequence the model composed it.
 export function assembleAnswerBlocks(
   refs: AnswerRef[],
   rows: AnswerRows,

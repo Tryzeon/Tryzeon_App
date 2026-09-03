@@ -95,8 +95,6 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
     }
   }
 
-  /// For all-time: aggregate multiple monthly rows per product
-  /// into a single summary per product.
   List<ProductAnalyticsSummary> _aggregateByProduct(
     final List<ProductAnalyticsSummaryModel> models,
   ) {

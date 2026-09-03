@@ -6,13 +6,6 @@ export function uint8ToBase64(bytes: Uint8Array): string {
   return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
 }
 
-/**
- * Downloads an image (Supabase Storage or Cloudflare R2 public bucket) and
- * returns it as base64. Keys under the R2 public prefix route to R2; otherwise
- * the image is fetched from the given Supabase Storage `bucket`. Callers must
- * pass the bucket explicitly since it can't be inferred from the path — see
- * `storage.ts` for the origin conventions.
- */
 export async function fetchImageAsBase64(
   supabase: DbClient,
   path: string,
@@ -37,11 +30,6 @@ export async function fetchImageAsBase64(
   return uint8ToBase64(new Uint8Array(arrayBuffer));
 }
 
-/**
- * Detects the MIME type of an image from its base64-encoded data.
- * Reads the first few bytes to identify PNG / JPEG / WEBP.
- * Defaults to image/jpeg if no signature matches.
- */
 export function detectMimeType(base64Data: string): string {
   const header = atob(base64Data.slice(0, 16));
   if (header.startsWith("\x89PNG")) return "image/png";
@@ -52,9 +40,6 @@ export function detectMimeType(base64Data: string): string {
   return "image/jpeg";
 }
 
-/**
- * Maps an image MIME type to a file extension (no leading dot).
- */
 export function mimeTypeToExtension(mimeType: string): string {
   switch (mimeType) {
     case "image/png":
@@ -67,10 +52,7 @@ export function mimeTypeToExtension(mimeType: string): string {
   }
 }
 
-/**
- * Decodes a base64 string into a Uint8Array.
- * Input must be clean base64 (no data-URI prefix).
- */
+/** Input must be clean base64 — a data-URI prefix is not stripped. */
 export function base64ToUint8Array(base64: string): Uint8Array {
   const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);

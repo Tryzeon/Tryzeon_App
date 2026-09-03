@@ -5,8 +5,6 @@ import '../collections/body_measurements_embedded.dart';
 import '../models/body_measurements_model.dart';
 import 'body_measurements_mappr.auto_mappr.dart';
 
-/// AutoMappr configuration for the shopper's own body measurements.
-/// Handles BodyMeasurements ↔ Model ↔ Embedded mappings.
 @AutoMappr([
   MapType<BodyMeasurementsModel, BodyMeasurements>(whenSourceIsNull: BodyMeasurements()),
   MapType<BodyMeasurements, BodyMeasurementsModel>(),

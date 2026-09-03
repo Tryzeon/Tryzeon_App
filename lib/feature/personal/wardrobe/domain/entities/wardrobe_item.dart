@@ -14,8 +14,6 @@ sealed class CreateWardrobeItemParams with _$CreateWardrobeItemParams {
   }) = _CreateWardrobeItemParams;
 }
 
-/// Domain entity representing a wardrobe item
-/// Uses WardrobeCategory enum for type safety and business logic
 @freezed
 sealed class WardrobeItem with _$WardrobeItem {
   const factory WardrobeItem({

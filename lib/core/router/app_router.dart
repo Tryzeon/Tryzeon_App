@@ -75,7 +75,6 @@ Raw<GoRouter> appRouter(final Ref ref) {
     refreshListenable.refresh();
   });
 
-  // 監聽 user profile 變化，觸發 redirect 重新評估（例如完成 onboarding 後）
   ref.listen(userProfileProvider, (final _, final _) {
     refreshListenable.refresh();
   });
@@ -83,7 +82,6 @@ Raw<GoRouter> appRouter(final Ref ref) {
   return router;
 }
 
-/// 根據上次登入類型決定首頁路徑。
 Future<String> _resolveHomePath(final Ref ref) async {
   final getLoginType = ref.read(getLastLoginTypeUseCaseProvider);
   final result = await getLoginType();

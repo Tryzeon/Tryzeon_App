@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Fine print marking the gallery page as an AI-generated result. Rendered at
-/// full opacity — it sits over an arbitrary user photo, and the bottom gradient
-/// alone does not guarantee contrast against a bright one.
+/// Rendered at full opacity — it sits over an arbitrary user photo, and the
+/// bottom gradient alone does not guarantee contrast against a bright one.
 class TryonDisclaimer extends StatelessWidget {
   const TryonDisclaimer({super.key});
 

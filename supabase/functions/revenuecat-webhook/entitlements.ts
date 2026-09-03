@@ -1,8 +1,3 @@
-/**
- * Tier resolution from a RevenueCat subscriber, kept free of I/O so the rules
- * that decide what a customer is entitled to can be tested directly.
- */
-
 /** One entry of `subscriber.entitlements` in `GET /v1/subscribers/{id}`. */
 export interface SubscriberEntitlement {
   expires_date?: string | null;
@@ -28,7 +23,7 @@ export const SUBSCRIPTION_TIER = {
 
 export type SubscriptionTier = typeof SUBSCRIPTION_TIER[keyof typeof SUBSCRIPTION_TIER];
 
-/** Best first. A customer holding both entitlements gets the better one. */
+/** Best first. */
 const TIER_PRECEDENCE: readonly SubscriptionTier[] = [
   SUBSCRIPTION_TIER.max,
   SUBSCRIPTION_TIER.pro,

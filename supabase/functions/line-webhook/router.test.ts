@@ -39,11 +39,8 @@ const postbackEvent = (data: unknown) => ({
 });
 
 /**
- * Whether the event produced any work at all.
- *
  * The handlers are not stubbed: routing is asserted by whether a task comes
- * back, so a started task is swallowed rather than awaited. That keeps the
- * assertion on the routing decision, which is what this module owns.
+ * back, so a started task is swallowed rather than awaited.
  */
 const routed = (ev: Record<string, unknown>) => {
   const task = routeEvent(deps, ev);
@@ -52,11 +49,8 @@ const routed = (ev: Record<string, unknown>) => {
 };
 
 /**
- * The reply routing sent, for the events answered by a fixed message.
- *
- * `routed` cannot tell those from the ones a handler took, because both now
- * come back as a task — that is the point of the split, and this is how the
- * difference is asserted.
+ * `routed` cannot tell an event answered by a fixed message from one a handler
+ * took — both come back as a task — so this asserts the difference by the reply.
  */
 async function repliedWith(ev: Record<string, unknown>): Promise<object[]> {
   const sent: object[][] = [];
@@ -90,8 +84,6 @@ Deno.test("whitespace-only text is nudged, not answered", async () => {
 });
 
 Deno.test("a message kind with no handler is nudged", async () => {
-  // Understood the sender well enough to know we cannot act on it, which is a
-  // different thing from the event not being a request — see the `unsend` test.
   assertStringIncludes(
     textOf((await repliedWith(messageEvent({ type: "sticker", id: "s1" })))[0]),
     "傳一張衣服的照片",
@@ -107,14 +99,12 @@ Deno.test("a try-on postback is routed to a handler", () => {
 });
 
 Deno.test("a postback we did not issue is nudged", async () => {
-  // A card from a deploy that no longer sends that shape: the sender tapped
-  // something real, so silence would read as the bot being broken.
+  // The sender tapped something real, so silence would read as the bot being
+  // broken.
   for (
     const data of [
       "a=save&pid=" + PID,
       "a=tryon_product&pid=not-a-uuid",
-      // A card from before the rename: the action name changed, so this is
-      // now exactly what this test is about.
       "a=tryon&pid=" + PID,
       undefined,
     ]
@@ -151,17 +141,13 @@ Deno.test("a new follower is greeted on the reply token", async () => {
 });
 
 Deno.test("a follower LINE will not name is greeted anyway", () => {
-  // The one event that needs no `source.userId`: nothing is read, written or
-  // charged, so someone who has not accepted the OA's terms still gets it.
   assertEquals(routed({ type: "follow", replyToken: "rt", source: { type: "user" } }), true);
 });
 
 Deno.test("an event with no source.userId reaches no handler", async () => {
-  // LINE omits `source.userId` when the sender has not consented to the OA
-  // Terms of Use. Handling it anyway would key the conversation store on the
-  // literal string "undefined", pooling every such sender's transcript into one
-  // bucket — so every event that would reach the store or the quota is nudged
-  // instead. A follow touches neither, which is why it is greeted regardless.
+  // LINE omits `source.userId` when the sender has not consented to the OA Terms
+  // of Use. Handling it anyway would key the conversation store on the literal
+  // string "undefined", pooling every such sender's transcript into one bucket.
   const noId = { type: "user" };
 
   assertStringIncludes(
@@ -203,8 +189,6 @@ Deno.test("a wardrobe try-on postback is routed to a handler", () => {
 });
 
 Deno.test("a wardrobe postback with no sender is nudged", async () => {
-  // Same rule the product path follows: without `source.userId` there is
-  // nobody whose wardrobe this would be.
   assertStringIncludes(
     textOf((await repliedWith({
       type: "postback",

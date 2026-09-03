@@ -1,10 +1,3 @@
-/**
- * Try-on prompt construction — pure, provider-agnostic, and the product's
- * actual domain logic. Kept apart from `vertex.ts` (which only knows how to
- * talk to Vertex AI) so the wording can be read, diffed, and unit-tested
- * without touching a network client.
- */
-
 export const SYSTEM_INSTRUCTION =
   `You are a photorealistic virtual try-on image editor. Preserve the target person's identity and follow only the garment-replacement, garment-styling, and optional scene-edit instructions explicitly authorized by the task. Do not alter anything else.`;
 
@@ -41,10 +34,6 @@ ${lines.join("\n")}`;
 }
 
 /**
- * Kept apart from `buildGarmentDetailsSection` because the two have different
- * sources: details describe the garment as the store published it, these lines
- * are computed against one wearer's measurements.
- *
  * The wearer stays a hard invariant — without an explicit prohibition the model
  * will happily resize the person to match a number.
  */
@@ -66,17 +55,11 @@ ${lines.join("\n")}`;
 }
 
 /**
- * Optional inputs to {@link buildTaskPrompt}, named rather than positional:
- * `garmentDetails` and `garmentFits` are both `(string | undefined)[]`, so two
- * positional parameters of the same shape would let a caller transpose them
- * and still type-check.
- *
- * `types.ts`'s `ImageGenerator` and `vertex.ts`'s `generateTryonImage` both
- * take THIS type rather than a copy of its shape. That matters more than it
- * looks: every field here is optional, so two independent declarations stay
- * mutually assignable even after one of them renames a field — the compiler
- * accepts the drift, and the renamed input is silently dropped on its way to
- * the prompt.
+ * Named rather than positional: `garmentDetails` and `garmentFits` are both
+ * `(string | undefined)[]`, so two positionals of the same shape could be
+ * transposed and still type-check. `ImageGenerator` and `generateTryonImage`
+ * take THIS type, not a copy — every field being optional, a copy would stay
+ * assignable after a rename and silently drop that input.
  */
 export interface TaskPromptOptions {
   garmentDetails?: (string | undefined)[];

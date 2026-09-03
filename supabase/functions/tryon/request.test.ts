@@ -2,15 +2,11 @@ import { assertEquals, assertThrows } from "jsr:@std/assert";
 import { parseTryonParams } from "./request.ts";
 import { LIMITS, type TryonParams, ValidationError } from "../_shared/tryon/index.ts";
 
-/** The parser takes raw text; encode fixtures so tests hit the real entry point. */
 function parse(body: unknown, userId: string) {
   return parseTryonParams(JSON.stringify(body), userId);
 }
 
 Deno.test("parseTryonParams rejects unparseable JSON as a validation error", () => {
-  // Not a special case for the entry point to translate: a malformed body is a
-  // malformed request, so it raises the same error class as a malformed field
-  // and lands on 400 rather than escaping as a SyntaxError.
   assertThrows(
     () => parseTryonParams("{not json", "u1"),
     ValidationError,
@@ -40,9 +36,6 @@ Deno.test("parseTryonParams shapes wire body, keeps mode, attaches userId", () =
 });
 
 Deno.test("parseTryonParams defers a path garment to the core", () => {
-  // Same layering as the avatar below: decoding asserts the shape the wire
-  // format claims and lets `validateTryonParams` reject a path, so the two
-  // layers cannot disagree about which sources a caller may name.
   const params = parse(
     { garments: [{ images: [{ path: "u1/top/x.jpg" }] }] },
     "u1",
@@ -59,8 +52,6 @@ Deno.test("parseTryonParams keeps an omitted avatar omitted", () => {
 });
 
 Deno.test("parseTryonParams defers a legacy path avatar to the core", () => {
-  // Decoding does not judge the field — `validateTryonParams` is where a
-  // non-override becomes `undefined`, so the two layers cannot disagree.
   const params = parse(
     { avatar: { path: "u1/a.jpg" }, garments: [{ images: [{ base64: "B" }] }] },
     "u1",
@@ -69,12 +60,8 @@ Deno.test("parseTryonParams defers a legacy path avatar to the core", () => {
 });
 
 Deno.test("parseTryonParams hands garments to the core without narrowing them", () => {
-  // The model-facing description is built server-side from the catalog; there
-  // is no wire field for one. Stripping it is the core's job, not this parser's
-  // — `validateGarment` rebuilds every garment with only the keys a job may
-  // carry, and "validateTryonParams strips a garment detail a caller tried to
-  // set" is where that guarantee is asserted. Narrowing here as well would run
-  // the same rule twice and give the two layers a chance to disagree.
+  // Stripping the model-facing detail is `validateGarment`'s job, asserted in
+  // "validateTryonParams strips a garment detail a caller tried to set".
   const params = parse(
     {
       avatar: { base64: "A" },
@@ -96,9 +83,6 @@ Deno.test("parseTryonParams defaults an omitted mode to image", () => {
 });
 
 Deno.test("parseTryonParams passes an unknown mode through for the core to reject", () => {
-  // Not coerced to "image": that would run — and charge — a job the caller did
-  // not ask for, and would leave the core's mode check unreachable from here.
-  // The rejection itself is validateTryonParams' test.
   const params = parse(
     {
       avatar: { base64: "A" },
@@ -153,8 +137,6 @@ Deno.test("parseTryonParams accepts a mixed product + material garment list", ()
 });
 
 Deno.test("parseTryonParams decodes structure and defers invariants to the core", () => {
-  // parse does not enforce invariants; an empty productId decodes cleanly and
-  // is rejected later by validateTryonParams inside runTryonJob.
   const params = parse(
     { avatar: { base64: "A" }, garments: [{ productId: "" }] },
     "u1",
@@ -206,8 +188,6 @@ Deno.test("parseTryonParams decodes an animate body with no garments", () => {
 });
 
 Deno.test("parseTryonParams defers an unusable baseImage to the core", () => {
-  // Same division of labour as the avatar: decoding names the field, the core
-  // decides whether its contents are usable.
   const params = parse({ mode: "video", baseImage: { base64: "" } }, "u1");
   assertEquals(
     params.baseImage,

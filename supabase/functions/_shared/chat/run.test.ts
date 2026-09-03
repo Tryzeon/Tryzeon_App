@@ -23,9 +23,6 @@ const USAGE: DailyUsage = {
   video_count: 0,
 };
 
-// The run never reaches Supabase in these tests — quota, grounding, the agent
-// and hydration all go through ports — so an empty object is an honest stand-in
-// for the one client it now takes.
 const client = {} as unknown as DbClient;
 
 // Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
@@ -38,7 +35,6 @@ const params: ChatParams = {
   messages: [{ role: "user", content: [{ type: "text", text: "找白襯衫" }] }],
 };
 
-/** Fake `UsageCounter` recording the charge/refund sequence, with a scripted allow. */
 function fakeQuota(allowed = true) {
   const calls: string[] = [];
   const factory: ChatQuotaFactory = () => ({
@@ -60,7 +56,6 @@ const context: ContextLoader = () =>
     categoryIdByName: new Map([["上衣", "cat-1"]]),
   });
 
-/** Agent double returning a scripted answer, recording the request it got. */
 function fakeAgent(
   answer: { output: Record<string, any> | null; rounds?: ChatMessage[] },
 ): { runner: AgentRunner; seen: AgentRequest[] } {
@@ -136,7 +131,6 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
     ...rounds,
     { role: "assistant", content: [{ type: "text", text: "好" }] },
   ]);
-  // The renderable answer stays exactly the last turn's content.
   assertEquals(result.messages.at(-1)!.content, result.blocks);
 });
 

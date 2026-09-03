@@ -15,8 +15,8 @@ interface Props {
 }
 
 export function SearchSortBar({ sort, onSearch, onSortChange, disabled = false }: Props) {
-  // Uncommitted text. Nothing is fetched until the form is submitted, so
-  // typing never fires a request and no debounce is needed.
+  // Nothing is fetched until the form is submitted, so typing never fires a
+  // request and no debounce is needed.
   const [draft, setDraft] = useState("");
 
   return (

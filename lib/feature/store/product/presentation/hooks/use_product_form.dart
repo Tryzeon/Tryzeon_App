@@ -45,15 +45,9 @@ class ProductFormData {
     return formKey.currentState?.validate() ?? false;
   }
 
-  /// Extract only new images (files pending upload)
   List<File> get newImageFiles =>
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 
-  /// The garment dimensions the size editor should show (and the submit flow
-  /// should collect) for the currently selected category.
-  ///
-  /// Falls back to every dimension when the selection gives no signal — no
-  /// category picked yet, or [allCategories] not loaded.
   List<GarmentMeasurementType> visibleMeasurementTypes(
     final List<ProductCategory> allCategories,
   ) {
@@ -81,7 +75,6 @@ class ProductFormData {
     );
   }
 
-  /// Pre-fills empty fields from an analysis result.
   void applyAnalysis(final ProductAnalysisResult r) {
     if (nameController.text.trim().isEmpty && (r.name?.isNotEmpty ?? false)) {
       nameController.text = r.name!;
@@ -122,8 +115,6 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final purchaseLinkController = useTextEditingController(
     text: initialProduct?.purchaseLink,
   );
-  // Null until the store owner picks one (required, validated on submit). Edit
-  // flow seeds the existing product's gender, which is always set.
   final selectedGender = useValueNotifier<ProductGender?>(initialProduct?.gender);
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);

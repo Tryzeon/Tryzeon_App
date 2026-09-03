@@ -1,18 +1,4 @@
 /**
- * Every Vertex AI setting the edge functions read, in one place.
- *
- * Every call site reads its credential and its model name from here, and every
- * Vertex call goes through the one AI SDK provider in `provider.ts` — chat's
- * agent loop, the one-shot analysis helpers and try-on alike, since they differ
- * only in what they ask the model for.
- *
- * That uniformity was not the starting point: each call site had picked its own
- * credential and its own names for the same project — a deployment had to keep
- * GOOGLE_CLOUD_PROJECT and GOOGLE_VERTEX_PROJECT in agreement with nothing
- * checking, and rotating a key meant finding every reader. The credential is now
- * the key file itself, so the project id and the signing key cannot disagree:
- * they are fields of one value that is replaced whole.
- *
  * Readers are functions rather than constants because they raise when unset,
  * and no consumer needs the whole set: validating everything at import would
  * stop `chat` from booting over a try-on variable, or a wardrobe upload over
@@ -45,7 +31,6 @@ function requireEnv(name: string): string {
   return value;
 }
 
-/** The service account every Vertex call authenticates as, and its project. */
 export interface VertexServiceAccount {
   projectId: string;
   clientEmail: string;
@@ -53,14 +38,8 @@ export interface VertexServiceAccount {
   privateKeyId?: string;
 }
 
-/** Field names as they appear in a Google key file, for the error message. */
 const REQUIRED_FIELDS = ["project_id", "client_email", "private_key"] as const;
 
-/**
- * Decodes the key file into the fields the provider needs. Exported for its
- * tests: it is the one place a deployment's credential can be malformed, and
- * every failure here reads as "Vertex is down" from the outside.
- */
 export function parseServiceAccount(raw: string): VertexServiceAccount {
   let key: Record<string, unknown>;
   try {
@@ -93,14 +72,11 @@ export function vertexServiceAccount(): VertexServiceAccount {
   return serviceAccount ??= parseServiceAccount(requireEnv("GOOGLE_SERVICE_ACCOUNT"));
 }
 
-/** Region every Vertex call is routed to. `global` serves the models we use. */
 export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "global";
 
-/** Model behind the chat agent and both analysis helpers. */
 export const chatModel = (): string => requireEnv("CHAT_MODEL");
 
 export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-2.5-flash-image
 export const tryonAdvancedImageModel = (): string => requireEnv("TRYON_MODEL_ADVANCED"); // gemini-3.1-flash-image
 
-/** Model behind try-on video generation. No sensible default to fall back on. */
 export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // veo-3.1-generate-001

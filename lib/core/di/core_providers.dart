@@ -20,13 +20,11 @@ part 'core_providers.g.dart';
 
 const _mappr = AnalyticsMappr();
 
-/// Analytics Remote DataSource Provider
 @riverpod
 AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
   return AnalyticsRemoteDataSource(Supabase.instance.client);
 }
 
-/// Analytics Event Queue Service Provider
 @Riverpod(keepAlive: true)
 AnalyticsEventQueueService analyticsEventQueueService(final Ref ref) {
   final analyticsDataSource = ref.watch(analyticsRemoteDataSourceProvider);
@@ -39,37 +37,31 @@ AnalyticsEventQueueService analyticsEventQueueService(final Ref ref) {
   );
 }
 
-/// Location Service Provider
 @riverpod
 LocationService locationService(final Ref ref) {
   return LocationServiceImpl();
 }
 
-/// Geocoding Service Provider
 @riverpod
 GeocodingService geocodingService(final Ref ref) {
   return GeocodingServiceImpl();
 }
 
-/// Cache Service Provider
 @Riverpod(keepAlive: true)
 CacheService cacheService(final Ref ref) {
   return CacheServiceImpl();
 }
 
-/// Isar Database Service Provider
 @Riverpod(keepAlive: true)
 IsarService isarService(final Ref ref) {
   return IsarService();
 }
 
-/// Cache Entry Local DataSource Provider
 @Riverpod(keepAlive: true)
 CacheEntryLocalDataSource cacheEntryLocalDataSource(final Ref ref) {
   return CacheEntryLocalDataSource(ref.watch(isarServiceProvider));
 }
 
-/// Auth Identity Service Provider
 @Riverpod(keepAlive: true)
 AuthIdentityService authIdentityService(final Ref ref) {
   return AuthIdentityServiceImpl(Supabase.instance.client.auth);

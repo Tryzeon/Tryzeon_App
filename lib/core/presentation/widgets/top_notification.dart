@@ -3,11 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// Failure-only top banner (Direction A — refined card).
-/// White surface, soft tinted icon container, generous radius, lifted shadow.
-/// Success states stay silent; download-style results use AppSnackBar.
-///
-/// Auto-dismisses after 30s, or immediately when the user taps close.
+/// Failure-only top banner: success stays silent, and download-style results
+/// use AppSnackBar.
 class TopNotification {
   static const Duration _autoCloseDuration = Duration(seconds: 30);
 

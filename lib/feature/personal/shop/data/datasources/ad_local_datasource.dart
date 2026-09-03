@@ -1,6 +1,5 @@
 class AdLocalDataSource {
   Future<List<String>> getAdImages({final bool forceRefresh = false}) async {
-    // In a real app, logic for forceRefresh would be here (e.g., clearing local cache)
     return [
       'assets/images/ads/1.jpg',
       'assets/images/ads/2.jpg',

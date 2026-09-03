@@ -14,14 +14,9 @@ const USAGE: DailyUsage = {
 };
 
 // The job never reaches Supabase in these tests — quota and every resolver go
-// through a port — so an empty object is an honest stand-in for the one client
-// it now takes.
+// through a port — so an empty object is an honest stand-in.
 const client = {} as unknown as DbClient;
 
-/**
- * Fake `UsageCounter` recording the charge/refund sequence and the mode it was
- * opened with, with a scripted allow/reject.
- */
 function fakeQuota(allowed = true) {
   const calls: string[] = [];
   const modes: TryonMode[] = [];
@@ -203,8 +198,6 @@ Deno.test("null generation throws GenerationFailedError and refunds quota", asyn
 });
 
 Deno.test("a failed refund does not mask the original error", async () => {
-  // Refund throws on top of the real failure; the caller must still see the
-  // failure that actually caused the job to abort.
   const quota: QuotaFactory = () => ({
     charge: () => Promise.resolve({ allowed: true, usage: USAGE }),
     refund: () => Promise.reject(new Error("refund exploded")),
@@ -432,7 +425,6 @@ Deno.test("each garment kind reaches its own resolver", async () => {
   );
 
   assertEquals([productCalls, wardrobeCalls], [1, 1]);
-  // Order preserved, and caller-supplied material still passes through untouched.
   assertEquals(seenGarmentB64, ["PRODUCTB64", "WARDROBEB64", "RAWB64"]);
 });
 
@@ -486,8 +478,6 @@ Deno.test("runTryonJob reads measurements once for several sized garments", asyn
 });
 
 Deno.test("runTryonJob still generates when the measurements read fails", async () => {
-  // Optional data: the same request without a sizeId would have succeeded, so a
-  // profile read fault must degrade to no body rather than fail the job.
   const quota = fakeQuota();
   let seenBody: unknown = "unset";
 

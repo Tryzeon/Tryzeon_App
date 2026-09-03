@@ -7,7 +7,6 @@ class ProductAnalyticsRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
-  /// Fetches per-product analytics for a specific month.
   Future<List<ProductAnalyticsSummaryModel>> getProductAnalyticsSummaries(
     final String storeId, {
     required final int year,
@@ -28,7 +27,6 @@ class ProductAnalyticsRemoteDataSource {
         .toList();
   }
 
-  /// Fetches all per-product analytics for a store (all time).
   Future<List<ProductAnalyticsSummaryModel>> getAllProductAnalyticsSummaries(
     final String storeId,
   ) async {

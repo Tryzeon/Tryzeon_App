@@ -31,7 +31,6 @@ class ProductSizeEntryController {
 
   final Map<GarmentMeasurementType, TextEditingController> measurementControllers = {};
 
-  /// 比對重複與 chip 勾選狀態用的 key：標準尺碼的別名一律收斂到同一個字面值。
   String get matchKey => StandardSizeLabel.matchKeyOf(label);
 
   void applyParsed(final ParsedSize parsed, {required final MeasurementUnit targetUnit}) {
@@ -61,8 +60,6 @@ class ProductSizeEntryController {
     });
   }
 
-  /// The size as the store owner currently has it in the form: [ExistingSizeItem]
-  /// when it came from the product, [NewSizeItem] when they just added it.
   SizeItem toSizeItem({
     required final MeasurementUnit unit,
     required final List<GarmentMeasurementType> visibleTypes,

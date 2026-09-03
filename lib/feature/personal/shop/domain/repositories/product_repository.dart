@@ -7,9 +7,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// Repository for product query operations.
 abstract class ProductRepository {
-  /// Fetches a list of products based on the provided filters.
   Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,
     final String? searchQuery,
@@ -30,9 +28,7 @@ abstract class ProductRepository {
     final bool forceRefresh = false,
   });
 
-  /// Fetches a single product by its ID.
   Future<Result<ShopProduct, Failure>> getProduct(final String productId);
 
-  /// Fetches store profile by storeId.
   Future<Result<ShopStoreInfo, Failure>> getStoreInfo(final String storeId);
 }

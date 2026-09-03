@@ -3,9 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
-/// Editorial-style gender filter: flat text labels with an animated Terracotta
-/// underline on the active one. No boxes, single accent — per the Clean Luxe
-/// design language.
 class ShopGenderFilter extends StatelessWidget {
   const ShopGenderFilter({super.key, required this.selected, required this.onChanged});
 

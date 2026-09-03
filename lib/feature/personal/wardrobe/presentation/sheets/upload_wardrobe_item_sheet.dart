@@ -306,7 +306,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             AppSpacing.md,
             AppSpacing.md,
             AppSpacing.md,
-            MediaQuery.of(context).padding.bottom + AppSpacing.md, // bottom safe area
+            MediaQuery.of(context).padding.bottom + AppSpacing.md,
           ),
           child: FilledButton(
             onPressed:

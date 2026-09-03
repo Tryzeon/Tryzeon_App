@@ -17,19 +17,11 @@ interface LookupStub {
 }
 
 /**
- * Fake client for the two reads `resolveProductGarment` makes.
- *
- * `products` is served through `.rpc()` because the shopper-visible product
- * lookup is `get_shop_product` now — and `.from("products")` throws, so a
+ * `products` is served through `.rpc()`, and `.from("products")` throws, so a
  * regression to a direct, unfiltered table read fails the suite instead of
- * silently widening what a try-on can reach.
- *
- * The rpc arm re-checks `p_id` and `status` against the stub row rather than
- * just handing it back: it models what the SQL function does, so the security
- * test below still describes a real outcome and not merely a recorded call.
- * `product_sizes` keeps the `.from()` chain and the same filter re-check as
- * before — proving a filter reached the query, the way `wardrobe.test.ts`'s
- * `fakeAdmin` does.
+ * silently widening what a try-on can reach. The rpc arm re-checks `p_id` and
+ * `status` against the stub row, modelling what the SQL function does, so the
+ * security test below describes a real outcome and not merely a recorded call.
  */
 function fakeAdmin(stubs: Record<string, LookupStub>) {
   const filters: Record<string, Array<[string, string]>> = {};
@@ -144,10 +136,9 @@ Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
 });
 
 Deno.test("SECURITY: a sizeId belonging to a different product does not attach a fit", async () => {
-  // The row exists and would produce a fit if read — the point is that the
-  // `product_id` filter must be what keeps it from matching, not the row's
-  // absence. This is the test that must fail if `.eq("product_id", productId)`
-  // is ever dropped from `resolveSizeFit`.
+  // The row exists and would produce a fit if read, so this is the test that
+  // must fail if `.eq("product_id", productId)` is dropped from
+  // `resolveSizeFit`.
   const { admin } = fakeAdmin({
     products: { row: PRODUCT_ROW },
     product_sizes: {
@@ -177,10 +168,8 @@ Deno.test("resolveProductGarment looks the product up through get_shop_product",
 });
 
 Deno.test("SECURITY: an unlisted product does not resolve", async () => {
-  // An archived product keeps its row, so it is there to be read. What keeps
-  // it out of a try-on is `get_shop_product`'s `status = 'active'`, which the
-  // fake models — and `fakeAdmin.from("products")` throws, so going back to a
-  // direct table read fails here rather than quietly widening the door.
+  // An archived product keeps its row; what keeps it out of a try-on is
+  // `get_shop_product`'s `status = 'active'`, which the fake models.
   const { admin } = fakeAdmin({
     products: { row: { ...PRODUCT_ROW, status: "archived" } },
   });
@@ -193,9 +182,6 @@ Deno.test("SECURITY: an unlisted product does not resolve", async () => {
 });
 
 Deno.test("resolveProductGarment sends only the product's first image", async () => {
-  // Stores publish a main shot followed by detail macros (a washed-out label, a
-  // blurry hem). Passed off as "the same garment from another angle" they only
-  // dilute the person photo, so the main shot is the whole reference.
   const { admin } = fakeAdmin({
     products: {
       row: {
@@ -226,8 +212,6 @@ Deno.test("resolveProductGarment skips the fit description for a sizeId that mat
 });
 
 Deno.test("resolveProductGarment survives a failed product_sizes lookup", async () => {
-  // The fit sentence is a prompt enhancement; a transient read failure must not
-  // fail a generation that has already been charged.
   const { admin } = fakeAdmin({
     products: { row: PRODUCT_ROW },
     product_sizes: { row: null, error: { message: "connection reset" } },
@@ -287,10 +271,6 @@ Deno.test("resolveProductGarment ships the cut label alongside real fit numbers"
     { chest: 110 },
   );
 
-  // An oversize cut on a body big enough to fill it — the case the fit
-  // numbers exist for. Both reach the model: the cut is product information,
-  // the numbers say what that cut does here, and the prompt names which one
-  // governs tightness.
   assertEquals(garment.detail, "Product: Shirt. Cut: oversize");
   assertStringIncludes(garment.fit ?? "", "-22cm — compression");
 });
@@ -334,8 +314,8 @@ Deno.test("resolveProductGarment rejects a malformed sizeId", async () => {
 });
 
 Deno.test("resolveProductGarment rejects a malformed sizeId even with no body", async () => {
-  // Same caller bug, shopper with no measurements: validation must not depend
-  // on user state, or the bug goes unreported for half the population.
+  // Validation must not depend on user state, or the bug goes unreported for
+  // half the population.
   const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
 
   await assertRejects(

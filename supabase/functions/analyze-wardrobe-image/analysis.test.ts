@@ -54,26 +54,19 @@ Deno.test("toResponse passes a fully valid answer through", () => {
   });
 });
 
-// Unlike analyze-product-image's filterList, this sanitiser does not de-dupe.
-// That module filters against a closed enum, where a repeat is redundant by
-// construction; tags are free text the wardrobe stores verbatim, so a repeat
-// is a fact about the model's answer, not noise to collapse.
 Deno.test("toResponse keeps duplicate tags — the app does not expect them collapsed", () => {
   assertEquals(toResponse({ category: "top", tags: ["黑", "黑"] }).tags, ["黑", "黑"]);
 });
 
-// The filter predicate only checks for a non-empty string; it was never asked
-// to trim, so whitespace-only tags survive as-is. Locked here so a future
-// pass at parity with the sibling module doesn't add `.trim()` unnoticed.
+// Locked so a future pass at parity with the sibling module doesn't add
+// `.trim()` unnoticed.
 Deno.test("toResponse does not trim tags", () => {
   assertEquals(toResponse({ category: "top", tags: [" 黑 "] }).tags, [" 黑 "]);
 });
 
 // The three below lock the prompt, the schema and the sanitiser to one
-// vocabulary. Structured output types `category` as a string, so the model has
-// no way to answer "I can't tell" with JSON null — `unknown` is the agreed
-// spelling instead. Change one of the three and these fail rather than the
-// model quietly answering with a word nothing accepts.
+// vocabulary: change one and these fail rather than the model quietly answering
+// with a word nothing accepts.
 Deno.test("ANALYSIS_PROMPT offers every category the schema accepts", () => {
   for (const value of schemaProperties().category.enum ?? []) {
     assertEquals(

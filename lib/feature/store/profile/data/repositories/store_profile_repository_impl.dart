@@ -81,7 +81,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       final original = params.original;
       StoreProfile target = original.applyDraft(params.draft);
 
-      // Handle Logo Upload
       if (params.logoFile != null) {
         final newLogoPath = await _remoteDataSource.uploadLogo(
           storeId: original.id,

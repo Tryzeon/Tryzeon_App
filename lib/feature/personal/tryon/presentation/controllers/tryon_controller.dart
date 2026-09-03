@@ -39,7 +39,6 @@ class TryonController extends _$TryonController {
   @override
   bool updateShouldNotify(final TryonOutcome? previous, final TryonOutcome? next) => true;
 
-  /// Runs a try-on from a locally picked garment photo.
   Future<void> tryonFromLocalImage(
     final File image, {
     final TryonMode mode = TryonMode.image,
@@ -63,8 +62,6 @@ class TryonController extends _$TryonController {
     );
   }
 
-  /// Runs a try-on for one of the user's wardrobe items; the backend resolves
-  /// its image and builds a prompt detail from the item's category and tags.
   Future<void> tryonFromWardrobeItem(
     final String wardrobeItemId, {
     final TryonMode mode = TryonMode.image,
@@ -77,9 +74,9 @@ class TryonController extends _$TryonController {
     );
   }
 
-  /// Runs a try-on for a catalog product; the backend resolves its garment
-  /// image and prompt detail from the product id. [sizeId] names the size being
-  /// worn, when the shopper's measurements yielded a recommendation.
+  /// The backend resolves the garment image and prompt detail from the product
+  /// id. [sizeId] names the size being worn, when the shopper's measurements
+  /// yielded a recommendation.
   Future<void> tryonFromProduct(
     final String productId, {
     final String? sizeId,
@@ -93,17 +90,10 @@ class TryonController extends _$TryonController {
     );
   }
 
-  /// Runs [entry] again. The preferences are read fresh, so a style or engine
-  /// changed since is the one that applies.
   Future<void> regenerate(final TryonGalleryEntry entry) => _start(entry.subject);
 
-  /// The video lands as a new gallery entry, leaving the original photo there
-  /// to download or set as the model. Image generation is skipped entirely, so
-  /// the scene and styling prompts have nothing left to influence and only the
-  /// transition style shapes the result — the engine travels anyway, against
-  /// the day a video model has tiers of its own.
-  ///
-  /// Takes the entry, not its result: the video inherits its subject.
+  /// Image generation is skipped, so only the transition style shapes the
+  /// result. Takes the entry, not its result: the video inherits its subject.
   Future<void> animate(final FinishedTryonEntry entry) async {
     final imageUrl = entry.result.imageUrl;
     if (entry.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
@@ -116,7 +106,6 @@ class TryonController extends _$TryonController {
     );
   }
 
-  /// The one path every try-on takes.
   Future<void> _start(final TryonSubject subject) async {
     // Setup runs before the placeholder exists, so its failures always speak up.
     String? customAvatarUrl;
@@ -196,9 +185,6 @@ class TryonController extends _$TryonController {
     }
   }
 
-  /// Fallible because both variants fetch an image first, and a failure there
-  /// must never reach the backend. Named parameters because [id] and
-  /// [customAvatarUrl] are both strings and would transpose silently.
   Future<Result<TryonRequest, Failure>> _buildRequest({
     required final String id,
     required final TryonSubject subject,

@@ -45,9 +45,6 @@ Deno.test("a recommended item is stored as a reference, not as its row", () => {
 });
 
 Deno.test("tool rounds are stored verbatim", () => {
-  // The model's own record of what it searched and what came back. This is
-  // what makes a follow-up like "有便宜一點的嗎" answerable, so none of it may
-  // be reshaped on the way into storage.
   const messages: ChatMessage[] = [
     {
       role: "assistant",
@@ -129,7 +126,6 @@ interface SetCall {
   opts: { ex: number };
 }
 
-/** A Redis double recording what was written, with a scripted read or outage. */
 function fakeRedis(opts: { stored?: unknown; fails?: boolean } = {}) {
   const gets: string[] = [];
   const sets: SetCall[] = [];
@@ -147,7 +143,6 @@ function fakeRedis(opts: { stored?: unknown; fails?: boolean } = {}) {
   return { client, gets, sets };
 }
 
-/** Runs `fn` with `console.warn` silenced, returning what it would have logged. */
 async function captureWarnings(fn: () => Promise<void>): Promise<unknown[][]> {
   const real = console.warn;
   const calls: unknown[][] = [];
@@ -179,15 +174,12 @@ Deno.test("no stored conversation is an empty one, not a failure", async () => {
 });
 
 Deno.test("a stored value of the wrong shape is discarded", async () => {
-  // A value written by an older deploy is not a reason for this one to fail.
   const { client } = fakeRedis({ stored: { messages: [] } });
 
   assertEquals(await redisConversations(client).load("Uline123"), []);
 });
 
 Deno.test("a write carries the idle window as the key's TTL", async () => {
-  // The TTL is the whole of the timeout rule: a key that expires is a
-  // conversation that ended, and every turn pushes the expiry out again.
   const { client, sets } = fakeRedis();
   const messages: ChatMessage[] = [
     { role: "user", content: [{ type: "text", text: "找白襯衫" }] },
@@ -210,13 +202,10 @@ Deno.test("a store that is down costs continuity, not the turn", async () => {
     await store.save("Uline123", []);
   });
 
-  // Neither call threw, and both left a trace.
   assertEquals(warnings.length, 2);
 });
 
 Deno.test("a finished wardrobe try-on is written back with what it was", () => {
-  // The next chip the user is offered says "幫我配這件", so the agent has to
-  // know which item that was.
   const note = wardrobeTryonNote({
     id: "44444444-4444-4444-4444-444444444444",
     categoryLabel: "上衣",
@@ -237,9 +226,7 @@ Deno.test("a tag-less wardrobe note still reads as a sentence", () => {
 
 Deno.test("a pathologically long tag cannot blow up the transcript note", () => {
   // Tags are free text with no constraint, so one absurd tag could exceed
-  // LIMITS.MAX_TEXT_LENGTH and break the sender's next chat turn — the same
-  // reason `tryonNote` clamps product names. The fix is `tagLine`, which caps at
-  // 40 chars with an ellipsis.
+  // LIMITS.MAX_TEXT_LENGTH and break the sender's next chat turn.
   const longTag = "x".repeat(500);
   const note = wardrobeTryonNote({
     id: "w1",
@@ -249,5 +236,5 @@ Deno.test("a pathologically long tag cannot blow up the transcript note", () => 
 
   const text = note.content[0].text as string;
   assertEquals(text.length < LIMITS.MAX_TEXT_LENGTH, true);
-  assertEquals(text.includes("…"), true); // tagLine truncates and marks it
+  assertEquals(text.includes("…"), true);
 });

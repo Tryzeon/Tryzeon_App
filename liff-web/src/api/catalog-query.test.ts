@@ -24,8 +24,6 @@ describe("sortParams", () => {
     });
   });
 
-  // 取代了原本「拒絕未知 sort」那個測試:SortOption 是 union type,未知值現在
-  // 是編譯錯誤。這裡守的是另一件事 —— 白名單長出新成員時不會忘記給對應。
   it("covers every SORT_OPTIONS member", () => {
     for (const sort of SORT_OPTIONS) {
       expect(sortParams(sort).sortColumn).toBeTruthy();
@@ -53,8 +51,6 @@ describe("parseStoreId", () => {
     expect(parseStoreId(undefined)).toBeNull();
   });
 
-  // 沒有店家和「店家 id 是垃圾」是兩件事。後者悄悄退回全站目錄,正是店家 QR
-  // 最不該有的行為 —— 掃了某家店的碼卻看到全部商品。所以它拋錯。
   it("rejects a malformed store id instead of falling back to the full catalog", () => {
     expect(() => parseStoreId("nope")).toThrow(InvalidStoreIdError);
     expect(() => parseStoreId("")).toThrow(InvalidStoreIdError);
@@ -72,8 +68,6 @@ describe("normalizeUuid", () => {
       .toBe("a1b2c3d4-1111-2222-3333-444455556666");
   });
 
-  // 網址上的 id 是任意字串,直接送進 uuid 參數會讓 RPC 以 500 收場;呼叫端要的
-  // 答案是「沒有這筆」。
   it("rejects anything that is not a uuid", () => {
     expect(normalizeUuid("not-a-uuid")).toBeNull();
     expect(normalizeUuid("")).toBeNull();

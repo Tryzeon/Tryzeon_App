@@ -7,7 +7,6 @@ export interface CatalogItem {
   purchaseLink: string | null;
 }
 
-/** 這份目錄所屬的店家。未指定店家的全站目錄為 null。 */
 export interface CatalogStore {
   id: string;
   name: string;
@@ -18,8 +17,6 @@ export function publicImageUrl(baseUrl: string, key: string): string {
 }
 
 /**
- * 把一列 list_shop_products 的 jsonb 轉成目錄項目。
- *
  * 沒有可用圖片的商品仍然成為一個項目,只是 imageUrls 是空的。在這裡把它丟掉會
  * 讓 items.length 和分頁算術依據的列數對不起來,而且會讓商品從店家自己的目錄
  * 消失,而不是顯示出它缺照片。

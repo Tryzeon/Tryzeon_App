@@ -22,9 +22,6 @@ function getLimiter(
 }
 
 /**
- * Returns true if the request is allowed under the given limit, false if the
- * caller has exceeded `limit` requests within `windowSeconds`.
- *
  * Fails OPEN: if Upstash is unreachable we allow the request rather than block
  * core functionality on a third-party outage. Rate limiting is abuse
  * prevention, not a billing quota, so occasional misses are acceptable.

@@ -5,7 +5,6 @@ import type { ResolvedGarment } from "./types.ts";
 import type { Tables } from "../database.types.ts";
 import type { DbClient } from "../supabase.ts";
 
-/** Wardrobe columns needed to build a try-on garment, as the schema types them. */
 export type WardrobeGarmentRow = Pick<
   Tables<"wardrobe_items">,
   "image_path" | "category" | "tags"
@@ -16,12 +15,8 @@ function trimmedString(value: unknown): string {
 }
 
 /**
- * Model-facing garment description built from a wardrobe row.
- *
- * The category goes in as its raw enum code. The one enum→Chinese map in this
- * codebase belongs to the LINE card, which dresses rows for people; a second
- * copy here would be one more thing to keep in step, and
- * `buildProductGarmentDetail` passes DB text through for the same reason.
+ * The category goes in as its raw enum code: the one enum→Chinese map in this
+ * codebase belongs to the LINE card, which dresses rows for people.
  */
 export function buildWardrobeGarmentDetail(row: WardrobeGarmentRow): string {
   const parts = [`Category: ${row.category}`];
@@ -33,14 +28,6 @@ export function buildWardrobeGarmentDetail(row: WardrobeGarmentRow): string {
 }
 
 /**
- * Resolves a wardrobe item reference to trusted garment material, bound to the
- * user it belongs to.
- *
- * The ownership filter is why this lives in the core and not in each adapter:
- * the client it is handed is whatever the adapter passed to `runTryonJob`, and
- * an adapter with no RLS beneath it — the LINE webhook is one — would otherwise
- * have to remember the check on every path, forever.
- *
  * A row that is gone and a row belonging to someone else raise the SAME error,
  * word for word. Telling them apart would make this an oracle for probing
  * whether an id sits in another user's wardrobe, so the message carries nothing
@@ -68,10 +55,7 @@ export async function resolveWardrobeGarment(
     throw new Error(`wardrobe item lookup failed: ${error.message}`);
   }
 
-  // One check for four outcomes — no row, someone else's row, a row whose
-  // path is blank, a row whose path points outside the owner's folder —
-  // because all four mean the same thing to a caller and separating them is
-  // what would leak.
+  // One check for four outcomes, because separating them is what would leak.
   //
   // The row is the caller's, but `image_path` is client-written free text, so
   // owning the row is not owning the object. Same folder rule the storage

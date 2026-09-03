@@ -13,11 +13,6 @@ import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dar
 
 import 'product_card.dart';
 
-/// Lazily-built product grid, returned as a single sliver so it can live
-/// inside the page's [CustomScrollView] (only visible cells are built).
-///
-/// Renders four states from [productsAsync]: data (grid + load-more footer),
-/// empty, loading (skeleton), and error.
 class ProductSliverGrid extends ConsumerWidget {
   const ProductSliverGrid({
     super.key,
@@ -35,7 +30,6 @@ class ProductSliverGrid extends ConsumerWidget {
     childAspectRatio: 0.55,
   );
 
-  /// Skeleton data for the initial loading state.
   static final _skeletonProducts = List<ShopProduct>.generate(
     4,
     (final index) => ShopProduct(
@@ -150,8 +144,6 @@ class ProductSliverGrid extends ConsumerWidget {
   }
 }
 
-/// Footer under the grid: a centered spinner while the next page loads,
-/// otherwise a small spacer.
 class _LoadMoreFooter extends StatelessWidget {
   const _LoadMoreFooter({required this.isLoadingMore});
 

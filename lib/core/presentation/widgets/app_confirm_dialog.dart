@@ -3,16 +3,9 @@ import 'package:flutter/material.dart';
 
 export 'package:adaptive_dialog/adaptive_dialog.dart' show OkCancelResult;
 
-/// Clean Luxe replacement for [showOkCancelAlertDialog].
-///
-/// Renders an adaptive (Material / Cupertino) OK-Cancel confirmation, but the
-/// neutral actions (cancel + non-destructive confirm) use charcoal `onSurface`
-/// instead of the platform accent (lavender on Material, system blue on iOS).
-/// Destructive confirms stay red — both platforms resolve that from
-/// [AlertDialogAction.isDestructiveAction].
-///
-/// Mirrors the subset of [showOkCancelAlertDialog]'s API the app actually uses
-/// so call sites only swap the function name.
+/// Clean Luxe replacement for [showOkCancelAlertDialog]: neutral actions use
+/// charcoal `onSurface` instead of the platform accent (lavender on Material,
+/// system blue on iOS); destructive confirms keep the platform red.
 Future<OkCancelResult> showAppOkCancelDialog({
   required final BuildContext context,
   final String? title,
@@ -22,8 +15,8 @@ Future<OkCancelResult> showAppOkCancelDialog({
   final bool isDestructiveAction = false,
 }) async {
   final colorScheme = Theme.of(context).colorScheme;
-  // Neutral charcoal label. Destructive confirms must pass an empty TextStyle
-  // so the Cupertino destructive red is not overridden by a color merge.
+  // Destructive confirms must pass an empty TextStyle instead: a color merge
+  // would override Cupertino's destructive red.
   final neutral = TextStyle(color: colorScheme.onSurface);
 
   final result = await showAlertDialog<OkCancelResult>(

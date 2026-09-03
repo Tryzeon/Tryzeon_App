@@ -5,8 +5,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 
 /// Client → Server wire body for the `tryon` edge function.
 ///
-/// Owns the domain → wire serialization (built once via [TryonRequestModel.fromDomain])
-/// so the datasource stays pure transport and never imports domain entities.
 /// Hand-written rather than json_serializable because the body omits empty
 /// prompts, an absent avatar and an absent garment list, and wraps each garment
 /// image as `{base64}`.
@@ -23,7 +21,6 @@ class TryonRequestModel {
     this.transitionPrompt,
   });
 
-  /// Maps a domain [request] into the wire model.
   factory TryonRequestModel.fromDomain(final TryonRequest request) {
     return switch (request) {
       TryonGenerateRequest(

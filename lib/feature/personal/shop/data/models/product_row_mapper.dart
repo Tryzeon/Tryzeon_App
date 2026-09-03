@@ -5,16 +5,11 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 
 const _mappr = PersonalMappr();
 
-/// Decodes a raw `list_shop_products` row straight to the domain entity.
-///
-/// This is the shop feature's public row contract (exported via `shop.dart`)
-/// so other features can consume shop rows without touching `shop/data/**`.
 ShopProduct decodeShopProductRow(final Map<String, dynamic> row) =>
     _mappr.convert<ShopProductModel, ShopProduct>(
       ShopProductModel.fromJson(productRowWithImageUrls(row)),
     );
 
-/// Adds a derived public `logo_url` to a store-profile row from its `logo_path`.
 Map<String, dynamic> withStoreLogoUrl(final Map<String, dynamic> store) {
   final map = Map<String, dynamic>.from(store);
   final logoPath = map['logo_path'] as String?;
@@ -24,9 +19,8 @@ Map<String, dynamic> withStoreLogoUrl(final Map<String, dynamic> store) {
   return map;
 }
 
-/// Enriches a raw `list_shop_products` row with derived image URLs so it can be
-/// parsed by [ShopProductModel.fromJson]. Product and store-logo images use
-/// deterministic public URLs (no signing, no network).
+/// Product and store-logo images use deterministic public URLs (no signing,
+/// no network).
 Map<String, dynamic> productRowWithImageUrls(final Map<String, dynamic> row) {
   final map = Map<String, dynamic>.from(row);
 

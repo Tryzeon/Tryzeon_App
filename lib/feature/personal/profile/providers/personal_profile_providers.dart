@@ -150,10 +150,8 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     );
   }
 
-  /// Mirrors [write]'s outcome into [state] and drops the cached profile on
-  /// success so every screen re-reads the updated values. Kept alive for the
-  /// duration, so a form popped mid-write doesn't dispose this notifier out
-  /// from under the pending `state` write.
+  /// Kept alive for the duration, so a form popped mid-write doesn't dispose
+  /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(
     final Future<Result<void, Failure>> Function() write,
   ) async {

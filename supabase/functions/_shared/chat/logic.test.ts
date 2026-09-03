@@ -31,7 +31,6 @@ Deno.test("resolveCategoryFilter rejects an unknown name instead of dropping the
   const r = resolveCategoryFilter("洋裝褲", CATEGORIES);
   assertEquals(r.ok, false);
   if (r.ok) throw new Error("expected a rejection");
-  // The name must appear in the message so the model can see what it got wrong.
   assertStringIncludes(r.error, "洋裝褲");
 });
 
@@ -129,10 +128,6 @@ Deno.test("parseAnswerRefs drops empty text and id-less product/wardrobe blocks"
   assertEquals(refs, [{ type: "product", id: PRODUCT_ID }]);
 });
 
-// A model can misquote an id it read from a tool result — the reported failure
-// dropped one character from the last group. Such an id reaches Postgres as a
-// uuid literal and fails the whole `.in()` batch with 22P02, taking the valid
-// ids down with it, so it is rejected here with the id-less blocks.
 Deno.test("parseAnswerRefs drops ids that are not uuids", () => {
   const refs = parseAnswerRefs({
     blocks: [
@@ -188,7 +183,6 @@ Deno.test("toModelMessages drops blank text and empty turns", () => {
   assertEquals(out, [{ role: "assistant", content: "嗨" }]);
 });
 
-// One `list_shop_products` row, in the shape the RPC actually returns.
 const SHOP_ROW = {
   id: "8f3a-p1",
   store_id: "11aa-s1",
@@ -249,8 +243,6 @@ Deno.test("toSearchResultItem ships no uuid but the one the model must copy", ()
 
 Deno.test("toSearchResultItem drops unset attributes rather than sending nulls", () => {
   const item = toSearchResultItem(SHOP_ROW);
-  // `thickness` is null and `seasons` is empty: unset and absent are the same
-  // fact to the model, and only one of them costs tokens.
   assertEquals("thickness" in item, false);
   assertEquals("seasons" in item, false);
 });
@@ -300,8 +292,6 @@ Deno.test("validateVocabularyFilters rejects a value outside the enum vocabulary
   const r = validateVocabularyFilters({ fits: ["tight"] });
   assertEquals(r.ok, false);
   if (r.ok) throw new Error("expected a rejection");
-  // The field name and offending value must appear so the model can see what
-  // it got wrong and retry with a permitted value or omit the field.
   assertStringIncludes(r.error, "fits");
   assertStringIncludes(r.error, "tight");
 });

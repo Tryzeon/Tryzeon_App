@@ -14,10 +14,8 @@ const List<String> kMaterialPresets = [
   '混紡',
 ];
 
-/// UI display label extension for [WardrobeCategory] in Presentation Layer.
-/// This is the ONLY place where Chinese translations for it should exist.
+/// The ONLY place where Chinese labels for [WardrobeCategory] should exist.
 extension CategoryDisplay on WardrobeCategory {
-  /// Get the Chinese display name for UI.
   String get displayName => switch (this) {
     WardrobeCategory.top => '上衣',
     WardrobeCategory.bottoms => '下身',
@@ -26,14 +24,12 @@ extension CategoryDisplay on WardrobeCategory {
     WardrobeCategory.others => '其他',
   };
 
-  /// Get all categories with their display names.
   static List<MapEntry<WardrobeCategory, String>> get allWithDisplayNames =>
       WardrobeCategory.values
           .map((final category) => MapEntry(category, category.displayName))
           .toList();
 }
 
-/// UI display label extension for [ProductGender] in Presentation Layer.
 extension ProductGenderX on ProductGender {
   String get label => switch (this) {
     ProductGender.male => '男裝',
@@ -42,7 +38,6 @@ extension ProductGenderX on ProductGender {
   };
 }
 
-/// UI display label extension for [ProductFit] in Presentation Layer.
 extension ProductFitX on ProductFit {
   String get label => switch (this) {
     ProductFit.slim => '合身',
@@ -52,7 +47,6 @@ extension ProductFitX on ProductFit {
   };
 }
 
-/// UI display label extension for [ProductElasticity] in Presentation Layer.
 extension ProductElasticityX on ProductElasticity {
   String get label => switch (this) {
     ProductElasticity.none => '無',
@@ -62,7 +56,6 @@ extension ProductElasticityX on ProductElasticity {
   };
 }
 
-/// UI display label extension for [ProductThickness] in Presentation Layer.
 extension ProductThicknessX on ProductThickness {
   String get label => switch (this) {
     ProductThickness.low => '薄',
@@ -71,7 +64,6 @@ extension ProductThicknessX on ProductThickness {
   };
 }
 
-/// UI display label extension for [ProductSeason] in Presentation Layer.
 extension ProductSeasonX on ProductSeason {
   String get label => switch (this) {
     ProductSeason.spring => '春',

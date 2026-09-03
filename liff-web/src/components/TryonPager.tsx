@@ -19,8 +19,6 @@ interface Props {
 }
 
 /**
- * 首頁那條可以左右滑的相片流,第 0 頁是模特照。
- *
  * 用 CSS scroll-snap 而不是自己算手勢:原生捲動的慣性、回彈和 LINE webview 的
  * 邊緣手勢本來就相容,自己接 touch 事件只會把它們弄壞。
  */
@@ -38,8 +36,7 @@ export function TryonPager(
 
   useEffect(() => () => window.clearTimeout(settleTimer.current), []);
 
-  // 狀態 → 捲動位置。開始一次新試穿時把那一頁帶到眼前,和 app 的 animateToPage
-  // 一樣;已經在正確位置就不必再送一次平滑捲動。
+  // 狀態 → 捲動位置:開始一次新試穿時把那一頁帶到眼前。
   useEffect(() => {
     const track = trackRef.current;
     if (track === null || track.clientWidth === 0) return;
@@ -119,7 +116,6 @@ export function TryonPager(
   );
 }
 
-/** 生成中的那一頁 —— 和試衣間同一組品牌動畫。 */
 function LoadingPage() {
   const src = useMemo(nextLoadingVideo, []);
   return (

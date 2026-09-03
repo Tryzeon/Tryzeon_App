@@ -15,7 +15,6 @@ ALTER TABLE "public"."product_categories"
 UPDATE "public"."product_categories"
   SET "gender" = 'female';
 
--- Index for the gender + priority read path used by the app.
 CREATE INDEX IF NOT EXISTS "idx_product_categories_gender_priority"
   ON "public"."product_categories" USING "btree" ("gender", "priority" DESC);
 

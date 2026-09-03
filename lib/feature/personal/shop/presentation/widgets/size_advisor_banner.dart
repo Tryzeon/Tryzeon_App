@@ -67,9 +67,8 @@ class SizeAdvisorBanner extends StatelessWidget {
   }
 }
 
-/// noUserData is a soft prompt and should carry less visual weight than the
-/// other states, so it skips [_BannerShell]'s filled icon, border, and
-/// two-line layout in favor of a single tappable row.
+/// A soft prompt, deliberately lighter than the other states: it skips
+/// [_BannerShell] in favor of a single tappable row.
 class _NoUserDataBanner extends StatelessWidget {
   const _NoUserDataBanner();
 

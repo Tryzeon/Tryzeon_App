@@ -6,8 +6,6 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
-/// A recommended wardrobe item as its own chat bubble: image plus a "你的衣櫃"
-/// chip. Tap opens the wardrobe item detail (tap-to-detail only, v1).
 class WardrobeItemBubble extends StatelessWidget {
   const WardrobeItemBubble({super.key, required this.item});
 

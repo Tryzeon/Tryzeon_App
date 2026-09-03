@@ -40,8 +40,6 @@ class AuthRepositoryImpl implements AuthRepository {
       // Store login type preference before auth state changes fire.
       await _localDataSource.setLastLoginType(userType.value);
 
-      // Exhaustive on purpose: no `default`, so a new provider is a compile
-      // error here rather than an "Unsupported login method" at runtime.
       switch (provider) {
         case LoginProvider.apple:
           if (Platform.isIOS) {
@@ -65,14 +63,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<void, Failure>> signOut() async {
     try {
-      // Flush pending analytics events before logging out
       try {
         await _analyticsEventQueueService.forceFlush();
       } catch (e, stackTrace) {
         AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
       }
 
-      // Sign out from Supabase
       try {
         await _remoteDataSource.signOut();
       } catch (e, stackTrace) {
@@ -81,14 +77,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await _signOutProviderSdks();
 
-      // Clear API cache
       try {
         await _cacheService.clearCache();
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
       }
 
-      // Clear local preferences
       try {
         await _localDataSource.clearAll();
       } catch (e, stackTrace) {
@@ -211,9 +205,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// Clears the account-scoped settings that live in SharedPreferences, which
-  /// `_localDataSource.clearAll()` can't reach — it only wipes Isar. Anything
-  /// added there that belongs to the user, rather than to the device, has to be
-  /// cleared here too.
+  /// `_localDataSource.clearAll()` can't reach — it only wipes Isar.
   Future<void> _clearDevicePreferences() async {
     final result = await _settingsRepository.clearTryonPreferences();
     if (result.isFailure) {

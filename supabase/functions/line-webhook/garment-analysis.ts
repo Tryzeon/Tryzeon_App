@@ -1,18 +1,5 @@
 /**
- * How this channel asks the model what a forwarded photo shows, and how often
- * it may ask.
- *
- * The wardrobe endpoint (`analyze-wardrobe-image/analysis.ts`) already labels
- * garment photos, but its answer is the wrong shape to borrow. That one's tags
- * are drawn from a controlled vocabulary so `wardrobe_items.tags` stays
- * filterable by `search_wardrobe`'s `.contains()`; run a photo of a
- * 淺藍色寬鬆棉質抽繩長褲 through it and what survives is `bottoms / 藍、寬鬆、棉`.
- * Here the answer is read by a language model, not a query planner — "淺" and
- * "抽繩" are exactly what make the follow-up search land, and a vocabulary
- * built for SQL throws them away.
- *
- * So the prompt asks for one dense phrase and the schema carries one field.
- * What it deliberately does NOT do is pre-resolve the answer into
+ * What this module deliberately does NOT do is pre-resolve the answer into
  * `search_products`' parameters (`styles`, `fits`, `seasons` — see
  * `_shared/chat/tools.ts`): the agent already holds that tool's full schema and
  * can map prose onto it, whereas naming those enums here would create two
@@ -28,31 +15,17 @@ import { analyzeImage } from "../_shared/image-analysis.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 /**
- * Longest description that reaches the transcript, in code points.
- *
- * Not cosmetic: this note is replayed to the model on every subsequent turn, so
- * a vision model left to produce "這是一件淺藍色的寬鬆版型棉質長褲，腰部有抽繩設計，
- * 適合休閒場合…" would crowd out the conversation it is supposed to be context
- * for. The prompt asks for the cap and the code enforces it, the same belt and
- * braces `clampProductName` applies in `product-card.ts`: a description over
- * the cap is cut to it and marked with a trailing `…` so a truncated phrase
- * doesn't read to the model as a complete one. Counted by code point rather
- * than `String.prototype.slice`'s UTF-16 code units, since the prompt invites
- * free description of a non-garment photo, where an astral character (emoji,
- * rare CJK) is reachable and `slice` would cut one in half.
+ * The note is replayed to the model on every subsequent turn, so an unbounded
+ * description would crowd out the conversation it is context for. Counted by
+ * code point rather than UTF-16 code unit: the prompt invites free description
+ * of a non-garment photo, where an astral character is reachable.
  */
 const MAX_DESCRIPTION_CHARS = 20;
 
 /**
- * This channel's analysis budget, kept apart from the app's
- * `wardrobe_image_analysis` bucket. The two see different traffic, and pooling
- * them would let a LINE spike starve the app's wardrobe uploads. Numbers match
- * the app's, since it is the same kind of call.
- *
- * A budget is needed here at all because this is the one model call in the
- * webhook that no daily quota bounds: `runTryonJob` refuses to generate once
- * `tryon` is spent, but analysis runs alongside it and would keep running for a
- * sender who has nothing left to spend.
+ * Kept apart from the app's `wardrobe_image_analysis` bucket so a LINE spike
+ * cannot starve the app's wardrobe uploads; the numbers match the app's. This is
+ * the one model call in the webhook that no daily quota bounds.
  */
 const RATE_BUCKET = "line_garment_analysis";
 const PER_MINUTE = 15;
@@ -72,9 +45,8 @@ export const ANALYSIS_SCHEMA: Record<string, unknown> = {
 };
 
 /**
- * The two collaborators a test substitutes. Declared structurally rather than
- * as `typeof analyzeImage` so a double need not reproduce that function's
- * generic parameter.
+ * Declared structurally rather than as `typeof analyzeImage` so a double need
+ * not reproduce that function's generic parameter.
  */
 export interface DescribeGarmentDeps {
   analyze?: (
@@ -89,16 +61,9 @@ export interface DescribeGarmentDeps {
 }
 
 /**
- * What the photo shows, in one phrase, or `null` when there is nothing usable
- * to record.
- *
- * Never throws, and that is the contract the caller is written against rather
- * than an implementation detail: the description is an enhancement to the
- * transcript, while the try-on running alongside it is the thing the user
- * actually asked for. An outage here, a spent budget, or an unreadable answer
- * all degrade to the same `null` — no note, same try-on. This is the fail-open
- * judgement `redisConversations` makes for the same reason, kept here so no
- * handler needs an error path for it.
+ * Never throws, and that is the contract the caller is written against: an
+ * outage, a spent budget or an unreadable answer all degrade to `null`, leaving
+ * the try-on running alongside untouched.
  */
 export async function describeGarment(
   userId: string,

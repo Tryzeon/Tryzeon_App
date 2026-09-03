@@ -1,4 +1,3 @@
-/** 縮圖輸出格式。儲存路徑的副檔名與 contentType 都依賴這兩個值。 */
 export const JPEG_MIME = "image/jpeg";
 export const JPEG_EXTENSION = "jpg";
 
@@ -13,13 +12,6 @@ export function downscaleDimensions(
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
-/**
- * 讀一個 File,把長邊縮到 maxDim 以內,輸出 JPEG Blob。
- *
- * 從前這裡輸出 base64,因為照片要塞進 edge function 的 JSON body。改成直傳
- * Storage 之後 base64 就只剩壞處 —— 多 33% 的傳輸量,而 Storage 收的本來就是
- * 二進位。
- */
 export function downscaleToBlob(file: File, maxDim = 1024): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -55,8 +47,8 @@ export function downscaleToBlob(file: File, maxDim = 1024): Promise<Blob> {
 }
 
 /**
- * 一個 Blob 的 base64,不含 `data:` 前綴 —— edge function 的 `{ base64 }` 收的是
- * 純資料,連前綴一起送會讓解碼端拿到垃圾位元組。
+ * 不含 `data:` 前綴 —— edge function 的 `{ base64 }` 收的是純資料,連前綴一起送
+ * 會讓解碼端拿到垃圾位元組。
  */
 export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -71,14 +63,11 @@ export function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-/** 使用者挑的衣服照,縮好之後的 base64。 */
 export async function downscaleToBase64(file: File, maxDim = 1024): Promise<string> {
   return blobToBase64(await downscaleToBlob(file, maxDim));
 }
 
 /**
- * 把一張已經生成好的結果圖讀回 base64,給「設為我的形象」用。
- *
  * 需要 R2 那個 bucket 對 LIFF 的 origin 開 CORS —— `<img src>` 不需要,fetch 需要。
  * 沒開的話這裡會丟,呼叫端要把它當成一次可以重試的失敗,而不是壞掉。
  *

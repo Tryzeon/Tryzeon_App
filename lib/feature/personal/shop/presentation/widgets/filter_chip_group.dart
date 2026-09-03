@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// A titled, multi-select group of [FilterChip]s over a fixed option set.
 class FilterChipGroup<T> extends StatelessWidget {
   const FilterChipGroup({
     super.key,

@@ -7,7 +7,6 @@
 ALTER TABLE "public"."user_profiles"
   ADD COLUMN IF NOT EXISTS "age_range" "text";
 
--- Backfill existing exact ages into buckets.
 UPDATE "public"."user_profiles"
 SET "age_range" = CASE
   WHEN "age" IS NULL THEN NULL
