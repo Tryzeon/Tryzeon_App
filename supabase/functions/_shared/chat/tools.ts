@@ -25,13 +25,16 @@ import type { DbClient } from "../supabase.ts";
 // (or drop the filter) and search again, which the system prompt already asks
 // it to do when a search comes back empty.
 type SearchResult = {
-  items: Record<string, any>[];
+  items: Record<string, unknown>[];
   error?: string;
 };
 
+type SearchProductsArgs = z.infer<typeof SEARCH_PRODUCTS_SCHEMA>;
+type SearchWardrobeArgs = z.infer<typeof SEARCH_WARDROBE_SCHEMA>;
+
 async function runSearchProducts(
   client: DbClient,
-  args: Record<string, any>,
+  args: SearchProductsArgs,
   categoryIdByName: Map<string, string>,
 ): Promise<SearchResult> {
   const category = resolveCategoryFilter(args.category_name, categoryIdByName);
@@ -48,7 +51,7 @@ async function runSearchProducts(
   });
   const { data, error } = await client.rpc("list_shop_products", params);
   if (error) throw error;
-  return { items: ((data ?? []) as Record<string, any>[]).map(toSearchResultItem) };
+  return { items: ((data ?? []) as Record<string, unknown>[]).map(toSearchResultItem) };
 }
 
 // The `.eq("user_id", …)` is the filter, not the guard: with a user-scoped `client`
@@ -56,7 +59,7 @@ async function runSearchProducts(
 async function runSearchWardrobe(
   client: DbClient,
   userId: string,
-  args: Record<string, any>,
+  args: SearchWardrobeArgs,
 ): Promise<SearchResult> {
   let q = client
     .from("wardrobe_items")

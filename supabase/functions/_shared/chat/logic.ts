@@ -1,6 +1,7 @@
-// Pure helpers for the chat agent loop. No SDK or network imports, so they
-// unit-test offline.
+// Pure helpers for the chat agent loop. No runtime SDK or network imports, so
+// they unit-test offline.
 import { isUuid, nonEmptyStr } from "../text.ts";
+import { asRecord } from "../validation.ts";
 import {
   CHANNEL_VALUES,
   ELASTICITY_VALUES,
@@ -9,6 +10,7 @@ import {
   SEASON_VALUES,
   THICKNESS_VALUES,
 } from "../vocabularies.ts";
+import type { JSONValue, ModelMessage, TextPart, ToolCallPart } from "npm:ai@^6.0.208";
 import type { Database } from "../database.types.ts";
 import type {
   AnswerRef,
@@ -175,7 +177,7 @@ const withSetFields = (o: Record<string, unknown>): Record<string, unknown> =>
   );
 
 
-export function toSearchResultItem(row: Record<string, any>): Record<string, unknown> {
+export function toSearchResultItem(row: Record<string, unknown>): Record<string, unknown> {
   const store = (row.store_profiles ?? null) as Record<string, unknown> | null;
   const variants = Array.isArray(row.product_variants) ? row.product_variants : [];
 
@@ -185,7 +187,7 @@ export function toSearchResultItem(row: Record<string, any>): Record<string, unk
     price: row.price,
     store: store?.name ?? null,
     channels: store?.channels ?? null,
-    sizes: variants.map((v) => v?.name).filter(Boolean),
+    sizes: variants.map((v) => asRecord(v)?.name).filter(Boolean),
     gender: row.gender,
     material: row.material,
     fit: row.fit,
@@ -196,12 +198,17 @@ export function toSearchResultItem(row: Record<string, any>): Record<string, unk
   });
 }
 
+// A recommended item is stored either hydrated (`item`) or dehydrated (`id`),
+// depending on whether it survived a round trip through conversation storage.
+export const blockItemId = (block: ContentBlock): string | null =>
+  nonEmptyStr(block.id) ?? nonEmptyStr(asRecord(block.item)?.id);
+
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →
 // a `tool-call` part, the paired user tool_result → a `tool` message with a
 // `tool-result` part (its tool name resolved from the tool_use id), text passes
 // through. Recommended product blocks collapse to a short id reference (their
 // full data is already replayed in the tool_result, so nothing is lost).
-export function toModelMessages(messages: ChatMessage[]): any[] {
+export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
     if (m?.role !== "assistant") continue;
@@ -210,7 +217,7 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
     }
   }
 
-  const out: any[] = [];
+  const out: ModelMessage[] = [];
   for (const m of messages ?? []) {
     const blocks = Array.isArray(m?.content) ? m.content : [];
 
@@ -223,7 +230,7 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
             type: "tool-result",
             toolCallId: String(b.tool_use_id),
             toolName: nameOf.get(String(b.tool_use_id)) ?? "unknown",
-            output: { type: "json", value: b.content ?? {} },
+            output: { type: "json", value: (b.content ?? {}) as JSONValue },
           })),
         });
       }
@@ -242,13 +249,13 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
     for (const b of blocks) {
       const t = b?.type === "text" ? nonEmptyStr(b.text) : null;
       if (t) lines.push(t);
-      else if (b?.type === "product") lines.push(`（推薦商品 id:${b.id ?? b.item?.id ?? ""}）`);
-      else if (b?.type === "wardrobe") lines.push(`（推薦衣櫃單品 id:${b.id ?? b.item?.id ?? ""}）`);
+      else if (b?.type === "product") lines.push(`（推薦商品 id:${blockItemId(b) ?? ""}）`);
+      else if (b?.type === "wardrobe") lines.push(`（推薦衣櫃單品 id:${blockItemId(b) ?? ""}）`);
     }
     const text = lines.join("\n").trim();
 
     if (toolUses.length) {
-      const content: any[] = [];
+      const content: Array<TextPart | ToolCallPart> = [];
       if (text) content.push({ type: "text", text });
       for (const b of toolUses) {
         content.push({
@@ -277,14 +284,16 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
 // would cost the caller the answer, valid ids and all, so the check belongs to
 // the parse: an id that cannot name a row is an id-less block, and the assembler
 // already drops those.
-export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
+export function parseAnswerRefs(args: Record<string, unknown>): AnswerRef[] {
   const rawBlocks = Array.isArray(args?.blocks) ? args.blocks : [];
   const refs: AnswerRef[] = [];
-  for (const b of rawBlocks) {
-    if (b?.type === "product" || b?.type === "wardrobe") {
+  for (const raw of rawBlocks) {
+    const b = asRecord(raw);
+    if (b === null) continue;
+    if (b.type === "product" || b.type === "wardrobe") {
       const id = nonEmptyStr(b.id);
       if (id && isUuid(id)) refs.push({ type: b.type, id });
-    } else if (b?.type === "text") {
+    } else if (b.type === "text") {
       const text = nonEmptyStr(b.text);
       if (text) refs.push({ type: "text", text });
     }

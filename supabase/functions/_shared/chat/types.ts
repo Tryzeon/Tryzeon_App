@@ -10,7 +10,7 @@ export type { UsageCounter };
  * `tool_use` block in an assistant message paired (by id) with a `tool_result`
  * block in a user message.
  */
-export type ContentBlock = Record<string, any>;
+export type ContentBlock = Record<string, unknown>;
 export type ChatMessage = { role: ChatRole; content: ContentBlock[] };
 
 export type ChatRole = "user" | "assistant";
@@ -73,15 +73,20 @@ export interface AgentRequest {
 }
 
 export interface AgentAnswer {
-  output: Record<string, any> | null;
+  output: Record<string, unknown> | null;
   rounds: ChatMessage[];
 }
 
 export type AgentRunner = (req: AgentRequest) => Promise<AgentAnswer>;
 
+/**
+ * Read-only and item-typed as `unknown`: an adapter hydrates whatever shape its
+ * renderer needs (a db row for the app, a LINE card model for the webhook), and
+ * the assembler only ever hands the item straight to a block.
+ */
 export interface AnswerRows {
-  products: Map<string, ContentBlock>;
-  wardrobe: Map<string, ContentBlock>;
+  products: ReadonlyMap<string, unknown>;
+  wardrobe: ReadonlyMap<string, unknown>;
 }
 
 export type AnswerHydrator = (

@@ -13,6 +13,12 @@ export function normalizeText(value: unknown): string | undefined {
   return nonEmptyStr(value) ?? undefined;
 }
 
+export function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
 export function parseJsonObject(rawBody: string): Record<string, unknown> {
   let body: unknown;
   try {

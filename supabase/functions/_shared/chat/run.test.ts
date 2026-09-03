@@ -57,7 +57,7 @@ const context: ContextLoader = () =>
   });
 
 function fakeAgent(
-  answer: { output: Record<string, any> | null; rounds?: ChatMessage[] },
+  answer: { output: Record<string, unknown> | null; rounds?: ChatMessage[] },
 ): { runner: AgentRunner; seen: AgentRequest[] } {
   const seen: AgentRequest[] = [];
   return {

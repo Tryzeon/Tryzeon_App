@@ -137,7 +137,7 @@ Deno.test("fetchProductRows keys the rows by product id", async () => {
 
   assertEquals(queried, [["p1", "p2"]]);
   assertEquals([...rows.keys()], ["p1", "p2"]);
-  assertEquals((rows.get("p2") as LineProduct).name, "黑褲");
+  assertEquals(rows.get("p2")?.name, "黑褲");
 });
 
 Deno.test("fetchProductRows leaves out a product with no image", async () => {

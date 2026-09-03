@@ -42,9 +42,10 @@ function toSections(blocks: ContentBlock[]): Section[] {
 
   for (const block of blocks) {
     if (block.type === "text") {
+      const text = typeof block.text === "string" ? block.text : "";
       const last = sections.at(-1);
-      if (last?.kind === "text") last.lines.push(block.text);
-      else sections.push({ kind: "text", lines: [block.text] });
+      if (last?.kind === "text") last.lines.push(text);
+      else sections.push({ kind: "text", lines: [text] });
     } else if (block.type === "product") {
       pushCard({ kind: "product", item: block.item as LineProduct });
     } else if (block.type === "wardrobe") {

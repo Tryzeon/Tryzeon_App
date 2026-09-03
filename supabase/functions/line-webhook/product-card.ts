@@ -1,5 +1,4 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
-import type { ContentBlock } from "../_shared/chat/index.ts";
 import { publicImageUrl } from "../_shared/storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
@@ -58,7 +57,7 @@ export function fetchProductRows(
   admin: DbClient,
   ids: string[],
   imagesBaseUrl: string,
-): Promise<Map<string, ContentBlock>> {
+): Promise<Map<string, LineProduct>> {
   return fetchRowsByIds(
     admin.from("products").select(PRODUCT_CARD_SELECT),
     ids,
@@ -86,7 +85,7 @@ export async function fetchProductInfo(
   });
 
   if (error) throw new Error(`product lookup failed: ${error.message}`);
-  const row = asJsonObject<Record<string, any>>(data);
+  const row = asJsonObject<Record<string, unknown>>(data);
   return row ? toProductInfo(row) : null;
 }
 

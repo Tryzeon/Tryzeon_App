@@ -1,3 +1,4 @@
+import { blockItemId } from "../_shared/chat/index.ts";
 import type { ChatMessage, ContentBlock } from "../_shared/chat/index.ts";
 import { clampProductName, type ProductInfo } from "./product-card.ts";
 import { tagLine, type WardrobeItemInfo } from "./wardrobe-card.ts";
@@ -53,8 +54,8 @@ export function redisConversations(client: RedisLike = redis()): ConversationSto
  */
 function dehydrateBlock(block: ContentBlock): ContentBlock | null {
   if (block?.type !== "product" && block?.type !== "wardrobe") return block;
-  const id = block.id ?? block.item?.id;
-  return id ? { type: block.type, id: String(id) } : null;
+  const id = blockItemId(block);
+  return id ? { type: block.type, id } : null;
 }
 
 export function dehydrateMessages(messages: ChatMessage[]): ChatMessage[] {

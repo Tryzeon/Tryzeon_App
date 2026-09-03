@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert@^1.0.19";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import type { AnswerRef } from "../_shared/chat/index.ts";
+import type { LineProduct } from "./product-card.ts";
 
 const BASE = "https://img.example";
 
@@ -90,7 +91,10 @@ Deno.test("the base url reaches the card", async () => {
     { type: "product", id: "p1" },
   ]);
 
-  assertEquals(rows.products.get("p1")?.imageUrl, "https://img.example/stores/s1/p1.jpg");
+  assertEquals(
+    (rows.products.get("p1") as LineProduct).imageUrl,
+    "https://img.example/stores/s1/p1.jpg",
+  );
 });
 
 Deno.test("a wardrobe ref reads the wardrobe, bound to the asking user", async () => {

@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js@^2.113.0/edge-runtime.d.ts";
 import { getAdminClient } from "../_shared/supabase.ts";
-import { parseJsonObject } from "../_shared/validation.ts";
+import { asRecord, parseJsonObject } from "../_shared/validation.ts";
 import { verifyLineSignature } from "./signature.ts";
 import { makeLineApi } from "./line-api.ts";
 import { routeEvent } from "./router.ts";
@@ -45,7 +45,10 @@ Deno.serve(async (req) => {
   const line = makeLineApi(accessToken);
   const conversations = redisConversations();
 
-  for (const ev of events as Array<Record<string, any>>) {
+  for (const raw of events) {
+    const ev = asRecord(raw);
+    if (ev === null) continue;
+
     const task = routeEvent(
       { admin, line, liffUrl, imagesBaseUrl, conversations },
       ev,

@@ -1,6 +1,5 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
-import type { ContentBlock } from "../_shared/chat/index.ts";
 import { WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
@@ -162,7 +161,7 @@ export async function fetchWardrobeRows(
   admin: DbClient,
   userId: string,
   ids: string[],
-): Promise<Map<string, ContentBlock>> {
+): Promise<Map<string, LineWardrobeItem>> {
   const raw = await fetchRowsByIds(
     admin.from("wardrobe_items").select(WARDROBE_CARD_SELECT).eq("user_id", userId),
     ids,
@@ -173,7 +172,7 @@ export async function fetchWardrobeRows(
     [...raw.values()].map((r) => r.image_path).filter((p) => typeof p === "string" && p.length > 0),
   );
 
-  const rows = new Map<string, ContentBlock>();
+  const rows = new Map<string, LineWardrobeItem>();
   for (const [id, row] of raw) {
     const item = toLineWardrobeItem(row, urls.get(row.image_path));
     if (item) rows.set(id, item);

@@ -66,7 +66,7 @@ export const runVertexAgent: AgentRunner = async (req) => {
   // the core degrades to fallback text, so it is reported as a null output
   // rather than raised.
   try {
-    return { output: await result.output as Record<string, any>, rounds };
+    return { output: await result.output as Record<string, unknown>, rounds };
   } catch (err) {
     console.error("Structured output unavailable:", err);
     return { output: null, rounds };
