@@ -39,7 +39,7 @@ class ShopPage extends HookConsumerWidget {
 
     final adsAsync = ref.watch(shopAdsProvider);
 
-    // 再次點擊「試衣間」分頁時捲回頂部
+    // Re-tapping the shop tab scrolls back to the top
     final scrollController = useScrollController();
     ref.listen(personalTabReselectSignalProvider, (final _, final next) {
       if (next?.tab != PersonalTab.shop) return;
@@ -51,13 +51,13 @@ class ShopPage extends HookConsumerWidget {
       );
     });
 
-    // 篩選/排序狀態
+    // Filter/sort state
     final filterState = ref.watch(shopFilterProvider);
     final filterNotifier = ref.read(shopFilterProvider.notifier);
     final isLocating = useState(false);
 
-    // 進入頁面時，性別篩選預設為使用者個人資料的性別；若沒有設定性別，
-    // 則預設為第一個選項（女裝）。（只設定一次）
+    // On entering the page the gender filter defaults to the gender on the
+    // user's profile, or to the first option (womenswear) when unset. Set once.
     final profileGender = userProfile?.gender;
     useEffect(() {
       if (ref.read(shopFilterProvider).gender == null) {
@@ -71,7 +71,8 @@ class ShopPage extends HookConsumerWidget {
       return null;
     }, [profileGender]);
 
-    // 類別清單跟著性別篩選走（男裝/女裝）：顯示適用該性別的類別。
+    // The category list follows the gender filter: only categories that apply
+    // to the selected gender are shown.
     final selectedGender = filterState.gender;
     final productCategoriesAsync = ref
         .watch(productCategoriesProvider)
@@ -240,7 +241,7 @@ class ShopPage extends HookConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 🔍 搜尋欄
+                        // 🔍 Search bar
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                           child: ShopSearchBar(
@@ -251,11 +252,11 @@ class ShopPage extends HookConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.mdLg),
 
-                        // 📢 廣告輪播
+                        // 📢 Ad carousel
                         AdBanner(adsAsync: adsAsync),
                         const SizedBox(height: AppSpacing.lg),
 
-                        // 男女裝篩選
+                        // Menswear/womenswear filter
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                           child: ShopGenderFilter(
@@ -265,7 +266,7 @@ class ShopPage extends HookConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.md),
 
-                        // 商品類型篩選標籤
+                        // Product category filter chips
                         ProductCategoryFilter(
                           categoriesAsync: productCategoriesAsync,
                           selectedCategoryIds: filterState.categories ?? {},
@@ -286,7 +287,7 @@ class ShopPage extends HookConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.lg),
 
-                        // 推薦商品標題與排序
+                        // Recommended heading and sorting
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                           child: Column(
@@ -319,7 +320,7 @@ class ShopPage extends HookConsumerWidget {
                   ),
                 ),
 
-                // 商品 Grid（懶載）
+                // Product grid (lazily loaded)
                 ProductSliverGrid(
                   productsAsync: productsAsync,
                   onRetry: () => ref.invalidate(shopProductsProvider(filter)),

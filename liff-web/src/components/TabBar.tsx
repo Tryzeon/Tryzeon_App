@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 export type ActiveTab = "home" | "shop" | null;
 
 /**
- * 哪一格是 active 由分頁殼說了算,不用 NavLink 自己比對路徑:試衣間那格連到的
- * 是它上次停的位置(可能是 /store/:id),而在商品頁時兩格都不該亮。
+ * The tab shell decides which tab is active rather than letting NavLink match
+ * paths itself: the shop tab links to wherever it was left (possibly
+ * /store/:id), and on the product page neither tab should light up.
  *
- * 兩格都是 `replace`:換分頁是換視角,不是往前走一步。用 push 的話切幾次分頁就
- * 疊幾筆歷史,LINE 的返回鍵會在分頁之間來回倒退而不是離開這個畫面,重複點目前
- * 這一格還會再疊一筆。
+ * Both links `replace`: switching tabs changes the view, it is not a step
+ * forward. With push, every switch would stack a history entry, LINE's back
+ * button would bounce between tabs instead of leaving the screen, and
+ * re-tapping the current tab would stack yet another.
  */
 export function TabBar({ shopPath, active }: { shopPath: string; active: ActiveTab }) {
   return (

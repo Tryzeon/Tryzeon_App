@@ -22,7 +22,8 @@ Deno.test("buildStoreDestination reports missing config instead of a broken url"
 });
 
 Deno.test("isOpenWith accepts only implemented opening methods", () => {
-  // DB 的 check constraint 也只允許已實作的值,兩邊是同一份清單。
+  // The DB check constraint likewise only allows implemented values; both sides
+  // are the same list.
   assertEquals(isOpenWith("liff"), true);
   assertEquals(isOpenWith("web"), false);
   assertEquals(isOpenWith("app"), false);

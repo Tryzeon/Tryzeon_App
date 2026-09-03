@@ -52,7 +52,8 @@ class AppValidators {
   /// [scale] multiplies the parsed value before the range check — pass a
   /// unit→canonical factor so inputs in any unit validate against canonical
   /// bounds.
-  /// [compact] 讓訊息縮成 `20–70cm`，給放不下整句提示的表格欄位用。
+  /// [compact] shrinks the message to `20–70cm`, for table cells too narrow
+  /// for the full hint.
   static String? validateRange(
     final String? value, {
     required final double min,

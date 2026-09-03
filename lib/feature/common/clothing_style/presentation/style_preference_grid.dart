@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 
-/// 本元件為可捲動 GridView，呼叫端通常以 `Expanded` 包裹。
+/// A scrollable GridView; callers normally wrap it in an `Expanded`.
 class StylePreferenceGrid extends StatelessWidget {
   const StylePreferenceGrid({super.key, required this.selected, required this.onToggle});
 

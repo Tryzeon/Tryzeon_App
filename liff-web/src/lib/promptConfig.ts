@@ -1,7 +1,9 @@
 /**
- * 存在 localStorage,因為 app 的對應設定也是存在裝置上(SharedPreferences)而不是
- * 伺服器 —— 兩邊各自記各自的,不會互相覆蓋。webview 可能整個禁掉 storage,所以
- * 讀寫都不能讓例外逃出去:風格設定失敗只該讓風格回到預設,不該讓首頁開不起來。
+ * Stored in localStorage because the app's counterpart also lives on the device
+ * (SharedPreferences) rather than on the server — each side remembers its own
+ * and neither overwrites the other. A webview may disable storage entirely, so
+ * neither read nor write may let an exception escape: a failed style setting
+ * should fall back to the defaults, not stop the home page from opening.
  */
 const STORAGE_KEY = "tryzeon.tryonPromptConfig";
 
@@ -46,7 +48,8 @@ export function savePromptConfig(config: PromptConfig): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizePromptConfig(config)));
   } catch {
-    // 存不起來就只有這一次生效,沒有其他補救,也不值得打斷使用者。
+    // If it cannot be stored the setting just applies to this session; there is
+    // no other remedy, and none worth interrupting the user for.
   }
 }
 

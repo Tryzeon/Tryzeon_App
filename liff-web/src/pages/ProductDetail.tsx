@@ -13,15 +13,17 @@ type Load =
   | { status: "missing" }
   | { status: "error" };
 
-/** 按下試穿之後這一頁就結束了:coordinator 把人帶去首頁,結果落在那條 gallery 裡。 */
+/** This page is done the moment try-on is tapped: the coordinator moves the
+ * user to home, and the result lands in that gallery. */
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const location = useLocation();
 
-  // 從目錄點進來的話那一筆已經跟著換頁帶過來了,直接畫,不必閃一次骨架。直接開
-  // 網址(LINE 訊息、分享出去的連結)進來才沒有,那時候才去查。
+  // Arriving from the catalog, the row travelled along with the navigation, so
+  // render it straight away instead of flashing a skeleton. Only a direct URL
+  // (a LINE message, a shared link) has none, and that is when we fetch.
   const seeded = seededItem(location.state);
   const [load, setLoad] = useState<Load>(
     seeded === null ? { status: "loading" } : { status: "ready", item: seeded },
@@ -47,9 +49,11 @@ export function ProductDetail() {
     };
   }, [id, needsFetch]);
 
-  // 判斷依據是 location.key —— react-router 只會給「進來時就在的那一筆」
-  // "default" 這個 key。不用 history.length:LIFF 是經過一串轉址才走到這個網址
-  // 的,深連結進來時它早就大於 1,拿它判斷會把人送回轉址頁,直接彈出這個 app。
+  // Decided by location.key — react-router only gives the key "default" to the
+  // entry that was already there on arrival. Not history.length: LIFF reaches
+  // this URL through a chain of redirects, so on a deep link it is already
+  // greater than 1, and using it would send the user back to a redirect page,
+  // straight out of this app.
   function goBack() {
     if (location.key === "default") navigate("/");
     else navigate(-1);

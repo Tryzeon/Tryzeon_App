@@ -21,16 +21,19 @@ describe("promptConfig", () => {
   });
 
   it("round-trips what was saved", () => {
-    savePromptConfig({ scenePrompt: "都會街頭", stylingPrompt: "紮進褲頭" });
+    savePromptConfig({ scenePrompt: "urban street", stylingPrompt: "tucked in" });
     expect(loadPromptConfig()).toEqual({
-      scenePrompt: "都會街頭",
-      stylingPrompt: "紮進褲頭",
+      scenePrompt: "urban street",
+      stylingPrompt: "tucked in",
     });
   });
 
   it("trims on the way in", () => {
-    savePromptConfig({ scenePrompt: "  都會街頭 ", stylingPrompt: "  " });
-    expect(loadPromptConfig()).toEqual({ scenePrompt: "都會街頭", stylingPrompt: "" });
+    savePromptConfig({ scenePrompt: "  urban street ", stylingPrompt: "  " });
+    expect(loadPromptConfig()).toEqual({
+      scenePrompt: "urban street",
+      stylingPrompt: "",
+    });
   });
 
   it("starts empty", () => {

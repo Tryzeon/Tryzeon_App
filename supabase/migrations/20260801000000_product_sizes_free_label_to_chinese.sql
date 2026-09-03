@@ -1,9 +1,11 @@
--- 單一尺寸的字面值由 `F` 改為 `均碼`，對齊 StandardSizeLabel.free.display
+-- The one-size literal changes from `F` to `均碼`, matching
+-- StandardSizeLabel.free.display
 -- (lib/feature/common/product_size/domain/entities/standard_size_label.dart)。
 --
--- 別名收斂只發生在語音辨識的寫入端；前端只比對字面值，不做轉換。所以既有的
--- `F` 若不一併改掉，舊商品打開後會被視為自訂尺碼，不再對應到「均碼」chip，
--- 排序上也會落在自訂尺碼那一段而不是最後。
+-- Alias folding only happens on the voice-input write path; the client matches
+-- literals and converts nothing. So unless the existing `F` values are changed
+-- too, an older product opens with them treated as custom sizes: they no longer
+-- map to the `均碼` chip, and they sort into the custom block instead of last.
 UPDATE "public"."product_sizes"
 SET "name" = '均碼'
 WHERE btrim("name") ILIKE 'f';

@@ -61,7 +61,7 @@ class AdBanner extends HookConsumerWidget {
                   itemBuilder: (final context, final index) {
                     return GestureDetector(
                       onTap: () {
-                        // TODO: 點擊廣告導向詳情頁或外部連結
+                        // TODO: route the ad tap to a detail page or external link
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(

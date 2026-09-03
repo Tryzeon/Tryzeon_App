@@ -35,49 +35,49 @@ class LocationServiceImpl implements LocationService {
   @override
   Future<UserLocation?> getUserLocation() async {
     try {
-      // 檢查權限
+      // Check permission
       if (!await hasPermission()) {
         return null;
       }
 
-      // 取得目前位置
+      // Get the current position
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
           timeLimit: Duration(seconds: 10),
         ),
       );
-      // 反向地理編碼取得地址
+      // Reverse-geocode into an address
       try {
         await setLocaleIdentifier('zh_TW');
       } catch (e) {
-        AppLogger.info('無法設定語言環境: $e');
+        AppLogger.info('Failed to set the locale: $e');
       }
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
       if (placemarks.isEmpty) {
-        AppLogger.info('無法取得地址資訊');
+        AppLogger.info('No address information available');
         return null;
       }
       final placemark = placemarks.first;
 
-      // 解析城市和區
+      // Parse city and district
       final city = placemark.administrativeArea;
       final district = placemark.locality;
 
       if (city == null || city.isEmpty) {
-        AppLogger.info('無法解析城市：$placemark');
+        AppLogger.info('Could not resolve a city from: $placemark');
         return null;
       }
 
       if (district == null || district.isEmpty) {
-        AppLogger.info('無法解析區：$placemark');
+        AppLogger.info('Could not resolve a district from: $placemark');
         return null;
       }
 
-      // 組合完整地址
+      // Compose the full address
       final addressParts = [
         placemark.administrativeArea,
         placemark.locality,
@@ -86,7 +86,7 @@ class LocationServiceImpl implements LocationService {
         placemark.subThoroughfare,
       ].where((final s) => s != null && s.isNotEmpty).join('');
 
-      // 若無法組出完整地址，至少使用城市+區
+      // If the full address cannot be composed, fall back to city + district
       final fullAddress = addressParts.isNotEmpty ? addressParts : '$city$district';
 
       return UserLocation(

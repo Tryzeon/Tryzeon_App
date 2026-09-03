@@ -5,8 +5,8 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
 import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
 
 ShopProduct product({required final List<String> imageUrls}) => ShopProduct(
-  storeInfo: const ShopStoreInfo(id: 's1', name: '店', channels: {}),
-  name: '白T',
+  storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
+  name: 'White Tee',
   categoryId: 'c1',
   price: 590,
   imagePaths: const [],
@@ -17,8 +17,9 @@ ShopProduct product({required final List<String> imageUrls}) => ShopProduct(
 );
 
 void main() {
-  // 連結必須自成一行且不帶前綴：LINE / Messenger 的 linkifier 才抓得到整串網址，
-  // 抓不到就沒有預覽卡 —— 加這行的唯一理由就是預覽卡。
+  // The link has to sit on its own line with no prefix so LINE's and Messenger's
+  // linkifiers pick up the whole URL; without that there is no preview card, and
+  // the preview card is the only reason this line exists.
   test('ends with the product web url on its own line', () {
     final message = OrderMessageBuilder.build(
       product: product(imageUrls: const ['https://img/a.jpg']),

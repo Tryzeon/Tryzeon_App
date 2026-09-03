@@ -2,7 +2,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
-/// 使用平台原生 geocoding(iOS/Android)實作,免 API key。
+/// Backed by the platform-native geocoder (iOS/Android), so no API key.
 class GeocodingServiceImpl implements GeocodingService {
   @override
   Future<GeoCoordinates?> geocodeAddress(final String address) async {
@@ -11,7 +11,7 @@ class GeocodingServiceImpl implements GeocodingService {
       try {
         await setLocaleIdentifier('zh_TW');
       } catch (e) {
-        AppLogger.info('無法設定 geocoding 語言環境: $e');
+        AppLogger.info('Failed to set the geocoding locale: $e');
       }
       final locations = await locationFromAddress(address);
       if (locations.isEmpty) return null;

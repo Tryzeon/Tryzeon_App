@@ -1,4 +1,5 @@
-/** 第 0 頁永遠是模特照,之後每一次試穿(生成中或已完成)各佔一頁。 */
+/** Page 0 is always the avatar photo; every try-on (pending or finished) takes
+ * one page after it. */
 
 export interface TryonProduct {
   productId: string;
@@ -14,7 +15,8 @@ export type GalleryEntry =
   | (EntryBase & { kind: "pending" })
   | (EntryBase & { kind: "finished"; imageUrl: string });
 
-/** [id] 讓「同一句話再說一次」仍算新的一則:首頁的自動消失計時器以它為依據。 */
+/** [id] makes the same message said twice count as a new notice: the home
+ * page's auto-dismiss timer keys off it. */
 export interface Notice {
   id: number;
   message: string;
@@ -25,8 +27,9 @@ export interface GalleryState {
   currentId: string | null;
   customAvatarId: string | null;
   /**
-   * 放在 gallery 而不是首頁的區域狀態:一次從商品頁按下去的試穿,失敗時人已經被
-   * 帶到首頁了,訊息必須跨得過那次換頁。
+   * Kept in the gallery rather than as home-page local state: a try-on started
+   * from the product page has already moved the user to home by the time it
+   * fails, so the message has to survive that navigation.
    */
   notice: Notice | null;
 }
@@ -79,7 +82,8 @@ export function isCurrentTheAvatar(state: GalleryState): boolean {
   return state.currentId !== null && state.currentId === state.customAvatarId;
 }
 
-/** 沒有這筆 entry 時回 null,讓呼叫端能分辨「刪掉了」和「本來就不在」。 */
+/** Returns null when no such entry exists, so callers can tell "removed" from
+ * "was never there". */
 function withoutEntry(state: GalleryState, id: string): GalleryState | null {
   const index = state.entries.findIndex((e) => e.id === id);
   if (index === -1) return null;
@@ -111,8 +115,9 @@ export function galleryReducer(
       const id = index >= 0 && index < state.entries.length
         ? state.entries[index].id
         : null;
-      // 同一頁要回傳同一個物件:捲動監聽器每一幀都會送一次 setPage,換新物件會
-      // 讓「狀態 → 捲動位置」那條 effect 一直重跑。
+      // The same page must return the same object: the scroll listener fires
+      // setPage every frame, and a fresh object would re-run the
+      // state → scroll position effect forever.
       return state.currentId === id ? state : { ...state, currentId: id };
     }
 
@@ -128,7 +133,8 @@ export function galleryReducer(
 
     case "complete": {
       const index = state.entries.findIndex((e) => e.id === action.id);
-      // 使用者在生成途中就把它刪了 —— 那份結果沒有位置可放,靜靜丟掉。
+      // The user deleted it while it was generating — the result has nowhere to
+      // go, so drop it silently.
       if (index === -1) return state;
       const entries = [...state.entries];
       entries[index] = {
@@ -144,8 +150,9 @@ export function galleryReducer(
       return withoutEntry(state, action.id) ?? state;
 
     case "fail": {
-      // 使用者已經按過「取消生成」,這次失敗不再屬於他 —— 靜靜丟掉,不要為一件
-      // 他早就放棄的事彈訊息。
+      // The user already cancelled this generation, so the failure is no longer
+      // theirs — drop it silently rather than surfacing a message about
+      // something they gave up on.
       const next = withoutEntry(state, action.id);
       return next === null
         ? state

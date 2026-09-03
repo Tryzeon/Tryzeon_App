@@ -10,8 +10,9 @@ export interface TryonOptions {
 }
 
 /**
- * 只有 image —— 影片試穿在 LIFF 上還沒開,那條路是一個 ~5 分鐘的同步請求,
- * webview 被切走就會永久掉結果。
+ * Image only — video try-on is not enabled on LIFF: that path is a ~5 minute
+ * synchronous request, and the result is lost for good if the webview is
+ * backgrounded.
  */
 interface TryonBody extends TryonOptions {
   mode: "image";
@@ -20,9 +21,11 @@ interface TryonBody extends TryonOptions {
 }
 
 /**
- * 呼叫的是 app 用的同一個 tryon function,JWT 由 supabase-js 帶上,所以整個 job
- * 跑在 RLS 之下。省略的欄位就是「不指定」—— 空字串會被後端當成一段真的 prompt,
- * 而少了 avatar 時 core 會去讀 profile 上那張,那才是唯一不會過期的一份。
+ * Calls the same tryon function the app uses, with the JWT attached by
+ * supabase-js, so the whole job runs under RLS. An omitted field means
+ * "unspecified" — an empty string would be taken by the backend as a real
+ * prompt, and without an avatar the core reads the one on the profile, which is
+ * the only copy that never expires.
  */
 export async function runTryon(
   garment: Garment,

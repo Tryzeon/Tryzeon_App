@@ -35,7 +35,7 @@ describe("searchParam", () => {
   it("trims the query and treats blank as absent", () => {
     expect(searchParam("  ")).toBeNull();
     expect(searchParam("")).toBeNull();
-    expect(searchParam(" 洋裝 ")).toBe("洋裝");
+    expect(searchParam(" dress ")).toBe("dress");
   });
 });
 

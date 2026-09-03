@@ -5,9 +5,10 @@ import { toApiError } from "../api/errors";
 
 
 /**
- * 「能用」只有伺服器說了算:存著的 session 可能指向一個已經被刪掉的 user,或帶
- * 著已失效的 refresh token,而它的 access token 在 exp 之前看起來都還是好的。壞
- * 掉的那份要當場清掉再換新的 —— 留著只會讓之後每次重新載入都撞同一面牆。
+ * Only the server can say a session is usable: a stored one may point at a user
+ * that has been deleted, or carry a revoked refresh token, while its access
+ * token still looks fine until exp. A broken one has to be cleared on the spot
+ * and replaced — keeping it just walks every later reload into the same wall.
  */
 export async function ensureSession(): Promise<string> {
   return (await liveUserId()) ?? await mintSession();
@@ -20,7 +21,8 @@ async function liveUserId(): Promise<string | null> {
   const { data, error } = await supabase.auth.getUser();
   if (!error && data.user) return data.user.id;
 
-  // 連不上伺服器不算「session 壞了」,清掉會把還能用的憑證一起丟掉。
+  // Not reaching the server does not mean the session is broken; clearing it
+  // would throw away credentials that still work.
   if (!isAuthApiError(error)) throw error ?? new Error("no user on session");
 
   await supabase.auth.signOut({ scope: "local" });

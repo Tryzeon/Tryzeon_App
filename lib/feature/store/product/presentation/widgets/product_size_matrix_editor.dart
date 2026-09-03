@@ -10,10 +10,12 @@ import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment
 import 'package:tryzeon/feature/store/product/presentation/controllers/product_size_entry_controller.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 
-// 表格幾何：左欄與格子必須等高才對得齊，所以固定而非依內容撐開。
-// 列高含一行錯誤訊息的空間，讓有無錯誤的列不會改變高度。
+// Table geometry: the left column and the cells must share a height to line
+// up, so these are fixed rather than sized to content. Row height includes room
+// for one line of error text, so a row does not change height when it errors.
 const double _labelColumnWidth = 40;
-// 格子寬度由最長的錯誤訊息決定（`40–200cm`），窄一點就會被截成刪節號。
+// Cell width is set by the longest error message (`40–200cm`); any narrower
+// and it ellipsizes.
 const double _cellWidth = 65;
 const double _rowHeight = 62;
 const double _headerHeight = 32;

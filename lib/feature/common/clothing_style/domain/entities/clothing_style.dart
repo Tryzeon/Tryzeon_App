@@ -1,30 +1,30 @@
 enum ClothingStyle {
-  // 🌍 地區 / 國家風格
+  // 🌍 Regional / national styles
   japanese('japanese'),
   korean('korean'),
   western('western'),
   british('british'),
   chinese('chinese'),
 
-  // 👕 日常 / 休閒風格
+  // 👕 Everyday / casual styles
   minimalist('minimalist'),
   casual('casual'),
   sporty('sporty'),
   lazy('lazy'),
   streetwear('streetwear'),
 
-  // 💼 專業 / 場景風格
+  // 💼 Professional / occasion styles
   business('business'),
   preppy('preppy'),
   functional('functional'),
 
-  // 🕰️ 氣質 / 經典風格
+  // 🕰️ Refined / classic styles
   vintage('vintage'),
   artsy('artsy'),
   literary('literary'),
   elegant('elegant'),
 
-  // ✨ 個人特質 / 氛圍風格
+  // ✨ Personality / mood styles
   mature('mature'),
   neutral('neutral'),
   spicy('spicy'),

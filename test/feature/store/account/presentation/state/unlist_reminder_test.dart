@@ -20,39 +20,39 @@ Product product(final String name, {final ProductStatus status = ProductStatus.a
 }
 
 void main() {
-  test('只留下有購買點擊的商品', () {
+  test('keeps only the products with purchase clicks', () {
     final reminders = selectUnlistReminders(
-      [product('白襯衫'), product('黑褲')],
-      const {'白襯衫': 3},
+      [product('Shirt'), product('Pants')],
+      const {'Shirt': 3},
     );
 
-    expect(reminders.map((final r) => r.product.name), ['白襯衫']);
+    expect(reminders.map((final r) => r.product.name), ['Shirt']);
     expect(reminders.single.clicks, 3);
   });
 
-  test('已下架的商品不再提醒下架', () {
+  test('an already unlisted product is not suggested for unlisting again', () {
     final reminders = selectUnlistReminders(
-      [product('黑褲', status: ProductStatus.archived)],
-      const {'黑褲': 9},
+      [product('Pants', status: ProductStatus.archived)],
+      const {'Pants': 9},
     );
 
     expect(reminders, isEmpty);
   });
 
-  test('照購買點擊數由高到低排序', () {
+  test('sorts by purchase clicks, highest first', () {
     final reminders = selectUnlistReminders(
-      [product('白襯衫'), product('黑褲'), product('外套')],
-      const {'白襯衫': 2, '黑褲': 11, '外套': 7},
+      [product('Shirt'), product('Pants'), product('Jacket')],
+      const {'Shirt': 2, 'Pants': 11, 'Jacket': 7},
     );
 
-    expect(reminders.map((final r) => r.product.name), ['黑褲', '外套', '白襯衫']);
+    expect(reminders.map((final r) => r.product.name), ['Pants', 'Jacket', 'Shirt']);
   });
 
-  test('不改動傳入的商品清單', () {
-    final products = [product('白襯衫'), product('黑褲')];
+  test('does not mutate the product list it was given', () {
+    final products = [product('Shirt'), product('Pants')];
 
-    selectUnlistReminders(products, const {'白襯衫': 1, '黑褲': 5});
+    selectUnlistReminders(products, const {'Shirt': 1, 'Pants': 5});
 
-    expect(products.map((final p) => p.name), ['白襯衫', '黑褲']);
+    expect(products.map((final p) => p.name), ['Shirt', 'Pants']);
   });
 }

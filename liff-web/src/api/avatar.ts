@@ -3,14 +3,16 @@ import { downscaleToBlob, JPEG_EXTENSION, JPEG_MIME } from "../lib/image";
 import { supabase } from "../lib/supabase";
 
 const AVATARS_BUCKET = "user-avatars";
-// 比 app 的一小時長:首頁在分頁殼裡一直掛著,那張簽章網址要撐過整個 LIFF session,
-// 而不是撐到下一次重新掛載為止。
+// Longer than the app's one hour: home stays mounted inside the tab shell, so
+// the signed URL has to outlive the whole LIFF session rather than just lasting
+// until the next remount.
 const SIGNED_URL_TTL_SECONDS = 86400;
 
 /**
- * 路徑第一段是 userId,不是慣例而是條件:bucket policy 要求
- * `(storage.foldername(name))[1] = auth.uid()`,寫錯就上傳不了。所以 userId
- * 只能來自 session。
+ * The first path segment is the userId — a requirement, not a convention: the
+ * bucket policy demands `(storage.foldername(name))[1] = auth.uid()`, and
+ * getting it wrong makes the upload fail. So the userId can only come from the
+ * session.
  */
 export async function setAvatar(file: File): Promise<string> {
   const userId = await currentUserId();
