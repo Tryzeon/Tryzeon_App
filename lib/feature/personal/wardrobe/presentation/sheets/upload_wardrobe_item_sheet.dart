@@ -139,8 +139,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
                 child: LinearProgressIndicator(
                   value: percentage,
                   minHeight: 6,
-                  backgroundColor: colorScheme
-                      .surfaceContainerHighest, // usually mapped from colorScheme, mapped as outlineVariant
+                  backgroundColor: colorScheme.surfaceContainerHighest,
                   color: percentage >= 0.9 ? colorScheme.error : colorScheme.onSurface,
                 ),
               ),
