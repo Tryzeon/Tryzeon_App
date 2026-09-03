@@ -4,7 +4,6 @@
 --   source='app'      : installed user opened the link, App Link opened the app.
 --   source='deferred' : delivered by the ChottuLink SDK after a deferred install.
 -- 'paid_ad' is reserved for a future MMP integration on paid acquisition channels.
--- Named to parallel public.analytics_events.
 create table if not exists public.link_events (
   id uuid primary key default gen_random_uuid(),
   code text not null references public.short_links(code),
@@ -21,8 +20,6 @@ alter table public.link_events enable row level security;
 -- record_link_open RPC (SECURITY DEFINER). No policies => default deny.
 -- Open counts are computed on demand: select count(*) ... where code = ?.
 
--- Records an identified open from inside the app (installed open or deferred
--- install) and resolves the code to its destination so the app can navigate.
 create or replace function public.record_link_open(
   p_code text, p_platform text, p_source text
 ) returns table (target_type text, target_id uuid)

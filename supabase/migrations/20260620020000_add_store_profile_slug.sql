@@ -10,7 +10,6 @@
 ALTER TABLE "public"."store_profiles"
   ADD COLUMN IF NOT EXISTS "slug" "text";
 
--- URL-safe slugs: lowercase alphanumerics separated by single hyphens, 2-63 chars.
 ALTER TABLE "public"."store_profiles"
   ADD CONSTRAINT "store_profiles_slug_check" CHECK (
     "slug" IS NULL OR (

@@ -129,7 +129,6 @@ GRANT ALL ON FUNCTION "public"."list_shop_products"(
 -- the previous app build keeps working during store review. Drop it in a later
 -- migration only after the new client (calling list_shop_products) is approved.
 
--- Indexes supporting the new filters and stable sort.
 -- styles/seasons use array-overlap (&&) -> GIN.
 CREATE INDEX IF NOT EXISTS "idx_products_styles"  ON "public"."products" USING "gin" ("styles");
 CREATE INDEX IF NOT EXISTS "idx_products_seasons" ON "public"."products" USING "gin" ("seasons");

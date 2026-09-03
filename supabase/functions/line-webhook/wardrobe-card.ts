@@ -42,7 +42,6 @@ export interface WardrobeItemInfo {
 }
 
 export interface LineWardrobeItem extends WardrobeItemInfo {
-  /** Signed URL of the item's image; wardrobe images are not public. */
   imageUrl: string;
 }
 

@@ -110,15 +110,12 @@ class ImagePickerHelper {
         cropperOutputPath = croppedFile.path;
       }
 
-      // Generate timestamp based filename
       final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       final String newFileName = '$timestamp.jpg';
 
-      // Get temp dir
       final Directory directory = await getTemporaryDirectory();
       final String newPath = '${directory.path}/$newFileName';
 
-      // Compress and convert to JPG
       final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
         sourcePath,
         newPath,
@@ -161,7 +158,6 @@ class ImagePickerHelper {
       if (maxImages <= 0) return null;
 
       // The pickMultiImage method enforces a limit >= 2.
-      // If we only need 1 image, fallback to pickImage single selection.
       if (maxImages == 1) {
         final File? singleFile = await pickImage(
           context,

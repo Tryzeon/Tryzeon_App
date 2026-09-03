@@ -71,7 +71,6 @@ void main() {
     );
   }
 
-  /// Lets the stream emission and the awaited identity call both settle.
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
   setUp(() {

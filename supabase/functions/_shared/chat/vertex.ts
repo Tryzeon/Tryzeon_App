@@ -1,5 +1,5 @@
 /**
- * It also owns the transcript rule: a tool call is an assistant turn, its
+ * Owns the transcript rule: a tool call is an assistant turn, its
  * result a user turn. That rule belongs wherever the loop is observed, because
  * only here is the pairing still known; every consumer downstream gets messages
  * that are already correct.

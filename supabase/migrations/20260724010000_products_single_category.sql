@@ -1,5 +1,4 @@
 -- Products: one category per product.
--- Spec: docs/superpowers/specs/2026-07-24-product-category-single-select-design.md
 --
 -- category_ids text[] (multi-tag) -> category_id uuid NOT NULL (single, FK).
 -- The garment taxonomy is mutually exclusive by nature; the AI tagger already
