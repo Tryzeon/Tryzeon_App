@@ -1,4 +1,4 @@
-import { generateObject, jsonSchema } from "npm:ai@^6.0.208";
+import { generateObject, jsonSchema } from "ai";
 import { vertexModel } from "./vertex/provider.ts";
 import { chatModel } from "./vertex/config.ts";
 

@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient, User } from "jsr:@supabase/supabase-js@2";
+import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database, Json } from "./database.types.ts";
 import { jsonError } from "./http.ts";
 

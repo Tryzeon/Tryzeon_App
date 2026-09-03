@@ -1,6 +1,6 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand } from "npm:@aws-sdk/client-s3@^3.1117.0";
-import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner@^3.1117.0";
-import { FetchHttpHandler } from "npm:@smithy/fetch-http-handler@^5.7.2";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { FetchHttpHandler } from "@smithy/fetch-http-handler";
 
 let _r2Client: S3Client | null = null;
 

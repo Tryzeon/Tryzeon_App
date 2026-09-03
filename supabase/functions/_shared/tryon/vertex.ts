@@ -2,7 +2,7 @@
  * Owns what is provider-specific; builds no prompts (see `prompt.ts`) and
  * persists nothing.
  */
-import { experimental_generateVideo, generateText } from "npm:ai@^6.0.208";
+import { experimental_generateVideo, generateText } from "ai";
 import { base64ToUint8Array } from "../image-utils.ts";
 import {
   tryonAdvancedImageModel,

@@ -5,7 +5,7 @@
  * their own runner, and tests that never reach the network. Building at import
  * would make Vertex credentials a requirement for all of them.
  */
-import { createVertex } from "npm:@ai-sdk/google-vertex@^4.0.147/edge";
+import { createVertex } from "@ai-sdk/google-vertex/edge";
 import { vertexLocation, vertexServiceAccount } from "./config.ts";
 
 let provider: ReturnType<typeof createVertex> | null = null;

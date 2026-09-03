@@ -7,7 +7,7 @@
  * made every such test print Upstash's "config missing" warning regardless of
  * whether the test ever called `redis()`.
  */
-import { Redis } from "npm:@upstash/redis@^1.38.0";
+import { Redis } from "@upstash/redis";
 
 let client: Redis | null = null;
 

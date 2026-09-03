@@ -2,7 +2,7 @@ import {
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "jsr:@std/assert@^1.0.19";
+} from "@std/assert";
 import { buildProductGarmentDetail, resolveProductGarment } from "./catalog.ts";
 import { LIMITS } from "./types.ts";
 import { ValidationError } from "./errors.ts";

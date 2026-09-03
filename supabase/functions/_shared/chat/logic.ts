@@ -10,7 +10,7 @@ import {
   SEASON_VALUES,
   THICKNESS_VALUES,
 } from "../vocabularies.ts";
-import type { JSONValue, ModelMessage, TextPart, ToolCallPart } from "npm:ai@^6.0.208";
+import type { JSONValue, ModelMessage, TextPart, ToolCallPart } from "ai";
 import type { Database } from "../database.types.ts";
 import type {
   AnswerRef,

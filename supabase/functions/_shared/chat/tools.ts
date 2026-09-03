@@ -1,5 +1,5 @@
-import { tool } from "npm:ai@^6.0.208";
-import { z } from "npm:zod@^4.4.3";
+import { tool } from "ai";
+import { z } from "zod";
 import {
   mapSearchProductsArgs,
   resolveCategoryFilter,

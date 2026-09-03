@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert@^1.0.19";
+import { assertEquals, assertRejects } from "@std/assert";
 import { runTryonJob } from "./run.ts";
 import { GenerationFailedError, MissingAvatarError, ValidationError } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";

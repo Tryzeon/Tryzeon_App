@@ -4,7 +4,7 @@
  * the pairing still known; every consumer downstream gets messages that are
  * already correct.
  */
-import { Output, stepCountIs, streamText } from "npm:ai@^6.0.208";
+import { Output, stepCountIs, streamText } from "ai";
 import { chatModel } from "../vertex/config.ts";
 import { vertexModel } from "../vertex/provider.ts";
 import { toModelMessages } from "./logic.ts";

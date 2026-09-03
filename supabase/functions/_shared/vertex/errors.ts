@@ -3,7 +3,7 @@
  * import this, which keeps `@ai-sdk` out of every function that merely reads
  * `classifyCoreError`.
  */
-import { APICallError, RetryError } from "npm:ai@^6.0.208";
+import { APICallError, RetryError } from "ai";
 import { ServiceBusyError } from "../errors.ts";
 
 /**

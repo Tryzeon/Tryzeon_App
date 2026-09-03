@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "jsr:@std/assert@^1.0.19";
+import { assertEquals, assertRejects } from "@std/assert";
 import { mintSessionForUser } from "./auth-session.ts";
 import type { DbClient } from "./supabase.ts";
 

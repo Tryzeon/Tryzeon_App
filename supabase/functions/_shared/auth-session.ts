@@ -3,7 +3,7 @@
  * offers the password, refresh_token, id_token, pkce and web3 grants — so the
  * one official route is to generate a magic link and redeem it immediately.
  */
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types.ts";
 import { type DbClient, supabaseAnonKey, supabaseUrl } from "./supabase.ts";
 

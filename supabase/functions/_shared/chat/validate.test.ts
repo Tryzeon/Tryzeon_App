@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert@^1.0.19";
+import { assertEquals, assertThrows } from "@std/assert";
 import { validateChatParams } from "./validate.ts";
 import { ValidationError } from "../validation.ts";
 import { LIMITS } from "./types.ts";
