@@ -114,7 +114,7 @@ export function AppRouter() {
     <Routes>
       <Route element={<LiffGate />}>
         {/* 兩個分頁由 TabShell 自己掛著,所以這幾條只負責讓路徑合法(不被 *
-            吃掉)並餵給 TabShell 的 useLocation / useMatch;Outlet 只載商品頁。 */}
+            吃掉)並餵給 TabShell 的 useLocation / matchPath;Outlet 只載商品頁。 */}
         <Route element={<TabShell />}>
           <Route path="/" element={<></>} />
           {/* 店家 QR 的落點:resolve-link 302 到 ${LIFF_URL}/store/{store_id}。 */}
