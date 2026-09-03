@@ -106,8 +106,6 @@ export async function runTryonJob<M extends TryonMode>(
     if (source.kind === "animate") {
       generated = source.base64;
     } else {
-      // Read once, and only when something will actually use it: a job with no
-      // sized garment must not pay for a profile lookup.
       const needsBody = job.garments.some(
         (g) => isProductRef(g) && g.sizeId !== undefined,
       );

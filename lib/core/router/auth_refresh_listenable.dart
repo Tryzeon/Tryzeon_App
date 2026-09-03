@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-/// Adapts a [Stream] to GoRouter's `refreshListenable`.
 class AuthRefreshListenable extends ChangeNotifier {
   AuthRefreshListenable(final Stream<dynamic> stream) {
     _subscription = stream.listen((final _) => notifyListeners());

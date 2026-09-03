@@ -62,7 +62,6 @@ class TryonController extends _$TryonController {
     );
   }
 
-  /// The backend resolves the item's image and prompt detail from its id.
   Future<void> tryonFromWardrobeItem(
     final String wardrobeItemId, {
     final TryonMode mode = TryonMode.image,
@@ -186,8 +185,6 @@ class TryonController extends _$TryonController {
     }
   }
 
-  /// Named parameters because [id] and [customAvatarUrl] are both strings and
-  /// would transpose silently.
   Future<Result<TryonRequest, Failure>> _buildRequest({
     required final String id,
     required final TryonSubject subject,

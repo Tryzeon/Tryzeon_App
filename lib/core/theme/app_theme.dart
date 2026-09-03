@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Raw colour palette (M3 *reference* tokens). Tonal numbers follow Material 3
-/// convention: 100 = white, 0 = black. Roles are assigned in [AppTheme]'s
-/// `ColorScheme`; widgets read `Theme.of(context).colorScheme`, not this class.
+/// Roles are assigned in [AppTheme]'s `ColorScheme`; widgets read
+/// `Theme.of(context).colorScheme`, not this class.
 class AppColors {
   AppColors._();
 
@@ -51,7 +50,6 @@ class AppColors {
   static const Color onFitOutOfRangeContainer = Color(0xFF4A2F22);
 }
 
-/// 8px-grid spacing tokens.
 class AppSpacing {
   AppSpacing._();
 
@@ -359,7 +357,6 @@ class AppTheme {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       ),
 
-      // Silent result feedback only; failures use the TopNotification banner.
       snackBarTheme: SnackBarThemeData(
         backgroundColor: colorScheme.inverseSurface,
         contentTextStyle: GoogleFonts.notoSansTc(

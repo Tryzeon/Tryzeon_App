@@ -81,7 +81,6 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     return true;
   }
 
-  /// False when [id] was already gone.
   bool removeById(final String id) {
     final index = state.entries.indexWhere((final e) => e.id == id);
     if (index == -1) return false;

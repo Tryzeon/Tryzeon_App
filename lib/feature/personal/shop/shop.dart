@@ -1,4 +1,3 @@
-/// Public API of the shop feature.
 library;
 
 export 'data/models/product_row_mapper.dart' show decodeShopProductRow;

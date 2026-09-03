@@ -253,8 +253,6 @@ class ProductEditNotifier extends _$ProductEditNotifier {
           ),
         );
       },
-      // The cached product is the original the next edit diffs against, so a
-      // stale one would silently narrow that edit's changes.
       refreshedProductId: productId,
     );
   }

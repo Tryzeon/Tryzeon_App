@@ -6,8 +6,6 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 /// safe area, plus the in-app nav bar on iOS 26+ which the framework's safe
 /// area padding doesn't account for. Failures should use `TopNotification`.
 class AppSnackBar {
-  /// [actionLabel] and [onAction] are both-or-neither — a single follow-up,
-  /// typically an undo.
   static void show(
     final BuildContext context, {
     required final String message,

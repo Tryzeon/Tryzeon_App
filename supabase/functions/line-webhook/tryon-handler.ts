@@ -49,7 +49,6 @@ interface Actor {
   hasAvatar: boolean;
 }
 
-/** A first-time sender is minted an account here, so this is a write as much as a read. */
 async function resolveActor(
   deps: TryonHandlerDeps,
   sourceUserId: string,
@@ -225,9 +224,6 @@ export interface WardrobeTryonDeps extends TryonHandlerDeps {
  * result card, the error card and the transcript note all differ, which leaves
  * only the skeleton in common. `resolveActor` and `runTryon` are the parts that
  * genuinely are shared, and they already are.
- *
- * The item is read before anything is charged: an item deleted since the card
- * was sent becomes a sentence the user understands and costs them no quota.
  *
  * The garment goes in as `{ wardrobeItemId }` and never as a path. This adapter
  * holds the admin client, so a path it chose would be a path with nothing

@@ -10,8 +10,8 @@ export interface TryonOptions {
 }
 
 /**
- * `tryon` edge function 的 wire body。只有 image —— 影片試穿在 LIFF 上還沒開,
- * 那條路是一個 ~5 分鐘的同步請求,webview 被切走就會永久掉結果。
+ * 只有 image —— 影片試穿在 LIFF 上還沒開,那條路是一個 ~5 分鐘的同步請求,
+ * webview 被切走就會永久掉結果。
  */
 interface TryonBody extends TryonOptions {
   mode: "image";

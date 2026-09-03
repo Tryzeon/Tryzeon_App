@@ -17,7 +17,6 @@ function timingSafeEqual(a: string, b: string): boolean {
   return out === 0;
 }
 
-/** Verifies LINE's `X-Line-Signature` against the raw request body. */
 export async function verifyLineSignature(
   channelSecret: string,
   body: string,

@@ -1,7 +1,6 @@
 /**
- * This module owns what is provider-specific — model names and the Gemini/Veo
- * settings that reach Vertex through `providerOptions`. It builds no prompts
- * (see `prompt.ts`) and persists nothing.
+ * Owns what is provider-specific; builds no prompts (see `prompt.ts`) and
+ * persists nothing.
  */
 import { experimental_generateVideo, generateText } from "npm:ai@^6.0.208";
 import { base64ToUint8Array } from "../image-utils.ts";

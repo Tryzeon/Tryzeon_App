@@ -24,7 +24,6 @@ describe("sortParams", () => {
     });
   });
 
-  // 守的是:白名單長出新成員時不會忘記給它一組對應。
   it("covers every SORT_OPTIONS member", () => {
     for (const sort of SORT_OPTIONS) {
       expect(sortParams(sort).sortColumn).toBeTruthy();

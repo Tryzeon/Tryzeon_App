@@ -18,7 +18,6 @@ sealed class ShopProductsState with _$ShopProductsState {
   }) = _ShopProductsState;
 }
 
-/// Offset-paginated shop product list, keyed by [ShopFilter].
 @riverpod
 class ShopProductsNotifier extends _$ShopProductsNotifier {
   static const _pageSize = 20;

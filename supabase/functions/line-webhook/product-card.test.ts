@@ -165,10 +165,6 @@ Deno.test("fetchProductRows throws when the lookup itself failed", async () => {
 });
 
 Deno.test("fetchProductInfo will not act on an unlisted product", async () => {
-  // The try-on tap is charged after this returns, so a card left in a thread
-  // after the store unlisted the product has to fail here, not in the core.
-  // `fakeAdmin.from()` throws, so a regression to a direct `products` select
-  // fails instead of silently widening what a stale card can act on.
   const { admin, calls } = fakeAdmin({ data: row(), error: null });
   await fetchProductInfo(admin, "p1");
 

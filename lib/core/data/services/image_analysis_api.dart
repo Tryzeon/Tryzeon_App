@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'image_analysis_api.g.dart';
 
-/// Shared transport for the single-image AI analysis Edge Functions.
 class ImageAnalysisApi {
   ImageAnalysisApi(this._supabase);
 

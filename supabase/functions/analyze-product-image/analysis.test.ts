@@ -119,7 +119,6 @@ Deno.test("buildPrompt teaches the sentinel the schema accepts", () => {
   const enums = Object.values(props)
     .map((spec) => spec.enum)
     .filter((e): e is string[] => e != null);
-  // The one value every enum field shares is the "can't tell" sentinel.
   const shared = enums.reduce((acc, e) => acc.filter((v) => e.includes(v)));
   assertEquals(shared.length, 1, "expected exactly one sentinel common to all enums");
 

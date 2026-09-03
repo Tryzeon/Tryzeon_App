@@ -14,7 +14,7 @@ const List<String> kMaterialPresets = [
   '混紡',
 ];
 
-/// This is the ONLY place where Chinese translations for it should exist.
+/// The ONLY place where Chinese labels for [WardrobeCategory] should exist.
 extension CategoryDisplay on WardrobeCategory {
   String get displayName => switch (this) {
     WardrobeCategory.top => '上衣',

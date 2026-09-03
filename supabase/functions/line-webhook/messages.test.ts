@@ -42,8 +42,6 @@ const templateUri = (message: object): string =>
   (message as { template: { actions: { uri: string }[] } }).template.actions[0].uri;
 
 Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
-  // The catalog chip is the escape hatch for someone not ready to upload a photo
-  // of themselves: they can go look before leaving.
   const message = onboardingMessage("https://liff.example");
 
   assertEquals(templateUri(message), "https://liff.example/onboard");
@@ -127,9 +125,7 @@ Deno.test("a spent try-on quota on the product path offers the chat the sender s
 });
 
 Deno.test("a product that would not generate offers both remedies its text names", () => {
-  // No `tryonNote` is written on this path, so a `message` chip asking for
-  // "類似的" would have nothing behind it — the retry carries the product id
-  // itself instead. Without the catalog link, "請換一件" has no button.
+  // Without the catalog link, "請換一件" names a remedy with no button behind it.
   assertEquals(chipActions(productTryonErrorMessage("generation", product, LIFF)), [
     {
       type: "postback",

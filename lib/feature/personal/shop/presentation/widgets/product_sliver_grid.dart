@@ -13,8 +13,6 @@ import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dar
 
 import 'product_card.dart';
 
-/// Lazily-built product grid, returned as a single sliver so it can live
-/// inside the page's [CustomScrollView] (only visible cells are built).
 class ProductSliverGrid extends ConsumerWidget {
   const ProductSliverGrid({
     super.key,

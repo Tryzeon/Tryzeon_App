@@ -1,8 +1,6 @@
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
-/// A [FormField] driven by an external [ValueNotifier], the way [TextFormField]
-/// is driven by a [TextEditingController].
 class SelectionFormField<T> extends FormField<T> {
   SelectionFormField({
     super.key,

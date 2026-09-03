@@ -1,9 +1,6 @@
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurement_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
-/// The ease model for [FitCalculator]: how much larger than the body a garment
-/// dimension is expected to be for a given silhouette and fabric.
-///
 /// The bands come from standard patternmaking ease allowances (close-fitting
 /// through very-loose-fitting) mapped onto this app's four `ProductFit` values,
 /// not from measured data — treat every constant here as a starting estimate.
@@ -17,7 +14,6 @@ class EaseBand {
   final double min;
   final double max;
 
-  /// The ideal ease for this silhouette — used to rank sizes that all fit.
   double get center => (min + max) / 2;
 
   EaseBand _shiftMin(final double delta) => EaseBand(min + delta, max);
@@ -40,9 +36,7 @@ class EaseTable {
     BodyMeasurementType.thigh,
   };
 
-  /// Base ease bands, before any elasticity adjustment, keyed by silhouette and
-  /// body dimension. Circumference ease widens from slim to oversize; shoulder
-  /// width stays near the body with a small tolerance. Waist, hips, and thigh
+  /// Base ease bands, before any elasticity adjustment. Waist, hips, and thigh
   /// are calibrated to trouser (bottoms) ease, distinct from the looser chest
   /// allowance used for tops.
   ///
@@ -88,10 +82,9 @@ class EaseTable {
     },
   };
 
-  /// How much a stretchy fabric lowers the *minimum* acceptable ease. Stretch
-  /// lets a garment be tighter than the body and still fit (negative ease on
-  /// knitwear), so it opens the band downward; it never changes the maximum,
-  /// because a stretchy loose garment is still loose.
+  /// Stretch lets a garment be tighter than the body and still fit (negative
+  /// ease on knitwear), so it opens the band downward; it never changes the
+  /// maximum, because a stretchy loose garment is still loose.
   static const Map<ProductElasticity, double> _elasticityMinShift = {
     ProductElasticity.none: 0,
     ProductElasticity.low: -2,
@@ -99,9 +92,8 @@ class EaseTable {
     ProductElasticity.high: -9,
   };
 
-  /// Relative importance of each dimension when ranking sizes and choosing which
-  /// mismatch to report. Circumferences drive fit; shoulder width is the least
-  /// decisive of the comparable dimensions.
+  /// Circumferences drive fit; shoulder width is the least decisive of the
+  /// comparable dimensions.
   static const Map<BodyMeasurementType, double> _weights = {
     BodyMeasurementType.chest: 1,
     BodyMeasurementType.waist: 1,

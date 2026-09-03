@@ -3,8 +3,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
 
-/// Answers "how does this product fit *this* shopper" for a catalog whose
-/// shopper is already known.
 class ProductFitResolver {
   const ProductFitResolver({required this.body});
 

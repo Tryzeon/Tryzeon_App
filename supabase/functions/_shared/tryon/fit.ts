@@ -1,7 +1,6 @@
 /**
- * Turns "this size, on this body" into one sentence the image model can act on.
- * It does NOT decide which size to recommend — that stays in the app's
- * `FitCalculator`. All it does is subtract, then pick a word.
+ * Does NOT decide which size to recommend — that stays in the app's
+ * `FitCalculator`.
  */
 import type { BodyMeasurements } from "../user-profile.ts";
 import { LIMITS } from "./types.ts";

@@ -137,9 +137,8 @@ export type QuotaFactory = (
 ) => UsageCounter;
 
 /**
- * Resolves to clean base64 image data (no data-URI prefix — stripping any
- * provider preamble is the implementation's job), or null when the model
- * returned no image.
+ * Resolves to clean base64 image data: no data-URI prefix — stripping any
+ * provider preamble is the implementation's job.
  */
 export type ImageGenerator = (
   avatarBase64: string,

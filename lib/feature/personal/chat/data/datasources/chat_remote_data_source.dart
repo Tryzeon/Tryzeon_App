@@ -10,7 +10,6 @@ import 'package:tryzeon/feature/personal/chat/data/chat_wire.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 
-/// Wire encode/decode lives in `chat_wire.dart`; this owns the HTTP calls only.
 class ChatRemoteDataSource {
   ChatRemoteDataSource(this._supabase, [final Dio? dio]) : _dio = dio ?? Dio();
 

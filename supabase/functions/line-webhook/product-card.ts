@@ -54,10 +54,6 @@ export function toLineProduct(
   return { ...info, imageUrl: publicImageUrl(imagesBaseUrl, key) };
 }
 
-/**
- * An id whose row is gone, or whose product has no image, is simply absent, and
- * the assembler drops its block.
- */
 export function fetchProductRows(
   admin: DbClient,
   ids: string[],

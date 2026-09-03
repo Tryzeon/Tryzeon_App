@@ -15,9 +15,6 @@ export const TO_CM_FACTOR: Record<string, number> = {
   inch: 2.54,
 };
 
-/// Keys are compared after trimming, upper-casing and stripping
-/// spaces/hyphens/underscores.
-///
 /// Only the ingestion path normalizes: what a store owner types by hand is kept
 /// verbatim, because a custom size name is their decision. Values must stay in
 /// sync with StandardSizeLabel.display in

@@ -85,11 +85,6 @@ const chipLabels = (message: object): string[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action.label);
 
-/**
- * Unlike {@link chipLabels}, this keeps `text` — the string a `message` chip
- * sends as though the sender typed it — next to the `label`, so neither goes
- * unchecked.
- */
 const chipActions = (message: object): object[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
@@ -554,8 +549,7 @@ Deno.test("a finished product try-on offers to build around it", async () => {
 });
 
 Deno.test("a product that would not generate can be retried by id alone", async () => {
-  // The retry carries the product id in the postback, so it still works when the
-  // stored conversation has expired.
+  // Retrying by id still works when the stored conversation has expired.
   const { line, sent } = fakeLine();
   await handleProductTryon(
     makeProductDeps({
@@ -668,8 +662,6 @@ Deno.test("an item that is gone costs the sender no quota", async () => {
 });
 
 Deno.test("a wardrobe try-on sends the core an id, never a path", async () => {
-  // This adapter holds the admin client, so a path it chose would be a path with
-  // nothing checking whose it was.
   const { line } = fakeLine();
   // deno-lint-ignore no-explicit-any
   let seenGarment: any;

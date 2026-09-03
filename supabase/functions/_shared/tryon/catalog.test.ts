@@ -271,8 +271,6 @@ Deno.test("resolveProductGarment ships the cut label alongside real fit numbers"
     { chest: 110 },
   );
 
-  // An oversize cut on a body big enough to fill it: both the cut and the ease
-  // numbers reach the model.
   assertEquals(garment.detail, "Product: Shirt. Cut: oversize");
   assertStringIncludes(garment.fit ?? "", "-22cm — compression");
 });

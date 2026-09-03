@@ -1,5 +1,3 @@
-// sort 是白名單而不是 RPC 的欄位名,所以畫面上的字彙不會洩漏
-// list_shop_products 的詞彙。
 export const SORT_OPTIONS = ["latest", "price_asc", "price_desc"] as const;
 export type SortOption = typeof SORT_OPTIONS[number];
 

@@ -27,10 +27,9 @@ export function processingMessage(): object {
 const LIFF_ONBOARD_PATH = "/onboard";
 
 /**
- * Both destinations come from one base URL: liff-web serves the catalog at `/`
- * and the avatar upload at {@link LIFF_ONBOARD_PATH}. The catalog chip matters
- * more than it looks — uploading a photo of yourself is a real ask, and someone
- * not ready for it can still go see what there is to try on rather than leaving.
+ * The catalog chip matters more than it looks — uploading a photo of yourself is
+ * a real ask, and someone not ready for it can still go see what there is to try
+ * on rather than leaving.
  */
 export function onboardingMessage(liffUrl: string): object {
   return withQuickReply({

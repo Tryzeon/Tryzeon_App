@@ -111,8 +111,7 @@ export function fetchCatalog(query: CatalogQuery): Promise<CatalogPage> {
 
 /**
  * 走 `get_shop_product` 而不是自己查 products:「顧客看得到的商品」這條規則
- * (`status = 'active'`)在那支函式的身體裡,不該再被 client 抄一次。它回的欄位
- * 和目錄那支對得起來,所以共用同一個 `buildCatalogItem`。
+ * (`status = 'active'`)在那支函式的身體裡,不該再被 client 抄一次。
  */
 export async function fetchProduct(productId: string): Promise<CatalogItem | null> {
   const id = normalizeUuid(productId);

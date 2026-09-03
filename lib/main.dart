@@ -23,7 +23,6 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:upgrader/upgrader.dart';
 import 'firebase_options.dart';
 
-// Global navigator key for upgrader dialog
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Duration? customRetry(final int retryCount, final Object error) {

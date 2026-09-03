@@ -5,8 +5,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/ease_table.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/garment_fit_dimension.dart';
 
-/// Size-fit recommendation.
-///
 /// For every published size it measures each comparable dimension's *ease*
 /// (garment minus body) against the expected band and decides whether the size
 /// fits, runs tight, or runs loose. A garment's length and the shopper's height
@@ -24,7 +22,6 @@ class FitCalculator {
     required final ProductFit? fit,
     required final ProductElasticity? elasticity,
   }) {
-    // Height is excluded because no garment dimension compares to it.
     final userDimensions = fitComparableGarmentTypes
         .map((final g) => g.comparableBodyType!)
         .where((final b) => body?.getValue(b) != null)
