@@ -3,13 +3,12 @@
  * it may ask.
  *
  * The wardrobe endpoint (`analyze-wardrobe-image/analysis.ts`) already labels
- * garment photos, but its answer is the wrong shape to borrow. That one's tags
- * are drawn from a controlled vocabulary so `wardrobe_items.tags` stays
- * filterable by `search_wardrobe`'s `.contains()`; run a photo of a
- * 淺藍色寬鬆棉質抽繩長褲 through it and what survives is `bottoms / 藍、寬鬆、棉`.
- * Here the answer is read by a language model, not a query planner — "淺" and
- * "抽繩" are exactly what make the follow-up search land, and a vocabulary
- * built for SQL throws them away.
+ * garment photos, but its tags come from a controlled vocabulary so
+ * `wardrobe_items.tags` stays filterable by `search_wardrobe`'s `.contains()`:
+ * a 淺藍色寬鬆棉質抽繩長褲 survives it as `bottoms / 藍、寬鬆、棉`. Here the answer
+ * is read by a language model, not a query planner — "淺" and "抽繩" are exactly
+ * what make the follow-up search land, and a vocabulary built for SQL throws
+ * them away.
  *
  * So the prompt asks for one dense phrase and the schema carries one field.
  * What it deliberately does NOT do is pre-resolve the answer into
@@ -18,11 +17,10 @@
  * can map prose onto it, whereas naming those enums here would create two
  * places that must agree with nothing to enforce it.
  *
- * There is no "is this even a garment?" flag either. A photo of a dog is
- * off-path, and the graceful degradation costs nothing: the model describes the
- * dog, the note records it, and the agent works out next turn that the user
- * sent the wrong picture. A flag would buy a branch and two more test paths for
- * a case that is better served by telling the truth.
+ * There is no "is this even a garment?" flag either. A photo of a dog degrades
+ * gracefully — the model describes the dog, the note records it, and the agent
+ * works out next turn that the user sent the wrong picture — where a flag would
+ * buy a branch and two more test paths.
  */
 import { analyzeImage } from "../_shared/image-analysis.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
@@ -31,15 +29,14 @@ import { checkRateLimit } from "../_shared/rate-limit.ts";
  * Longest description that reaches the transcript, in code points.
  *
  * Not cosmetic: this note is replayed to the model on every subsequent turn, so
- * a vision model left to produce "這是一件淺藍色的寬鬆版型棉質長褲，腰部有抽繩設計，
- * 適合休閒場合…" would crowd out the conversation it is supposed to be context
- * for. The prompt asks for the cap and the code enforces it, the same belt and
- * braces `clampProductName` applies in `product-card.ts`: a description over
- * the cap is cut to it and marked with a trailing `…` so a truncated phrase
- * doesn't read to the model as a complete one. Counted by code point rather
- * than `String.prototype.slice`'s UTF-16 code units, since the prompt invites
- * free description of a non-garment photo, where an astral character (emoji,
- * rare CJK) is reachable and `slice` would cut one in half.
+ * an unbounded "這是一件淺藍色的寬鬆版型棉質長褲，腰部有抽繩設計，適合休閒場合…"
+ * would crowd out the conversation it is supposed to be context for. The prompt
+ * asks for the cap and the code enforces it, the belt and braces
+ * `clampProductName` applies in `product-card.ts`; the trailing `…` keeps a
+ * truncated phrase from reading to the model as a complete one. Counted by code
+ * point rather than `String.prototype.slice`'s UTF-16 code units, since the
+ * prompt invites free description of a non-garment photo, where an astral
+ * character (emoji, rare CJK) is reachable.
  */
 const MAX_DESCRIPTION_CHARS = 20;
 
@@ -92,13 +89,11 @@ export interface DescribeGarmentDeps {
  * What the photo shows, in one phrase, or `null` when there is nothing usable
  * to record.
  *
- * Never throws, and that is the contract the caller is written against rather
- * than an implementation detail: the description is an enhancement to the
- * transcript, while the try-on running alongside it is the thing the user
- * actually asked for. An outage here, a spent budget, or an unreadable answer
- * all degrade to the same `null` — no note, same try-on. This is the fail-open
- * judgement `redisConversations` makes for the same reason, kept here so no
- * handler needs an error path for it.
+ * Never throws, and that is the contract the caller is written against: the
+ * description is an enhancement to the transcript, while the try-on running
+ * alongside it is what the user actually asked for. An outage, a spent budget or
+ * an unreadable answer all degrade to the same `null` — no note, same try-on,
+ * the fail-open judgement `redisConversations` makes for the same reason.
  */
 export async function describeGarment(
   userId: string,

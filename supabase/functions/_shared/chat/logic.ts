@@ -1,5 +1,5 @@
-// Pure helpers for the chat agent loop. No SDK or network imports so they
-// unit-test offline (no Gemini SDK, no network).
+// Pure helpers for the chat agent loop. No SDK or network imports, so they
+// unit-test offline.
 import { isUuid, nonEmptyStr } from "../text.ts";
 import {
   CHANNEL_VALUES,
@@ -54,9 +54,9 @@ const vocabularyError = (field: string, bad: unknown, vocab: readonly string[]):
 // mixed list would still run a query the model believes is fully filtered; the
 // whole field is rejected unless every value in it is in vocabulary.
 //
-// The accepted values come back typed rather than as a bare "it passed", so the
-// enum column types the generated schema carries are what mapSearchProductsArgs
-// is checked against instead of a comment promising this ran first.
+// The accepted values come back typed rather than as a bare "it passed", so
+// mapSearchProductsArgs is checked against the enum column types the generated
+// schema carries, instead of against a comment promising this ran first.
 function readVocabularyArray<T extends string>(
   value: unknown,
   field: string,
@@ -229,7 +229,6 @@ export function toModelMessages(messages: ChatMessage[]): any[] {
     const blocks = Array.isArray(m?.content) ? m.content : [];
 
     if (m?.role === "user") {
-      // tool_result blocks become a `tool` message; plain text stays a user turn.
       const toolResults = blocks.filter((b) => b?.type === "tool_result");
       if (toolResults.length) {
         out.push({

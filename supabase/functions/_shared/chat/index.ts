@@ -10,9 +10,9 @@
  * What belongs here is what a caller needs in order to run a turn, describe its
  * inputs and outputs, and classify its failures — nothing more. The pieces the
  * core wires up for itself (`validateChatParams`, `buildChatContext`,
- * `buildTools`, `runVertexAgent`, `supabaseAnswerRows`, `toModelMessages`) are reachable by their own modules, and are left out so
- * that "public surface" stays a claim about this file rather than a description
- * of the folder.
+ * `buildTools`, `runVertexAgent`, `supabaseAnswerRows`, `toModelMessages`) are
+ * reachable by their own modules, and are left out so that "public surface"
+ * stays a claim about this file rather than a description of the folder.
  *
  * Failures are not ours to publish either. A chat turn raises nothing of its
  * own — a rejected input and a spent quota are every core's — so the taxonomy

@@ -209,7 +209,6 @@ export async function runTryonJob<M extends TryonMode>(
   }
 }
 
-/** User-scoped storage key for a generated asset, shared by both modes. */
 function assetKey(
   userId: string,
   timestamp: number,

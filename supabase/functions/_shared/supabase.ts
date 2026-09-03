@@ -10,11 +10,10 @@ import { jsonError } from "./http.ts";
 export type DbClient = SupabaseClient<Database>;
 
 /**
- * Narrows what a `jsonb`-returning RPC hands back. Those generate as `Json`,
- * which carries no shape — the object is built by the SQL, so its shape is
- * knowledge the schema cannot hold and the caller has to supply. Keeping the
- * assertion here means it is written once, behind a check that the payload is
- * an object at all.
+ * Narrows what a `jsonb`-returning RPC hands back. Those generate as `Json`:
+ * the object is built by the SQL, so its shape is knowledge the schema cannot
+ * hold and the caller has to supply. Written once here, behind a check that the
+ * payload is an object at all.
  */
 export const asJsonObject = <T>(value: Json | null | undefined): T | null =>
   typeof value === "object" && value !== null && !Array.isArray(value)
@@ -91,10 +90,7 @@ export const getAnonClient = (): DbClient => {
     return createClient<Database>(supabaseUrl(), supabaseAnonKey());
 };
 
-/**
- * Creates and returns an admin-level (Service Role) Supabaseclient.
- * Use with caution to bypass Row Level Security.
- */
+/** Service-role client. Bypasses Row Level Security — use with caution. */
 export const getAdminClient = (): DbClient => {
     return createClient<Database>(supabaseUrl(), supabaseServiceRoleKey());
 };

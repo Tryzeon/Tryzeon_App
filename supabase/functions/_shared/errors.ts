@@ -5,9 +5,8 @@
  * `ValidationError` and `QuotaExceededError` already live in `_shared` because
  * the conditions they describe belong to the input guard and the usage counter,
  * not to whatever was being run. The classifier over them belongs here for the
- * same reason: two cores narrowing the same two classes could only ever differ
- * by accident, and a kind added here reaches every adapter at once instead of
- * being copied into each feature's `instanceof` chain.
+ * same reason: a kind added here reaches every adapter at once instead of being
+ * copied into each feature's `instanceof` chain.
  *
  * A feature with failures of its own layers them on: it classifies its arms
  * first and falls back to {@link classifyCoreError}, so its info type is this

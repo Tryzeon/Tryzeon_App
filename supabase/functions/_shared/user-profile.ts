@@ -1,12 +1,11 @@
 /**
  * Access to the `user_profiles` row, in one place.
  *
- * The avatar path was previously read by `line-webhook` and written by an edge
- * function of its own, and the profile fields were projected by `chat` — each
- * naming the table and columns itself, so the "blank counts as unset" rule
- * lived only on one read and a rename meant editing three functions. Every
- * server-side reader now goes through this module. (The LIFF web app writes
- * `avatar_path` straight from the browser under RLS, so it is not one of them.)
+ * The avatar path was read by `line-webhook`, the profile fields projected by
+ * `chat`, each naming the table and columns itself — so the "blank counts as
+ * unset" rule lived on one read only. Every server-side reader now goes through
+ * this module. (The LIFF web app writes `avatar_path` straight from the browser
+ * under RLS, so it is not one of them.)
  *
  * The boundary is deliberate: column vocabulary stops here, meaning does not
  * start here. What an `age_range` bucket says to a user, or whether a missing

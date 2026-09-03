@@ -3,8 +3,7 @@
  *
  * The sibling of `card-kit.ts`: that module owns how this channel *looks*, this
  * one owns how it offers a next step. Neither knows any copy — which chips a
- * message carries is `messages.ts`'s business, the same way the words on a card
- * are.
+ * message carries is `messages.ts`'s business.
  *
  * Chips cost nothing against the messaging quota, which is why every dead end in
  * this feature can afford one.

@@ -135,11 +135,10 @@ export async function handleTextMessage(
 /**
  * Renders a core error as one of this channel's message kinds, from the same
  * `classifyCoreError` result the HTTP adapters use. A validation error is not
- * about anything the user typed just now — this message was already
- * length-checked above, so the *history* is the likelier culprit once a
- * transcript is being replayed every turn — but nothing here acts on that
- * beyond the wording: every kind is reported and then dropped, and the stored
- * conversation is left for its idle TTL to retire.
+ * about what the user just typed — that was length-checked above, so the
+ * replayed history is the likelier culprit — but nothing acts on that beyond the
+ * wording: every kind is reported and dropped, and the stored conversation is
+ * left for its idle TTL to retire.
  */
 function chatFailureKind(err: unknown): ChatErrorKind {
   const info = classifyCoreError(err);

@@ -37,11 +37,7 @@ export async function fetchImageAsBase64(
   return uint8ToBase64(new Uint8Array(arrayBuffer));
 }
 
-/**
- * Detects the MIME type of an image from its base64-encoded data.
- * Reads the first few bytes to identify PNG / JPEG / WEBP.
- * Defaults to image/jpeg if no signature matches.
- */
+/** PNG / JPEG / WEBP from the data's signature; `image/jpeg` when none matches. */
 export function detectMimeType(base64Data: string): string {
   const header = atob(base64Data.slice(0, 16));
   if (header.startsWith("\x89PNG")) return "image/png";
@@ -52,9 +48,7 @@ export function detectMimeType(base64Data: string): string {
   return "image/jpeg";
 }
 
-/**
- * Maps an image MIME type to a file extension (no leading dot).
- */
+/** File extension for an image MIME type, with no leading dot. */
 export function mimeTypeToExtension(mimeType: string): string {
   switch (mimeType) {
     case "image/png":
@@ -67,10 +61,7 @@ export function mimeTypeToExtension(mimeType: string): string {
   }
 }
 
-/**
- * Decodes a base64 string into a Uint8Array.
- * Input must be clean base64 (no data-URI prefix).
- */
+/** Input must be clean base64 — a data-URI prefix is not stripped. */
 export function base64ToUint8Array(base64: string): Uint8Array {
   const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);

@@ -30,7 +30,6 @@ export type SupabaseImageBucket =
   | typeof USER_AVATARS_BUCKET
   | typeof WARDROBE_IMAGES_BUCKET;
 
-/** Whether a bare storage key belongs to the R2 public images bucket. */
 export function isR2PublicKey(path: string): boolean {
   return path.startsWith(R2_PUBLIC_PREFIX);
 }

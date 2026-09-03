@@ -13,13 +13,12 @@
  * this was not a request at all (a `leave`, a group, a delivery receipt), so
  * answering it would be answering nobody.
  *
- * All of this lives beside the handlers rather than in `index.ts` because what
- * counts as a usable event is a rule about them, not about the transport: the
- * text normalization here and the length check in `chat-handler.ts` are two
- * halves of one answer. Keeping the two outcomes apart in the return value is
- * what lets that hold — `index.ts` once carried its own list of event kinds,
- * which had to be edited in step with this file every time the set changed, in
- * the one module in the feature with no test.
+ * This lives beside the handlers rather than in `index.ts` because what counts
+ * as a usable event is a rule about them, not about the transport: the text
+ * normalization here and the length check in `chat-handler.ts` are two halves of
+ * one answer. Keeping the two outcomes apart in the return value is what spares
+ * `index.ts` — the one module in the feature with no test — its own list of
+ * event kinds to keep in step with this file.
  */
 import {
   handleImageTryon,

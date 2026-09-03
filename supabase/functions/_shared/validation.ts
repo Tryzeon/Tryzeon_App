@@ -17,7 +17,6 @@ import { nonEmptyStr } from "./text.ts";
 
 export class ValidationError extends Error {}
 
-/** Require a non-empty string, for guards and adapter request parsers. */
 export function requireString(value: unknown, label: string): string {
   if (typeof value !== "string" || value.length === 0) {
     throw new ValidationError(`${label} is required`);
@@ -34,7 +33,6 @@ export function normalizeText(value: unknown): string | undefined {
   return nonEmptyStr(value) ?? undefined;
 }
 
-/** Parse raw body as JSON object, with conventional errors. */
 export function parseJsonObject(rawBody: string): Record<string, unknown> {
   let body: unknown;
   try {

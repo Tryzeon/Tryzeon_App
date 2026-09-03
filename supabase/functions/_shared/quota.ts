@@ -6,10 +6,8 @@ export type FeatureName = "chat" | "tryon" | "tryon_video";
 /**
  * One user's counters for one day — every feature's, not the charging one's.
  * Any charge returns the whole set and clients sync a single usage cache from
- * it, so this travels to them verbatim: it is the shape this module publishes,
- * which is why it is no longer named after the table it happens to be stored in.
- * It is still that table's row, though, so the columns come from the generated
- * schema rather than being restated here.
+ * it, so this travels to them verbatim. It is still `user_daily_usage`'s row,
+ * so the columns come from the generated schema rather than being restated here.
  */
 export type DailyUsage = Tables<"user_daily_usage">;
 
@@ -34,10 +32,7 @@ export class QuotaExceededError extends Error {
  *
  * A port so a feature core can say what it needs — an atomic charge with a
  * compensating refund — without naming the RPC pair that implements it or
- * depending on its payload. Named for the role it plays rather than with a
- * `Port` suffix, like every other port here (`AnswerHydrator`,
- * `ProductResolver`, …): what a core depends on is a counter, and that it is
- * also a seam is the reader's inference, not part of the name.
+ * depending on its payload.
  *
  * It lives here rather than in either feature for the same reason
  * {@link QuotaExceededError} does: the contract is the counter's, and try-on
@@ -54,11 +49,6 @@ export interface UsageCounter {
 /**
  * The default {@link UsageCounter}: one user's counter for one feature, backed
  * by the `increment_feature_usage` / `decrement_feature_usage` RPC pair.
- *
- * Named for what it yields, the way every other adapter here is
- * (`supabaseAnswerRows`, `uploadTryonImageToR2`, …). It is the adapter, not the
- * port — the port is {@link UsageCounter} above — so it does not borrow that
- * type's name.
  *
  * This is the only place a core's charge/refund vocabulary meets those RPC
  * names, so no orchestrator depends on their payload shape and a test can

@@ -29,12 +29,11 @@ interface IdInFilter<Row> {
  * result by row id. Empty ids → empty map (no query); an id whose row is gone
  * is simply absent, and the assembler drops its block.
  *
- * `toBlock` is how a hydrator says what a row is worth rendering as. It may
- * return null to drop a row the caller cannot render — the same outcome, by the
- * same missing-row rule, as a row that was deleted between search and answer.
- * Exported so a substituted hydrator inherits this contract rather than
- * restating it: which of these rules holds is what `assembleAnswerBlocks`
- * depends on, not incidental query code.
+ * `toBlock` is how a hydrator says what a row is worth rendering as, and may
+ * return null to drop one the caller cannot render — the same outcome, by the
+ * same missing-row rule, as a row deleted between search and answer. Exported so
+ * a substituted hydrator inherits these rules rather than restating them: they
+ * are what `assembleAnswerBlocks` depends on, not incidental query code.
  */
 export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
   query: IdInFilter<Row>,

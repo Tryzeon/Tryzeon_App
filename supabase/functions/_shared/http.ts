@@ -3,12 +3,10 @@ import { CORE_ERROR_CODE, type CoreErrorInfo } from "./errors.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" } as const;
 
-/** JSON response with an arbitrary body and status (default 200). */
 export function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 }
 
-/** JSON error response with the standard `{ error, code }` body. */
 export function jsonError(message: string, code: string, status: number): Response {
   return json({ error: message, code }, status);
 }

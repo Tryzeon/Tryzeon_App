@@ -51,8 +51,7 @@ export interface ChatResult {
    * Every turn this run added to the conversation, in order: one message per
    * tool call, one per tool result, then the assistant's answer.
    *
-   * The core consumes `ChatMessage[]` and therefore has to produce it. Without
-   * this, a caller wanting to continue the conversation would have to rebuild
+   * Without this, a caller continuing the conversation would have to rebuild
    * the tool rounds from {@link ChatEvent}s and re-derive which role each block
    * belongs to — a rule the model's transcript depends on, reimplemented per
    * platform. Append these and the next turn's history is correct by
@@ -66,18 +65,18 @@ export interface ChatResult {
 /**
  * What a caller may send, enforced by `validateChatParams` and by nothing else.
  *
- * Only the input contract lives here. A port's own budget — how many tool calls
- * its loop takes, how many rows its search returns — is private to whichever
- * implementation is wired in, so publishing it would tell an adapter it is
- * bound by a number its substituted runner is free to ignore.
+ * A port's own budget — how many tool calls its loop takes, how many rows its
+ * search returns — is private to whichever implementation is wired in, so
+ * publishing it would tell an adapter it is bound by a number its substituted
+ * runner is free to ignore.
  */
 export const LIMITS = {
   /**
-   * Cap on replayed history. `toModelMessages` replays every turn verbatim, so
-   * an unbounded conversation is an unbounded per-request cost. Generous
-   * enough that no real session in the app reaches it — the cap exists so a
-   * server-side conversation store (which has no client deciding when to
-   * forget) cannot grow without one.
+   * Cap on replayed history: `toModelMessages` replays every turn verbatim, so
+   * an unbounded conversation is an unbounded per-request cost. Generous enough
+   * that no real session in the app reaches it — it exists so a server-side
+   * conversation store, which has no client deciding when to forget, cannot
+   * grow without one.
    */
   MAX_MESSAGES: 400,
   /** Cap on one text block, applied to both directions of the transcript. */
@@ -106,19 +105,16 @@ export interface ChatContext {
   categoryIdByName: Map<string, string>;
 }
 
-/** Loads the grounding for one turn. */
 export type ContextLoader = (
   client: DbClient,
   userId: string,
 ) => Promise<ChatContext>;
 
 /**
- * What the agent loop needs to run one turn.
- *
- * The grounding arrives whole rather than spread into its parts: the prompt
- * promises the model a vocabulary and the map is what makes that promise
- * resolvable, so the two are one value and passing them separately would only
- * give them room to disagree.
+ * What the agent loop needs to run one turn. The grounding arrives whole rather
+ * than spread into its parts: the prompt promises the model a vocabulary and
+ * the map is what makes that promise resolvable, so passing them separately
+ * would only give them room to disagree.
  */
 export interface AgentRequest {
   client: DbClient;

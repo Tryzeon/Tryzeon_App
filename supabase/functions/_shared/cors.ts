@@ -9,8 +9,8 @@
  *
  * Both halves are needed at every call site: `guard` answers the preflight and
  * rejects a method the function does not serve, `wrap` puts the headers on the
- * real response. CORS headers on a response the browser never receives —
- * because the preflight went unanswered — help no one.
+ * real response. CORS headers on a response the browser never receives, because
+ * the preflight went unanswered, help no one.
  */
 import { jsonError } from "./http.ts";
 
@@ -46,7 +46,6 @@ export interface Cors {
    * proceed.
    */
   guard(req: Request): Response | null;
-  /** Adds the CORS headers to an outgoing response. */
   wrap(resp: Response): Response;
 }
 
