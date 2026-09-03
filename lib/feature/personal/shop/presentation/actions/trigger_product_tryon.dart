@@ -6,9 +6,6 @@ import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dar
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
-/// Shows the try-on mode picker for [product], then starts try-on with the
-/// selected mode: increments the product's try-on count and hands off to
-/// [tryonCoordinatorProvider].
 void triggerProductTryon(
   final BuildContext context,
   final WidgetRef ref,

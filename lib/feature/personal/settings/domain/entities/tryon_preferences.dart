@@ -3,8 +3,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart
 
 part 'tryon_preferences.freezed.dart';
 
-/// Try-on preferences the user has set, persisted locally. Scene and styling
-/// apply to both image and video try-on; transition is video-only.
+/// Scene and styling apply to both image and video try-on; transition is
+/// video-only.
 @freezed
 sealed class TryonPreferences with _$TryonPreferences {
   const factory TryonPreferences({

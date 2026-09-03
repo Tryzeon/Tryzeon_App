@@ -1,11 +1,3 @@
-/**
- * This function's NDJSON protocol: one JSON object per line.
- *
- * The frames are the app's, not the core's — a LINE adapter renders the same
- * outcomes as messages and never encodes a line of this. What both share is
- * `classifyCoreError`: the taxonomy is decided once, and each transport says
- * what it means in its own vocabulary.
- */
 import { classifyCoreError, CORE_ERROR_CODE } from "../_shared/chat/index.ts";
 
 const ENCODER = new TextEncoder();
@@ -14,10 +6,7 @@ export function encodeEvent(ev: Record<string, unknown>): Uint8Array {
   return ENCODER.encode(JSON.stringify(ev) + "\n");
 }
 
-/**
- * The error frame for a failure raised after the 200 was committed, so the
- * client learns the outcome in-stream rather than from a status code.
- */
+/** For a failure raised after the 200 was committed: no status code is left to use. */
 export function errorEvent(err: unknown): Record<string, unknown> {
   const info = classifyCoreError(err);
   if (info === null) {

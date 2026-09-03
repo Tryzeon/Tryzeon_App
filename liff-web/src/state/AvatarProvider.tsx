@@ -10,21 +10,17 @@ import {
 import { avatarUrl, setAvatar } from "../api/avatar";
 
 interface AvatarValue {
-  /** 能放進 `<img>` 的網址,還沒簽好或沒有照片時是 null。 */
   url: string | null;
   /** 這個人有沒有 model 照。不等於 [url] 已經備妥 —— 簽章還在路上時仍然是 true。 */
   hasAvatar: boolean;
   status: "loading" | "ready" | "error";
   busy: boolean;
-  /** 換一張。回傳 false 代表失敗,舊的那張留著。 */
   replace(file: File): Promise<boolean>;
 }
 
 const AvatarContext = createContext<AvatarValue | null>(null);
 
 /**
- * 模特照,整個 app 一份。
- *
  * 掛在分頁之上,所以簽章只求一次,而首頁和商品頁看到的是同一個狀態 —— 在商品頁
  * 補上傳的照片,回到首頁就是那一張。
  */

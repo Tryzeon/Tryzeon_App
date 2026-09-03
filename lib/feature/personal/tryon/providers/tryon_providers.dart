@@ -35,7 +35,6 @@ LoadImageAsBase64 loadImageAsBase64UseCase(final Ref ref) {
   return LoadImageAsBase64(mediaRepository: ref.watch(tryonMediaRepositoryProvider));
 }
 
-// Media (save/share) — data source, repository, use cases
 @riverpod
 TryonMediaDataSource tryonMediaDataSource(final Ref ref) {
   return TryonMediaDataSource();

@@ -17,13 +17,8 @@ import type {
   ContentBlock,
 } from "./types.ts";
 
-// Rows one search tool returns. A page size, not a caller-facing limit — it is
-// what keeps a tool result small enough to re-prompt with, so it belongs to the
-// searches rather than to `LIMITS`, which is the contract on what a caller sends.
 export const SEARCH_LIMIT = 10;
 
-// Columns a wardrobe item needs to render a card. Shared by the search tool and
-// the by-id answer fetch so the two queries can't drift.
 export const WARDROBE_SELECT = "id, image_path, category, tags, created_at, updated_at";
 
 // Shop product shape for an answer card — mirrors the product detail page so the
@@ -53,10 +48,6 @@ const vocabularyError = (field: string, bad: unknown, vocab: readonly string[]):
 // rejected rather than silently dropped. Dropping only the bad entries out of a
 // mixed list would still run a query the model believes is fully filtered; the
 // whole field is rejected unless every value in it is in vocabulary.
-//
-// The accepted values come back typed rather than as a bare "it passed", so
-// mapSearchProductsArgs is checked against the enum column types the generated
-// schema carries, instead of against a comment promising this ran first.
 function readVocabularyArray<T extends string>(
   value: unknown,
   field: string,
@@ -215,7 +206,6 @@ export function toSearchResultItem(row: Record<string, any>): Record<string, unk
 // product blocks collapse to a short id reference (their full data is already
 // replayed in the tool_result, so nothing is lost to the model).
 export function toModelMessages(messages: ChatMessage[]): any[] {
-  // tool_use id → tool name, so a tool_result can name its tool.
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
     if (m?.role !== "assistant") continue;
@@ -306,11 +296,6 @@ export function parseAnswerRefs(args: Record<string, any>): AnswerRef[] {
   return refs;
 }
 
-// Assemble the ordered answer blocks from parsed refs + the rows fetched by id.
-// Text passes through; product/wardrobe refs become card blocks, dropping any id
-// whose row is missing (e.g. a since-deleted item). Ordering and that drop rule
-// stay here rather than in the hydrator, so a platform that fetches slimmer rows
-// still renders the answer in the sequence the model composed it.
 export function assembleAnswerBlocks(
   refs: AnswerRef[],
   rows: AnswerRows,

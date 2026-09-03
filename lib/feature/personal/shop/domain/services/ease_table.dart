@@ -4,13 +4,6 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 /// The ease model for [FitCalculator]: how much larger than the body a garment
 /// dimension is expected to be for a given silhouette and fabric.
 ///
-/// A garment that fits is not equal to the body — it is larger by an intended
-/// amount of *ease*. How much depends on the cut (`ProductFit`) and, for
-/// circumferences, on how much the fabric stretches (`ProductElasticity`). This
-/// class is the single home for those numbers, deliberately isolated so the
-/// whole model can be re-calibrated against real try-on feedback without
-/// touching the comparison algorithm in [FitCalculator].
-///
 /// The bands come from standard patternmaking ease allowances (close-fitting
 /// through very-loose-fitting) mapped onto this app's four `ProductFit` values,
 /// not from measured data — treat every constant here as a starting estimate.
@@ -33,12 +26,8 @@ class EaseBand {
 class EaseTable {
   EaseTable._();
 
-  /// Silhouette assumed when the store did not tag the product's fit — the
-  /// neutral, most common cut.
   static const ProductFit _defaultFit = ProductFit.regular;
 
-  /// Fabric assumed when elasticity is untagged — no stretch, so ease must be
-  /// fully positive.
   static const ProductElasticity _defaultElasticity = ProductElasticity.none;
 
   /// The dimensions on which fabric stretch changes the fit. Seam dimensions
@@ -125,9 +114,6 @@ class EaseTable {
   /// caveat. Beyond this the product simply does not carry the shopper's size.
   static const double maxRecommendableDeviation = 6;
 
-  /// The elasticity-adjusted ease band for a dimension, or `null` if the
-  /// dimension carries no fit signal (only the five comparable body dimensions
-  /// have bands; `height` never does).
   static EaseBand? bandFor(
     final BodyMeasurementType type,
     final ProductFit? fit,

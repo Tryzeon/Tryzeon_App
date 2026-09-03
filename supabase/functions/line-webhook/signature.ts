@@ -1,4 +1,3 @@
-/** HMAC-SHA256(base64) of `body` keyed by `secret` — LINE's X-Line-Signature scheme. */
 export async function hmacBase64(secret: string, body: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",

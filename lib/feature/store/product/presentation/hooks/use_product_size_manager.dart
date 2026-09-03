@@ -33,15 +33,11 @@ class ProductSizeManager {
 
   bool isSelected(final StandardSizeLabel label) => hasLabel(label.display);
 
-  /// 這件商品自己新增的尺碼，照列的順序。
   List<String> get customLabels => sizeEntries
       .where((final e) => StandardSizeLabel.tryParse(e.label) == null)
       .map((final e) => e.label)
       .toList();
 
-  /// The full list of sizes the store owner wants to end up with. Working out
-  /// which are inserts, updates and deletes is the data layer's job.
-  /// [visibleTypes] mirrors what the editor showed; hidden dimensions are dropped.
   List<SizeItem> toSizeItems({required final List<GarmentMeasurementType> visibleTypes}) {
     return sizeEntries
         .map(

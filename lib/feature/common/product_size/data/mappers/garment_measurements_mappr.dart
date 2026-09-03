@@ -5,7 +5,6 @@ import '../collections/garment_measurements_embedded.dart';
 import '../models/garment_measurements_model.dart';
 import 'garment_measurements_mappr.auto_mappr.dart';
 
-/// AutoMappr configuration for a product size's flat measurements.
 @AutoMappr([
   MapType<GarmentMeasurementsModel, GarmentMeasurements>(),
   MapType<GarmentMeasurements, GarmentMeasurementsModel>(),

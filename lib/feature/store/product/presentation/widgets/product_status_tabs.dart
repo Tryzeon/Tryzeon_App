@@ -6,13 +6,6 @@ import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_status_ui_mapper.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 
-/// The 上架中 / 已下架 split.
-///
-/// A `TabBar` used only as a selector — no `TabBarView` beneath it. The two
-/// buckets are mutually exclusive sets of the same list, so one grid, one
-/// scroll view and one `RefreshIndicator` still serve both; the controller
-/// only drives which status [ProductQuery] filters on.
-///
 /// Counts come from the unfiltered list on purpose: a number that shrank while
 /// the owner typed would answer "what matched" twice over, and the grid
 /// already answers that.

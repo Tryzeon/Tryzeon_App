@@ -12,7 +12,7 @@ interface Props {
   onClose(): void;
 }
 
-/** 自訂試穿風格。轉場只影響影片,LIFF 沒有影片試穿,所以這裡只有兩段。 */
+/** 轉場只影響影片,LIFF 沒有影片試穿,所以這裡只有兩段。 */
 export function StyleSheet({ onClose }: Props) {
   const [config, setConfig] = useState<PromptConfig>(loadPromptConfig);
 

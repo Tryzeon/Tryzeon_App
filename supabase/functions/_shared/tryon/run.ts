@@ -34,10 +34,6 @@ import {
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
-/**
- * A tagged union rather than two optional locals, so the branch inside the job
- * narrows instead of asserting.
- */
 type TryonSource =
   | { kind: "animate"; base64: string }
   | { kind: "generate"; avatar: ImageSource };
@@ -45,9 +41,7 @@ type TryonSource =
 export interface RunTryonJobDeps {
   /**
    * The one required port: its implementation needs a service-role client, and
-   * which one is the adapter's to say — the LINE paths already hold theirs.
-   * `supabaseQuota(adminClient)` builds it. See {@link QuotaFactory} for why the
-   * credential stops there.
+   * which one is the adapter's to say. `supabaseQuota(adminClient)` builds it.
    */
   quota: QuotaFactory;
   generate?: ImageGenerator;
@@ -63,19 +57,13 @@ export interface RunTryonJobDeps {
 
 /**
  * Single try-on entry point: validate -> resolve avatar -> quota -> resolve
- * garments -> load -> generate -> persist. Both modes end in a core-owned
- * upload, so the result of a job is always a URL the caller can hand straight
- * to its client.
+ * garments -> load -> generate -> persist.
  *
- * One client, and it is the caller's own: every row and object a job reads goes
- * through it, so an adapter with a session (the app) has RLS bounding what a
- * request can reach. An adapter without one (LINE, LIFF) passes its admin
- * client, and on those paths RLS bounds nothing — which is why the resolvers
- * check ownership and namespace themselves rather than leaning on it.
- *
- * The result type follows the mode: callers that hard-code a mode get exactly
- * that variant back, so narrowing the union is the compiler's job rather than a
- * runtime check at each call site.
+ * One client, and it is the caller's own: an adapter with a session (the app)
+ * has RLS bounding what a request can reach, while an adapter without one
+ * (LINE, LIFF) passes its admin client and RLS bounds nothing — which is why
+ * the resolvers check ownership and namespace themselves rather than leaning
+ * on it.
  */
 export async function runTryonJob<M extends TryonMode>(
   client: DbClient,
@@ -123,9 +111,8 @@ export async function runTryonJob<M extends TryonMode>(
       const needsBody = job.garments.some(
         (g) => isProductRef(g) && g.sizeId !== undefined,
       );
-      // Optional data: a profile read that fails must not fail a job that would
-      // have succeeded without a sizeId. Degrading is the caller's call, and this
-      // is the caller.
+      // A profile read that fails must not fail a job that would have succeeded
+      // without a sizeId.
       const body = needsBody
         ? await resolveBody(client, job.userId).catch((err) => {
           console.warn("body measurements lookup failed; skipping fit:", err);
@@ -134,13 +121,9 @@ export async function runTryonJob<M extends TryonMode>(
         : null;
 
       // Stage 1: resolve product and wardrobe refs to concrete garment material.
-      // resolveProductGarment is the gatekeeper for the catalog, and
-      // resolveWardrobeGarment binds the read to job.userId, so a client can only
-      // reach a real product's image or its own wardrobe item, never an arbitrary
-      // object — those checks hold whether or not RLS sits beneath `client`.
-      // User-supplied material passes through untouched, which is also why this
-      // is the only stage that can attach a `detail`: the description reaching
-      // the model is built here or not at all.
+      // The resolvers are the gatekeepers — a client can only reach a real
+      // product's image or its own wardrobe item, whether or not RLS sits
+      // beneath `client`.
       const materialGarments: ResolvedGarment[] = await Promise.all(
         job.garments.map((g) =>
           isProductRef(g)
@@ -175,10 +158,8 @@ export async function runTryonJob<M extends TryonMode>(
       throw new GenerationFailedError("image generation returned null");
     }
 
-    // Stage 3: persist. Generators produce bytes; only this stage names keys
-    // and uploads, so image and video obey one policy and one injectable clock.
-    // The two casts are the single point where the mode -> result-variant
-    // correspondence is asserted; every caller inherits it for free.
+    // Stage 3: persist. The two casts are the single point where the
+    // mode -> result-variant correspondence is asserted.
     if (job.mode === "video") {
       const bytes = await generateVideo(generated, job.transitionPrompt);
       const videoUrl = await uploadVideo(
@@ -188,8 +169,6 @@ export async function runTryonJob<M extends TryonMode>(
       return { kind: "video", videoUrl, usage } as TryonResultFor<M>;
     }
 
-    // `generated` is clean base64 by the ImageGenerator contract; stripping a
-    // provider's data-URI preamble belongs to the provider adapter, not here.
     const mimeType = detectMimeType(generated);
     const imageUrl = await upload(
       base64ToUint8Array(generated),

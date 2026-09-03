@@ -7,11 +7,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_co
 
 part 'tryon_coordinator.g.dart';
 
-/// The single public entry point for triggering a try-on from any page (home,
-/// shop, wardrobe, chat): switches to the home branch, then delegates to
-/// [TryonController]. The home page reacts to the result by listening to the
-/// controller's outcome state.
-///
 /// Navigation stays a bound callback because switching a [StatefulNavigationShell]
 /// branch needs the shell's context; execution is a direct provider read, not a
 /// bound callback, so a try-on can never silently no-op.
@@ -30,7 +25,6 @@ class TryonCoordinator {
     if (_navigateToHome == fn) _navigateToHome = null;
   }
 
-  /// Starts a try-on from a locally picked garment photo.
   Future<void> tryonFromLocalImage(
     final File image, {
     final TryonMode mode = TryonMode.image,
@@ -41,8 +35,6 @@ class TryonCoordinator {
         .tryonFromLocalImage(image, mode: mode);
   }
 
-  /// Starts a try-on for one of the user's wardrobe items (backend resolves the
-  /// garment).
   Future<void> tryonFromWardrobeItem(
     final String wardrobeItemId, {
     final TryonMode mode = TryonMode.image,
@@ -53,7 +45,6 @@ class TryonCoordinator {
         .tryonFromWardrobeItem(wardrobeItemId, mode: mode);
   }
 
-  /// Starts a try-on for a catalog product by id (backend resolves the garment).
   Future<void> tryonFromProduct(
     final String productId, {
     final String? sizeId,

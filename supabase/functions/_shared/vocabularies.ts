@@ -1,6 +1,4 @@
 /**
- * The controlled vocabularies, in one place, taken from the schema.
- *
  * These are not a copy of the database's enums — `supabase gen types` emits a
  * runtime `Constants` object alongside the types, so they are the database's
  * enums, imported. A JSON Schema for a model and a Zod enum both need a real

@@ -1,26 +1,20 @@
 /**
- * The prompt, the response schema, and the sanitiser that turns whatever the
- * model said into the response body — the whole contract with the model, kept
- * apart from the HTTP shell in `index.ts` so it can be tested without a network.
- *
- * The three belong together: structured output types `category` as a string, so
- * the model has no way to answer "I can't tell" with JSON null. `unknown` is the
- * agreed spelling instead — the prompt teaches it, the schema permits it, and
- * the sanitiser strips it back out. Change one of the three and the other two
- * stop making sense.
+ * The prompt, the schema and the sanitiser belong together: structured output
+ * types `category` as a string, so the model has no way to answer "I can't tell"
+ * with JSON null. `unknown` is the agreed spelling instead — the prompt teaches
+ * it, the schema permits it, and the sanitiser strips it back out. Change one of
+ * the three and the other two stop making sense.
  *
  * `tags` carries no enum, and the vocabulary the prompt lists is not enforced on
- * the way back. That list steers the model towards labels the rest of the
- * wardrobe already uses; it is not a storage constraint. A user may type any tag
- * they like (`upload_wardrobe_item_sheet.dart`), so `wardrobe_items.tags` is free
- * text, and filtering the model's answer against the list would only make the
- * AI's suggestions narrower than what the user can enter by hand.
+ * the way back: it steers the model towards labels the rest of the wardrobe
+ * already uses, but a user may type any tag by hand
+ * (`upload_wardrobe_item_sheet.dart`), so filtering the model's answer would
+ * only make the AI's suggestions narrower than what they can enter themselves.
  */
 
-/** What the model answers with when the photo does not tell it. */
 const UNKNOWN = "unknown";
 
-/** Most tags one item carries. Stated to the model, enforced on the way back. */
+/** Stated to the model, enforced on the way back. */
 const MAX_TAGS = 6;
 
 /**
@@ -62,11 +56,8 @@ export interface WardrobeAnalysisResponse {
 }
 
 /**
- * Narrows the model's answer to the response body. A category outside
- * {@link VALID_CATEGORIES} — the sentinel, a hallucinated name, a non-string,
- * an omitted field — comes back `null`, which the app reads as "leave this
- * input alone". Tags keep whatever non-empty strings the model produced, capped
- * at {@link MAX_TAGS}.
+ * A category outside {@link VALID_CATEGORIES} comes back `null`, which the app
+ * reads as "leave this input alone".
  *
  * Unlike its sibling in `analyze-product-image/analysis.ts`, this does not
  * de-dupe tags: that one filters against a closed enum, where a repeat is

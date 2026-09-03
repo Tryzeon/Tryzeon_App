@@ -1,13 +1,9 @@
 /**
- * The prompt, the response schema, and the sanitiser that turns whatever the
- * model said into the response body — the whole contract with the model, kept
- * apart from the HTTP shell in `index.ts` so it can be tested without a network.
- *
- * The three belong together: structured output types every field as a string,
- * so the model has no way to answer "I can't tell" with JSON null. `unknown` is
- * the agreed spelling instead — the prompt teaches it, the schema permits it,
- * and the sanitiser strips it back out. Change one of the three and the other
- * two stop making sense.
+ * The prompt, the schema and the sanitiser belong together: structured output
+ * types every field as a string, so the model has no way to answer "I can't
+ * tell" with JSON null. `unknown` is the agreed spelling instead — the prompt
+ * teaches it, the schema permits it, and the sanitiser strips it back out.
+ * Change one of the three and the other two stop making sense.
  */
 
 import {
@@ -20,22 +16,17 @@ import {
 } from "../_shared/vocabularies.ts";
 
 /**
- * The controlled vocabularies come from `_shared/vocabularies.ts`, which
- * derives them from the generated schema types. `MATERIAL_VALUES` is the
- * exception, and mirrors
- * `kMaterialPresets` in the app: `products.material` is free text, so these
- * Chinese strings are the stored value and the displayed value at once. There
- * is no enum behind them and nothing to translate later.
+ * The one vocabulary not derived from the generated schema types: it mirrors
+ * `kMaterialPresets` in the app, and `products.material` is free text, so these
+ * Chinese strings are the stored value and the displayed value at once.
  */
 const MATERIAL_VALUES = [
   "棉", "麻", "羊毛", "蠶絲", "聚酯纖維",
   "尼龍", "嫘縈", "天絲", "萊卡", "混紡",
 ];
 
-/** A vocabulary spelled out for the model: `slim / regular / loose / …`. */
 const list = (vocab: readonly string[]): string => vocab.join(" / ");
 
-/** The sentinel every field carries for "the photo doesn't tell me". */
 const UNKNOWN = "unknown";
 
 const MAX_NAME_LENGTH = 20;
@@ -98,9 +89,9 @@ export function buildSchema(categoryNames: string[]): Record<string, unknown> {
       thickness: { type: "string", enum: [...THICKNESS_VALUES, UNKNOWN] },
       elasticity: { type: "string", enum: [...ELASTICITY_VALUES, UNKNOWN] },
     },
-    // Every field is required. An omitted field and an `unknown` one mean the
-    // same thing to the caller, so allowing both only gives the model a third
-    // option — writing the *word* "null" into a field typed as a string.
+    // An omitted field and an `unknown` one mean the same thing to the caller,
+    // so allowing both only gives the model a third option — writing the *word*
+    // "null" into a field typed as a string.
     required: [
       "name", "category", "gender", "styles",
       "seasons", "material", "fit", "thickness", "elasticity",
@@ -121,10 +112,9 @@ export interface ProductAnalysisResponse {
 }
 
 /**
- * Narrows the model's answer to the response body, dropping anything outside
- * the agreed vocabulary — sentinels, hallucinated enum members, over-long
- * names, categories that don't exist. Every unusable field comes back `null`,
- * which the app reads as "leave this input alone".
+ * Anything outside the agreed vocabulary — sentinels, hallucinated enum members,
+ * over-long names, categories that no longer exist — comes back `null`, which
+ * the app reads as "leave this input alone".
  */
 export function toResponse(
   parsed: Record<string, unknown>,

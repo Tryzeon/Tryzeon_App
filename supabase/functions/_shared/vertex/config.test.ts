@@ -1,7 +1,6 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
 import { parseServiceAccount } from "./config.ts";
 
-/** Shaped like a downloaded key file, including the escaped newlines. */
 const KEY_FILE = JSON.stringify({
   type: "service_account",
   project_id: "tryzeon-497616",
@@ -26,7 +25,6 @@ Deno.test("parseServiceAccount tolerates surrounding whitespace", () => {
 });
 
 Deno.test("parseServiceAccount leaves the private key's newlines real", () => {
-  // The escaping that used to need un-doing by hand is now JSON.parse's job.
   const { privateKey } = parseServiceAccount(KEY_FILE);
   assertEquals(privateKey.includes("\\n"), false);
   assertEquals(privateKey.split("\n").length, 4);

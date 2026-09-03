@@ -21,12 +21,9 @@ import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.d
 class AccountPage extends HookConsumerWidget {
   const AccountPage({super.key});
 
-  /// Re-fetches everything this page displays. The entitlement re-emits on its
-  /// own whenever RevenueCat reports a change (capabilities follow from it), but
-  /// the usage cache is `keepAlive` and a day rollover reaches us only on a
-  /// re-read, which is what this is.
-  ///
-  /// All four start together so the indicator spins for the slowest, not the sum.
+  /// The entitlement re-emits on its own whenever RevenueCat reports a change
+  /// (capabilities follow from it), but the usage cache is `keepAlive` and a
+  /// day rollover reaches us only on a re-read, which is what this is.
   Future<void> _refresh(final WidgetRef ref) async {
     ref
       ..invalidate(dailyUsageTodayProvider)

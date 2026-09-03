@@ -32,8 +32,6 @@ export interface CatalogQuery {
 }
 
 /**
- * 這份目錄屬於哪一家店,未指定店家時為 null。
- *
  * 每一頁都查一次,是為了讓店家身分獨立於 items —— 從商品列推導的話,一次沒有
  * 結果的搜尋就會讓店名消失。
  */
@@ -63,8 +61,6 @@ async function requestCatalog(
   const store = parseStoreId(storeId);
   const { sortColumn, sortAscending } = sortParams(sort);
 
-  // 兩筆查詢互不相依,並行才不會讓店家查詢多疊一次往返到目錄的延遲上。
-  // 多取一列就知道還有沒有下一頁,不必再問一次 count。
   const [products, storeProfile] = await Promise.all([
     supabase.rpc("list_shop_products", {
       p_store_id: store,
@@ -101,7 +97,6 @@ let prefetched: Promise<CatalogPage> | null = requestCatalog({
 // 抑制 unhandled rejection;真正的錯誤仍會交給取用它的呼叫端。
 prefetched.catch(() => {});
 
-/** 取一頁目錄。條件相符的第一次呼叫會直接接手啟動時預抓的那一頁。 */
 export function fetchCatalog(query: CatalogQuery): Promise<CatalogPage> {
   const isPrefetched = query.q === "" &&
     query.sort === "latest" &&
@@ -115,8 +110,6 @@ export function fetchCatalog(query: CatalogQuery): Promise<CatalogPage> {
 }
 
 /**
- * 單一商品,找不到就是 null。
- *
  * 走 `get_shop_product` 而不是自己查 products:「顧客看得到的商品」這條規則
  * (`status = 'active'`)在那支函式的身體裡,不該再被 client 抄一次。它回的欄位
  * 和目錄那支對得起來,所以共用同一個 `buildCatalogItem`。

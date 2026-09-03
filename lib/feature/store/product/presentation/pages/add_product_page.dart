@@ -40,9 +40,6 @@ class AddProductPage extends HookConsumerWidget {
     final analyzedPath = useRef<String?>(null);
     final advancedController = useMemoized(ExpansibleController.new);
 
-    // Analyze the main (first) image once it is added, and pre-fill empty
-    // fields. Runs once per distinct main-image file; failures degrade to a
-    // no-op (the usecase returns an empty result).
     final newFiles = formData.newImageFiles;
     final mainImageFile = newFiles.isEmpty ? null : newFiles.first;
     useEffect(() {

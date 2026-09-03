@@ -73,9 +73,6 @@ async function runSearchWardrobe(
   return { items: data ?? [] };
 }
 
-// The tool schemas are request-independent — only the `execute` closures below
-// bind a client and a user — so they are built once per isolate rather than on
-// every turn, along with the JSON Schema the SDK derives from each.
 const SEARCH_PRODUCTS_SCHEMA = z.object({
   query: z.string().optional().describe(
     "只比對『商品名稱』與『店家/品牌名稱』。多個詞以空白分隔，且每個詞都必須出現在商品名稱中（AND），詞越多越容易 0 筆，所以一次只放『一個』最具代表性、最可能原封不動寫進商品名稱的詞。\n" +

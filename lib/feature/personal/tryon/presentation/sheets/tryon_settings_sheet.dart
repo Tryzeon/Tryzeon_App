@@ -157,8 +157,6 @@ class _TryonSettingsForm extends HookConsumerWidget {
               ),
             ),
 
-            // Only the settings scroll, so the title stays legible while a
-            // long list of them moves under it.
             Flexible(
               child: SingleChildScrollView(
                 controller: scrollController,
@@ -246,8 +244,7 @@ class _TryonSettingsForm extends HookConsumerWidget {
                       minLines: 1,
                     ),
 
-                    // Transition only reaches the video generator, so it stays
-                    // hidden for anyone who cannot run a video try-on.
+                    // Transition only reaches the video generator.
                     if (hasVideoAccess) ...[
                       const SizedBox(height: AppSpacing.mdLg),
                       Row(
@@ -292,13 +289,10 @@ class _TryonSettingsForm extends HookConsumerWidget {
   }
 }
 
-/// Presets as a single-choice row over [controller]'s text — typing anything
-/// off-list surfaces a selected "自訂" chip, so exactly one chip is always lit
-/// and an unlisted prompt never reads as "nothing applied".
-///
-/// [emptyLabel] names what an empty prompt actually does, which differs per
-/// field: an empty scene keeps the original background, an empty transition
-/// falls back to the default runway motion.
+/// Typing anything off-list surfaces a selected "自訂" chip, so exactly one chip
+/// is always lit and an unlisted prompt never reads as "nothing applied".
+/// [emptyLabel] differs per field: an empty scene keeps the original
+/// background, an empty transition falls back to the default runway motion.
 class _PresetChips extends StatelessWidget {
   const _PresetChips({
     required this.controller,

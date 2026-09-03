@@ -98,7 +98,6 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
   ],
 );
 
-// Full-screen routes (no bottom nav)
 final personalFullScreenRoutes = [
   GoRoute(
     path: AppRoutes.personalSettings,

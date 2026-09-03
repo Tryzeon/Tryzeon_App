@@ -1,6 +1,3 @@
-// The charge/refund semantics belong to `supabaseUsageCounter` and are tested in
-// `_shared/quota.test.ts`. What is chat's — and all that is asserted here — is
-// which counter it charges.
 import { assertEquals } from "jsr:@std/assert";
 import { supabaseChatQuota } from "./quota.ts";
 import { fakeQuotaAdmin, SAMPLE_USAGE } from "../quota.testing.ts";

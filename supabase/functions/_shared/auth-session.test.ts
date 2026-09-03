@@ -7,7 +7,6 @@ interface AdminStub {
   getUserError?: string;
   hashedToken?: string | null;
   generateLinkError?: string;
-  /** Records the email `generateLink` was actually called with. */
   seen: { email?: string };
 }
 

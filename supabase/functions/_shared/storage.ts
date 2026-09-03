@@ -1,6 +1,4 @@
 /**
- * Storage origin conventions, in one place.
- *
  * An image referenced by a bare path can live in one of two backends:
  *   - Cloudflare R2 public bucket — keys namespaced with `stores/` (store logos
  *     and product images). This prefix is a leading, distinct namespace and can
@@ -12,20 +10,12 @@
  *     semantic role (avatar vs. wardrobe garment).
  */
 
-/** Leading namespace that routes a key to the R2 public images bucket. */
 export const R2_PUBLIC_PREFIX = "stores/";
 
-/** Supabase Storage bucket for user model photos (avatars). */
 export const USER_AVATARS_BUCKET = "user-avatars";
 
-/** Supabase Storage bucket for user wardrobe item images. */
 export const WARDROBE_IMAGES_BUCKET = "wardrobe-images";
 
-/**
- * The buckets images may be fetched from. Expressed as a type rather than a
- * runtime allowlist: a call site cannot name a bucket outside this set, so
- * there is nothing left to check at runtime.
- */
 export type SupabaseImageBucket =
   | typeof USER_AVATARS_BUCKET
   | typeof WARDROBE_IMAGES_BUCKET;

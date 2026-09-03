@@ -4,13 +4,9 @@ export 'package:tryzeon/feature/common/measurement/domain/entities/measurement_q
 
 /// The dimensions of a *person* the shopper can record.
 ///
-/// Most are body measurements in centimeters (chest/waist/hips are
-/// circumferences measured on the body, not the flat measurements printed on a
-/// garment's size chart); `weight` is a mass in kilograms. Each member carries
-/// the physical [quantity] it expresses (which fixes its canonical unit) and a
-/// `[min, max]` sanity range for validation. The garment side has its own
-/// vocabulary in `GarmentMeasurementType`; the two are deliberately separate
-/// types and are only related through the fit domain.
+/// Chest, waist and hips are circumferences measured on the body, not the flat
+/// measurements printed on a garment's size chart. Lengths are in centimeters;
+/// `weight` is a mass in kilograms.
 enum BodyMeasurementType {
   height('height', quantity: MeasurementQuantity.length, min: 100, max: 250),
   weight('weight', quantity: MeasurementQuantity.mass, min: 20, max: 300),

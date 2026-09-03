@@ -3,8 +3,6 @@ import { loadGarments, makeSourceLoader } from "./sources.ts";
 import { USER_AVATARS_BUCKET } from "../storage.ts";
 import type { SourceLoader } from "./sources.ts";
 
-// Fake client whose storage download records the bucket and path it was asked
-// for and returns bytes spelling out the request.
 function fakeClient() {
   const downloads: string[] = [];
   const client = {

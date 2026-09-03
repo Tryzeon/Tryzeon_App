@@ -85,8 +85,7 @@ class _ProductDetailContent extends HookConsumerWidget {
       orElse: () => <String, String>{},
     );
 
-    // The size chart shows the full column set for the product's garment
-    // type; falls back to every dimension while categories are loading.
+    // Falls back to every dimension while the categories are still loading.
     final sizeColumnTypes = categoriesAsync.maybeWhen(
       data: (final categories) => relevantMeasurementTypesFor(
         categories

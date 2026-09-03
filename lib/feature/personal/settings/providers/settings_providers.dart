@@ -30,9 +30,8 @@ class TryonPreferencesNotifier extends _$TryonPreferencesNotifier {
     return result.isSuccess ? result.get()! : const TryonPreferences();
   }
 
-  /// Applies [preferences] at once and persists them. Every control writes
-  /// through this as it changes, so there is nothing to confirm and closing the
-  /// sheet cannot drop an edit.
+  /// Every control writes through this as it changes, so there is nothing to
+  /// confirm and closing the sheet cannot drop an edit.
   Future<void> apply(final TryonPreferences preferences) async {
     state = AsyncData(preferences);
     final result = await ref.read(setTryonPreferencesUseCaseProvider)(preferences);

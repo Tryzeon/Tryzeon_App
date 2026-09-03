@@ -6,14 +6,10 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
 class RevenueCatUiUtils {
-  /// Always presents the Paywall Page regardless of current entitlement.
   static void presentPaywall(final BuildContext context) {
     context.push(AppRoutes.personalPaywall);
   }
 
-  /// Presents the RevenueCat Customer Center for the user to manage their
-  /// subscription.
-  ///
   /// Nothing is refreshed on the way out: RevenueCat pushes the new CustomerInfo
   /// to `appSubscriptionEntitlementProvider`'s listener. A plan change made on
   /// the store's own page can lag by up to RevenueCat's cache TTL — accepted, in

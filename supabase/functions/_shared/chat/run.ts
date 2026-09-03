@@ -19,11 +19,6 @@ import type { DbClient } from "../supabase.ts";
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
 
 export interface RunChatAgentDeps {
-  /**
-   * The one required port: its implementation needs a service-role client, and
-   * which one is the adapter's to say — the LINE path already holds its own.
-   * `supabaseChatQuota(adminClient)` builds it.
-   */
   quota: ChatQuotaFactory;
   loadContext?: ContextLoader;
   runAgent?: AgentRunner;
@@ -33,11 +28,6 @@ export interface RunChatAgentDeps {
 /**
  * Single chat entry point: validate -> quota -> ground -> agent loop ->
  * hydrate -> assemble.
- *
- * Platform-agnostic: given a userId and the prior conversation it returns the
- * ordered answer blocks plus the turns to append, so every caller (the chat
- * edge, a LINE adapter, …) gets the same accounting, the same grounding and the
- * same transcript rules for free.
  *
  * One client, and it is the caller's own: grounding, the tool searches and
  * hydration all go through it, so an adapter with a session (the app) has RLS

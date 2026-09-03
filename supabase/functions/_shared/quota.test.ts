@@ -25,7 +25,7 @@ Deno.test("supabaseUsageCounter refunds only a charge that landed, and only once
   const counter = supabaseUsageCounter(admin.client, "u1", "tryon_video");
   await counter.charge();
   await counter.refund();
-  await counter.refund(); // second refund is a no-op
+  await counter.refund();
   assertEquals(admin.calls.map((c) => c.fn), [
     "increment_feature_usage",
     "decrement_feature_usage",

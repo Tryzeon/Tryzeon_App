@@ -47,7 +47,6 @@ describe("promptConfig", () => {
     expect(loadPromptConfig()).toEqual(EMPTY_PROMPT_CONFIG);
   });
 
-  // webview 可以整個關掉 storage;首頁不該因此開不起來。
   it("survives a storage that throws", () => {
     vi.stubGlobal("localStorage", {
       getItem: () => {

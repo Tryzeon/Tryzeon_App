@@ -23,9 +23,8 @@ sealed class FitResult with _$FitResult {
     final String? tryonSizeId,
     @Default(<MeasurementCaveat>[]) final List<MeasurementCaveat> caveats,
 
-    /// Measurements present on both sides that fell inside the size range.
-    /// Only includes types compared on both sides — un-compared types are not
-    /// added here, so subtitles like "{type} fits" stay accurate.
+    /// Only includes types compared on both sides, so subtitles like
+    /// "{type} fits" stay accurate.
     @Default(<BodyMeasurementType>[]) final List<BodyMeasurementType> matchedTypes,
     final String? alternativeSize,
     @Default(false) final bool outOfRange,

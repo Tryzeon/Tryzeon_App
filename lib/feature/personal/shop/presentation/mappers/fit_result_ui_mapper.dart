@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 
-/// UI display extensions for [FitResult] in Presentation Layer.
-///
-/// Maps the domain entity into headline / subline / icon for both
-/// [SizeAdvisorBanner] (bordered card) and the inline fit row inside
-/// [PrePurchaseSheet]. Lives at the presentation layer because Material
-/// `IconData` and Chinese display strings are presentation concerns.
 extension FitResultUiMapper on FitResult {
   String get headline {
     switch (displayState) {

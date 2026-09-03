@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// A single action row inside an [showAppActionSheet] menu.
 class AppMenuAction {
   const AppMenuAction({
     required this.icon,
@@ -18,11 +17,6 @@ class AppMenuAction {
   final bool isDestructive;
 }
 
-/// Shows a Clean Luxe modal bottom sheet listing [actions].
-///
-/// Each action is rendered as a [ListTile]; tapping one dismisses the sheet
-/// and invokes its callback. An optional [title] is shown as a header, and an
-/// optional [hint] is shown as helper text below the actions.
 Future<void> showAppActionSheet(
   final BuildContext context, {
   required final List<AppMenuAction> actions,

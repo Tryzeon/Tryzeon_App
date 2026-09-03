@@ -1,15 +1,3 @@
-/**
- * Default `AnswerHydrator`: fetch the referenced rows from Postgres.
- *
- * The model answers with ids, never with data — it can only name rows a search
- * tool actually returned — so the row a caller renders is read here rather than
- * taken from the model's output. What is read is the app's shape: a full
- * product detail, so a card can open its page without a second round trip.
- *
- * That shape is this implementation's choice, not the core's, which is why it is
- * a port: a platform whose card needs four fields substitutes a hydrator that
- * selects four columns, and how the rows become an answer is unaffected.
- */
 import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
 import type { AnswerHydrator, AnswerRef } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
@@ -24,17 +12,6 @@ interface IdInFilter<Row> {
   in(column: "id", values: string[]): PromiseLike<{ data: Row[] | null; error: unknown }>;
 }
 
-/**
- * Run the caller's prepared query with an `.in("id", ids)` filter and key the
- * result by row id. Empty ids → empty map (no query); an id whose row is gone
- * is simply absent, and the assembler drops its block.
- *
- * `toBlock` is how a hydrator says what a row is worth rendering as, and may
- * return null to drop one the caller cannot render — the same outcome, by the
- * same missing-row rule, as a row deleted between search and answer. Exported so
- * a substituted hydrator inherits these rules rather than restating them: they
- * are what `assembleAnswerBlocks` depends on, not incidental query code.
- */
 export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
   query: IdInFilter<Row>,
   ids: string[],

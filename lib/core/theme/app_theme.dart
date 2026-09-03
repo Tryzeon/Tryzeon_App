@@ -1,33 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ─── Color Tokens ────────────────────────────────────────────────────────────
 
 /// Raw colour palette (M3 *reference* tokens). Tonal numbers follow Material 3
-/// convention: 100 = white, 0 = black. Roles (surface, onSurface, …) are
-/// assigned in [AppTheme]'s `ColorScheme`; widgets should read from
-/// `Theme.of(context).colorScheme`, not from this class.
-///
-/// Semantic colours that have no Material role (success, warning) live here as
-/// flat tokens — pair with their `on*` counterpart for foreground content.
+/// convention: 100 = white, 0 = black. Roles are assigned in [AppTheme]'s
+/// `ColorScheme`; widgets read `Theme.of(context).colorScheme`, not this class.
 class AppColors {
   AppColors._();
 
-  // ── Brand — Lavender (from logo) ──────────────────────────────────────
   // The logo's lavender (#C1AAE6 / #D3C4EF) is too light to carry white text,
-  // so the brand colour is NOT used for high-emphasis CTAs. Instead it lives
-  // as a low-emphasis tonal accent — selected chips, tags, section tints —
-  // wired through `ColorScheme.primaryContainer`. High-emphasis surfaces (CTA
-  // buttons, prices, active states) use neutral charcoal via `primary`.
+  // so the brand colour is never used for high-emphasis CTAs — only as a
+  // low-emphasis tonal accent via `ColorScheme.primaryContainer`. CTAs, prices
+  // and active states use neutral charcoal via `primary`.
   static const Color brand = Color(0xFF6750A4); // deep violet — accent text/icon on light
   static const Color brandContainer = Color(
     0xFFE8DEF8,
   ); // soft lavender — chip / tag surface
   static const Color onBrandContainer = Color(
     0xFF463371,
-  ); // deep violet — on brandContainer
+  );
 
-  // ── Neutral tonal palette (high = light) ──────────────────────────────
   static const Color neutral100 = Color(0xFFFFFFFF); // page background
   static const Color neutral98 = Color(0xFFF7F7F7); // surfaceContainerLow
   static const Color neutral95 = Color(0xFFEFEFEF); // surfaceContainer
@@ -36,13 +28,11 @@ class AppColors {
   static const Color neutral60 = Color(0xFF9E9E9E); // onSurfaceVariant
   static const Color neutral10 = Color(0xFF1A1A1A); // onSurface
 
-  // ── Semantic (no M3 role) ─────────────────────────────────────────────
   static const Color error = Color(0xFFB00020);
   static const Color onError = Color(0xFFFFFFFF);
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF410002);
 
-  // ── Fit Advisor (semantic, no M3 role) ────────────────────────────────
   // Sage — Fit Match (true-to-size)
   static const Color fitMatch = Color(0xFF4A6B45);
   static const Color onFitMatch = Color(0xFFFFFFFF);
@@ -62,18 +52,17 @@ class AppColors {
   static const Color onFitOutOfRangeContainer = Color(0xFF4A2F22);
 }
 
-// ─── Spacing Tokens ───────────────────────────────────────────────────────────
 
-/// 8px-grid spacing tokens. Use `AppSpacing.md` instead of magic numbers.
+/// 8px-grid spacing tokens.
 class AppSpacing {
   AppSpacing._();
 
   static const double xxs = 2;
   static const double xs = 4;
   static const double sm = 8;
-  static const double smMd = 12; // between sm and md
+  static const double smMd = 12;
   static const double md = 16;
-  static const double mdLg = 20; // between md and lg
+  static const double mdLg = 20;
   static const double lg = 24;
   static const double xl = 32;
   static const double xxl = 48;
@@ -82,10 +71,7 @@ class AppSpacing {
   static const double androidNavBarHeight = 80; // Material NavigationBar
 }
 
-// ─── Opacity Tokens ──────────────────────────────────────────────────────────
 
-/// Standardised opacity levels for overlays, scrim, and disabled states.
-/// Use `Colors.black.withValues(alpha: AppOpacity.overlay)` instead of magic numbers.
 class AppOpacity {
   AppOpacity._();
 
@@ -96,10 +82,7 @@ class AppOpacity {
   static const double overlay = 0.6; // image scrim / modal backdrop
 }
 
-// ─── Duration Tokens ──────────────────────────────────────────────────────────
 
-/// Standard animation durations. Use `AppDuration.standard` instead of
-/// `Duration(milliseconds: 200)` to keep motion timing consistent.
 class AppDuration {
   AppDuration._();
 
@@ -109,22 +92,17 @@ class AppDuration {
   static const Duration thinking = Duration(milliseconds: 1800);
 }
 
-// ─── Curve Tokens ───────────────────────────────────────────────────────────────
 
-/// Standard easing curves. Pair with `AppDuration` for consistent motion.
 class AppCurves {
   AppCurves._();
 
-  static const Curve standard = Curves.easeInOut; // most transitions
-  static const Curve enter = Curves.easeOut; // elements entering screen
-  static const Curve exit = Curves.easeIn; // elements leaving screen
-  static const Curve emphasized = Curves.easeOutCubic; // banners, sheets
+  static const Curve standard = Curves.easeInOut;
+  static const Curve enter = Curves.easeOut;
+  static const Curve exit = Curves.easeIn;
+  static const Curve emphasized = Curves.easeOutCubic;
 }
 
-// ─── Stroke Width Tokens ──────────────────────────────────────────────────────
 
-/// Standard line widths for borders, dividers, and progress strokes.
-/// Use `AppStroke.regular` instead of magic numbers like `1.5`.
 class AppStroke {
   AppStroke._();
 
@@ -134,9 +112,7 @@ class AppStroke {
   static const double thick = 3; // emphasized progress
 }
 
-// ─── Border Radius Tokens ─────────────────────────────────────────────────────
 
-/// Unified border radius constants. Use `AppRadius.card`, etc.
 class AppRadius {
   AppRadius._();
 
@@ -144,9 +120,9 @@ class AppRadius {
   static const double button = 8;
   static const double input = 10;
   static const double dialog = 16;
-  static const double sheet = 20; // top corners of bottom sheets
+  static const double sheet = 20;
   static const double icon = 10;
-  static const double pill = 100; // tags / filter chips
+  static const double pill = 100;
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
   static const BorderRadius buttonAll = BorderRadius.all(Radius.circular(button));
@@ -159,7 +135,6 @@ class AppRadius {
   static const BorderRadius pillAll = BorderRadius.all(Radius.circular(pill));
 }
 
-// ─── Theme ────────────────────────────────────────────────────────────────────
 
 class AppTheme {
   AppTheme._();
@@ -181,12 +156,10 @@ class AppTheme {
       onTertiary: AppColors.neutral100,
       tertiaryContainer: AppColors.neutral95,
       onTertiaryContainer: AppColors.neutral10,
-      // Error
       error: AppColors.error,
       onError: AppColors.onError,
       errorContainer: AppColors.errorContainer,
       onErrorContainer: AppColors.onErrorContainer,
-      // Surface
       surface: AppColors.neutral100,
       onSurface: AppColors.neutral10,
       surfaceContainerLowest: AppColors.neutral100,
@@ -195,10 +168,8 @@ class AppTheme {
       surfaceContainerHigh: AppColors.neutral92,
       surfaceContainerHighest: AppColors.neutral90,
       onSurfaceVariant: AppColors.neutral60,
-      // Outline
       outline: AppColors.neutral90,
       outlineVariant: AppColors.neutral95,
-      // Misc
       shadow: Colors.black,
       scrim: Colors.black,
       inverseSurface: AppColors.neutral10,
@@ -206,11 +177,10 @@ class AppTheme {
       inversePrimary: AppColors.brand,
     );
 
-    // Shared button style helpers
     const buttonShape = RoundedRectangleBorder(borderRadius: AppRadius.buttonAll);
     const buttonPadding = EdgeInsets.symmetric(
       horizontal: AppSpacing.lg,
-      vertical: AppSpacing.sm + 4, // 12px vertical
+      vertical: AppSpacing.sm + 4,
     );
 
     return ThemeData(
@@ -220,9 +190,6 @@ class AppTheme {
       shadowColor: Colors.black.withValues(alpha: 0.08),
       visualDensity: VisualDensity.standard,
 
-      // ── App Bar ──────────────────────────────────────────────────────────
-      // Spec: white bg, no shadow / tint, charcoal icons + title.
-      // `foregroundColor` drives icon and title colours.
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
@@ -236,12 +203,8 @@ class AppTheme {
         ),
       ),
 
-      // ── Divider ──────────────────────────────────────────────────────────
       dividerTheme: DividerThemeData(color: colorScheme.outline, thickness: 1, space: 1),
 
-      // ── Icon ─────────────────────────────────────────────────────────────
-      // Spec: icons default to onSurface (charcoal). Use onSurfaceVariant
-      // explicitly when an icon is meant to look muted.
       iconTheme: IconThemeData(color: colorScheme.onSurface),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
@@ -250,18 +213,12 @@ class AppTheme {
         ),
       ),
 
-      // ── List Tile ────────────────────────────────────────────────────────
-      // Spec: 24px horizontal padding (page-aligned), charcoal icons.
-      // Title (bodyLarge) and subtitle (bodyMedium / onSurfaceVariant) inherit
-      // from M3 defaults — no need to override.
       listTileTheme: ListTileThemeData(
         contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         iconColor: colorScheme.onSurface,
         selectedColor: colorScheme.onSurface,
       ),
 
-      // ── Floating Action Button ───────────────────────────────────────────
-      // Spec: solid charcoal CTA, white icon, circular, soft elevation.
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
@@ -272,10 +229,6 @@ class AppTheme {
         highlightElevation: 4,
       ),
 
-      // ── Slider ───────────────────────────────────────────────────────────
-      // Spec: thin 2px track, classic round thumb, charcoal accent.
-      // Bypasses M3 expressive slider; value indicator suppressed (callers
-      // surface the value separately).
       sliderTheme: SliderThemeData(
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: colorScheme.outline,
@@ -285,9 +238,6 @@ class AppTheme {
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 15),
       ),
 
-      // ── Radio ────────────────────────────────────────────────────────────
-      // Spec: selected dot is neutral charcoal — consistent with the switch,
-      // checkbox, and confirmation dialog actions (no coloured accent).
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith((final states) {
           if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
@@ -295,9 +245,6 @@ class AppTheme {
         }),
       ),
 
-      // ── Switch ───────────────────────────────────────────────────────────
-      // Spec: on-state is neutral charcoal (not the lavender accent). White
-      // thumb on a charcoal track when selected; defaults when off.
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((final states) {
           if (states.contains(WidgetState.selected)) return colorScheme.surface;
@@ -313,8 +260,6 @@ class AppTheme {
         }),
       ),
 
-      // ── Checkbox ─────────────────────────────────────────────────────────
-      // Spec: checked box is neutral charcoal with a white tick.
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((final states) {
           if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
@@ -323,21 +268,16 @@ class AppTheme {
         checkColor: WidgetStateProperty.all(colorScheme.surface),
       ),
 
-      // ── Progress Indicator ───────────────────────────────────────────────
-      // Spec: spinners/bars are neutral charcoal, not the brand accent.
       // NOTE: RefreshIndicator does NOT read this theme (it falls back to
       // colorScheme.primary), so its `color` is set explicitly at each site.
       progressIndicatorTheme: ProgressIndicatorThemeData(color: colorScheme.onSurface),
 
-      // ── Expansion Tile ───────────────────────────────────────────────────
       // Spec: no top/bottom dividers (design system forbids stacked lines).
       expansionTileTheme: const ExpansionTileThemeData(
         shape: Border(),
         collapsedShape: Border(),
       ),
 
-      // ── Card ─────────────────────────────────────────────────────────────
-      // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: CardThemeData(
         color: colorScheme.surfaceContainerLow,
         elevation: 0,
@@ -348,8 +288,6 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      // ── Buttons ──────────────────────────────────────────────────────────
-      // Primary: filled charcoal, white label, radius 8px
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: colorScheme.primary,
@@ -363,7 +301,6 @@ class AppTheme {
           ),
         ),
       ),
-      // Secondary: transparent bg, charcoal border + text, radius 8px
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
@@ -377,7 +314,6 @@ class AppTheme {
           ),
         ),
       ),
-      // Ghost: transparent bg, charcoal text, radius 8px
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: colorScheme.primary,
@@ -391,14 +327,12 @@ class AppTheme {
         ),
       ),
 
-      // ── Input ────────────────────────────────────────────────────────────
-      // Spec: outlined style, 1.5px border, radius 10px, focus → onSurface
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colorScheme.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm + 4, // 12px
+          vertical: AppSpacing.sm + 4,
         ),
         border: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
@@ -426,8 +360,6 @@ class AppTheme {
         ),
       ),
 
-      // ── Bottom Sheet ──────────────────────────────────────────────────────
-      // Spec: white bg, top radius 20px, no elevation
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
@@ -435,9 +367,7 @@ class AppTheme {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       ),
 
-      // ── SnackBar ──────────────────────────────────────────────────────────
-      // Spec: dark pill, floating bottom, used for silent result feedback
-      // (e.g. "saved to album"). Failures use TopNotification banner instead.
+      // Silent result feedback only; failures use the TopNotification banner.
       snackBarTheme: SnackBarThemeData(
         backgroundColor: colorScheme.inverseSurface,
         contentTextStyle: GoogleFonts.notoSansTc(
@@ -455,10 +385,8 @@ class AppTheme {
         ),
       ),
 
-      // ── Tab Bar ──────────────────────────────────────────────────────────
-      // Spec: flat, charcoal active, thin underline indicator — the same
-      // treatment §5 gives the nav bar, and for the same reason: M3's default
-      // 3px indicator and ripple are heavier than this UI's flat surfaces.
+      // Thin underline rather than M3's default: its 3px indicator and ripple
+      // are heavier than this UI's flat surfaces.
       tabBarTheme: TabBarThemeData(
         labelColor: colorScheme.onSurface,
         unselectedLabelColor: colorScheme.onSurfaceVariant,
@@ -479,8 +407,6 @@ class AppTheme {
         ),
       ),
 
-      // ── Dialog ───────────────────────────────────────────────────────────
-      // Spec: white bg, radius 16px, no elevation shadow
       dialogTheme: DialogThemeData(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
@@ -489,10 +415,6 @@ class AppTheme {
         titleTextStyle: null, // inherits from textTheme.titleLarge
       ),
 
-      // ── Chip ─────────────────────────────────────────────────────────────
-      // Spec: pill shape, outline border, no elevation. Selected state is the
-      // signature brand moment — lavender fill (primaryContainer) with deep
-      // violet label (onPrimaryContainer) and no border.
       chipTheme: ChipThemeData(
         backgroundColor: colorScheme.surface,
         selectedColor: colorScheme.primaryContainer,
@@ -511,8 +433,6 @@ class AppTheme {
         ),
       ),
 
-      // ── Bottom Navigation Bar ─────────────────────────────────────────────
-      // Spec: white bg, top border 1px outline, charcoal active, no pill
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: colorScheme.surface,
         indicatorColor: Colors.transparent, // disable M3 pill indicator
@@ -537,9 +457,7 @@ class AppTheme {
         }),
       ),
 
-      // ── Typography ───────────────────────────────────────────────────────
       textTheme: TextTheme(
-        // Display — Playfair Display (editorial headings)
         displayLarge: GoogleFonts.playfairDisplay(
           fontSize: 48,
           fontWeight: FontWeight.w400,
@@ -553,11 +471,9 @@ class AppTheme {
           fontWeight: FontWeight.w400,
           fontStyle: FontStyle.italic,
         ),
-        // Headline — Outfit (section / card titles)
         headlineLarge: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600),
         headlineMedium: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600),
         headlineSmall: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600),
-        // Title — Outfit
         titleLarge: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w600),
         titleMedium: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w500),
         titleSmall: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w500),
@@ -565,7 +481,6 @@ class AppTheme {
         bodyLarge: GoogleFonts.notoSansTc(fontSize: 15, fontWeight: FontWeight.w400),
         bodyMedium: GoogleFonts.notoSansTc(fontSize: 13, fontWeight: FontWeight.w400),
         bodySmall: GoogleFonts.notoSansTc(fontSize: 11, fontWeight: FontWeight.w400),
-        // Label — Outfit Uppercase (buttons, badges, nav)
         labelLarge: GoogleFonts.outfit(
           fontSize: 12,
           fontWeight: FontWeight.w700,

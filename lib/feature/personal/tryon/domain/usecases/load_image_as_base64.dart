@@ -4,9 +4,6 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// [url] is required: "there is nothing to send" is a question only the avatar
-/// flow asks, and it is answered there rather than folded in here as a nullable
-/// every caller then has to reason about.
 class LoadImageAsBase64 {
   LoadImageAsBase64({required final TryonMediaRepository mediaRepository})
     : _mediaRepository = mediaRepository;

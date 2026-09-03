@@ -1,8 +1,6 @@
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 
-/// A size row that changed, paired with the row it started from so the caller
-/// can write only the columns that actually differ.
 class ProductSizeUpdate {
   const ProductSizeUpdate({required this.original, required this.target});
 
@@ -10,7 +8,6 @@ class ProductSizeUpdate {
   final ExistingSizeItem target;
 }
 
-/// What has to happen to a product's size rows to match the store owner's form.
 class ProductSizeDiff {
   const ProductSizeDiff({
     required this.toAdd,
@@ -25,9 +22,6 @@ class ProductSizeDiff {
   bool get isEmpty => toAdd.isEmpty && toUpdate.isEmpty && idsToDelete.isEmpty;
 }
 
-/// Diffs the [target] sizes the store owner wants against the product's
-/// [original] rows.
-///
 /// An [ExistingSizeItem] whose row is no longer there is skipped rather than
 /// re-inserted: the row was deleted elsewhere, and inserting it would resurrect
 /// a size the form only knows about because it loaded a stale product.

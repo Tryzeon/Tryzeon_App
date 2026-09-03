@@ -6,9 +6,8 @@ import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart'
 
 part 'chat_stream_event.freezed.dart';
 
-/// One event from the chat progress stream. Search steps stream live
-/// ([ChatToolStarted]/[ChatToolFinished]); the run ends with exactly one
-/// terminal event — [ChatReplied] (the answer turn) or [ChatFailed].
+/// Search steps stream live ([ChatToolStarted]/[ChatToolFinished]); the run
+/// ends with exactly one terminal event — [ChatReplied] or [ChatFailed].
 @freezed
 sealed class ChatStreamEvent with _$ChatStreamEvent {
   const factory ChatStreamEvent.toolStarted(final ToolUseBlock block) = ChatToolStarted;

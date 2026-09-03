@@ -2,7 +2,6 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 
-/// Builds the plain-text order message sent to a store's DM channel.
 class OrderMessageBuilder {
   const OrderMessageBuilder._();
 

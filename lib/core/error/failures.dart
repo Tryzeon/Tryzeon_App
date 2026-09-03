@@ -37,8 +37,7 @@ class ValidationFailure extends Failure {
 class RateLimitFailure extends Failure {
   const RateLimitFailure({final String? message, this.usagePayload}) : super(message);
 
-  /// Raw `usage` snapshot from the edge function's 429 body, if present.
-  /// Repositories populate this; orchestrators parse it into a `DailyUsage`.
+  /// Raw `usage` snapshot from the edge function's 429 body.
   final Map<String, dynamic>? usagePayload;
 
   @override
@@ -101,27 +100,23 @@ Failure mapExceptionToFailure(final Object e) {
   }
 
   return switch (e) {
-    // Custom App Exceptions
     ServerException(message: final msg) => ServerFailure(msg),
     UnauthenticatedException(message: final msg) => AuthFailure(msg),
     UserCanceledException(message: final msg) => UserCanceledFailure(msg),
     NotFoundException(message: final msg) => NotFoundFailure(msg),
 
-    // Supabase Exceptions
     PostgrestException() => const ServerFailure(),
     StorageException() => const ServerFailure(),
     FunctionException() => const ServerFailure(),
     AuthRetryableFetchException() => const NetworkFailure(),
     AuthException() => const AuthFailure(),
 
-    // Network Exceptions
     SocketException() => const NetworkFailure(),
-    // Client-side deadline (e.g. a long-running edge function killed at the
-    // platform's wall-clock limit never responding, or a half-open socket left
-    // by a suspended app that never delivers bytes, EOF or an error).
+    // Client-side deadline: an edge function killed at the platform's
+    // wall-clock limit, or a half-open socket that never delivers bytes,
+    // EOF or an error.
     TimeoutException() => const TimeoutFailure(),
-    // http throws ClientException (often wrapping a SocketException) for
-    // transport-level failures escaping Supabase.
+    // http wraps transport-level failures escaping Supabase in ClientException.
     ClientException() => const NetworkFailure(),
     HandshakeException() => const NetworkFailure(),
     HttpException() => const ServerFailure(),

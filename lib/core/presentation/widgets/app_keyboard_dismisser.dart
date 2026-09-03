@@ -6,8 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 ///
 /// Flutter only drops focus on tap-outside on desktop, so on iOS a field whose
 /// keyboard has no usable return key (numeric pads, multiline) keeps the
-/// keyboard open with no way out. Overriding the tap-outside intents is the
-/// framework's supported hook for changing that.
+/// keyboard open with no way out.
 class AppKeyboardDismisser extends HookWidget {
   const AppKeyboardDismisser({super.key, required this.child});
 

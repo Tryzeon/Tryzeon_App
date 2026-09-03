@@ -42,8 +42,6 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
     );
   }
 
-  /// Symmetric pipeline for both media types: resolve URL → download → sink,
-  /// always cleaning up the temp file afterwards.
   Future<Result<void, Failure>> _process(
     final TryonResult result,
     final Future<void> Function(String path) sink, {

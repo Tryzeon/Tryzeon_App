@@ -3,18 +3,11 @@ class AppValidators {
     r"^[a-zA-Z0-9.!#$%&'*+\-/=?^_`{|}~]+@[a-zA-Z0-9]+(\.[a-zA-Z]+)+$",
   );
 
-  /// Legal characters for a FB/IG handle (letters, digits, '.', '_'). Matching
-  /// the charset alone rejects URLs and '@' without needing separate checks.
   static final _socialHandleRegex = RegExp(r'^[A-Za-z0-9._]+$');
 
-  /// A LINE Official Account ID: a mandatory '@' then lowercase letters, digits,
-  /// '.', '-', '_'. Matching the charset alone rejects URLs, spaces and casing
-  /// typos without needing separate checks.
   static final _lineOaIdRegex = RegExp(r'^@[a-z0-9._-]+$');
 
-  /// A personal LINE ID: 4–20 lowercase letters, digits, '.', '-', '_' with NO
-  /// '@' prefix (the '@' marks an Official Account). The length bounds and
-  /// charset match LINE's own ID rules.
+  /// LINE's own rules for a personal ID; the '@' prefix marks an Official Account.
   static final _linePersonalIdRegex = RegExp(r'^[a-z0-9._-]{4,20}$');
 
   static String? validateEmail(final String? value) {
@@ -56,13 +49,9 @@ class AppValidators {
     return null;
   }
 
-  /// Validates an optional numeric measurement against a `[min, max]` range.
-  /// Empty is allowed (optional field). The domain supplies the bounds and unit
-  /// so this stays free of any feature-specific measurement type. [scale]
-  /// multiplies the parsed value before the range check — pass a unit→canonical
-  /// factor (e.g. cm-per-input-unit) so inputs in any unit validate against
-  /// canonical bounds; the default `1.0` leaves the value unchanged.
-  ///
+  /// [scale] multiplies the parsed value before the range check — pass a
+  /// unit→canonical factor so inputs in any unit validate against canonical
+  /// bounds.
   /// [compact] 讓訊息縮成 `20–70cm`，給放不下整句提示的表格欄位用。
   static String? validateRange(
     final String? value, {
@@ -89,7 +78,7 @@ class AppValidators {
 
   static String? validateUrl(final String? value) {
     if (value == null || value.trim().isEmpty) {
-      return null; // Optional
+      return null;
     }
     final uri = Uri.tryParse(value);
     if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
@@ -126,12 +115,9 @@ class AppValidators {
     return null;
   }
 
-  /// Validates one LINE field that holds either kind of ID: an Official Account
-  /// (`@id`) or a personal ID (no `@`). The '@' prefix picks which format the
-  /// value must satisfy.
   static String? validateLineId(final String? value) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null; // Optional
+    if (trimmed.isEmpty) return null;
     final isOfficial = trimmed.startsWith('@');
     final matches = isOfficial
         ? _lineOaIdRegex.hasMatch(trimmed)
@@ -144,7 +130,7 @@ class AppValidators {
 
   static String? validateSocialHandle(final String? value) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null; // Optional
+    if (trimmed.isEmpty) return null;
     if (!_socialHandleRegex.hasMatch(trimmed)) {
       return '帳號僅能包含英數字、. 或 _';
     }

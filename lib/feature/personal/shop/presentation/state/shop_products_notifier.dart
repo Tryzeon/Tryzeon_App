@@ -9,11 +9,6 @@ import 'package:typed_result/typed_result.dart';
 part 'shop_products_notifier.freezed.dart';
 part 'shop_products_notifier.g.dart';
 
-/// The accumulated shop product list plus paging flags.
-///
-/// [items] accumulates across pages; [hasMore] is false once a page returns
-/// fewer than [ShopProductsNotifier._pageSize] rows; [isLoadingMore] guards the
-/// footer spinner and re-entrancy in [ShopProductsNotifier.loadMore].
 @freezed
 sealed class ShopProductsState with _$ShopProductsState {
   const factory ShopProductsState({
@@ -24,10 +19,6 @@ sealed class ShopProductsState with _$ShopProductsState {
 }
 
 /// Offset-paginated shop product list, keyed by [ShopFilter].
-///
-/// Supplies `limit`/`offset` to the use case, which the backend already
-/// exposes as `p_limit`/`p_offset`. The family argument [filter] is available
-/// as a generated getter and reused inside [loadMore].
 @riverpod
 class ShopProductsNotifier extends _$ShopProductsNotifier {
   static const _pageSize = 20;
@@ -43,9 +34,6 @@ class ShopProductsNotifier extends _$ShopProductsNotifier {
     return ShopProductsState(items: items, hasMore: items.length == _pageSize);
   }
 
-  /// Appends the next page. No-op while a page is in flight, when the first
-  /// page has not resolved, or once the end is reached. A failed page keeps
-  /// the already-loaded items and just clears the spinner (logged, no throw).
   Future<void> loadMore() async {
     final ref = this.ref; // capture THIS build's Ref to detect rebuild/dispose
     final current = state.value;

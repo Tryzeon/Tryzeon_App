@@ -1,10 +1,4 @@
 /**
- * Vertex AI implementation of the core's `AgentRunner` port. This module owns
- * everything SDK-specific about a chat turn — the tool set, the stream, the
- * structured-output call — and the core sees only "run a turn, get an answer
- * and the rounds it took". The provider itself is shared with the analysis
- * helpers and lives in `vertex/provider.ts`.
- *
  * It also owns the transcript rule: a tool call is an assistant turn, its
  * result a user turn. That rule belongs wherever the loop is observed, because
  * only here is the pairing still known; every consumer downstream gets messages
@@ -22,8 +16,6 @@ import type {
   ChatRole,
 } from "./types.ts";
 
-// Tool calls one turn may make before the loop is stopped. This runner's own
-// budget, not a caller-facing limit: a substituted `AgentRunner` sets its own.
 const MAX_AGENT_STEPS = 10;
 
 export const runVertexAgent: AgentRunner = async (req) => {
@@ -47,10 +39,6 @@ export const runVertexAgent: AgentRunner = async (req) => {
 
   const rounds: ChatMessage[] = [];
 
-  // A progress event and the block it records are the same value, emitted once.
-  // That identity is the contract a streaming client relies on to rebuild the
-  // transcript from what it watched, so it is stated here rather than left to
-  // two literals staying in step.
   const record = (role: ChatRole, block: ChatEvent) => {
     rounds.push({ role, content: [block] });
     req.onEvent?.(block);

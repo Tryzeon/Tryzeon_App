@@ -6,8 +6,6 @@ import { tryonErrorResponse } from "../_shared/tryon/http.ts";
 import { runTryonJob, supabaseQuota } from "../_shared/tryon/index.ts";
 import { parseTryonParams } from "./request.ts";
 
-// Two clients call this now: the Flutter app, which needs no CORS, and the
-// LIFF web app, which does.
 const cors = makeCors({ methods: "POST" });
 
 Deno.serve(async (req) => {
@@ -18,9 +16,8 @@ Deno.serve(async (req) => {
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return cors.wrap(errorResponse);
 
-    // Every bad body — unparseable JSON included — raises a ValidationError, so
-    // decoding needs no special case: it reaches tryonErrorResponse alongside
-    // the core's own failures and yields one 400.
+    // Unparseable JSON raises a ValidationError too, so decoding needs no
+    // special case to reach tryonErrorResponse as one 400.
     const params = parseTryonParams(await req.text(), user!.id);
 
     // The job runs on the requester's own client, so RLS bounds every row and

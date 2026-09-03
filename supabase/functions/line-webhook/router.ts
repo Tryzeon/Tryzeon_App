@@ -1,24 +1,7 @@
 /**
- * Which handler an incoming event belongs to, if any.
- *
- * An image is a garment to try on; text is a request for the chat agent; a
- * postback is a button we put on a card coming back. All three take far longer
- * than the webhook may, so all three are returned as a task the caller finishes
- * in the background and delivers with a push. A follow is the exception: its
- * answer is one fixed message, so it is done by the time the task resolves.
- *
- * Something a sender did that we understood but cannot act on — a sticker, a
- * blank line, a card from a deploy that no longer exists — comes back as a task
- * too, one that nudges. `null` is therefore left meaning exactly one thing:
- * this was not a request at all (a `leave`, a group, a delivery receipt), so
- * answering it would be answering nobody.
- *
- * This lives beside the handlers rather than in `index.ts` because what counts
- * as a usable event is a rule about them, not about the transport: the text
- * normalization here and the length check in `chat-handler.ts` are two halves of
- * one answer. Keeping the two outcomes apart in the return value is what spares
- * `index.ts` — the one module in the feature with no test — its own list of
- * event kinds to keep in step with this file.
+ * `null` means exactly one thing: this was not a request at all (a `leave`, a
+ * group, a delivery receipt). Something a sender did that we understood but
+ * cannot act on comes back as a task too, one that nudges.
  */
 import {
   handleImageTryon,
@@ -53,14 +36,6 @@ export function routeEvent(
   return null;
 }
 
-/**
- * The reply for something a sender did that we understood but cannot act on —
- * a sticker, a blank line, a card from a deploy that no longer exists.
- *
- * A task like any other, so the caller needs no second branch: `null` is left
- * meaning one thing only, that the event was not a request at all. A failure
- * here is cosmetic and swallowed, which is why it warns rather than throws.
- */
 async function hint(
   deps: RouterDeps,
   // deno-lint-ignore no-explicit-any
@@ -74,16 +49,11 @@ async function hint(
 }
 
 /**
- * A new follower, greeted on the reply token.
- *
- * The only event here that needs no `source.userId`: nothing is read, written
- * or charged, so a sender who has not accepted the OA's terms — and whose id
- * LINE therefore withholds — still gets the welcome.
- *
- * It fires on an unblock as well as a first follow (`follow.isUnblocked` tells
- * them apart, but LINE does not guarantee that flag's accuracy). Both get the
- * same message: greeting a returning follower twice costs nothing, and
- * greeting a new one not at all is the failure this exists to fix.
+ * The only event here that needs no `source.userId`: nothing is read, written or
+ * charged, so a sender whose id LINE withholds still gets the welcome. It fires
+ * on an unblock as well as a first follow, and both get the same message —
+ * `follow.isUnblocked` tells them apart, but LINE does not guarantee its
+ * accuracy.
  */
 function routeFollow(
   deps: RouterDeps,

@@ -1,11 +1,4 @@
 /**
- * The one Upstash Redis connection this project uses.
- *
- * Two callers now — the abuse rate limiter and LINE's conversation store — and
- * they share a client rather than each building their own: the credentials are
- * one pair of env vars, and a third use should not mean a third copy of this
- * literal drifting out of step with the others.
- *
  * Built on first use, not at import, and kept for the isolate — the pattern
  * `tryon/vertex.ts` uses for its own credentials. Both callers reach this
  * module from code paths that do not always touch Redis (chat turns with an

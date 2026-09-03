@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 export type ActiveTab = "home" | "shop" | null;
 
 /**
- * 首頁與試衣間,對應 app 個人分頁列的前兩格。
- *
  * 哪一格是 active 由分頁殼說了算,不用 NavLink 自己比對路徑:試衣間那格連到的
  * 是它上次停的位置(可能是 /store/:id),而在商品頁時兩格都不該亮。
  *

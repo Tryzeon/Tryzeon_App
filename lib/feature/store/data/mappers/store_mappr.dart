@@ -19,7 +19,6 @@ import '../../profile/data/models/store_profile_model.dart';
 import '../../profile/domain/entities/store_profile.dart';
 import 'store_mappr.auto_mappr.dart';
 
-/// AutoMappr configuration for Store feature
 @AutoMappr(
   [
     MapType<ProductSizeModel, ProductSize>(),
@@ -27,7 +26,6 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductSizeModel, ProductSizeEmbedded>(),
     MapType<ProductSizeEmbedded, ProductSizeModel>(),
 
-    // Product mappings (String ↔ Enum conversion only at Model ↔ Entity boundary)
     MapType<ProductModel, Product>(
       fields: [
         Field('status', custom: StoreMapprHelper.stringToStatus),
@@ -51,11 +49,9 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
-    // Collection mappings (String ↔ String, only field name mapping needed)
     MapType<ProductModel, ProductCache>(fields: [Field('productId', from: 'id')]),
     MapType<ProductCache, ProductModel>(fields: [Field('id', from: 'productId')]),
 
-    // StoreOrderContact mappings (enum <-> code at Model <-> Entity boundary)
     MapType<StoreOrderContactModel, StoreOrderContact>(
       fields: [Field('type', custom: StoreMapprHelper.codeToOrderContactType)],
     ),
@@ -65,7 +61,6 @@ import 'store_mappr.auto_mappr.dart';
     MapType<StoreOrderContactModel, StoreOrderContactEmbedded>(),
     MapType<StoreOrderContactEmbedded, StoreOrderContactModel>(),
 
-    // StoreProfile mappings — convert channels at Model ↔ Entity boundary
     MapType<StoreProfileModel, StoreProfile>(
       fields: [Field('channels', custom: StoreMapprHelper.codesToChannelSet)],
     ),
@@ -86,7 +81,6 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
-  // String to Enum conversions
   static ProductStatus stringToStatus(final ProductModel source) =>
       ProductStatus.tryFromString(source.status) ?? ProductStatus.active;
 
@@ -108,7 +102,6 @@ class StoreMapprHelper {
   static Set<ProductSeason>? stringsToSeasons(final ProductModel source) =>
       ProductSeason.listFromStrings(source.seasons)?.toSet();
 
-  // Enum to String conversions
   static String statusToString(final Product source) => source.status.value;
 
   static String genderToString(final Product source) => source.gender.value;

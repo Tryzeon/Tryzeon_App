@@ -142,7 +142,7 @@ Deno.test("buildTaskPrompt states the styling as a required property of the outp
 Deno.test("buildTaskPrompt lifts both preservation rules that styling contradicts", () => {
   const prompt = buildTaskPrompt([["a"]], { stylingPrompt: "hem tucked in" });
   // The attribute list and the concrete "do NOT touch the original pants"
-  // example are two separate prohibitions; leaving either un-caveated lets the
+  // example are two separate prohibitions: leaving either un-caveated lets the
   // model prefer it over the override.
   assertStringIncludes(
     prompt,

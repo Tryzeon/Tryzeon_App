@@ -1,5 +1,3 @@
-// The native app's wire format for LINE sign-in.
-//
 // `idToken` is the only field decoded, and that is a security property rather
 // than a minimalism one: the session is minted for whichever email the auth
 // user already carries, looked up from the user id. GoTrue's `generateLink`

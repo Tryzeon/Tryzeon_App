@@ -3,10 +3,6 @@ import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
 typedef UnlistReminder = ({Product product, int clicks});
 
-/// Listed products someone clicked through to buy, most-clicked first.
-///
-/// A click stands in for buying intent, not for being sold out — the owner
-/// still has to check. Already-unlisted products have nothing left to remind.
 List<UnlistReminder> selectUnlistReminders(
   final List<Product> products,
   final Map<String, int> clicksByProductId,

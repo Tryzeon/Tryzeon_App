@@ -18,19 +18,15 @@ sealed class TryonGalleryState with _$TryonGalleryState {
 
   const TryonGalleryState._();
 
-  /// Index of the entry in view, or -1 for the avatar page. Entry ids are
-  /// non-null, so a null [currentId] never matches and yields -1.
   int get currentIndex => entries.indexWhere((final e) => e.id == currentId);
 
-  /// The gallery page in view. Page 0 is the avatar; entry `i` is page `i + 1`.
+  /// Page 0 is the avatar; entry `i` is page `i + 1`.
   int get currentPage => currentIndex + 1;
 
   bool get isAvatarPage => currentIndex == -1;
 
   TryonGalleryEntry? get currentEntry => isAvatarPage ? null : entries[currentIndex];
 
-  /// The finished result in view — null on the avatar page or while the current
-  /// entry is still pending.
   TryonResult? get currentResult => currentEntry?.result;
 
   bool get isCurrentPending => currentEntry is PendingTryonEntry;
@@ -60,7 +56,6 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
 
   void showAvatarPage() => setCurrentPage(0);
 
-  /// Inserts the pending placeholder for a try-on that just started.
   void addPending({
     required final String id,
     required final TryonSubject subject,
@@ -74,8 +69,8 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     );
   }
 
-  /// Swaps the placeholder for its finished result. False when the entry is
-  /// gone — the user dropped it while the try-on was still running.
+  /// False when the entry is gone — the user dropped it while the try-on was
+  /// still running.
   bool complete(final TryonResult result) {
     final index = state.entries.indexWhere((final e) => e.id == result.id);
     if (index == -1) return false;
@@ -86,7 +81,7 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     return true;
   }
 
-  /// Drops [id] from the gallery. False when it was already gone.
+  /// False when [id] was already gone.
   bool removeById(final String id) {
     final index = state.entries.indexWhere((final e) => e.id == id);
     if (index == -1) return false;

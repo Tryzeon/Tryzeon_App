@@ -90,7 +90,6 @@ AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
   );
 }
 
-/// The signed-in user's wardrobe, and the owner of wardrobe-list refreshes.
 @riverpod
 class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
   @override
@@ -103,9 +102,8 @@ class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
     return result.get()!;
   }
 
-  /// Force-refreshes the wardrobe list from the server. Swallows errors — the
-  /// provider drops into an error state and the UI shows an `ErrorView` or the
-  /// previous data.
+  /// Swallows errors — the provider drops into an error state and the UI shows
+  /// an `ErrorView` or the previous data.
   Future<void> refresh() async {
     await ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true);
     ref.invalidateSelf();
@@ -117,21 +115,14 @@ class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
   }
 }
 
-/// Owns the wardrobe writes (upload, tag edit, delete): exposes progress via
-/// [state] so a sheet can drive its save button without a hand-rolled flag,
-/// and returns the [Result] so the caller can surface a one-shot failure or
-/// react to the quota [ValidationFailure].
+/// Exposes progress via [state] so a sheet can drive its save button without a
+/// hand-rolled flag, and also returns the [Result] so the caller can surface a
+/// one-shot failure.
 @riverpod
 class WardrobeEditNotifier extends _$WardrobeEditNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
-  /// Uploads [image] as a new item, enforcing the subscription's wardrobe
-  /// limit.
-  ///
-  /// [replacementBytes] are uploaded in place of [image] when given — the
-  /// caller has already resolved which one the user wants, so this only
-  /// decides whether a temp file is needed to carry the bytes.
   Future<Result<void, Failure>> upload({
     required final File image,
     required final WardrobeCategory category,
@@ -160,7 +151,6 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
         try {
           await tempFile?.delete();
         } catch (e, st) {
-          // Best-effort cleanup; a leftover temp file is non-fatal.
           AppLogger.warning('Failed to delete temp upload file', e, st);
         }
       }
@@ -182,8 +172,6 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     return _write(() => ref.read(deleteWardrobeItemUseCaseProvider)(item));
   }
 
-  /// Writes [bytes] to a temp PNG named after [basedOn], so the repository has
-  /// a real file to upload.
   Future<File> _writeTempPng(final Uint8List bytes, {required final File basedOn}) async {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/wardrobe_nobg_${basedOn.uri.pathSegments.last}.png');
@@ -191,10 +179,8 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     return file;
   }
 
-  /// Mirrors [write]'s outcome into [state] and drops the cached item list on
-  /// success so every screen re-reads it. Kept alive for the duration, so a
-  /// sheet popped mid-write doesn't dispose this notifier out from under the
-  /// pending `state` write.
+  /// Kept alive for the duration, so a sheet popped mid-write doesn't dispose
+  /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(
     final Future<Result<void, Failure>> Function() write,
   ) async {

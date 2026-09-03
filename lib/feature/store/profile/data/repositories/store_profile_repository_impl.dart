@@ -26,6 +26,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
     final bool forceRefresh = false,
   }) async {
     try {
+      // 1. Try Local Cache
       if (!forceRefresh) {
         try {
           final cachedProfile = await _localDataSource.getStoreProfile();
@@ -46,6 +47,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         }
       }
 
+      // 2. Fetch from API
       final remoteProfile = await _remoteDataSource.getStoreProfile();
       if (remoteProfile == null) {
         try {
@@ -56,6 +58,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         return const Ok(null);
       }
 
+      // 3. Update Cache
       try {
         await _localDataSource.saveStoreProfile(remoteProfile);
       } catch (e, stackTrace) {

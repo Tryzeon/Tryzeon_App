@@ -14,7 +14,6 @@ export async function initAndLogin(): Promise<void> {
   }
 }
 
-/** LINE id_token。唯一的讀者是 `ensureSession()` —— 換 Supabase session 用。 */
 export function getIdToken(): string {
   const token = liff.getIDToken();
   if (!token) throw new Error("no LINE id token (is `openid` scope enabled?)");
@@ -35,18 +34,13 @@ export function isExternalUrl(url: string): boolean {
   }
 }
 
-/**
- * Opens a URL in the device browser rather than the LIFF in-app browser, so a
- * store's checkout keeps the shopper's existing session and cookies.
- */
+/** Opens in the device browser, so a store's checkout keeps its session and cookies. */
 export function openExternal(url: string): void {
   if (!isExternalUrl(url)) return;
   liff.openWindow({ url, external: true });
 }
 
 /**
- * 把一張結果圖當成圖片訊息送進使用者選的聊天室。
- *
  * 這同時是 LIFF 上的「儲存」—— webview 沒有相簿可以寫,傳回聊天室之後 LINE 自己
  * 就能存圖,而結果圖只有 7 天的簽章網址,離開這個 webview 就再也找不回來。
  *

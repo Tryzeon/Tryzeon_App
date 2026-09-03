@@ -21,8 +21,7 @@ enum PersonalTab {
 /// value, so repeated taps on the same tab still notify listeners.
 typedef PersonalTabReselect = ({PersonalTab tab, int sequence});
 
-/// Lets a tab's page react to being re-tapped while it is already showing —
-/// e.g. scrolling back to top. The shell emits, pages listen.
+/// The shell emits, pages listen — e.g. to scroll back to top on re-tap.
 @Riverpod(keepAlive: true)
 class PersonalTabReselectSignal extends _$PersonalTabReselectSignal {
   @override

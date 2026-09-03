@@ -4,8 +4,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 part 'tryon_subject.freezed.dart';
 
-/// What a gallery entry is a try-on of, and enough to run it again.
-///
 /// Holds only what the app cannot rebuild: the avatar and the preferences are
 /// read fresh on every run, so regenerating picks up a changed setting.
 @freezed
@@ -35,8 +33,6 @@ sealed class TryonSubject with _$TryonSubject {
     TryonSubjectAnimated(:final origin) => origin.productId,
   };
 
-  /// The wardrobe item being tried on, or null when the garment is a catalog
-  /// product or the user's own photo.
   String? get wardrobeItemId => switch (this) {
     TryonSubjectGenerate(:final garments) =>
       garments.whereType<TryonGarmentWardrobe>().firstOrNull?.wardrobeItemId,

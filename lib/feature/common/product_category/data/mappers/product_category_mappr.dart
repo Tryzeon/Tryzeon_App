@@ -7,7 +7,6 @@ import '../collections/product_category_cache.dart';
 import '../models/product_category_model.dart';
 import 'product_category_mappr.auto_mappr.dart';
 
-/// AutoMappr configuration for ProductCategory (Common module)
 @AutoMappr([
   MapType<ProductCategoryModel, ProductCategory>(
     fields: [

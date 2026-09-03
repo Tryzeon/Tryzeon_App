@@ -27,7 +27,6 @@ class TryonGallery extends HookWidget {
   final List<TryonGalleryEntry> entries;
   final File? avatarFile;
 
-  /// True while the model photo is downloading or a replacement is uploading.
   final bool isAvatarBusy;
 
   final VoidCallback onReplaceAvatar;
@@ -133,8 +132,6 @@ class TryonGallery extends HookWidget {
   }
 }
 
-/// Placeholder shown while a try-on result is being generated. Plays the
-/// bundled brand loading animation on a loop, muted, filling the page.
 class _LoadingAnimationItem extends HookWidget {
   const _LoadingAnimationItem();
 
@@ -172,8 +169,6 @@ class _LoadingAnimationItem extends HookWidget {
   }
 }
 
-/// Page 0 — the model photo, either the user's uploaded file or the bundled
-/// default, veiled by a spinner while it downloads or a replacement uploads.
 class _AvatarImageItem extends HookWidget {
   const _AvatarImageItem({required this.imageProvider, required this.isBusy});
 
@@ -209,7 +204,6 @@ class _AvatarImageItem extends HookWidget {
   }
 }
 
-/// A finished image try-on, fetched and cached from the network.
 class _TryonImageItem extends HookWidget {
   const _TryonImageItem({required this.imageUrl});
 
@@ -238,8 +232,6 @@ class _TryonImageItem extends HookWidget {
   }
 }
 
-/// Scales a [VideoPlayer] to cover the available height, cropping horizontal
-/// overflow — equivalent to BoxFit.cover for a portrait gallery page.
 Widget _coverVideoFill(final VideoPlayerController controller) {
   return LayoutBuilder(
     builder: (final context, final constraints) {

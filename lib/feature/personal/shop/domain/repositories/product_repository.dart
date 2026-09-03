@@ -7,7 +7,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:typed_result/typed_result.dart';
 
-/// Repository for product query operations.
 abstract class ProductRepository {
   Future<Result<List<ShopProduct>, Failure>> listProducts({
     final String? storeId,

@@ -11,11 +11,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 
-/// The action button floating over the gallery. Replacing the model photo is
-/// offered on every page; a finished try-on adds share / download / regenerate
-/// / animate / set-as-avatar / delete on top, and one still generating offers
-/// to cancel.
-///
 /// Owns its own handlers so the home page stays a layout — the only action it
 /// cannot own is [onReplaceAvatar], which the home CTA offers as well.
 class TryonGalleryActions extends ConsumerWidget {

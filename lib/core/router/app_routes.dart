@@ -1,7 +1,6 @@
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 
 abstract final class AppRoutes {
-  // Auth
   static const String login = '/login';
   static const String authCallback = '/auth/callback';
 

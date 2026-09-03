@@ -24,8 +24,6 @@ class ProductFitSelector extends StatelessWidget {
           if (newSet.isEmpty) {
             selectedFit.value = null;
           } else if (newSet.length > 1 && value != null) {
-            // user added a new segment while one was already selected;
-            // keep only the newly added one
             selectedFit.value = newSet.firstWhere((final v) => v != value);
           } else {
             selectedFit.value = newSet.first;

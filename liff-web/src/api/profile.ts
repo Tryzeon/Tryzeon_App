@@ -1,6 +1,5 @@
 import { supabase } from "../lib/supabase";
 
-/** 使用者存著的 model 照路徑,沒有就是 null。空字串一律當成沒有。 */
 export async function fetchAvatarPath(userId: string): Promise<string | null> {
   const { data, error } = await supabase
     .from("user_profiles")

@@ -58,10 +58,6 @@ UpdateStoreProfile updateStoreProfileUseCase(final Ref ref) {
   return UpdateStoreProfile(ref.watch(storeProfileRepositoryProvider));
 }
 
-/// The signed-in store's profile, and the owner of store-profile refreshes.
-/// The `Notifier` suffix is stripped by the generator, so the provider stays
-/// `storeProfileProvider` while the class name avoids colliding with the
-/// `StoreProfile` entity.
 @riverpod
 class StoreProfileNotifier extends _$StoreProfileNotifier {
   @override
@@ -77,9 +73,6 @@ class StoreProfileNotifier extends _$StoreProfileNotifier {
     return result.get();
   }
 
-  /// Force-refreshes the store profile and its logo from the server. Swallows
-  /// errors — the provider drops into an error state and the UI shows an
-  /// `ErrorView` or the previous data.
   Future<void> refresh() async {
     await ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true);
     ref.invalidateSelf();
@@ -96,13 +89,12 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
-  /// Applies the store owner's edits to the current profile. Only the fields
-  /// the form owns are passed in — the profile to merge them onto is read
-  /// here, so a stale form can't clobber server-owned fields.
+  /// The profile the edits merge onto is read here rather than taken from the
+  /// form, so a stale form can't clobber server-owned fields.
   ///
-  /// `addressUnresolved` is true when a non-empty address could not be
+  /// `addressUnresolved` reports a non-empty address that could not be
   /// geocoded: the save still succeeded, but the store won't appear in
-  /// distance-sorted results, so the caller should say so.
+  /// distance-sorted results.
   Future<Result<({bool addressUnresolved}), Failure>> save({
     required final String name,
     required final String? address,
@@ -155,9 +147,6 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
     }
   }
 
-  /// Geocodes [address] when it differs from [original]'s, keeping the existing
-  /// coordinates when it didn't change and clearing them when it was removed.
-  /// A geocoding miss is not a failure — the profile still saves.
   Future<({double? latitude, double? longitude, bool addressUnresolved})>
   _resolveCoordinates({
     required final StoreProfile original,

@@ -32,7 +32,6 @@ class ShopRemoteDataSource {
     final int? offset,
   }) async {
     final (:column, :ascending) = sortParams(sort);
-    // Coordinates only exist on the proximity variant; other sorts carry none.
     final (userLat, userLng) = switch (sort) {
       ShopSortProximity(:final latitude, :final longitude) => (latitude, longitude),
       _ => (null, null),
@@ -71,10 +70,6 @@ class ShopRemoteDataSource {
     }).toList();
   }
 
-  /// Maps a [ShopSort] to the RPC's sort column and direction. Pure and
-  /// exhaustive — adding a [ShopSort] variant without handling it here is a
-  /// compile error. Coordinates are not part of this mapping; they live on
-  /// the proximity variant and are read directly where needed.
   static ({String column, bool ascending}) sortParams(final ShopSort sort) {
     return switch (sort) {
       ShopSortLatest() => (column: 'created_at', ascending: false),
@@ -154,9 +149,8 @@ class ShopRemoteDataSource {
     return ShopProductModel.fromJson(map);
   }
 
-  /// Resolves a store by its canonical uuid [storeIdOrSlug] or, when the value
-  /// is not a uuid, by its human-readable `slug`. Both forms back the same
-  /// `/store/...` deep link so existing uuid links keep working.
+  /// Both the uuid and the slug form back the same `/store/...` deep link, so
+  /// existing uuid links keep working.
   Future<Map<String, dynamic>> getStoreProfile(final String storeIdOrSlug) async {
     final column = _uuidPattern.hasMatch(storeIdOrSlug) ? 'id' : 'slug';
     final response = await _supabaseClient

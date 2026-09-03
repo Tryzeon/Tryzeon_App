@@ -1,11 +1,3 @@
-/**
- * What one wardrobe card is made of.
- *
- * `product-card.ts`'s sibling: same job, different table. A wardrobe item has
- * no name and no price, so the three lines a product card shows become the
- * category, the tags, and a fixed "你的衣櫃" — which is also what tells the two
- * kinds of card apart when they sit in one carousel.
- */
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
 import type { ContentBlock } from "../_shared/chat/index.ts";
@@ -16,17 +8,15 @@ import type { DbClient } from "../_shared/supabase.ts";
 
 export const WARDROBE_CARD_SELECT = "id, image_path, category, tags";
 
-/** The columns `WARDROBE_CARD_SELECT` reads, as the schema declares them. */
 export type WardrobeCardRow = Pick<
   Tables<"wardrobe_items">,
   "id" | "image_path" | "category" | "tags"
 >;
 
 /**
- * Labels for the `wardrobe_category` enum. Keyed by the generated enum so a
- * migration that adds a value fails the build here. The `?? code` fallback
- * below survives it anyway: a deployed function can be reading a schema newer
- * than the types it was built against.
+ * Keyed by the generated enum so a migration that adds a value fails the build
+ * here. The `?? code` fallback below survives it anyway: a deployed function can
+ * be reading a schema newer than the types it was built against.
  */
 const CATEGORY_LABEL: Record<Enums<"wardrobe_category">, string> = {
   top: "上衣",
@@ -36,34 +26,26 @@ const CATEGORY_LABEL: Record<Enums<"wardrobe_category">, string> = {
   others: "其他",
 };
 
-/** Tags one card shows. Past three the line stops being scannable. */
 const MAX_TAGS = 3;
 
 /**
- * Cap on the tag line. `maxLines: 1` truncates the display, but the bytes
- * still count toward the Flex message's overall size limit, and tags are
- * free text from `LabelTagger` with no length constraint in the column.
+ * `maxLines: 1` truncates the display, but the bytes still count toward the Flex
+ * message's overall size limit, and tags are free text with no length constraint
+ * in the column.
  */
 const MAX_TAG_LINE_CHARS = 40;
 
-/** What a card's text lines say about an item. */
 export interface WardrobeItemInfo {
   id: string;
   categoryLabel: string;
   tags: string[];
 }
 
-/** A wardrobe item as a carousel card: its text, plus an image to show. */
 export interface LineWardrobeItem extends WardrobeItemInfo {
   /** Signed URL of the item's image; wardrobe images are not public. */
   imageUrl: string;
 }
 
-/**
- * The text fields, which a row always yields. Separate from
- * `toLineWardrobeItem` because the try-on path needs the words without needing
- * a picture.
- */
 export function toWardrobeItemInfo(row: WardrobeCardRow): WardrobeItemInfo {
   return {
     id: row.id,
@@ -72,11 +54,6 @@ export function toWardrobeItemInfo(row: WardrobeCardRow): WardrobeItemInfo {
   };
 }
 
-/**
- * One wardrobe row as a card's worth of fields, or null when its image could
- * not be signed — a card whose image is missing is one you cannot see, the same
- * rule `toLineProduct` applies to a product with no image.
- */
 export function toLineWardrobeItem(
   row: WardrobeCardRow,
   signedUrl: string | undefined,
@@ -92,10 +69,7 @@ export function tagLine(tags: string[]): string {
     : line;
 }
 
-/**
- * The labels that are real nouns — every `CATEGORY_LABEL` entry except the
- * `others` bucket. Derived rather than re-listed so the two cannot drift.
- */
+/** Derived rather than re-listed so the two cannot drift. */
 const NOUN_LABELS = new Set(
   Object.entries(CATEGORY_LABEL)
     .filter(([code]) => code !== "others")
@@ -103,21 +77,14 @@ const NOUN_LABELS = new Set(
 );
 
 /**
- * The label as it reads inside a sentence. `其他` is a bucket, not a noun, and
- * an unmapped code is not a word at all — both become `單品`, which is true of
- * anything in a wardrobe. The card's own headline keeps the raw label, where a
- * bucket name reads fine standing alone.
+ * `其他` is a bucket, not a noun, and an unmapped code is not a word at all —
+ * both become `單品`. The card's own headline keeps the raw label, where a bucket
+ * name reads fine standing alone.
  */
 export function garmentNoun(categoryLabel: string): string {
   return NOUN_LABELS.has(categoryLabel) ? categoryLabel : "單品";
 }
 
-/**
- * The category / tags / source lines the card shows.
- *
- * A tag-less item drops its middle line entirely rather than rendering an empty
- * one, the way a product with no store shows two lines instead of three.
- */
 export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
   const contents: object[] = [
     {
@@ -155,22 +122,18 @@ export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
 }
 
 /**
- * How long a card's image URL stays good.
- *
  * Seven days, not the app's hour: a LINE message is scrolled back to, and an
  * expired URL is a card that renders as a hole. Deliberately not shared with
  * `_shared/r2.ts`'s identical constant — that is R2's signing window, this is
- * Supabase Storage's, and their being equal today is a coincidence.
+ * Supabase Storage's.
  */
 const SIGNED_URL_TTL_SECONDS = 604800;
 
 /**
- * Signed URLs for wardrobe images, keyed by storage path.
- *
  * One batch call rather than one per item. A row the service could not sign is
- * simply absent, which `toLineWardrobeItem` turns into a dropped card; a
- * failure of the call itself throws, because that is a server fault rather than
- * a missing item.
+ * simply absent, which `toLineWardrobeItem` turns into a dropped card; a failure
+ * of the call itself throws, because that is a server fault rather than a
+ * missing item.
  */
 async function signImageUrls(
   admin: DbClient,
@@ -191,15 +154,10 @@ async function signImageUrls(
 }
 
 /**
- * The referenced wardrobe items as the fields a card shows, keyed by id — the
- * wardrobe half of `AnswerRows`.
- *
  * `userId` bounds the query, and that is a security property rather than a
  * filter: this path runs on the admin client with no RLS beneath it, so without
  * the `.eq` an id the model quoted could name another sender's item.
  * `fetchProductRows` needs no such parameter only because the catalog is public.
- *
- * Two round trips, both batched: the rows, then every image signed at once.
  */
 export async function fetchWardrobeRows(
   admin: DbClient,
@@ -225,12 +183,9 @@ export async function fetchWardrobeRows(
 }
 
 /**
- * One wardrobe item's text fields, or null when the id names nothing the
- * sender owns.
- *
  * No signed URL, unlike `fetchProductInfo`: a try-on result card's hero is the
- * generated image, so the body needs only the words, and a signing failure would
- * refuse a try-on the core could have completed.
+ * generated image, and a signing failure would refuse a try-on the core could
+ * have completed.
  *
  * Bound to `userId` like every wardrobe read. `resolveWardrobeGarment` binds it
  * again inside the job; this one exists so that "gone, or never yours" becomes a

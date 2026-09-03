@@ -12,7 +12,6 @@ interface Props {
   onClose(): void;
 }
 
-/** 從底部升起的動作清單,對應 app 的 `showAppActionSheet`。 */
 export function ActionSheet({ actions, onClose }: Props) {
   return (
     <Overlay>

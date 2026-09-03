@@ -9,8 +9,8 @@ interface Props {
 }
 
 /**
- * 破壞性動作前的確認。自己畫而不用 `window.confirm` —— 原生對話框會擋住整個
- * webview 的事件迴圈,在 LINE 裡尤其難收回來。
+ * 自己畫而不用 `window.confirm` —— 原生對話框會擋住整個 webview 的事件迴圈,在
+ * LINE 裡尤其難收回來。
  */
 export function ConfirmDialog(
   { message, confirmLabel, cancelLabel, onConfirm, onCancel }: Props,

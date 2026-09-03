@@ -5,22 +5,11 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_status_ui_mapper.dart';
 
-/// Listing a product or taking it down, reachable from the list so unlisting a
-/// run of sold-out items doesn't mean opening and leaving the edit form each
-/// time.
-///
-/// A sheet rather than a `PopupMenuButton`: the menu would be this app's first
-/// and arrives with M3 elevation, which the design system rules out. Same
-/// `showModalBottomSheet` + `ListTile` shape as `ProductSortSheet`, so
-/// `bottomSheetTheme` and `listTileTheme` already cover it.
+/// A sheet rather than a `PopupMenuButton`: the menu would arrive with M3
+/// elevation, which the design system rules out.
 ///
 /// Returns whether the owner picked the action rather than running it — the
 /// work outlives this sheet, and its context is gone the moment it pops.
-///
-/// Editing and deleting are deliberately absent. Tapping the card already
-/// opens the editor, and delete stays behind its danger zone: putting 下架 on
-/// the card is meant to make the reversible action the easy one, which a
-/// delete row two pixels away would undo.
 class ProductActionsSheet extends StatelessWidget {
   const ProductActionsSheet({super.key, required this.product});
 

@@ -2,11 +2,6 @@ import { createClient, SupabaseClient, User } from "jsr:@supabase/supabase-js@2"
 import type { Database, Json } from "./database.types.ts";
 import { jsonError } from "./http.ts";
 
-/**
- * The one client type the edge functions use. Every query made through it is
- * checked against the committed schema in `database.types.ts`, so a bare
- * `SupabaseClient` anywhere is a silent opt-out and should be this instead.
- */
 export type DbClient = SupabaseClient<Database>;
 
 /**
@@ -41,10 +36,6 @@ export const supabaseAnonKey = (): string => requireEnv("SUPABASE_ANON_KEY");
 /** Service-role key. Unexported: `getAdminClient` is the only sanctioned reader. */
 const supabaseServiceRoleKey = (): string => requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-/**
- * Validates the Authorization header and returns an authenticated `DbClient` instance and the user.
- * Returns a Response object if validation fails, enabling direct early returns over throwing AppErrors.
- */
 export const getAuthenticatedUserClient = async (
     req: Request
 ): Promise<{ userClient: DbClient | null; user: User | null; errorResponse: Response | null }> => {
@@ -80,8 +71,6 @@ export const getAuthenticatedUserClient = async (
 };
 
 /**
- * Unauthenticated client, bound by whatever the `anon` role is granted.
- *
  * For endpoints that have no caller session and only read data anon may already
  * read (the public catalog). The service-role key buys nothing there and only
  * widens what a bug on that path can reach.

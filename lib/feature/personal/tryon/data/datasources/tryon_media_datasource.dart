@@ -8,10 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
-/// Raw device-level media I/O for finished try-on results. Both images and
-/// videos are handled through local temp files so save/share stay symmetric
-/// across media types. Throws on failure — the repository maps
-/// exceptions to [Failure]s and owns temp-file cleanup.
+/// Throws on failure — the repository maps exceptions to [Failure]s and owns
+/// temp-file cleanup.
 class TryonMediaDataSource {
   TryonMediaDataSource({final BaseCacheManager? cacheManager, final Dio? dio})
     : _cacheManager = cacheManager ?? DefaultCacheManager(),
@@ -20,15 +18,12 @@ class TryonMediaDataSource {
   final BaseCacheManager _cacheManager;
   final Dio _dio;
 
-  /// Loads cached image bytes — used to inline a remote avatar as base64 for a
-  /// try-on request (distinct from the save/share pipeline).
   Future<Uint8List> downloadImageBytes(final String url) async {
     final file = await _cacheManager.getSingleFile(url);
     return file.readAsBytes();
   }
 
-  /// Downloads [url] into a temp file named for its media [type], returning the
-  /// local path. The caller owns cleanup via [deleteTempFile].
+  /// The caller owns cleanup via [deleteTempFile].
   Future<String> downloadToTempFile(final String url, final TryonMode type) async {
     final tempDir = await getTemporaryDirectory();
     final path =

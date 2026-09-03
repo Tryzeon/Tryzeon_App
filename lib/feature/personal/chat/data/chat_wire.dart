@@ -77,8 +77,8 @@ List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
   return result;
 }
 
-/// Parses one NDJSON line into a [ChatStreamEvent]. Returns null for blank,
-/// malformed, or unrecognised lines (defensive — the stream is best-effort UI).
+/// Returns null for blank, malformed, or unrecognised lines — defensive, the
+/// stream is best-effort UI.
 ChatStreamEvent? parseStreamLine(final String line) {
   if (line.trim().isEmpty) return null;
   final Object? decoded;

@@ -22,9 +22,7 @@ sealed class TryonRequest with _$TryonRequest {
 
   /// No mode field because video is the only thing a finished picture can
   /// become, and no scene or styling prompt because both are already settled in
-  /// the picture. The engine still travels even though animating runs no image
-  /// pass today, so the day a video model gains a tier there is nothing to
-  /// re-thread.
+  /// the picture.
   const factory TryonRequest.animate({
     required final String requestId,
     required final String baseImageBase64,

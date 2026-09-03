@@ -52,7 +52,6 @@ Deno.serve(async (req) => {
     );
     if (task === null) continue;
 
-    // Return 200 fast; finish the work + push in the background.
     const guardedTask = task.catch((err) => {
       console.error("line-webhook background task failed:", err);
     });

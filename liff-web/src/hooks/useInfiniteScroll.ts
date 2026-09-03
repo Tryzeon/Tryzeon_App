@@ -3,7 +3,6 @@ import { useEffect, type RefObject } from "react";
 /** How far below the fold the next page starts loading. */
 const MARGIN_PX = 600;
 
-/** Loads the next page when the sentinel comes within `MARGIN_PX` of the fold. */
 export function useInfiniteScroll(
   sentinel: RefObject<HTMLElement | null>,
   onReach: () => void,

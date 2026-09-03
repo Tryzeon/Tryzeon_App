@@ -45,10 +45,6 @@ GetSubscriptionCapabilities getSubscriptionCapabilitiesUseCase(final Ref ref) {
 }
 
 /// Capabilities of the tier the customer is on *right now*.
-///
-/// Derived from [appSubscriptionEntitlementProvider] rather than resolved once,
-/// so a tier change re-runs this automatically. Kept alive alongside it so every
-/// screen shares one answer.
 @Riverpod(keepAlive: true)
 Future<SubscriptionCapabilities> subscriptionCapabilities(final Ref ref) async {
   final entitlement = await ref.watch(appSubscriptionEntitlementProvider.future);

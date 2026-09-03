@@ -20,7 +20,6 @@ sealed class BodyMeasurements with _$BodyMeasurements {
   }) = _BodyMeasurements;
   const BodyMeasurements._();
 
-  /// Builds an instance from a sparse map, ignoring unknown keys.
   factory BodyMeasurements.fromValues(final Map<BodyMeasurementType, double?> values) =>
       BodyMeasurements(
         height: values[BodyMeasurementType.height],
@@ -44,8 +43,6 @@ sealed class BodyMeasurements with _$BodyMeasurements {
 
   double? operator [](final BodyMeasurementType type) => getValue(type);
 
-  /// How many of the [BodyMeasurementType] fields carry a value, for the
-  /// "3 / 7 filled" progress indicators.
   int get filledCount =>
       BodyMeasurementType.values.where((final t) => getValue(t) != null).length;
 

@@ -1,6 +1,5 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 
-/** A non-2xx response from an edge function, reduced to the status it carried. */
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
     super(message);
@@ -9,8 +8,6 @@ export class ApiError extends Error {
 }
 
 /**
- * `functions.invoke` 的錯誤轉成 ApiError。
- *
  * supabase-js 把非 2xx 包成 FunctionsHttpError,message 一律是那句
  * "Edge Function returned a non-2xx status code" —— 額度用完和生成失敗會長得
  * 一模一樣。要分開只能看 status,而 status 就在 `context` 這個 Response 上,
@@ -27,7 +24,6 @@ export function toApiError(error: unknown): Error {
   return new ApiError("request failed", resp.status);
 }
 
-/** 一次試穿失敗要對使用者說的話。試衣間和首頁共用同一組措辭。 */
 export function tryonFailureMessage(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 429) return "今日試穿次數已用完，明天再回來試。";

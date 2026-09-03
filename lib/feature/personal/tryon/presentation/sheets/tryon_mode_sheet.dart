@@ -13,7 +13,6 @@ class TryonModeSheet extends ConsumerWidget {
 
   final ValueChanged<TryonMode> onModeSelected;
 
-  /// Show the bottom sheet. Returns the selected TryonMode or null if dismissed.
   static Future<void> show({
     required final BuildContext context,
     required final ValueChanged<TryonMode> onModeSelected,
@@ -103,8 +102,8 @@ class TryonModeSheet extends ConsumerWidget {
   }
 }
 
-/// Try-on settings entry. Lives in the title row rather than on a card so
-/// it can never be mistaken for the card's "start generating" tap target.
+/// Lives in the title row rather than on a card so it can never be mistaken for
+/// the card's "start generating" tap target.
 class _SettingsEntryButton extends ConsumerWidget {
   const _SettingsEntryButton();
 

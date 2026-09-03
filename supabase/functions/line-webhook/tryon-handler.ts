@@ -44,17 +44,12 @@ export interface TryonHandlerDeps {
   runJob?: typeof runTryonJob;
 }
 
-/** The sender as try-on sees them: an account, and whether they onboarded. */
 interface Actor {
   userId: string;
   hasAvatar: boolean;
 }
 
-/**
- * Resolves who is asking. A first-time sender is minted an account here, so
- * this is a write as much as a read; a false `hasAvatar` means they have not
- * onboarded and every try-on path must stop and say so.
- */
+/** A first-time sender is minted an account here, so this is a write as much as a read. */
 async function resolveActor(
   deps: TryonHandlerDeps,
   sourceUserId: string,
@@ -73,19 +68,10 @@ async function resolveActor(
   };
 }
 
-/** One try-on job, reduced to what this channel can render. */
 type TryonOutcome =
   | { ok: true; imageUrl: string }
   | { ok: false; kind: TryonJobErrorKind };
 
-/**
- * Runs one try-on and classifies whatever comes back.
- *
- * An outcome rather than a message, because the callers differ only in wording:
- * a garment the user photographed comes back as a bare image, a catalog product
- * as a card. Deciding that is each handler's business; the quota, the generation
- * and the error classification are shared, and this is all of it.
- */
 async function runTryon(
   deps: TryonHandlerDeps,
   params: { userId: string; garment: GarmentInput },
@@ -181,17 +167,10 @@ export interface ProductTryonDeps extends TryonHandlerDeps {
 }
 
 /**
- * Full lifecycle for a tap on a product card's try-on button.
- *
- * The product is read before anything is charged. `fetchProductInfo` returns
+ * The product is read before anything is charged: `fetchProductInfo` returns
  * null for exactly the two cases the core would later reject as validation
  * errors — the row is gone, or it has no image — so checking here turns both
- * into a sentence the user understands at no quota cost, and the same read
- * supplies the acknowledgement's name and the result card's fields.
- *
- * The garment goes in as `{ productId }` rather than as bytes: the core
- * resolves the catalog itself, which is how every one of the product's images
- * and its generated description reach the model.
+ * into a sentence the user understands at no quota cost.
  */
 export async function handleProductTryon(
   deps: ProductTryonDeps,
@@ -241,16 +220,8 @@ export interface WardrobeTryonDeps extends TryonHandlerDeps {
 }
 
 /**
- * Full lifecycle for a tap on a wardrobe card's try-on button.
- *
- * The mirror of {@link handleProductTryon}, and deliberately not a
- * parameterisation of it: what is read, the acknowledgement, the result card,
- * the error card and the transcript note all differ, leaving only the skeleton
- * in common — and `resolveActor` and `runTryon` already share what is real.
- *
- * The item is read before anything is charged, for the reason the product path
- * reads its product first: an item deleted since the card was sent becomes a
- * sentence the user understands and costs them no quota.
+ * The item is read before anything is charged: an item deleted since the card
+ * was sent becomes a sentence the user understands and costs them no quota.
  *
  * The garment goes in as `{ wardrobeItemId }` and never as a path. This adapter
  * holds the admin client, so a path it chose would be a path with nothing
@@ -299,11 +270,9 @@ export async function handleWardrobeTryon(
 }
 
 /**
- * Renders a core error as one of this channel's message kinds, from the same
- * `classifyTryonError` result the HTTP adapters use. A validation error is not
- * user-actionable here — this adapter builds its own params, and each kind of
- * ref is checked for existence before any job starts — so it is reported as an
- * unknown fault.
+ * A validation error is not user-actionable here — this adapter builds its own
+ * params, and each kind of ref is checked for existence before any job starts —
+ * so it is reported as an unknown fault.
  */
 function tryonFailureKind(err: unknown): TryonJobErrorKind {
   const info = classifyTryonError(err);

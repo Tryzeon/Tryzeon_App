@@ -1,7 +1,6 @@
 import { getUserProfile } from "../user-profile.ts";
 import type { ContextLoader } from "./types.ts";
 
-// Maps the stored age_range bucket codes to human labels for the AI prompt.
 const AGE_RANGE_LABELS: Record<string, string> = {
   "under_12": "12 歲以下",
   "13_17": "13–17 歲",
@@ -11,16 +10,7 @@ const AGE_RANGE_LABELS: Record<string, string> = {
   "55_plus": "55 歲以上",
 };
 
-/**
- * Default `ContextLoader`. Loads the per-request grounding for a chat turn: the
- * caller's profile (for personalised recommendations) and the live
- * product-category list (the only category_name values the search tool
- * accepts), then bakes both into the system prompt. Throws if the category
- * fetch fails (the run can't be grounded).
- */
 export const buildChatContext: ContextLoader = async (client, userId) => {
-  // Two independent lookups, so they are issued together: grounding sits on the
-  // critical path before the model call, and neither reads the other's result.
   const [profile, { data: categories, error: catErr }] = await Promise.all([
     getUserProfile(client, userId).catch((err) => {
       console.error("chat: user profile lookup failed:", err);
@@ -44,9 +34,6 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 
   const categoryLines = (categories ?? []).map((c) => `- ${c.name}`).join("\n");
 
-  // Only surface fields the user actually has — omit missing ones entirely rather
-  // than feeding the model "未提供" noise. If nothing is known, the whole
-  // 【使用者資訊】 section drops out (see userContextBlock below).
   const userContextLines = [
     userName && `- 姓名：${userName}`,
     userGender && `- 性別：${userGender}`,

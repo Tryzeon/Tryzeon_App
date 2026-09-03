@@ -3,9 +3,7 @@ import { getOrCreateUserId } from "./line-user.ts";
 import type { DbClient } from "./supabase.ts";
 
 interface AdminStub {
-  /** Set to simulate a LINE account already linked to an auth user. */
   existingUserId?: string;
-  /** `user_metadata` of every `createUser` call, in order. */
   created: (Record<string, unknown> | undefined)[];
 }
 

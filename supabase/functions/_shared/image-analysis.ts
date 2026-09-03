@@ -33,8 +33,6 @@ export async function checkImageAnalysisRateLimit(
 }
 
 /**
- * Runs a single-image structured-output analysis and returns the parsed object.
- *
  * Raises when the model returns nothing matching `schema`. A caller cannot tell
  * an empty object meaning "no attributes found" from one meaning "the model
  * failed", so an unreadable answer is reported rather than flattened into the

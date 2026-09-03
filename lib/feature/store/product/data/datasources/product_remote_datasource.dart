@@ -45,8 +45,6 @@ class ProductRemoteDataSource {
     return ProductModel.fromJson(_withProductImageUrl(response));
   }
 
-  /// Writes only [changes] — the columns the store owner actually edited — so
-  /// a column left alone keeps whatever value the server has.
   Future<void> updateProduct(
     final String productId,
     final Map<String, dynamic> changes,

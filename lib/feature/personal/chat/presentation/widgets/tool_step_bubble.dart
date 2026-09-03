@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 
-/// The "正在搜尋商品 · 裙裝 · 冰雪奇緣裙" chip for an assistant tool_use block —
-/// the search action, with its params.
 class ToolUseBubble extends StatelessWidget {
   const ToolUseBubble({super.key, required this.block});
 
@@ -17,9 +15,8 @@ class ToolUseBubble extends StatelessWidget {
     _ => '正在搜尋',
   };
 
-  // Compact summary of the search params so the user sees what was searched.
   // Keys mirror the search_products / search_wardrobe tool params (tools.ts) —
-  // keep in sync if a filter is added there. Price is rendered as a range below.
+  // keep in sync if a filter is added there.
   static String _hint(final Map<String, dynamic> input) {
     final parts = <String>[];
     for (final key in const [
@@ -59,7 +56,6 @@ class ToolUseBubble extends StatelessWidget {
   }
 }
 
-/// The "找到 3 件" chip for a user tool_result block — the search outcome.
 class ToolResultBubble extends StatelessWidget {
   const ToolResultBubble({super.key, required this.block});
 
@@ -73,7 +69,6 @@ class ToolResultBubble extends StatelessWidget {
   }
 }
 
-/// Shared low-emphasis, collapsed pill used by the tool_use / tool_result chips.
 class _StepChip extends StatelessWidget {
   const _StepChip({required this.icon, required this.label});
 

@@ -1,4 +1,3 @@
-/** Placeholder grid shown while the catalog (or LIFF itself) is still loading. */
 export function CatalogSkeleton() {
   return (
     <div className="grid">

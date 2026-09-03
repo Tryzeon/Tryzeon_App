@@ -1,4 +1,3 @@
-/// Shared sales-channel value object used by both store and personal sides.
 enum StoreChannel {
   physical('physical', '實體店面'),
   online('online', '線上店家');

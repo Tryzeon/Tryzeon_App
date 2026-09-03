@@ -18,10 +18,6 @@ const double _cellWidth = 65;
 const double _rowHeight = 62;
 const double _headerHeight = 32;
 
-/// 尺寸為列、測量項為欄的尺寸表編輯器。
-///
-/// 上方 chip 決定這件商品有哪些尺寸，勾選才會長出對應的列。左側尺寸欄釘住，
-/// 右側測量欄整區水平捲動。
 class ProductSizeMatrixEditor extends HookWidget {
   const ProductSizeMatrixEditor({
     super.key,
@@ -31,7 +27,6 @@ class ProductSizeMatrixEditor extends HookWidget {
 
   final ProductSizeManager manager;
 
-  /// 目前分類該顯示的測量欄位。
   final List<GarmentMeasurementType> visibleTypes;
 
   @override

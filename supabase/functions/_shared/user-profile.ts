@@ -1,18 +1,3 @@
-/**
- * Access to the `user_profiles` row, in one place.
- *
- * The avatar path was read by `line-webhook`, the profile fields projected by
- * `chat`, each naming the table and columns itself — so the "blank counts as
- * unset" rule lived on one read only. Every server-side reader now goes through
- * this module. (The LIFF web app writes `avatar_path` straight from the browser
- * under RLS, so it is not one of them.)
- *
- * The boundary is deliberate: column vocabulary stops here, meaning does not
- * start here. What an `age_range` bucket says to a user, or whether a missing
- * profile should fail a request, is the consumer's business — this module hands
- * back the values and nothing more, so it does not accrete one accessor per
- * caller.
- */
 import { nonEmptyStr, textArrayValues } from "./text.ts";
 import type { Enums } from "./database.types.ts";
 import type { DbClient } from "./supabase.ts";
@@ -38,10 +23,8 @@ const AVATAR_PATH_COLUMN = "avatar_path";
 
 const MEASUREMENTS_COLUMN = "measurements";
 
-/** Columns `getUserProfile` projects; kept beside the mapping that reads them. */
 const PROFILE_COLUMNS = "name, gender, age_range, style_preferences";
 
-/** The user's stored profile fields, normalized but uninterpreted. */
 export interface UserProfile {
   name: string | null;
   gender: Enums<"user_gender"> | null;
@@ -50,10 +33,6 @@ export interface UserProfile {
   stylePreferences: string[];
 }
 
-/**
- * The user's stored model photo path, or null when none is set. A blank value
- * is normalized to null so callers have a single "not onboarded yet" check.
- */
 export async function getAvatarPath(
   client: DbClient,
   userId: string,
@@ -69,14 +48,6 @@ export async function getAvatarPath(
   return nonEmptyStr(data?.[AVATAR_PATH_COLUMN]);
 }
 
-/**
- * The shopper's recorded body dimensions, or null when they have none.
- *
- * Deliberately separate from `getUserProfile`: chat projects that row on every
- * message and has no use for measurements, so this column stays out of
- * `PROFILE_COLUMNS`. Raises on a lookup failure rather than reporting it as
- * "no measurements" — degrading is the caller's decision, not this module's.
- */
 export async function getBodyMeasurements(
   client: DbClient,
   userId: string,
@@ -94,12 +65,6 @@ export async function getBodyMeasurements(
   return raw as BodyMeasurements;
 }
 
-/**
- * The user's profile fields, or null when they have no profile row. Raises on a
- * lookup failure rather than reporting it as "no profile": a caller that treats
- * a missing profile as benign must not be handed that answer for an RLS or
- * connection fault, so whether to degrade or fail stays its decision to make.
- */
 export async function getUserProfile(
   client: DbClient,
   userId: string,

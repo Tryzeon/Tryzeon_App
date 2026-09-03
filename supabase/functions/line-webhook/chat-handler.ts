@@ -22,7 +22,6 @@ export interface TextEvent {
 export interface ChatHandlerDeps {
   admin: DbClient;
   line: LineApi;
-  /** Public R2 base the hydrator resolves product image keys against. */
   imagesBaseUrl: string;
   conversations: ConversationStore;
   getOrCreateUserId?: typeof defaultGetOrCreateUserId;
@@ -30,11 +29,8 @@ export interface ChatHandlerDeps {
 }
 
 /**
- * One outbound batch, on the reply token if it still holds and on a push if not.
- *
- * Any reply failure takes the fallback: an expired token and a LINE outage mean
- * the same thing here — the answer has not been delivered — and telling them
- * apart would only add a way to get it wrong.
+ * Any reply failure takes the push fallback: an expired token and a LINE outage
+ * mean the same thing here — the answer has not been delivered.
  */
 async function deliver(
   deps: ChatHandlerDeps,
@@ -50,23 +46,14 @@ async function deliver(
 }
 
 /**
- * Full lifecycle for one forwarded text message: resolve user -> show the
- * typing indicator -> run one chat turn -> send the answer.
- *
- * Unlike the try-on path there is no onboarding gate: chat needs no model
- * photo, so someone who just followed the OA can be answered on their first
- * message.
- *
  * A reply costs nothing against the messaging quota and a push costs one per
  * message, so every exit goes through `deliver`. The token holds for about a
  * minute and a turn is usually a few seconds — but `MAX_AGENT_STEPS` is 10, and
  * LINE says not to rely on the limit, so the fallback is what makes the tail
  * safe rather than lossy.
  *
- * The conversation is stored between messages (see `conversation.ts`), so the
- * turn runs on the transcript so far plus this message and the result is
- * written back. Nothing is written when the turn fails: a stored user message
- * with no answer is a question the next turn's model would read as ignored.
+ * Nothing is stored when the turn fails: a stored user message with no answer is
+ * a question the next turn's model would read as ignored.
  */
 export async function handleTextMessage(
   deps: ChatHandlerDeps,
@@ -82,8 +69,7 @@ export async function handleTextMessage(
 
   // Started before the user is resolved, since it needs only the LINE id: for a
   // first-time sender that resolution creates an auth user, and the wait it adds
-  // is exactly the wait the indicator exists to cover. Cosmetic, so a failure
-  // here must not cost the caller their answer.
+  // is exactly the wait the indicator exists to cover.
   const loading = deps.line.showLoading(event.sourceUserId).catch((err) => {
     console.warn("line-webhook loading indicator failed:", err);
   });
@@ -105,9 +91,9 @@ export async function handleTextMessage(
   const transcript = [...prior, userMessage];
 
   try {
-    // Running the turn on `admin` is stated explicitly: a LINE event carries no
-    // Supabase session, so there is no user-scoped client to bound these reads.
-    // Every query the core runs here is server-composed and scoped by `userId`.
+    // A LINE event carries no Supabase session, so there is no user-scoped
+    // client to bound these reads; every query the core runs here is
+    // server-composed and scoped by `userId`.
     const { blocks, messages } = await runChat(
       deps.admin,
       { userId, messages: transcript },
@@ -133,12 +119,9 @@ export async function handleTextMessage(
 }
 
 /**
- * Renders a core error as one of this channel's message kinds, from the same
- * `classifyCoreError` result the HTTP adapters use. A validation error is not
- * about what the user just typed — that was length-checked above, so the
- * replayed history is the likelier culprit — but nothing acts on that beyond the
- * wording: every kind is reported and dropped, and the stored conversation is
- * left for its idle TTL to retire.
+ * A validation error is not about what the user just typed — that was
+ * length-checked above, so the replayed history is the likelier culprit — but
+ * nothing acts on the distinction beyond the wording.
  */
 function chatFailureKind(err: unknown): ChatErrorKind {
   const info = classifyCoreError(err);

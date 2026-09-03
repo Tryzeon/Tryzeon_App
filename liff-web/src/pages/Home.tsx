@@ -17,7 +17,6 @@ import {
 import { useAvatar } from "../state/AvatarProvider";
 import { useGallery } from "../state/GalleryProvider";
 
-/** 首頁上蓋在最上層的那一層,一次只會有一個。 */
 type Popup =
   | { kind: "none" }
   | { kind: "menu" }
@@ -34,8 +33,6 @@ export function Home() {
   const [popup, setPopup] = useState<Popup>(CLOSED);
   const tryon = useTryonCoordinator();
 
-  // 訊息住在 gallery 裡,因為它也可能是商品頁那次試穿留下的。自己退場,和 app 的
-  // TopNotification 一樣;點一下可以提早收掉。
   const notice = state.notice;
   const notify = (message: string) => dispatch({ type: "notify", message });
   const dismiss = () => dispatch({ type: "dismissNotice" });
@@ -237,7 +234,7 @@ export function Home() {
   );
 }
 
-/** 隱藏的檔案輸入。選完就把 value 清掉,不然連選同一張不會再觸發 onChange。 */
+/** 選完就把 value 清掉,不然連選同一張不會再觸發 onChange。 */
 function PickerInput(
   { inputRef, onPick }: {
     inputRef: React.RefObject<HTMLInputElement>;

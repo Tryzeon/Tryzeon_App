@@ -1,5 +1,4 @@
 class AppConstants {
-  // URLs
   static const String webBaseUrl = 'https://tryzeon.com';
   static const String storeOnboardingFormUrl =
       'https://docs.google.com/forms/d/e/1FAIpQLScu_hKsOTUVcuB0R3sKnRh9cAbn7zchO7W8izdgG1N9-WC9AQ/viewform';
@@ -13,7 +12,6 @@ class AppConstants {
   static String productWebUrl(final String productId) =>
       '$webBaseUrl/product/$productId';
 
-  // Supabase Tables
   static const String tableUserProfiles = 'user_profiles';
   static const String tableStoreProfiles = 'store_profiles';
   static const String tableProducts = 'products';
@@ -26,11 +24,9 @@ class AppConstants {
       'analytics_product_monthly_summary';
   static const String tableUserDailyUsage = 'user_daily_usage';
 
-  // Supabase Buckets
   static const String bucketUserAvatars = 'user-avatars';
   static const String bucketWardrobeImages = 'wardrobe-images';
 
-  // Supabase Functions
   static const String functionChat = 'chat';
   static const String functionTryon = 'tryon';
   static const String functionDeleteAccount = 'delete-account';
@@ -46,7 +42,6 @@ class AppConstants {
   static const String functionStoreImagesDelete = '$functionStoreImages/delete';
   static const String functionLineAuth = 'line-auth';
 
-  // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
   static const List<String> tryonLoadingAnimations = [
     'assets/videos/tryon-loading-animation-1.mp4',
@@ -58,7 +53,6 @@ class AppConstants {
   static const String logoMark = 'assets/images/logo/tryzeon_logomark.png';
   static const String logoWordmarkText = 'assets/images/logo/tryzeon_wordmark.png';
 
-  // Logic
   static const ({int x, int y}) avatarAspectRatio = (x: 9, y: 16);
   static const int maxProductImages = 3;
   static const int otpResendCountdownSeconds = 60;
@@ -93,7 +87,6 @@ class AppConstants {
   static const String keyTryonTransitionPrompt = 'video_transition_prompt';
   static const String keyTryonEngine = 'tryon_engine';
 
-  // Stale Durations
   static const Duration staleDurationProductCategories = Duration(days: 7);
   static const Duration staleDurationUserProfile = Duration(days: 7);
   static const Duration staleDurationStoreProfile = Duration(days: 7);
