@@ -7,7 +7,10 @@
 ///
 /// [length] is the garment's own top-to-bottom length, whatever the garment is
 /// — a top's body length, a pair of trousers' inseam-to-hem length, a skirt's
-/// hem length.
+/// hem length. One dimension covers all three because the garment category
+/// already says which one is meant, and `WardrobeCategory` itself does not
+/// separate trousers from skirts. It is displayed to shoppers but carries no
+/// fit signal on its own, so it has no body counterpart.
 enum GarmentMeasurementType {
   shoulderWidth('shoulder_width', minCm: 20, maxCm: 70),
   chestCircumference('chest_circumference', minCm: 40, maxCm: 200),

@@ -1,3 +1,8 @@
+/**
+ * The action names were renamed to `tryon_product` / `tryon_wardrobe`, so a
+ * card already sent under the old `tryon` name is one more shape parsing
+ * rejects — back-compat for it was declined on purpose, not missed.
+ */
 import { isUuid } from "../_shared/text.ts";
 
 const TRYON_PRODUCT = "tryon_product";

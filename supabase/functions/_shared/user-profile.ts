@@ -48,6 +48,11 @@ export async function getAvatarPath(
   return nonEmptyStr(data?.[AVATAR_PATH_COLUMN]);
 }
 
+/**
+ * Deliberately separate from `getUserProfile`: chat projects that row on every
+ * message and has no use for measurements, so this column stays out of
+ * `PROFILE_COLUMNS`.
+ */
 export async function getBodyMeasurements(
   client: DbClient,
   userId: string,

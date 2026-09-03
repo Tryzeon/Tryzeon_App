@@ -1,3 +1,9 @@
+/**
+ * 開啟環境。目前**不影響回應** —— 唯一用途是寫進 `link_events.source`。line 與 web
+ * 的比例就是決定要不要做落地頁那一層的依據：非 LINE 環境無法靠 302 可靠進入 LIFF，
+ * 得讓使用者點一下，而那一層值不值得做取決於那個比例有多大。bot 存在的理由是別讓
+ * 預覽預抓稀釋那個比例。
+ */
 export type Surface = "bot" | "line" | "web";
 
 /** 與 migration 的 short_links_code_format check 同一份規則。 */

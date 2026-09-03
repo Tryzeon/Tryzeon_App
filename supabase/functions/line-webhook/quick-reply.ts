@@ -28,7 +28,10 @@ export const postbackChip = (
 
 /**
  * `uri` must be absolute http(s): LINE rejects anything else, and a rejected
- * action fails the whole send rather than the one chip.
+ * action fails the whole send rather than the one chip. Unchecked here because
+ * every caller builds it from this deployment's own configuration — a bad value
+ * is a misconfigured environment, which `index.ts` already refuses to start on,
+ * not something a sender can cause.
  */
 export const uriChip = (label: string, uri: string): object =>
   chip({ type: "uri", label, uri });

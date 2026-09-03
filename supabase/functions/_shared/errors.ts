@@ -1,3 +1,8 @@
+/**
+ * There is deliberately no "the model failed" kind. Whether an unusable model
+ * result is an error at all is the feature's call: try-on raises one, chat
+ * degrades to fallback text. That makes it a feature arm, never a shared one.
+ */
 import { type DailyUsage, QuotaExceededError } from "./quota.ts";
 import { ValidationError } from "./validation.ts";
 

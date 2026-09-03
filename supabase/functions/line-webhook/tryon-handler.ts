@@ -220,6 +220,12 @@ export interface WardrobeTryonDeps extends TryonHandlerDeps {
 }
 
 /**
+ * The mirror of {@link handleProductTryon}, and deliberately not a
+ * parameterisation of it: what is read, how the acknowledgement reads, the
+ * result card, the error card and the transcript note all differ, which leaves
+ * only the skeleton in common. `resolveActor` and `runTryon` are the parts that
+ * genuinely are shared, and they already are.
+ *
  * The item is read before anything is charged: an item deleted since the card
  * was sent becomes a sentence the user understands and costs them no quota.
  *

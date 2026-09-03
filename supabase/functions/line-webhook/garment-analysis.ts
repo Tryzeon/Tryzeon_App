@@ -1,3 +1,16 @@
+/**
+ * What this module deliberately does NOT do is pre-resolve the answer into
+ * `search_products`' parameters (`styles`, `fits`, `seasons` — see
+ * `_shared/chat/tools.ts`): the agent already holds that tool's full schema and
+ * can map prose onto it, whereas naming those enums here would create two
+ * places that must agree with nothing to enforce it.
+ *
+ * There is no "is this even a garment?" flag either. A photo of a dog is
+ * off-path, and the graceful degradation costs nothing: the model describes the
+ * dog, the note records it, and the agent works out next turn that the user
+ * sent the wrong picture. A flag would buy a branch and two more test paths for
+ * a case that is better served by telling the truth.
+ */
 import { analyzeImage } from "../_shared/image-analysis.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 

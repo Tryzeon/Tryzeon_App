@@ -10,6 +10,11 @@ import 'package:tryzeon/feature/store/product/presentation/mappers/product_statu
 ///
 /// Returns whether the owner picked the action rather than running it — the
 /// work outlives this sheet, and its context is gone the moment it pops.
+///
+/// Editing and deleting are deliberately absent. Tapping the card already
+/// opens the editor, and delete stays behind its danger zone: putting 下架 on
+/// the card is meant to make the reversible action the easy one, which a
+/// delete row two pixels away would undo.
 class ProductActionsSheet extends StatelessWidget {
   const ProductActionsSheet({super.key, required this.product});
 
