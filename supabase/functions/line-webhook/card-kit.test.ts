@@ -14,8 +14,6 @@ Deno.test("the palette is the design system's, not an approximation", () => {
 });
 
 Deno.test("a button's action is on the box, so the whole button is tappable", () => {
-  // On the inner text instead, only the glyphs would respond — a difference
-  // that looks identical in a diff and is broken in the hand.
   for (
     const button of [
       primaryButton("試穿這件", action),

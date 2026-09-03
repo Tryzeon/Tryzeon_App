@@ -23,16 +23,13 @@ Deno.test("what a wardrobe card encodes is what the webhook reads back", () => {
 });
 
 Deno.test("the two kinds cannot be mistaken for each other", () => {
-  // Each action reads only its own id parameter, so a payload carrying the
-  // other kind's parameter names nothing.
   assertEquals(parsePostback(`a=tryon_product&wid=${WID}`), null);
   assertEquals(parsePostback(`a=tryon_wardrobe&pid=${PID}`), null);
 });
 
 Deno.test("a card from before the rename no longer resolves", () => {
-  // Deliberate: back-compat was declined, so cards already sent stop working
-  // and fall through to the hint. Written as a test so the decision is
-  // recorded rather than rediscovered.
+  // Deliberate: back-compat was declined, so cards already sent fall through
+  // to the hint.
   assertEquals(parsePostback(`a=tryon&pid=${PID}`), null);
 });
 

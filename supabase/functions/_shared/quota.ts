@@ -4,6 +4,7 @@ import { asJsonObject, type DbClient } from "./supabase.ts";
 export type FeatureName = "chat" | "tryon" | "tryon_video";
 
 export type DailyUsage = Tables<"user_daily_usage">;
+
 export class QuotaExceededError extends Error {
   constructor(public readonly usage: DailyUsage | null) {
     super("quota exceeded");

@@ -4,8 +4,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
-/// The app version line shown at the foot of the settings and login screens.
-/// Long-pressing it opens the Talker log viewer.
 class VersionInfo extends HookWidget {
   const VersionInfo({super.key});
 

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// Heading above a group of `NavRow`s in a settings-style list.
-///
-/// [color] overrides the default `onSurfaceVariant` — pass `colorScheme.error`
-/// to mark a danger section.
 class SectionLabel extends StatelessWidget {
   const SectionLabel(this.text, {super.key, this.color});
 

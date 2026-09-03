@@ -9,8 +9,6 @@ import {
 } from "./quick-reply.ts";
 
 Deno.test("a message chip carries the label and the words it sends as two strings", () => {
-  // What the chip says and what it types on the sender's behalf are different
-  // copy: the label is a button, the text has to read like something they said.
   assertEquals(messageChip("便宜一點的", "有便宜一點的嗎"), {
     type: "action",
     action: { type: "message", label: "便宜一點的", text: "有便宜一點的嗎" },
@@ -27,8 +25,6 @@ Deno.test("a camera roll chip carries no image of its own", () => {
 });
 
 Deno.test("a postback chip says out loud what was tapped", () => {
-  // Without `displayText` the tap leaves no trace and the bot appears to start
-  // talking for no reason — the same rule the product card follows.
   assertEquals(postbackChip("再試一次", "a=tryon&pid=p1", "試穿「短版牛仔外套」"), {
     type: "action",
     action: {
@@ -56,14 +52,11 @@ Deno.test("chips are attached without disturbing the message", () => {
     text: "好",
     quickReply: { items: [cameraRollChip("再試一件")] },
   });
-  // The original is left alone: message factories return fresh objects, but a
-  // helper that mutated its argument would be a trap for the one that doesn't.
   assertEquals(message, { type: "text", text: "好" });
 });
 
 Deno.test("no chips means no quickReply property at all", () => {
-  // A caller may compute an empty set (an answer that is only a follow-up
-  // question). An empty `items` array is not something LINE accepts.
+  // An empty `items` array is not something LINE accepts.
   const message = { type: "text", text: "你想找什麼場合穿的？" };
 
   assertEquals(withQuickReply(message, []), message);
@@ -97,8 +90,7 @@ Deno.test("only the last message of a send is dressed", () => {
 });
 
 Deno.test("an empty send is left alone rather than dressed into a typeless message", () => {
-  // `at(-1)` on an empty array is `undefined`; spreading it would yield an
-  // object carrying a `quickReply` and no `type`, which LINE rejects — and it
+  // An object carrying a `quickReply` and no `type` is rejected by LINE — and it
   // rejects the whole send, not just that message.
   assertEquals(dressLast([], [messageChip("便宜一點的", "有便宜一點的嗎")]), []);
 });

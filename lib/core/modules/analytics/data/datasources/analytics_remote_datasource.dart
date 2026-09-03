@@ -14,7 +14,6 @@ class AnalyticsRemoteDataSource {
 
     final user = _supabaseClient.auth.currentUser;
     if (user == null) {
-      // Cannot log analytics events without an authenticated user.
       return;
     }
 

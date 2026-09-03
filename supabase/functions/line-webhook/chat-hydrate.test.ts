@@ -15,9 +15,8 @@ const row = (over: Record<string, unknown> = {}) => ({
 });
 
 /**
- * Fake client answering the product lookup, the wardrobe lookup and the batch
- * signing. `table` records which tables were read, so a test can assert that a
- * ref of one kind never queries the other's table.
+ * `tables` records which tables were read, so a test can assert that a ref of one
+ * kind never queries the other's table.
  */
 function fakeAdmin(
   productRows: Record<string, unknown>[],
@@ -31,10 +30,8 @@ function fakeAdmin(
     from(table: string) {
       const rows = table === "products" ? productRows : wardrobeRows;
       // Recorded on an actual `.in()` run, not on `.from()` alone: both
-      // hydrators build their query unconditionally (it's an argument
-      // expression, evaluated before the empty-ids check inside
-      // `fetchRowsByIds` ever runs), so only the run itself tells a real read
-      // apart from a query that got built and then never fired.
+      // hydrators build their query unconditionally, so only the run itself
+      // tells a real read apart from a query built and never fired.
       const runIn = (ids: string[]) => {
         tables.push(table);
         queried.push(ids);
@@ -89,10 +86,7 @@ Deno.test("hydrates only the referenced product ids", async () => {
   assertEquals([...rows.products.keys()], ["p1", "p2"]);
 });
 
-// Which rows survive the read — an image-less product, an id whose row is
-// gone, an empty id list — is `fetchProductRows`' rule and is tested there.
-// What is left here is the hydrator's own share: which refs become a query,
-// where the base url goes, and that wardrobe always comes back as a map.
+// Which rows survive the read is `fetchProductRows`' rule and is tested there.
 
 Deno.test("the base url reaches the card", async () => {
   const { admin } = fakeAdmin([row()]);

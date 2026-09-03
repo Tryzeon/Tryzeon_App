@@ -1,5 +1,3 @@
-/// Garment-type classification shared by the personal wardrobe and the store
-/// catalog.
 enum WardrobeCategory {
   top('top'),
   bottoms('bottoms'),

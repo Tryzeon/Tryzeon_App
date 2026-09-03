@@ -34,7 +34,6 @@ final storeShellRoute = StatefulShellRoute.indexedStack(
   ],
 );
 
-// Full-screen routes (no shell)
 final storeFullScreenRoutes = [
   GoRoute(
     path: AppRoutes.dashboardOnboarding,
