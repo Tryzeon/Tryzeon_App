@@ -97,12 +97,13 @@ class AuthRemoteDataSource {
     }
   }
 
-  /// LINE 沒有 Supabase provider，所以 id_token 換 session 這步交給
-  /// `line-auth` edge function：它對 LINE 驗證 token、把 LINE userId 對到既有
-  /// 的 auth user（LIFF 與官方帳號寫的是同一個），再回一個 refresh token。
+  /// LINE has no Supabase provider, so exchanging an id_token for a session is
+  /// delegated to the `line-auth` edge function: it verifies the token with
+  /// LINE, maps the LINE userId onto the existing auth user (LIFF and the
+  /// official account write the same one), and returns a refresh token.
   Future<void> signInWithLineNative() async {
     try {
-      // `openid` 是必要的 scope，少了它 idTokenRaw 會是 null。
+      // `openid` is a required scope; without it idTokenRaw comes back null.
       final rawNonce = CryptoUtils.generateNonce();
       final result = await LineSDK.instance.login(
         scopes: ['profile', 'openid'],

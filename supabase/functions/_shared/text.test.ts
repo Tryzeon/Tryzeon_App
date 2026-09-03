@@ -25,7 +25,8 @@ Deno.test("isUuid accepts a canonical uuid in either case", () => {
 Deno.test("isUuid rejects anything Postgres would choke on", () => {
   assertEquals(isUuid(""), false);
   assertEquals(isUuid("not-a-uuid"), false);
-  // 沒有連字號的 32 位十六進位字串：Postgres 收，但我們的 id 不長這樣
+  // A 32-digit hex string with no hyphens: Postgres accepts it, but our ids do
+  // not look like that
   assertEquals(isUuid("8f14e45fceea467a9c8d1b2c3d4e5f60"), false);
   assertEquals(isUuid("8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60-extra"), false);
   assertEquals(isUuid("8f14e45f-ceea-467a-9c8d-1b2c3d4e5g60"), false);

@@ -13,16 +13,19 @@ class SetupError extends Error {}
 
 const SETUP_FALLBACK = "讀取試穿形象失敗，請稍後再試。";
 
-/** 所有試穿的唯一入口:從商品頁和從首頁按下的都落在同一條 gallery。 */
+/** The single entry point for every try-on: those started from the product page
+ * and from home all land in the same gallery. */
 export function useTryonCoordinator() {
   const { state, dispatch } = useGallery();
   const navigate = useNavigate();
 
   const run = useCallback(
     async (buildGarment: () => Promise<Garment>, product: TryonProduct | null) => {
-      // 佔位頁和換頁擺在所有工作之前:準備一次試穿要讀檔、縮圖,選了形象還要把
-      // 那張圖整個抓回來。這些全都發生在按下按鈕之後,擺在前面等於讓畫面靜止到
-      // 它們做完為止 —— 動畫要先出來,工作才在它底下跑。
+      // The placeholder page and the navigation come before any work: preparing a
+      // try-on reads a file, downscales it, and with a chosen avatar fetches that
+      // image in full. All of it happens after the button is pressed, so doing it
+      // first would freeze the screen until it finished — the animation goes up
+      // first and the work runs underneath it.
       const id = newId();
       dispatch({ type: "addPending", id, product });
       navigate("/home");
@@ -32,9 +35,10 @@ export function useTryonCoordinator() {
       try {
         garment = await buildGarment();
 
-        // 形象圖要重新讀回位元組,這一步依賴 R2 對 LIFF 的 origin 開 CORS。讀不到
-        // 就當成沒選過形象是錯的 —— 那會拿 profile 上的模特照生成,和使用者要的
-        // 不是同一件事,所以寧可停下來說。
+        // The avatar image has to be read back as bytes, which depends on R2
+        // allowing CORS from the LIFF origin. Treating a failed read as "no
+        // avatar chosen" would be wrong — it would generate against the profile
+        // photo, which is not what the user asked for, so stop and say so.
         const chosen = customAvatarUrl(state);
         if (chosen !== null) avatarBase64 = await urlToBase64(chosen);
       } catch (err) {
@@ -53,8 +57,9 @@ export function useTryonCoordinator() {
         });
         dispatch({ type: "complete", id, imageUrl });
       } catch (err) {
-        // `fail` 而不是 remove + notify:使用者可能已經按過「取消生成」,那之後
-        // 這次請求的下場不該再打擾他 —— 由 reducer 判斷那一頁還在不在。
+        // `fail` rather than remove + notify: the user may already have cancelled
+        // the generation, after which this request's fate should not bother them
+        // — the reducer decides whether that page is still there.
         dispatch({ type: "fail", id, message: tryonFailureMessage(err) });
       }
     },

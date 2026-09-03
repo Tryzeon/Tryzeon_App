@@ -80,7 +80,7 @@ export function useCatalog(storeId?: string) {
       });
   }, [hasMore, offset, query, storeId]);
 
-  // Each call makes a fresh query object on purpose: pressing 搜尋 again with
+  // Each call makes a fresh query object on purpose: pressing search again with
   // the same text is a deliberate reload, not a no-op.
   const search = useCallback((q: string) => setQuery((prev) => ({ ...prev, q })), []);
   const setSort = useCallback(

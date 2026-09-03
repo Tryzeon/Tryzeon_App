@@ -29,8 +29,10 @@ export function SearchSortBar({ sort, onSearch, onSortChange, disabled = false }
         }}
       >
         <div className="searchbar__field">
-          {/* `text` 而不是 `search`:原生的清除鍵按下去只改值、不送事件,React 也
-              沒把 `search` 事件開出來,所以那顆叉叉沒辦法直接套用。自己畫一顆。 */}
+          {/* `text` rather than `search`: the native clear button only changes
+              the value without firing an event, and React does not expose the
+              `search` event, so that little cross cannot be wired up. Draw our
+              own. */}
           <input
             className="searchbar__input"
             type="text"

@@ -14,8 +14,9 @@ import { buildStoreDestination, deliveryFor, isOpenWith } from "./destination.ts
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void } | undefined;
 
 /**
- * 各開啟方式所需的設定。刻意不在啟動時檢查：缺 LIFF_URL 只該讓 liff 型的連結失敗，
- * 而不是讓整支函式失效 —— 之後 web 型的連結不需要這項設定也要能運作。
+ * Config each open method needs. Deliberately not checked at startup: a missing
+ * LIFF_URL should only fail liff-type links, not the whole function — web-type
+ * links, added later, must work without this setting.
  */
 const DESTINATION_CONFIG = {
   liffUrl: Deno.env.get("LIFF_URL") ?? null,
@@ -23,7 +24,8 @@ const DESTINATION_CONFIG = {
 
 const IMAGES_BASE_URL = Deno.env.get("R2_PUBLIC_IMAGES_BASE_URL") ?? null;
 
-/** 自己 try/catch：跑在 `EdgeRuntime.waitUntil` 裡，背景任務的 rejection 沒有人會接。 */
+/** Catches its own errors: running inside `EdgeRuntime.waitUntil`, a background
+ * task's rejection has nobody to handle it. */
 async function recordOpen(
   client: DbClient,
   code: string,
@@ -45,7 +47,8 @@ async function recordOpen(
   }
 }
 
-/** 一律 no-store —— 每次呼叫都會記一筆開啟事件，所以呼叫端不能對這支端點加快取。 */
+/** Always no-store — every call records an open event, so callers must not cache
+ * this endpoint. */
 function noStore(response: Response): Response {
   const headers = new Headers(response.headers);
   headers.set("Cache-Control", "no-store");
@@ -53,9 +56,11 @@ function noStore(response: Response): Response {
 }
 
 /**
- * 狀態碼是有意義的：404 是「這個 code 不存在或已停用」，5xx 是「我們壞了」。呼叫端
- * 目前把兩者都導回站台首頁，但區分留在協定裡，因為兩者該給使用者的訊息不同 ——
- * 把故障說成「連結已失效」等於告訴店家的客人他的立牌沒用。
+ * The status codes carry meaning: 404 is "this code does not exist or is
+ * disabled", 5xx is "we are broken". Callers currently send both to the site's
+ * home page, but the distinction stays in the protocol because the two deserve
+ * different wording — calling an outage an expired link tells a store's customer
+ * their standee is useless.
  */
 Deno.serve(async (req) => {
   try {
@@ -64,9 +69,10 @@ Deno.serve(async (req) => {
       return noStore(jsonError("Malformed code", "NOT_FOUND", 404));
     }
 
-    // anon 就夠了：`short_links` 的 select policy 只放行 is_active 的列，
-    // `store_profiles` 本來就公開可讀，`link_events` 有一條匿名 insert policy。
-    // 這是一支誰都能呼叫的端點，沒有理由讓它握著 service role key。
+    // anon is enough: the `short_links` select policy only exposes is_active
+    // rows, `store_profiles` is publicly readable anyway, and `link_events` has
+    // an anonymous insert policy. This endpoint is callable by anyone, so there
+    // is no reason for it to hold a service role key.
     const client = getAnonClient();
     const { data: link, error } = await client
       .from("short_links")
@@ -84,7 +90,8 @@ Deno.serve(async (req) => {
       return noStore(jsonError("Unknown or inactive code", "NOT_FOUND", 404));
     }
 
-    // DB 的 check constraint 只允許已實作的值，所以走到這裡代表 schema 與程式碼不同步。
+    // The DB check constraint only allows implemented values, so reaching here
+    // means the schema and the code are out of sync.
     if (!isOpenWith(link.open_with)) {
       console.error(`short-links: unsupported open_with "${link.open_with}" on "${link.code}"`);
       return noStore(jsonError("Unsupported link target", "INTERNAL_ERROR", 500));
@@ -96,16 +103,18 @@ Deno.serve(async (req) => {
       return noStore(jsonError("Server misconfigured", "INTERNAL_ERROR", 500));
     }
 
-    // 型別上 `!inner` 的 to-one 關聯是物件，但視 PostgREST 版本也可能實際回單元素陣列，
-    // 所以形狀仍在執行期收斂一次。
+    // Typed as an object for a to-one `!inner` relation, but depending on the
+    // PostgREST version it can come back as a single-element array, so the shape
+    // is still narrowed once at runtime.
     const embedded = link.store_profiles;
     const store = Array.isArray(embedded) ? embedded[0] ?? null : embedded;
 
     const userAgent = req.headers.get("User-Agent");
     const surface = detectSurface(userAgent);
 
-    // 掃碼的人不需要等事件寫完才被導走：實測這次寫入約佔熱路徑回應時間的一半
-    // （~0.45s，第二次 PostgREST 往返）。
+    // Whoever scanned the code should not wait for the event write before being
+    // redirected: measured, this write is about half the hot-path response time
+    // (~0.45s, a second PostgREST round trip).
     const record = recordOpen(client, link.code, surface, userAgent);
     if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(record);
     else await record;

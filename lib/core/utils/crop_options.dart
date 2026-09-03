@@ -1,6 +1,6 @@
 import 'package:image_cropper/image_cropper.dart';
 
-/// 裁切設定。傳 null 給 `ImagePickerHelper.pickImage` 代表不裁切。
+/// Crop settings. Passing null to `ImagePickerHelper.pickImage` means no crop.
 sealed class CropOptions {
   const CropOptions({this.title = '編輯圖片', this.style = CropStyle.rectangle});
 

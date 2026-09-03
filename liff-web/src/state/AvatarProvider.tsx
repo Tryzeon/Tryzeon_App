@@ -11,7 +11,8 @@ import { avatarUrl, setAvatar } from "../api/avatar";
 
 interface AvatarValue {
   url: string | null;
-  /** 不等於 [url] 已經備妥 —— 簽章還在路上時仍然是 true。 */
+  /** Not the same as [url] being ready — still true while the signature is
+   * in flight. */
   hasAvatar: boolean;
   status: "loading" | "ready" | "error";
   busy: boolean;

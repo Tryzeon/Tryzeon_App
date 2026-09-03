@@ -89,7 +89,8 @@ CREATE OR REPLACE FUNCTION "public"."check_wardrobe_limit"() RETURNS "trigger"
   current_count INTEGER;
   var_wardrobe_limit INTEGER;
 BEGIN
-  -- 1. 取得使用者對應方案的 wardrobe_limit (若無訂閱紀錄則預設為 'free' 方案)
+  -- 1. Read the wardrobe_limit of the user's tier (defaults to the 'free' tier
+  --    when there is no subscription row)
   SELECT wardrobe_limit INTO var_wardrobe_limit
   FROM public.subscription_plans
   WHERE id = COALESCE(
@@ -97,12 +98,12 @@ BEGIN
     'free'
   );
 
-  -- 2. 計算目前衣櫥裡的衣服數量
+  -- 2. Count the items currently in the wardrobe
   SELECT COUNT(*) INTO current_count 
   FROM public.wardrobe_items 
   WHERE user_id = NEW.user_id;
 
-  -- 3. 檢查是否超過上限
+  -- 3. Check whether the limit is exceeded
   IF current_count >= var_wardrobe_limit THEN
     RAISE EXCEPTION 'Wardrobe limit exceeded' USING ERRCODE = 'check_violation';
   END IF;
@@ -118,7 +119,7 @@ CREATE OR REPLACE FUNCTION "public"."cleanup_old_daily_usage"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 BEGIN
-  -- 刪除超過 30 天前的紀錄
+  -- Delete records older than 30 days
   DELETE FROM public.user_daily_usage
   WHERE usage_date < CURRENT_DATE - INTERVAL '30 days';
 END;
@@ -328,12 +329,12 @@ DECLARE
   v_row public.user_daily_usage;
   v_allowed BOOLEAN := FALSE;
 BEGIN
-  -- 1. 驗證 feature_name
+  -- 1. Validate feature_name
   IF p_feature_name NOT IN ('chat', 'tryon', 'tryon_video') THEN
     RETURN jsonb_build_object('allowed', false, 'usage', NULL);
   END IF;
 
-  -- 2. 獲取該用戶當前方案的最高額度
+  -- 2. Read the limit of the user's current tier
   SELECT
     CASE
       WHEN p_feature_name = 'chat' THEN chat_limit
@@ -346,8 +347,9 @@ BEGIN
     'free'
   );
 
-  -- 優化 A：方案額度為 0 或找不到，直接拒絕，不消耗資料庫寫入效能。
-  -- 仍要回傳當前 row（若存在），讓 client 能 sync UI。
+  -- Optimization A: a tier limit of 0 or no tier at all is rejected outright,
+  -- without spending a database write. The current row is still returned (when
+  -- one exists) so the client can sync its UI.
   IF v_max_limit IS NULL OR v_max_limit <= 0 THEN
     SELECT * INTO v_row
       FROM public.user_daily_usage
@@ -362,8 +364,9 @@ BEGIN
     );
   END IF;
 
-  -- 3. 原子性檢查與遞增（使用 WHERE 條件限制，取代 rollback）
-  --    加上 RETURNING * 讓我們同一條 statement 拿到 post-mutation row。
+  -- 3. Atomic check-and-increment (a WHERE condition instead of a rollback),
+  --    with RETURNING * so the post-mutation row comes back in the same
+  --    statement.
   IF p_feature_name = 'chat' THEN
     INSERT INTO public.user_daily_usage (user_id, usage_date, chat_count)
     VALUES (p_user_id, v_today, 1)
@@ -389,11 +392,11 @@ BEGIN
     RETURNING * INTO v_row;
   END IF;
 
-  -- 4. 判斷結果並 fallback 取得 current row（被擋下的情況）
+  -- 4. Interpret the result, falling back to the current row when blocked
   IF FOUND THEN
     v_allowed := TRUE;
   ELSE
-    -- 被擋下：撈當前 row 讓 client 能顯示「已滿格」
+    -- Blocked: fetch the current row so the client can show the quota as full
     SELECT * INTO v_row
       FROM public.user_daily_usage
       WHERE user_id = p_user_id AND usage_date = v_today;

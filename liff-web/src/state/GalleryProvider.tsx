@@ -7,8 +7,8 @@ import {
 } from "./gallery";
 
 /**
- * 只活在記憶體裡 —— 試穿結果沒有任何一張表記得它的 object key,存下網址只會在第
- * 7 天全部變成 403。
+ * Memory only — no table records the object key of a try-on result, so persisted
+ * URLs would all turn into 403s on day 7.
  */
 const GalleryContext = createContext<
   { state: GalleryState; dispatch: (action: GalleryAction) => void } | null

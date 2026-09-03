@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef } from "react";
 import { nextLoadingVideo } from "../lib/loadingVideos";
 import type { GalleryEntry } from "../state/gallery";
 
-/** 捲動停下來多久才算「使用者選定了這一頁」。 */
+/** How long scrolling must be still before the page counts as the user's
+ * choice. */
 const SETTLE_MS = 120;
 
-/** 判斷「已經在這一頁」的容許誤差,吸附後的位置常有次像素殘留。 */
+/** Tolerance for deciding we are already on a page; snapping often leaves a
+ * sub-pixel remainder. */
 const TOLERANCE_PX = 2;
 
 interface Props {
@@ -19,24 +21,27 @@ interface Props {
 }
 
 /**
- * 用 CSS scroll-snap 而不是自己算手勢:原生捲動的慣性、回彈和 LINE webview 的
- * 邊緣手勢本來就相容,自己接 touch 事件只會把它們弄壞。
+ * CSS scroll-snap rather than hand-rolled gesture math: native scrolling's
+ * momentum and rubber-banding already coexist with LINE's webview edge
+ * gestures, and handling touch events ourselves would only break them.
  */
 export function TryonPager(
   { entries, avatarUrl, avatarBusy, page, onPageChange, onAvatarTap, onResultTap }: Props,
 ) {
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // 這兩個 ref 一起把「狀態 → 捲動位置」和「捲動位置 → 狀態」隔開。少了它們,
-  // 兩個方向會互相餵食:平滑捲動經過的每一頁都會被回報成一次換頁,把狀態改掉,
-  // 下面那條 effect 就再送一次捲動把畫面拉回中途那一頁 —— 一次跨多頁的跳轉
-  // (已經有兩筆試穿時再按一次試穿)因此永遠到不了新的那一頁。
+  // Together these two refs keep state → scroll position and scroll position →
+  // state apart. Without them the two directions feed each other: every page a
+  // smooth scroll passes through gets reported as a page change, which rewrites
+  // the state, and the effect below then scrolls back to that intermediate page
+  // — so a multi-page jump (tapping try-on again with two try-ons already
+  // there) would never reach the new page.
   const target = useRef<number | null>(null);
   const settleTimer = useRef(0);
 
   useEffect(() => () => window.clearTimeout(settleTimer.current), []);
 
-  // 狀態 → 捲動位置:開始一次新試穿時把那一頁帶到眼前。
+  // State → scroll position: bring the new page into view when a try-on starts.
   useEffect(() => {
     const track = trackRef.current;
     if (track === null || track.clientWidth === 0) return;
@@ -53,14 +58,16 @@ export function TryonPager(
     const track = trackRef.current;
     if (track === null || track.clientWidth === 0) return;
 
-    // 平滑捲動「經過」的那幾頁不是使用者的選擇,到站之前一律不回報。
+    // Pages a smooth scroll merely passes through are not the user's choice, so
+    // report nothing until it arrives.
     if (target.current !== null) {
       if (Math.abs(track.scrollLeft - target.current) > TOLERANCE_PX) return;
       target.current = null;
     }
 
-    // 停下來才回報。手指還在拖的時候就改狀態,等於在使用者滑到一半時請上面那條
-    // effect 送出一次程式化捲動 —— 正是會跟手指打架的那件事。
+    // Only report once it settles. Changing state while a finger is still
+    // dragging would ask the effect above to fire a programmatic scroll
+    // mid-swipe — exactly the thing that fights the finger.
     window.clearTimeout(settleTimer.current);
     settleTimer.current = window.setTimeout(() => {
       const settled = trackRef.current;
@@ -69,8 +76,9 @@ export function TryonPager(
     }, SETTLE_MS);
   }
 
-  // 使用者一碰就把程式化捲動的目標作廢:他中途插手的話那個目標永遠不會到達,
-  // 留著會讓 handleScroll 從此不再回報任何一頁。
+  // Any touch invalidates the programmatic scroll target: once the user takes
+  // over, that target is never reached, and keeping it would stop handleScroll
+  // from ever reporting a page again.
   function releaseTarget() {
     target.current = null;
   }

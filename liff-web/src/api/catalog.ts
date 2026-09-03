@@ -32,8 +32,9 @@ export interface CatalogQuery {
 }
 
 /**
- * 每一頁都查一次,是為了讓店家身分獨立於 items —— 從商品列推導的話,一次沒有
- * 結果的搜尋就會讓店名消失。
+ * Queried on every page so the store identity is independent of the items —
+ * derived from the product rows, one empty search result would make the store
+ * name disappear.
  */
 async function fetchStore(storeId: string | null): Promise<CatalogStore | null> {
   if (storeId === null) return null;
@@ -49,11 +50,12 @@ async function fetchStore(storeId: string | null): Promise<CatalogStore | null> 
 }
 
 /**
- * 目錄走 anon,不等 session。
+ * The catalog goes out as anon and does not wait for a session.
  *
- * 商品目錄本來就是公開資料(list_shop_products 與 store_profiles 都對 anon 開
- * 放),而下面那個 module load 時就發出的預抓是首屏策略的一部分 —— 掛到 session
- * 後面就等於把它串到 auth 的來回之後。
+ * The product catalog is public data anyway (both list_shop_products and
+ * store_profiles are open to anon), and the prefetch fired at module load below
+ * is part of the first-paint strategy — hanging it off the session would chain
+ * it behind the auth round trip.
  */
 async function requestCatalog(
   { q, sort, offset, storeId }: CatalogQuery,
@@ -86,7 +88,8 @@ async function requestCatalog(
   };
 }
 
-// 第一頁在模組載入時就發出,跟 liff.init() 和首次 render 並行,不必等它們。
+// The first page is requested at module load, in parallel with liff.init() and
+// the first render rather than after them.
 const prefetchStoreId = window.location.pathname.match(/^\/store\/([^/]+)/)?.[1];
 let prefetched: Promise<CatalogPage> | null = requestCatalog({
   q: "",
@@ -94,7 +97,8 @@ let prefetched: Promise<CatalogPage> | null = requestCatalog({
   offset: 0,
   storeId: prefetchStoreId,
 });
-// 抑制 unhandled rejection;真正的錯誤仍會交給取用它的呼叫端。
+// Suppress the unhandled rejection; the real error still reaches whichever
+// caller consumes it.
 prefetched.catch(() => {});
 
 export function fetchCatalog(query: CatalogQuery): Promise<CatalogPage> {
@@ -110,8 +114,9 @@ export function fetchCatalog(query: CatalogQuery): Promise<CatalogPage> {
 }
 
 /**
- * 走 `get_shop_product` 而不是自己查 products:「顧客看得到的商品」這條規則
- * (`status = 'active'`)在那支函式的身體裡,不該再被 client 抄一次。
+ * Goes through `get_shop_product` instead of querying products directly: the
+ * rule for "a product a customer may see" (`status = 'active'`) lives in that
+ * function's body and should not be copied into the client a second time.
  */
 export async function fetchProduct(productId: string): Promise<CatalogItem | null> {
   const id = normalizeUuid(productId);

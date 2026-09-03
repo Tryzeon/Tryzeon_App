@@ -37,8 +37,9 @@ export function Home() {
   const notify = (message: string) => dispatch({ type: "notify", message });
   const dismiss = () => dispatch({ type: "dismissNotice" });
 
-  // 依 notice.id 重跑,不是依內容:連續兩次一模一樣的失敗也要各自從頭數四秒,
-  // 否則第二則會沿用第一則剩下的時間,冒出來就被收掉。
+  // Keyed on notice.id rather than the content: two identical failures in a row
+  // each get their own four seconds, otherwise the second would inherit what was
+  // left of the first and be dismissed the moment it appears.
   const noticeId = notice?.id ?? null;
   useEffect(() => {
     if (noticeId === null) return;
@@ -200,8 +201,9 @@ export function Home() {
         <p className="home__loadfail">模特照載入失敗，重新整理再試。</p>
       )}
 
-      {/* 掛到 <body>:首頁一直掛著但切到別的分頁時整個 pane 會被藏起來,留在裡面
-          的訊息等於沒說 —— 生成中切去試衣間,失敗就完全沒有回饋。 */}
+      {/* Mounted on <body>: home stays mounted, but switching tabs hides the
+          whole pane, so a message left inside it is never seen — switch to the
+          shop while generating and a failure would give no feedback at all. */}
       {notice !== null && (
         <Overlay>
           <div className="toast" role="status" onClick={dismiss}>{notice.message}</div>
@@ -234,7 +236,8 @@ export function Home() {
   );
 }
 
-/** 選完就把 value 清掉,不然連選同一張不會再觸發 onChange。 */
+/** Clears the value after each pick, otherwise choosing the same photo twice
+ * in a row never fires onChange again. */
 function PickerInput(
   { inputRef, onPick }: {
     inputRef: React.RefObject<HTMLInputElement>;

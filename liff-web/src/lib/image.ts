@@ -47,8 +47,8 @@ export function downscaleToBlob(file: File, maxDim = 1024): Promise<Blob> {
 }
 
 /**
- * 不含 `data:` 前綴 —— edge function 的 `{ base64 }` 收的是純資料,連前綴一起送
- * 會讓解碼端拿到垃圾位元組。
+ * Without the `data:` prefix — the edge function's `{ base64 }` expects raw
+ * data, and sending the prefix along hands the decoder garbage bytes.
  */
 export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -68,18 +68,23 @@ export async function downscaleToBase64(file: File, maxDim = 1024): Promise<stri
 }
 
 /**
- * 需要 R2 那個 bucket 對 LIFF 的 origin 開 CORS —— `<img src>` 不需要,fetch 需要。
- * 沒開的話這裡會丟,呼叫端要把它當成一次可以重試的失敗,而不是壞掉。
+ * Requires the R2 bucket to allow CORS from the LIFF origin — `<img src>` does
+ * not need it, fetch does. Without it this throws, and callers should treat that
+ * as a retryable failure rather than a broken state.
  *
- * `no-store` 不是為了拿最新的資料,是為了繞開快取裡那份不能用的複本:相片流的
- * `<img>` 先載過同一個網址,那是 no-cors、不送 Origin,所以 R2 照規矩沒回
- * `Access-Control-Allow-Origin`,而那份沒有 header 的回應進了快取。這裡再讀同一
- * 個網址時瀏覽器會拿它去做條件請求,R2 回 304,304 上一樣沒有那個 header,CORS
- * 檢查就失敗 —— 圖明明顯示得好好的,fetch 卻被擋。
+ * `no-store` is not about getting fresh data, it is about bypassing the unusable
+ * copy in the cache: the photo stream's `<img>` already loaded the same URL
+ * no-cors, without an Origin header, so R2 correctly answered without
+ * `Access-Control-Allow-Origin`, and that header-less response went into the
+ * cache. Reading the same URL here makes the browser revalidate against it, R2
+ * replies 304, the 304 likewise carries no such header, and the CORS check fails
+ * — the image displays fine, yet the fetch is blocked.
  *
- * 另一條路是給那個 `<img>` 加上 `crossOrigin`,讓它一開始就存一份帶 header 的。
- * 沒有選它:那會讓「圖片顯示得出來」從此依賴 CORS 設定,而一個沒被列進
- * AllowedOrigins 的預覽網域就會讓所有結果圖變成破圖 —— 比一個功能失敗嚴重得多。
+ * The other route is putting `crossOrigin` on that `<img>` so it caches a copy
+ * with the header from the start. Not taken: that would make "the image renders
+ * at all" depend on CORS configuration, and a preview domain missing from
+ * AllowedOrigins would break every result image — far worse than one failing
+ * feature.
  */
 export async function urlToBase64(url: string): Promise<string> {
   const resp = await fetch(url, { cache: "no-store" });

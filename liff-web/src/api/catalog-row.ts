@@ -17,9 +17,10 @@ export function publicImageUrl(baseUrl: string, key: string): string {
 }
 
 /**
- * 沒有可用圖片的商品仍然成為一個項目,只是 imageUrls 是空的。在這裡把它丟掉會
- * 讓 items.length 和分頁算術依據的列數對不起來,而且會讓商品從店家自己的目錄
- * 消失,而不是顯示出它缺照片。
+ * A product with no usable image still becomes an item, just with an empty
+ * imageUrls. Dropping it here would put items.length out of step with the row
+ * count the pagination arithmetic relies on, and would make the product vanish
+ * from the store's own catalog instead of showing that it lacks photos.
  */
 export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
   const r = (row ?? {}) as Record<string, unknown>;

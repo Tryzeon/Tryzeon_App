@@ -62,8 +62,9 @@ function LiffGate() {
       </div>
     );
   }
-  // 模特照和 gallery 都掛在這裡而不是各自的頁面裡:兩個分頁看到的要是同一份,
-  // 而去試衣間逛一圈再回來,剛剛的試穿還要在。
+  // The avatar and the gallery are mounted here rather than inside each page:
+  // both tabs must see the same one, and a trip through the shop and back must
+  // leave the try-ons that were just made intact.
   return (
     <AvatarProvider initialPath={avatarPath}>
       <GalleryProvider>
@@ -74,9 +75,11 @@ function LiffGate() {
 }
 
 /**
- * 換分頁不再是卸載重建,所以模特照不會每次進首頁都重簽一次、目錄不會每次回來都
- * 重抓,而每個 pane 自己是一個捲動容器,捲動位置由瀏覽器保管,不必手動存還。
- * 商品頁不在此列:那是一個詳情畫面,每次看的是不同的一件,重建才是對的。
+ * Switching tabs no longer unmounts and rebuilds, so the avatar is not re-signed
+ * on every visit to home and the catalog is not refetched on every return, and
+ * each pane is its own scroll container whose position the browser keeps — no
+ * manual save/restore. The product page is excluded: it is a detail screen
+ * showing a different item each time, so rebuilding it is the right thing.
  */
 function TabShell() {
   const { pathname } = useLocation();
@@ -88,8 +91,9 @@ function TabShell() {
   const lastShopPath = useRef("/");
   if (isShop) lastShopPath.current = pathname;
 
-  // 店家 id 來自試衣間記得的那個位置,不是目前的網址 —— 人在首頁時目前的網址配
-  // 不到 /store/:storeId,拿它去問等於在背後把店家目錄換成全站目錄。
+  // The store id comes from the path the shop tab remembers, not the current
+  // URL — on home the current URL does not match /store/:storeId, and querying
+  // with that would quietly swap the store's catalog for the site-wide one.
   const storeId =
     matchPath("/store/:storeId", lastShopPath.current)?.params.storeId;
 
@@ -113,16 +117,19 @@ export function AppRouter() {
   return (
     <Routes>
       <Route element={<LiffGate />}>
-        {/* 兩個分頁由 TabShell 自己掛著,所以這幾條只負責讓路徑合法(不被 *
-            吃掉)並餵給 TabShell 的 useLocation / matchPath;Outlet 只載商品頁。 */}
+        {/* TabShell mounts both tabs itself, so these routes only keep the
+            paths legal (not swallowed by *) and feed TabShell's useLocation /
+            matchPath; the Outlet renders the product page only. */}
         <Route element={<TabShell />}>
           <Route path="/" element={<></>} />
-          {/* 店家 QR 的落點:resolve-link 302 到 ${LIFF_URL}/store/{store_id}。 */}
+          {/* Where a store QR lands: resolve-link 302s to
+              ${LIFF_URL}/store/{store_id}. */}
           <Route path="/store/:storeId" element={<></>} />
           <Route path="/home" element={<></>} />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
-        {/* Onboarding 是全螢幕的一段流程,和 app 一樣站在分頁殼之外。 */}
+        {/* Onboarding is a full-screen flow that sits outside the tab shell,
+            same as in the app. */}
         <Route path="/onboard" element={<Onboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

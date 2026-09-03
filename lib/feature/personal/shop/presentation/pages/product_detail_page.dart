@@ -16,8 +16,9 @@ class ProductDetailPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final initial = initialProduct;
-    // initialProduct 是 final 建構子欄位，對同一個 widget instance 恆定，
-    // 因此這個條件式 watch 跨 rebuild 是穩定的。
+    // initialProduct is a final constructor field and therefore constant for a
+    // given widget instance, so this conditional watch is stable across
+    // rebuilds.
     final productAsync = initial != null
         ? AsyncValue.data(initial)
         : ref.watch(shopProductByIdProvider(productId));

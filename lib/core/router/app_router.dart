@@ -35,22 +35,24 @@ Raw<GoRouter> appRouter(final Ref ref) {
       final path = state.matchedLocation;
       final isAuthPath = path == AppRoutes.login;
 
-      // 1. 未登入 → 導向登入頁
+      // 1. Signed out → go to the login page
       if (!isLoggedIn) {
         return isAuthPath ? null : AppRoutes.login;
       }
 
-      // 2. 已登入但仍處於登入頁 → 導向首頁
+      // 2. Signed in but still on the login page → go home
       if (isAuthPath) return _resolveHomePath(ref);
 
-      // 3. 商家 Onboarding 攔截（排除 Deep Link 與 Onboarding 頁面本身）
+      // 3. Store onboarding gate (deep links and the onboarding pages
+      //    themselves are excluded)
       final storeRedirect = _handleStoreOnboardingRedirect(
         path,
         ref.read(storeProfileProvider),
       );
       if (storeRedirect != null) return storeRedirect;
 
-      // 4. 個人 Onboarding 攔截（deep link 內容頁在內部豁免，優先顯示）
+      // 4. Personal onboarding gate (deep-link content pages are exempted
+      //    inside, so they take priority)
       final personalRedirect = _handlePersonalOnboardingRedirect(
         path,
         ref.read(userProfileProvider),
@@ -69,8 +71,8 @@ Raw<GoRouter> appRouter(final Ref ref) {
     ],
   );
 
-  // 監聽 store profile 變化，觸發 redirect 重新評估，
-  // 而不是重建整個 GoRouter（避免覆蓋 deep link 導航）。
+  // Listen for store profile changes to re-run redirect, rather than rebuilding
+  // the whole GoRouter (which would clobber deep-link navigation).
   ref.listen(storeProfileProvider, (final _, final _) {
     refreshListenable.refresh();
   });

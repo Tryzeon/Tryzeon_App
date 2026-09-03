@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'create_product_request.g.dart';
 
-/// id 由 client 端產生（UUID v4），用於決定 R2 圖片路徑。
+/// The id is generated client-side (UUID v4) and decides the R2 image path.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CreateProductRequest {
   const CreateProductRequest({

@@ -12,7 +12,8 @@ interface Props {
   onClose(): void;
 }
 
-/** 轉場只影響影片,LIFF 沒有影片試穿,所以這裡只有兩段。 */
+/** Transitions only affect video, and LIFF has no video try-on, so there are
+ * just two sections here. */
 export function StyleSheet({ onClose }: Props) {
   const [config, setConfig] = useState<PromptConfig>(loadPromptConfig);
 

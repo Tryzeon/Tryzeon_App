@@ -31,8 +31,9 @@ export class InvalidStoreIdError extends Error {
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /**
- * 擋的是 Postgres 的型別錯誤:一個非 uuid 的字串送進 `uuid` 參數會讓整支 RPC 以
- * 500 收場,而呼叫端要的答案其實是「沒有這筆」。
+ * Guards against a Postgres type error: a non-uuid string passed to a `uuid`
+ * parameter ends the whole RPC in a 500, when the answer the caller wants is
+ * simply "no such row".
  */
 export function normalizeUuid(raw: string): string | null {
   const value = raw.trim().toLowerCase();
@@ -40,8 +41,9 @@ export function normalizeUuid(raw: string): string | null {
 }
 
 /**
- * 格式不對就拋,不退回全站目錄:掃了某家店的碼卻看到所有店的商品,是店家 QR 最
- * 不該有的行為。
+ * Throws on a malformed id rather than falling back to the site-wide catalog:
+ * scanning one store's code and seeing every store's products is the worst
+ * thing a store QR could do.
  */
 export function parseStoreId(raw: string | undefined): string | null {
   if (raw === undefined) return null;

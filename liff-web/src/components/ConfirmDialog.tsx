@@ -9,8 +9,8 @@ interface Props {
 }
 
 /**
- * 自己畫而不用 `window.confirm` —— 原生對話框會擋住整個 webview 的事件迴圈,在
- * LINE 裡尤其難收回來。
+ * Drawn by hand instead of `window.confirm` — the native dialog blocks the
+ * whole webview's event loop, and inside LINE it is especially hard to dismiss.
  */
 export function ConfirmDialog(
   { message, confirmLabel, cancelLabel, onConfirm, onCancel }: Props,

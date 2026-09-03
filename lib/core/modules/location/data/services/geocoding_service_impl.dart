@@ -2,7 +2,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
-/// 使用平台原生 geocoding(iOS/Android)實作,免 API key。
+/// Backed by the platform-native geocoder (iOS/Android), so no API key.
 class GeocodingServiceImpl implements GeocodingService {
   @override
   Future<GeoCoordinates?> geocodeAddress(final String address) async {

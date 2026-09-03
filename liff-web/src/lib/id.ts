@@ -1,4 +1,5 @@
-/** 純本地識別碼 —— 伺服器不知道它的存在,只需要在這個 session 內唯一。 */
+/** Purely local identifier — the server knows nothing about it, it only has to
+ * be unique within this session. */
 export function newId(): string {
   return typeof crypto.randomUUID === "function"
     ? crypto.randomUUID()

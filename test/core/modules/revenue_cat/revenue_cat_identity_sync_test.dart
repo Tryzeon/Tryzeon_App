@@ -98,7 +98,8 @@ void main() {
     await settle();
     expect(repository.loggedInUserIds, ['user-a']);
 
-    // 一次 token refresh 就足以復原，不必等使用者重新登入。
+    // A single token refresh is enough to recover, without waiting for the user
+    // to sign in again.
     authUserIds.add('user-a');
     await settle();
 

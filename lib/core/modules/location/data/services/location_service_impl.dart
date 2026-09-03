@@ -35,19 +35,19 @@ class LocationServiceImpl implements LocationService {
   @override
   Future<UserLocation?> getUserLocation() async {
     try {
-      // 檢查權限
+      // Check permission
       if (!await hasPermission()) {
         return null;
       }
 
-      // 取得目前位置
+      // Get the current position
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
           timeLimit: Duration(seconds: 10),
         ),
       );
-      // 反向地理編碼取得地址
+      // Reverse-geocode into an address
       try {
         await setLocaleIdentifier('zh_TW');
       } catch (e) {
@@ -63,7 +63,7 @@ class LocationServiceImpl implements LocationService {
       }
       final placemark = placemarks.first;
 
-      // 解析城市和區
+      // Parse city and district
       final city = placemark.administrativeArea;
       final district = placemark.locality;
 
@@ -77,7 +77,7 @@ class LocationServiceImpl implements LocationService {
         return null;
       }
 
-      // 組合完整地址
+      // Compose the full address
       final addressParts = [
         placemark.administrativeArea,
         placemark.locality,
@@ -86,7 +86,7 @@ class LocationServiceImpl implements LocationService {
         placemark.subThoroughfare,
       ].where((final s) => s != null && s.isNotEmpty).join('');
 
-      // 若無法組出完整地址，至少使用城市+區
+      // If the full address cannot be composed, fall back to city + district
       final fullAddress = addressParts.isNotEmpty ? addressParts : '$city$district';
 
       return UserLocation(

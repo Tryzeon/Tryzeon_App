@@ -1,27 +1,37 @@
--- short_links 從 polymorphic (target_type, target_id) 改為 typed FK store_id。
+-- short_links moves from a polymorphic (target_type, target_id) pair to a typed
+-- FK store_id.
 --
--- 為什麼:polymorphic 組合在 Postgres 無法下 foreign key,所以 target_id 可以指向
--- 一個不存在的店家而無人察覺 —— 印出去的 QR 就是死的。typed FK 讓 DB 保證目標
--- 存在。日後要支援商品連結時走 exclusive arc:store_id 改 nullable、加 product_id、
--- 加 check (num_nonnulls(store_id, product_id) = 1)。
+-- Why: Postgres cannot put a foreign key on a polymorphic pair, so target_id
+-- could point at a store that does not exist without anyone noticing — and a
+-- printed QR would simply be dead. A typed FK makes the DB guarantee the target
+-- exists. Supporting product links later goes through an exclusive arc: make
+-- store_id nullable, add product_id, add
+-- check (num_nonnulls(store_id, product_id) = 1).
 --
--- 同時:
---   * 刪 forward_url —— 舊的 deferred deep link 平台已移除,且自由文字 URL 是
---     open redirect 來源
---   * metadata jsonb 改成 note text —— 原本存的 name/store 都可從 code 與
---     store_profiles 推導,不可推導的只有「印在哪」這行備註
---   * code 加小寫格式 check —— 原本 PK 大小寫敏感,PinkyRabbit 與 pinkyrabbit
---     會是兩筆
---   * open_with 宣告這個連結要在哪裡開啟。一個連結只支援一種開啟方式,所以這是連結
---     的屬性,不隨掃碼環境改變 —— 環境只決定「能不能直接 302」,不決定「去哪裡」。
---     目前只實作 liff;web 與 app 之後各自加一個值,屆時 check 要一起放寬。限制在已實作
---     的值,資料庫就無法存進程式還不會處理的狀態,與 store_id 用 typed FK 的理由相同。
---     有 default 是為了讓建立 QR 的流程不必知道這個欄位,直到真的有第二種開啟方式。
---   * link_events.code 的 FK 補 on delete cascade —— 否則刪店家會被 FK 擋住並變成
---     HTTP 500,與 20260619000000 修過的 link_events.user_id 同一類問題
+-- At the same time:
+--   * drop forward_url — the old deferred deep link platform is gone, and a
+--     free-text URL is a source of open redirects
+--   * metadata jsonb becomes note text — the name/store it used to hold are both
+--     derivable from code and store_profiles; the only thing that is not is the
+--     note saying where the code is printed
+--   * code gets a lowercase format check — the PK used to be case sensitive, so
+--     PinkyRabbit and pinkyrabbit were two rows
+--   * open_with declares where this link should open. A link supports exactly one
+--     open method, so this is a property of the link and does not change with the
+--     scanning environment — the environment only decides whether a plain 302
+--     works, not where it goes. Only liff is implemented; web and app each get
+--     their own value later, and the check widens along with them. Restricting it
+--     to implemented values means the database cannot hold a state the code
+--     cannot handle yet — the same reason store_id is a typed FK. The default
+--     exists so the QR-creation flow need not know about this column until there
+--     really is a second open method.
+--   * link_events.code's FK gains on delete cascade — otherwise deleting a store
+--     is blocked by the FK and turns into an HTTP 500, the same class of problem
+--     as link_events.user_id, fixed in 20260619000000
 --
--- short_links 目前無資料(link_events.code 對它有 FK,所以事件表同樣是空的),
--- 因此直接重建而不逐欄位搬遷。
+-- short_links currently holds no data (link_events.code has an FK on it, so the
+-- events table is empty too), so it is rebuilt outright rather than migrated
+-- column by column.
 
 alter table public.link_events drop constraint if exists link_events_code_fkey;
 
@@ -39,19 +49,22 @@ create table public.short_links (
 );
 
 alter table public.short_links enable row level security;
--- 只有 service_role(resolve-link edge function)存取這張表。不設 policy =>
--- anon/authenticated 預設拒絕。
+-- Only service_role (the resolve-link edge function) touches this table. No
+-- policy => anon/authenticated are denied by default.
 
 alter table public.link_events
   add constraint link_events_code_fkey
   foreign key (code) references public.short_links(code)
   on update cascade on delete cascade;
 
--- record_link_open 是給 App 內解析 /s/{code} 用的,而 QR 現在落在 LIFF、App 端的
--- 解析器已經刪除,所以這支 RPC 沒有任何呼叫端了。
+-- record_link_open existed for in-app resolution of /s/{code}, but QR codes now
+-- land in LIFF and the app-side resolver has been deleted, so this RPC has no
+-- callers left.
 --
--- 已安裝的舊版 App binary 仍會攔截 /s/ 並呼叫它,呼叫會失敗 —— 那條路徑上的
--- resolveShortLinkDestination 會接住錯誤並退回首頁。這是刻意接受的降級:為尚未更新的
--- 版本留一支沒人維護的 RPC,就是 backward-compat 包袱。更新過的版本不再宣告 /s/,
--- 掃碼會正常進到瀏覽器與 LIFF。
+-- Older installed app binaries still intercept /s/ and call it, and those calls
+-- will fail — resolveShortLinkDestination on that path catches the error and
+-- falls back to the home page. This degradation is accepted deliberately:
+-- keeping an unmaintained RPC alive for versions that have not updated is exactly
+-- the backward-compat baggage we avoid. Updated versions no longer claim /s/, so
+-- scanning takes the user to the browser and LIFF as intended.
 drop function if exists public.record_link_open(text, text, text);

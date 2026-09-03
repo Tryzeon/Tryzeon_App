@@ -1,8 +1,8 @@
 import type { Surface } from "./surface.ts";
 
 /**
- * 已實作的開啟方式。加入 `web` / `app` 時，migration 的
- * `short_links_open_with_check` 也要同步放寬。
+ * The open methods that are implemented. When adding `web` / `app`, widen the
+ * migration's `short_links_open_with_check` to match.
  */
 const OPEN_WITH = ["liff"] as const;
 
@@ -16,7 +16,8 @@ export interface DestinationConfig {
   liffUrl: string | null;
 }
 
-/** 回傳 null 表示這種開啟方式所需的設定沒給 —— 呼叫端據此回 500。 */
+/** Returns null when the config this open method needs is missing — callers turn
+ * that into a 500. */
 export function buildStoreDestination(
   openWith: OpenWith,
   storeId: string,
@@ -35,20 +36,22 @@ export function buildStoreDestination(
 }
 
 /**
- * 為什麼不是一律 302：liff 的目的地是 LIFF URL，而 LIFF URL 是 iOS universal link。
- * Apple 的 DTS 明講 301/302 導向 universal link 在 iOS 18.3 之後不再開啟 App
- * （developer.apple.com/forums/thread/780496），LINE 自己也不保證外部瀏覽器能喚起
- * LIFF，並建議改由使用者點擊觸發
- * （developers.line.biz/en/tips/2026/05/07/line-launch-issue/）。
+ * Why not always 302: a liff destination is a LIFF URL, and a LIFF URL is an iOS
+ * universal link. Apple's DTS states outright that a 301/302 to a universal link
+ * no longer opens the app as of iOS 18.3
+ * (developer.apple.com/forums/thread/780496), and LINE itself does not guarantee
+ * an external browser can launch a LIFF, recommending a user tap instead
+ * (developers.line.biz/en/tips/2026/05/07/line-launch-issue/).
  *
- * 所以請不要把 interstitial 改成自動跳轉 —— 那條路在 iOS 上是壞的。
+ * So please do not turn the interstitial into an automatic redirect — that path
+ * is broken on iOS.
  */
 export type Delivery = "redirect" | "interstitial";
 
 export function deliveryFor(openWith: OpenWith, surface: Surface): Delivery {
   switch (openWith) {
     case "liff":
-      // crawler 也走 interstitial —— 預覽卡要抓得到 OG tag。
+      // Crawlers get the interstitial too — the preview card needs the OG tags.
       return surface === "line" ? "redirect" : "interstitial";
     default: {
       const unhandled: never = openWith;

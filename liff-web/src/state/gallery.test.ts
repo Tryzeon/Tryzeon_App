@@ -105,7 +105,8 @@ describe("custom avatar", () => {
     expect(state).toBe(initialGalleryState);
   });
 
-  // 形象圖被刪掉之後,下一次試穿必須回到 profile 上那張,而不是指著一個沒有的 id。
+  // Once the avatar image is deleted, the next try-on must fall back to the one
+  // on the profile rather than point at an id that no longer exists.
   it("is dropped along with the entry it points at", () => {
     const done = galleryReducer(withEntries("a"), {
       type: "complete",
@@ -118,7 +119,8 @@ describe("custom avatar", () => {
     expect(customAvatarUrl(state)).toBeNull();
   });
 
-  // 還在生成的那頁沒有圖可以當形象,選單也不給這個選項 —— 但狀態層仍要安全。
+  // A page still generating has no image to serve as an avatar, and the menu
+  // does not offer the option — but the state layer still has to be safe.
   it("yields no url while the entry it points at is still pending", () => {
     const on = galleryReducer(withEntries("a"), { type: "toggleAvatar" });
     expect(customAvatarUrl(on)).toBeNull();
@@ -128,7 +130,8 @@ describe("custom avatar", () => {
 describe("product source", () => {
   const shirt = { productId: "p1", name: "白襯衫" };
 
-  // 結果圖上那行「試穿 ⋯」靠這個欄位活著,所以完成時不能把它蓋掉。
+  // The "試穿 ⋯" line on the result image lives off this field, so completing
+  // must not overwrite it.
   it("survives the swap from pending to finished", () => {
     const pending = galleryReducer(initialGalleryState, {
       type: "addPending",
@@ -149,7 +152,8 @@ describe("product source", () => {
 });
 
 describe("notice", () => {
-  // 從商品頁按下的試穿失敗時,人已經被帶到首頁了,訊息要跨得過那次換頁。
+  // When a try-on started from the product page fails, the user has already been
+  // moved to home, so the message has to survive that navigation.
   it("holds the last message until dismissed", () => {
     const shown = galleryReducer(initialGalleryState, {
       type: "notify",

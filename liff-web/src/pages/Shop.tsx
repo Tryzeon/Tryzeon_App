@@ -20,8 +20,9 @@ export function Shop({ storeId }: { storeId?: string }) {
     itemCount: catalog.items.length,
   });
 
-  // 目錄這一列和詳情那一列是同一個 buildCatalogItem 蓋的,所以點進去要看的東西
-  // 現在就在手上 —— 一起帶過去,詳情頁才不必為了同一筆資料再問一次伺服器。
+  // The catalog row and the detail row are both built by the same
+  // buildCatalogItem, so everything the detail page shows is already in hand —
+  // pass it along and it need not ask the server for the same data again.
   function openProduct(item: CatalogItem) {
     navigate(`/product/${item.productId}`, { state: { item } });
   }

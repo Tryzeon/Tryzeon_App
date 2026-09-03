@@ -18,7 +18,8 @@ Deno.test("codeFromPathname takes the last segment and lowercases it", () => {
 });
 
 Deno.test("codeFromPathname rejects anything the code format forbids", () => {
-  // 格式與 short_links_code_format check 一致，所以壞碼在查表前就被擋掉。
+  // The format matches the short_links_code_format check, so a bad code is
+  // rejected before the lookup.
   assertEquals(codeFromPathname("/short-links/bad_code"), null);
   assertEquals(codeFromPathname("/short-links/a"), null);
   assertEquals(codeFromPathname("/short-links/-lead"), null);

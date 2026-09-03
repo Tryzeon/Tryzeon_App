@@ -41,11 +41,13 @@ export function openExternal(url: string): void {
 }
 
 /**
- * 這同時是 LIFF 上的「儲存」—— webview 沒有相簿可以寫,傳回聊天室之後 LINE 自己
- * 就能存圖,而結果圖只有 7 天的簽章網址,離開這個 webview 就再也找不回來。
+ * This doubles as "save" on LIFF — the webview has no photo library to write to,
+ * whereas once an image is sent to a chat LINE can save it, and a result image
+ * is only a 7-day signed URL that is unrecoverable once this webview is gone.
  *
- * shareTargetPicker 要在 LINE Developers Console 上開,而且在外部瀏覽器裡不存在,
- * 所以送之前一定要問過 [canShareToChat]。回傳 false 代表使用者按了取消。
+ * shareTargetPicker has to be enabled in the LINE Developers Console and does
+ * not exist in an external browser, so always ask [canShareToChat] before
+ * sending. Returns false when the user cancels.
  */
 export function canShareToChat(): boolean {
   return liff.isApiAvailable("shareTargetPicker");
