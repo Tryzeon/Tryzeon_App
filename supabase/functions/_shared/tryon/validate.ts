@@ -16,9 +16,27 @@ import type {
 } from "./types.ts";
 
 /**
+ * The entry point reads the whole body into memory before any guard here runs,
+ * so without a ceiling an authenticated caller could spend a function's memory
+ * — and a quota charge — on something the model was going to reject anyway.
+ */
+function requireBase64(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new ValidationError(`${label} must have a non-empty base64`);
+  }
+  if (value.length > LIMITS.MAX_BASE64_LENGTH) {
+    throw new ValidationError(
+      `${label} too large (max ${LIMITS.MAX_BASE64_LENGTH} base64 chars)`,
+    );
+  }
+  return value;
+}
+
+/**
  * A `{ path }` is rejected rather than ignored: silently dropping it would run
  * the job against whatever else the garment carried, which is not what the
- * caller asked for.
+ * caller asked for. Checked before the bytes so a client still sending the
+ * retired shape is told what is actually wrong with it.
  */
 function requireInlineImage(
   source: unknown,
@@ -27,11 +45,11 @@ function requireInlineImage(
   if (typeof source !== "object" || source === null) {
     throw new ValidationError(`${label} must be an object`);
   }
-  const base64 = (source as Record<string, unknown>).base64;
-  if (typeof base64 !== "string" || base64.length === 0) {
-    throw new ValidationError(`${label} must have a non-empty base64`);
+  const s = source as Record<string, unknown>;
+  if (typeof s.path === "string" && s.path.length > 0) {
+    throw new ValidationError(`${label} must be inline bytes, not a path`);
   }
-  return { base64 };
+  return { base64: requireBase64(s.base64, label) };
 }
 
 /**
@@ -52,10 +70,7 @@ function optionalAvatarOverride(source: unknown): AvatarOverride | undefined {
     if (hasPath) return undefined;
     throw new ValidationError("avatar must have a usable base64");
   }
-  if (typeof base64 !== "string" || base64.length === 0) {
-    throw new ValidationError("avatar base64 must be a non-empty string");
-  }
-  return { base64 };
+  return { base64: requireBase64(base64, "avatar") };
 }
 
 function optionalBaseImage(source: unknown): BaseImage | undefined {
@@ -64,18 +79,7 @@ function optionalBaseImage(source: unknown): BaseImage | undefined {
     throw new ValidationError("baseImage must be an object");
   }
   const base64 = (source as Record<string, unknown>).base64;
-  if (typeof base64 !== "string" || base64.length === 0) {
-    throw new ValidationError("baseImage must have a non-empty base64");
-  }
-  // The entry point reads the whole body into memory before this guard runs, so
-  // without a ceiling an authenticated caller could spend a function's memory —
-  // and a quota charge — on something Veo was going to reject anyway.
-  if (base64.length > LIMITS.MAX_BASE64_LENGTH) {
-    throw new ValidationError(
-      `baseImage too large (max ${LIMITS.MAX_BASE64_LENGTH} base64 chars)`,
-    );
-  }
-  return { base64 };
+  return { base64: requireBase64(base64, "baseImage") };
 }
 
 function assertOptionalText(value: unknown, label: string, max: number): void {

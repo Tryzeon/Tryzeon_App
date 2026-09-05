@@ -72,10 +72,51 @@ Deno.test("validateTryonParams rejects a path even alongside usable bytes", () =
       validateTryonParams({
         ...validParams,
         garments: [{
-          images: [{ path: "p", base64: "" } as unknown as { base64: string }],
+          images: [
+            { path: "p", base64: "BBBB" } as unknown as { base64: string },
+          ],
         }],
       }),
     ValidationError,
+    "not a path",
+  );
+});
+
+Deno.test("validateTryonParams rejects an oversized garment image", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        garments: [{
+          images: [{ base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH + 1) }],
+        }],
+      }),
+    ValidationError,
+    "too large",
+  );
+});
+
+Deno.test("validateTryonParams accepts a garment image exactly at the limit", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    garments: [{ images: [{ base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH) }] }],
+  });
+  assertEquals(
+    (job.garments[0] as { images: { base64: string }[] }).images[0].base64
+      .length,
+    LIMITS.MAX_BASE64_LENGTH,
+  );
+});
+
+Deno.test("validateTryonParams rejects an oversized avatar override", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        ...validParams,
+        avatar: { base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH + 1) },
+      }),
+    ValidationError,
+    "too large",
   );
 });
 
